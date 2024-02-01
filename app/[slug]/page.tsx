@@ -51,7 +51,9 @@ export default function Page({ params }: { params: { slug: string } }) {
       .map(([key, value]) => {
         // Check if the value is an array and convert it to a string for display
         const displayValue = Array.isArray(value) ? value.join(", ") : value;
-        return (
+        return key === "name" ? (
+          <h1 key={key}>{displayValue}</h1>
+        ) : (
           <p key={key}>
             <strong>{key}:</strong> {displayValue}
           </p>
@@ -60,9 +62,13 @@ export default function Page({ params }: { params: { slug: string } }) {
   };
 
   return (
-    <div>
-      <h1>e-id to</h1>
-      {decodedData ? renderDecodedData() : <p>Loading...</p>}
+    <div className="bg-gray-100 min-h-screen flex justify-center items-center">
+      <main className="container mx-auto p-4 flex justify-center items-center">
+        <article className="prose lg:prose-xl prose-zinc bg-white shadow rounded-lg px-12 py-6 antialiased">
+          <p>e-id to</p>
+          {decodedData ? renderDecodedData() : <p>Loading...</p>}
+        </article>
+      </main>
     </div>
   );
 }
