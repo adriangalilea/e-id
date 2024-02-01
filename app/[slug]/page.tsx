@@ -1,5 +1,8 @@
 "use client";
 import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
+
 
 export default function Page({ params }: { params: { slug: string } }) {
   const [decodedData, setDecodedData] = useState<null | Record<string, any>>(
@@ -62,13 +65,20 @@ export default function Page({ params }: { params: { slug: string } }) {
   };
 
   return (
-    <div className="bg-gray-50 min-h-screen flex flex-col justify-center items-center">
-      <main className="w-full max-w-2xl bg-white shadow-lg rounded-lg overflow-hidden">
-        <article className="prose lg:prose-xl prose-zinc bg-white shadow rounded-lg px-32 py-16 antialiased">
-          <p>e-id to</p>
+    <div className="min-h-screen w-screen flex flex-col  ">
+      <main className="w-full max-w-2xl shadow-lg rounded-lg overflow-hidden">
+        <p className="prose lg:prose-xl prose-zinc dark:prose-invert antialiased px-16 py-8">
+          e-id to
+        </p>
+        <article className="shadow rounded-lg px-16 prose lg:prose-xl prose-zinc dark:prose-invert antialiased">
           {decodedData ? renderDecodedData() : <p>Loading...</p>}
         </article>
       </main>
+      <footer className="w-full prose lg:prose-xl prose-zinc dark:prose-invert px-16 py-8 fixed bottom-0">
+        <Button asChild variant="link">
+          <Link className="no-underline" href="/">Get your e-id</Link>
+        </Button>
+      </footer>
     </div>
   );
 }
