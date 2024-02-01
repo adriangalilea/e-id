@@ -55,7 +55,7 @@ export default function UserProfileForm() {
             <FormItem>
               <FormLabel>Full name</FormLabel>
               <FormControl>
-                <Input placeholder="John Doe" {...field} />
+                <Input placeholder="Adrian Galilea" {...field} />
               </FormControl>
               <FormDescription>
                 This is your displayed full name.
@@ -71,7 +71,7 @@ export default function UserProfileForm() {
             <FormItem>
               <FormLabel>Bio</FormLabel>
               <FormControl>
-                <Input placeholder="I'm a developer" {...field} />
+                <Input placeholder="Teito and Lulx are cool." {...field} />
               </FormControl>
               <FormDescription>
                 This is your public bio. Markdown is supported.
@@ -87,7 +87,7 @@ export default function UserProfileForm() {
             <FormItem>
               <FormLabel>Personal Site</FormLabel>
               <FormControl>
-                <Input placeholder="https://shadcn.com" {...field} />
+                <Input placeholder="https://adriangalilea.com" {...field} />
               </FormControl>
               <FormDescription>
                 This is your personal website. It will be displayed on your
@@ -120,7 +120,7 @@ export default function UserProfileForm() {
             <FormItem>
               <FormLabel>Telegram</FormLabel>
               <FormControl>
-                <Input placeholder="https://t.me/shadcn" {...field} />
+                <Input placeholder="https://t.me/adriangalilea" {...field} />
               </FormControl>
               <FormDescription>
                 This is your public Telegram link. It will be displayed on your
@@ -137,7 +137,7 @@ export default function UserProfileForm() {
             <FormItem>
               <FormLabel>Twitter</FormLabel>
               <FormControl>
-                <Input placeholder="@shadcn" {...field} />
+                <Input placeholder="@adrigalilea" {...field} />
               </FormControl>
               <FormDescription>
                 This is your public Twitter handle. It will be displayed on your
@@ -154,44 +154,10 @@ export default function UserProfileForm() {
             <FormItem>
               <FormLabel>Instagram</FormLabel>
               <FormControl>
-                <Input placeholder="@shadcn" {...field} />
+                <Input placeholder="@instagram_sucks" {...field} />
               </FormControl>
               <FormDescription>
                 This is your public Instagram handle. It will be displayed on
-                your profile.
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="facebookHandle"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Facebook</FormLabel>
-              <FormControl>
-                <Input placeholder="@shadcn" {...field} />
-              </FormControl>
-              <FormDescription>
-                This is your public Facebook handle. It will be displayed on
-                your profile.
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="linkedInHandle"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>LinkedIn</FormLabel>
-              <FormControl>
-                <Input placeholder="@shadcn" {...field} />
-              </FormControl>
-              <FormDescription>
-                This is your public LinkedIn handle. It will be displayed on
                 your profile.
               </FormDescription>
               <FormMessage />
