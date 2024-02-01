@@ -62,9 +62,9 @@ export default function Page({ params }: { params: { slug: string } }) {
   };
 
   return (
-    <div className="bg-gray-100 min-h-screen flex justify-center items-center">
-      <main className="container mx-auto p-4 flex justify-center items-center">
-        <article className="prose lg:prose-xl prose-zinc bg-white shadow rounded-lg px-12 py-6 antialiased">
+    <div className="bg-gray-50 min-h-screen flex flex-col justify-center items-center">
+      <main className="w-full max-w-2xl bg-white shadow-lg rounded-lg overflow-hidden">
+        <article className="prose lg:prose-xl prose-zinc bg-white shadow rounded-lg px-32 py-16 antialiased">
           <p>e-id to</p>
           {decodedData ? renderDecodedData() : <p>Loading...</p>}
         </article>
