@@ -27,7 +27,7 @@ export default function Footer() {
         open
           ? "opacity-0 cursor-none"
           : "bg-zinc-50/50 dark:bg-zinc-950/50 backdrop-blur-2xl",
-        "fixed w-screen bottom-0 text-zinc-500 border-t border-border shadow-xl "
+        "fixed w-screen bottom-0 text-zinc-500 border-t border-indigo-50/40 dark:border-indigo-950/50 shadow-xl "
       )}
     >
       {isMobile && (
@@ -70,7 +70,7 @@ function ButtonGetEID() {
   return (
     <Button asChild variant="ghost" className="rounded-none">
       <Link
-        className="lg:decoration-transparent hover:decoration-inherit opacity-80 hover:opacity-100 transition-all duration-500"
+        className="lg:decoration-transparent hover:decoration-inherit opacity-80 hover:opacity-100 transition-all duration-500 font-light antialiased"
         href="/"
       >
         👤 Get your e-ID
@@ -82,7 +82,7 @@ function ButtonEIDAdrian() {
   return (
     <Button asChild variant="ghost" className="rounded-none">
       <Link
-        className="lg:decoration-transparent hover:decoration-inherit opacity-80 hover:opacity-100 transition-all duration-500"
+        className="lg:decoration-transparent hover:decoration-inherit opacity-80 hover:opacity-100 transition-all duration-500 font-light antialiased"
         href="https://e-id.to/G2wAYETdluo5XTCvqMWSB55zuCo65YC52oI6y40PRveUFZMlKA_tP1rR1w8emcxII4YJ5V3bBc-ZlpNx8NyN6NB8M7KQNaEo"
       >
         👤 Adrian Galilea
@@ -94,7 +94,7 @@ function ButtonGithub({ description = false }: { description?: boolean }) {
   return (
     <Button asChild variant="ghost" className="rounded-none">
       <Link
-        className="lg:decoration-transparent hover:decoration-inherit opacity-80 hover:opacity-100 transition-all duration-500"
+        className="lg:decoration-transparent hover:decoration-inherit opacity-90 hover:opacity-100 transition-all duration-500 font-light antialiased"
         href="https://github.com/adriangalilea/e-id"
         target="_blank"
       >
@@ -113,7 +113,7 @@ function ButtonFAQ({ description = false }: { description?: boolean }) {
   return (
     <Button asChild variant="ghost" className="rounded-none">
       <Link
-        className="lg:decoration-transparent hover:decoration-inherit opacity-80 hover:opacity-100 transition-all duration-500"
+        className="lg:decoration-transparent hover:decoration-inherit opacity-80 hover:opacity-100 transition-all duration-500 font-light antialiased"
         href="/faq"
       >
         <HelpCircle size={16} strokeWidth={1} />
