@@ -57,9 +57,9 @@ export default function Faq() {
               </AccordionTrigger>
               <AccordionContent>
                 <p className="prose prose-zinc dark:prose-invert w-full">
-                  Yes, e-ID is safe and secure. We literally don't store any of
-                  your data. All the data is encoded in the URL and is only
-                  accessible by the person who has the link.
+                  Yes, e-ID is safe and secure. We literally don&apos;t store
+                  any of your data. All the data is encoded in the URL and is
+                  only accessible by the person who has the link.
                 </p>
               </AccordionContent>
             </AccordionItem>
