@@ -171,14 +171,12 @@ export default function Page({ params }: { params: { slug: string } }) {
   };
 
   return (
-    <div className="min-h-screen flex justify-center items-center">
-      <main>
-        <article className="mb-8 sm:mb-10 lg:mb-16 shadow rounded-lg prose lg:prose-xl prose-zinc dark:prose-invert antialiased flex flex-col gap-8 w-fit">
-          <Card className="bg-zinc-50/90 dark:bg-zinc-950/60">
-            {decodedData ? renderDecodedData(decodedData) : <p>Loading...</p>}
-          </Card>
-        </article>
-      </main>
-    </div>
+    <main>
+      <article className="mb-8 sm:mb-10 lg:mb-16 shadow rounded-lg prose lg:prose-xl prose-zinc dark:prose-invert antialiased flex flex-col gap-8 w-fit">
+        <Card className="bg-zinc-50/90 dark:bg-zinc-950/60">
+          {decodedData ? renderDecodedData(decodedData) : <p>Loading...</p>}
+        </Card>
+      </article>
+    </main>
   );
 }
