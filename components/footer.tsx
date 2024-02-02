@@ -99,8 +99,12 @@ function ButtonGithub({ description = false }: { description?: boolean }) {
         target="_blank"
       >
         <Github size={16} strokeWidth={1} />
-        {description && <span className="ml-0.5">Source code</span>}
-        <ExternalLink size={16} strokeWidth={1} className="ml-0.5" />
+        {description && (
+          <>
+            <span className="ml-0.5">Source code</span>
+            <ExternalLink size={16} strokeWidth={1} className="ml-0.5" />
+          </>
+        )}
       </Link>
     </Button>
   );
