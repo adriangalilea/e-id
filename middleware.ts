@@ -10,16 +10,19 @@ export function middleware(request: NextRequest) {
   const shortDomain = "eid.to";
   const mainDomain = "e-id.to";
   const emojiDomain = "👤.to";
+  const emojiDomainPunycode = "xn--mq8h.to";
 
   // list of domains with www
   const shortDomainWWW = `www.${shortDomain}`;
   const mainDomainWWW = `www.${mainDomain}`;
   const emojiDomainWWW = `www.${emojiDomain}`;
+  const emojiDomainPunycodeWWW = `www.${emojiDomainPunycode}`;
 
   // list https url's
   const shortHttps = `https://${shortDomain}`;
   const mainHttps = `https://${mainDomain}`;
   const emojiHttps = `https://${emojiDomain}`;
+  const emojiHttpsPunycode = `https://${emojiDomainPunycode}`;
 
   // if the request is localhost, do nothing
   if (hostHeaders === localhost) {
@@ -41,13 +44,24 @@ export function middleware(request: NextRequest) {
   const targetUrl = useEmojiDomain ? emojiHttps : mainHttps;
   const targetDomain = useEmojiDomain ? emojiDomain : mainDomain;
   const targetDomainWWW = useEmojiDomain ? emojiDomainWWW : mainDomainWWW;
+  const targetDomainPunycode = useEmojiDomain
+    ? emojiDomainPunycode
+    : mainDomain;
+  const targetDomainPunycodeWWW = useEmojiDomain
+    ? emojiDomainPunycodeWWW
+    : mainDomainWWW;
 
   // rewrite only if targetUrl is not the same as the current
-  if (targetDomain === hostHeaders || targetDomainWWW === hostHeaders) {
+  if (
+    targetDomain === hostHeaders ||
+    targetDomainWWW === hostHeaders ||
+    targetDomainPunycode === hostHeaders ||
+    targetDomainPunycodeWWW === hostHeaders
+  ) {
     console.log("targetUrl is the same as the current");
     return;
   }
-  
+
   console.log("targetDomain", targetDomain);
   console.log("hostHeaders", hostHeaders);
   console.log("targetUrl", targetUrl);
