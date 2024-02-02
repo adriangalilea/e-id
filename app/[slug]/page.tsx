@@ -13,46 +13,49 @@ import {
   Hash,
   Send,
 } from "lucide-react";
+import { UserProfile1 } from "@/utils/model";
 
-const keyToIconAndUrl = {
+const keyToIconAndUrl: Record<
+  string,
+  { icon: JSX.Element; url: (value: string) => string }
+> = {
   email: {
     icon: <Mail className="size-4" />,
-    url: (value) => `mailto:${value}`,
+    url: (value: string) => `mailto:${value}`,
   },
   personalSite: {
     icon: <Globe className="size-4" />,
-    url: (value) => value,
+    url: (value: string) => value,
   },
   telegramLink: {
     icon: <Send className="size-4" />,
-    url: (value) => `https://t.me/${value}`,
+    url: (value: string) => `https://t.me/${value}`,
   },
   twitterHandle: {
     icon: <Twitter className="size-4" />,
-    url: (value) => `https://twitter.com/${value}`,
+    url: (value: string) => `https://twitter.com/${value}`,
   },
   instagramHandle: {
     icon: <Instagram className="size-4" />,
-    url: (value) => `https://instagram.com/${value}`,
+    url: (value: string) => `https://instagram.com/${value}`,
   },
   facebookHandle: {
     icon: <Facebook className="size-4" />,
-    url: (value) => `https://facebook.com/${value}`,
+    url: (value: string) => `https://facebook.com/${value}`,
   },
   linkedInHandle: {
     icon: <Linkedin className="size-4" />,
-    url: (value) => `https://linkedin.com/in/${value}`,
+    url: (value: string) => `https://linkedin.com/in/${value}`,
   },
   other: {
     icon: <Hash className="mr-2 h-4 w-4" />,
-    url: (value) => value, // Assuming 'other' is an array of URLs or similar
+    url: (value: string) => value, // Assuming 'other' is an array of URLs or similar
   },
 };
 
 export default function Page({ params }: { params: { slug: string } }) {
-  const [decodedData, setDecodedData] = useState<null | Record<string, any>>(
-    null
-  );
+  const [decodedData, setDecodedData] = useState<UserProfile1 | null>(null);
+
 
   useEffect(() => {
     const fetchData = async () => {
@@ -90,89 +93,60 @@ export default function Page({ params }: { params: { slug: string } }) {
     fetchData();
   }, [params.slug]);
 
-  const renderDecodedData = () => {
+  const renderDecodedData = (decodedData: UserProfile1) => {
     if (!decodedData) return <p>No valid data to display.</p>;
 
-    const categories = {
-      beforeBio: [],
-      bio: null,
-      betweenBioAndOtherElements: [], // Store JSX elements directly
-      other: null,
-    };
-
-    let foundBio = false;
-
-    Object.entries(decodedData)
-      .filter(([key, value]) => value && key !== "version") // Exclude 'version' and empty values
-      .forEach(([key, value]) => {
-        if (key === "name") {
-          categories.name = (
-            <h1 key={key} className="text-2xl font-semibold !mb-0">
-              👤 {value.charAt(0).toUpperCase() + value.slice(1)}
-            </h1>
-          );
-        } else if (key === "bio") {
-          foundBio = true;
-          categories.bio = (
-            <p key={key} className="!m-0">
-              {value}
-            </p>
-          );
-        } else if (key === "other") {
-          // Ensure 'value' is a string and not empty or just whitespace
-          if (typeof value === "string" && value.trim()) {
-            categories.other = (
-              <Button
-                key="other"
-                asChild
-                variant="outline"
-                className="px-4 py-2 border rounded"
-              >
-                <Link href="#">
-                  <span>{value}</span>
-                </Link>
-              </Button>
-            );
-          }
-        } else {
-          const items = (Array.isArray(value) ? value : [value]).map(
-            (item, index) => {
-              const { icon, url } = keyToIconAndUrl[key] || {};
-              const itemUrl = url ? url(item) : "#";
-              return (
+    // Dynamically render social links and other fields with icons
+    const renderLinksWithIcons = Object.entries(decodedData)
+      .map(([key, value]) => {
+        if (value && key !== "version" && keyToIconAndUrl[key]) {
+          const { icon, url } = keyToIconAndUrl[key];
+          if (key === "other" && value !== "") {
+            // For "other", render the button to display as a block (own line)
+            return (
+              <div className="w-full">
+                {" "}
+                {/* Wrap in a div with w-full to ensure it takes up its own line */}
                 <Button
-                  key={`${key}-${index}`}
+                  key={key}
                   asChild
                   variant="outline"
-                  className="px-4 py-2 size-12 rounded-full inline-flex items-center justify-center"
+                  className="size-12 w-full block flex mt-8" // Add `block` to ensure it displays as a block-level element
                 >
-                  <Link href={itemUrl}>{icon}</Link>
+                  <Link href={url(value)}>{value}</Link>
                 </Button>
-              );
-            }
-          );
-
-          if (foundBio) {
-            categories.betweenBioAndOtherElements.push(...items);
-          } else {
-            categories.beforeBio.push(...items);
+              </div>
+            );
           }
+          // For all other keys, render as inline buttons
+          return (
+            <Button
+              key={key}
+              asChild
+              variant="secondary"
+              className="size-12 rounded-full inline-flex"
+            >
+              <Link href={url(value)}>{icon}</Link>
+            </Button>
+          );
         }
-      });
-
-    const betweenBioAndOther =
-      categories.betweenBioAndOtherElements.length > 0 ? (
-        <div className="flex space-x-2 justify-between w-full">
-          {categories.betweenBioAndOtherElements}
-        </div>
-      ) : null;
+        return null;
+      })
+      .filter(Boolean); // Filter out null values
 
     return (
       <>
-        {categories.name}
-        {categories.beforeBio}
-        {categories.bio}
-        {betweenBioAndOther}
+        {decodedData.name && (
+          <h1 className="text-2xl font-semibold !mb-0">
+            👤{" "}
+            {decodedData.name.charAt(0).toUpperCase() +
+              decodedData.name.slice(1)}
+          </h1>
+        )}
+        {decodedData.bio && <p className="!m-0">{decodedData.bio}</p>}
+        <div className="flex flex-wrap gap-2 justify-between w-full">
+          {renderLinksWithIcons}
+        </div>
       </>
     );
   };
@@ -181,7 +155,7 @@ export default function Page({ params }: { params: { slug: string } }) {
     <div className="min-h-screen w-screen">
       <main className="w-full max-w-2xl shadow-lg rounded-lg overflow-hidden">
         <article className="shadow rounded-lg p-4 sm:py-5 sm:px-10 lg:px-16 lg:py-8 prose lg:prose-xl prose-zinc dark:prose-invert antialiased flex flex-col gap-8 w-fit">
-          {decodedData ? renderDecodedData() : <p>Loading...</p>}
+          {decodedData ? renderDecodedData(decodedData) : <p>Loading...</p>}
         </article>
       </main>
       <footer className="w-full prose lg:prose-xl prose-zinc dark:prose-invert p-4 sm:py-5 sm:px-10 lg:px-16 lg:py-8 fixed bottom-0">
