@@ -5,7 +5,7 @@ e-ID is your digital business card.
 - **Interchangeable Domains** e-id.to, eid.to, and the visually unique emoji domain [👤️️.to](xn--mq8h.to) all point to your profile e-id.to/profile eid.to/profile [👤️️.to/profile](xn--mq8h.to/profile)
 - **Easy Setup**
 - **No data storage** Literally, we don't even use a database, your data is compressed and encoded which ends up being the url itself, try it out yourself and inspect the code if you wish, after extensively testing(2 hours and chatgpt) several compression and encoding methods, and arrived at the conclusion that base64-url and brotli.
-- **Progressive enhancing browsers that support emoji domain** Preserves the slug so it works without hiccups
+- **Progressive enhancing browsers that support emoji domain** Preserves the slug so it works without hiccups. [Idea credit](https://github.com/jonroig/emojiurlifier) but implemented using middleware on next so it's a bit cleaner.
   - e-id.to and eid.to redirect to 👤️️️️.to in safari
   - 👤.to redirects to e-id.to in anything else.
 
