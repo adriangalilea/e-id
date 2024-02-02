@@ -15,6 +15,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "./ui/textarea";
 
 export default function UserProfileForm() {
   const form = useForm<UserProfile1>({
@@ -49,7 +50,7 @@ export default function UserProfileForm() {
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(onSubmit)}
-        className="space-y-8 prose lg:prose-xl prose-zinc dark:prose-invert antialiased"
+        className="space-y-4 prose lg:prose-xl xl:prose-2xl prose-zinc dark:prose-invert antialiased"
       >
         <FormField
           control={form.control}
@@ -60,7 +61,7 @@ export default function UserProfileForm() {
               <FormControl>
                 <Input placeholder="Adrian Galilea" {...field} />
               </FormControl>
-              <FormDescription>
+              <FormDescription className="sr-only">
                 This is your displayed full name.
               </FormDescription>
               <FormMessage />
@@ -74,11 +75,12 @@ export default function UserProfileForm() {
             <FormItem>
               <FormLabel>Bio</FormLabel>
               <FormControl>
-                <Input placeholder="Teito and Lulx are cool." {...field} />
+                <Textarea
+                  placeholder="Tell us a little bit about yourself"
+                  className="resize-none"
+                  {...field}
+                />
               </FormControl>
-              <FormDescription>
-                This is your public bio. Markdown is supported.
-              </FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -92,7 +94,7 @@ export default function UserProfileForm() {
               <FormControl>
                 <Input placeholder="https://adriangalilea.com" {...field} />
               </FormControl>
-              <FormDescription>
+              <FormDescription className="sr-only">
                 This is your personal website. It will be displayed on your
                 profile.
               </FormDescription>
@@ -109,7 +111,7 @@ export default function UserProfileForm() {
               <FormControl>
                 <Input placeholder="john@doe.to" {...field} />
               </FormControl>
-              <FormDescription>
+              <FormDescription className="sr-only">
                 This is your public email. It will be displayed on your profile.
               </FormDescription>
               <FormMessage />
@@ -125,7 +127,7 @@ export default function UserProfileForm() {
               <FormControl>
                 <Input placeholder="https://t.me/adriangalilea" {...field} />
               </FormControl>
-              <FormDescription>
+              <FormDescription className="sr-only">
                 This is your public Telegram link. It will be displayed on your
                 profile.
               </FormDescription>
@@ -142,7 +144,7 @@ export default function UserProfileForm() {
               <FormControl>
                 <Input placeholder="@adrigalilea" {...field} />
               </FormControl>
-              <FormDescription>
+              <FormDescription className="sr-only">
                 This is your public Twitter handle. It will be displayed on your
                 profile.
               </FormDescription>
@@ -159,7 +161,7 @@ export default function UserProfileForm() {
               <FormControl>
                 <Input placeholder="@instagram_sucks" {...field} />
               </FormControl>
-              <FormDescription>
+              <FormDescription className="sr-only">
                 This is your public Instagram handle. It will be displayed on
                 your profile.
               </FormDescription>
@@ -176,7 +178,7 @@ export default function UserProfileForm() {
               <FormControl>
                 <Input placeholder="https://..." {...field} />
               </FormControl>
-              <FormDescription>
+              <FormDescription className="sr-only">
                 This is your public Other link. It will be displayed on your
                 profile.
               </FormDescription>
@@ -184,7 +186,7 @@ export default function UserProfileForm() {
             </FormItem>
           )}
         />
-        <Button type="submit">Submit</Button>
+        <Button type="submit">👤 Generate e-id</Button>
       </form>
     </Form>
   );
