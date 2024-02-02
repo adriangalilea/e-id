@@ -8,3 +8,14 @@ e-ID is your digital business card.
 ![telegram-cloud-photo-size-4-5899819325966110101-y](https://github.com/adriangalilea/e-id/assets/90320947/a06d37a0-54b9-4aec-ae14-a096bcac31f9)
 
 ⚠️ This is a work in progress.
+
+# TO-DO
+- [ ] feat: encode profile image
+- [ ] chore: add testing write-up and code
+- [ ] chore: test requested [HS256](https://pypi.org/project/python-jose/)
+- [ ] style: responsive
+- [ ] style: generation UI
+- [ ] style: [slug] page
+- [ ] feat: premium claimable username
+- [ ] feat: premium analytics
+- [ ] feat: wishlist
