@@ -173,7 +173,7 @@ export default function Page({ params }: { params: { slug: string } }) {
   return (
     <main>
       <article className="mb-8 sm:mb-10 lg:mb-16 shadow rounded-lg prose lg:prose-xl prose-zinc dark:prose-invert antialiased flex flex-col gap-8 w-fit">
-        <Card className="bg-zinc-50/90 sm:dark:bg-zinc-950/60 dark:bg-zinc-800">
+        <Card className="bg-zinc-50/90 sm:dark:bg-zinc-950/60 dark:bg-zinc-800 backdrop-blur-2xl">
           {decodedData ? renderDecodedData(decodedData) : <p>Loading...</p>}
         </Card>
       </article>
