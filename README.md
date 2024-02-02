@@ -19,7 +19,7 @@ e-ID is your digital business card.
 - [ ] chore: test requested [HS256](https://pypi.org/project/python-jose/)
 - [x] style: responsive
 - [ ] style: generation UI
-- [ ] style: [slug] page
+- [x] style: [slug] page
 - [ ] feat: premium claimable username
 - [ ] feat: premium analytics
 - [ ] feat: wishlist
