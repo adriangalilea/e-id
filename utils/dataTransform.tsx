@@ -1,10 +1,23 @@
 "use client";
 import brotliPromise from "brotli-wasm";
+import { UserProfile1, orderedKeys1 } from "./model";
 
-export const encodeData = async (formData: object): Promise<string> => {
+export const encodeData = async (formData: UserProfile1): Promise<string> => {
   const brotli = await brotliPromise;
   const textEncoder = new TextEncoder();
-  const uncompressedData = textEncoder.encode(JSON.stringify(formData));
+  
+  const dataArray = orderedKeys1.map((key) =>
+    formData[key] === undefined ? "" : formData[key]
+  );
+
+  console.log(dataArray);
+
+  // Join the array into a string using ";" as separator
+  const joinedData = dataArray.join(";");
+
+  console.log(joinedData);
+
+  const uncompressedData = textEncoder.encode(JSON.stringify(joinedData));
   const compressed = await brotli.compress(uncompressedData);
   const base64Encoded = btoa(
     String.fromCharCode(...new Uint8Array(compressed))
