@@ -55,7 +55,7 @@ export default function UserProfileForm() {
   }
 
   return (
-    <Card>
+    <Card className="bg-zinc-50/90 sm:dark:bg-zinc-950/60 dark:bg-zinc-800 backdrop-blur-2xl">
       <CardHeader>
         <CardTitle>👤 e-id</CardTitle>
         <CardDescription>Digital identity.</CardDescription>

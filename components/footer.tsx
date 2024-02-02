@@ -4,7 +4,7 @@ import { Github, HelpCircle } from "lucide-react";
 
 export default function Footer() {
   return (
-    <footer className="w-screen fixed bottom-0 z-20 bg-zinc-50 dark:bg-zinc-950 text-zinc-500 shadow-xl shadow-zinc-50">
+    <footer className="w-screen fixed bottom-0 z-20 bg-zinc-50 dark:bg-zinc-950/50 text-zinc-500 shadow-xl shadow-zinc-50 backdrop-blur-2xl">
       <div className="flex justify-between items-center">
         <Button asChild variant="ghost" className="rounded-none">
           <Link
