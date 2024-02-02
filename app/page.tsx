@@ -1,4 +1,3 @@
-import Nav from "@/components/Nav";
 import dynamic from "next/dynamic";
 const UserProfileForm = dynamic(() => import("../components/Form"), {
   ssr: false,
