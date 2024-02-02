@@ -162,7 +162,7 @@ export default function Page({ params }: { params: { slug: string } }) {
 
     const betweenBioAndOther =
       categories.betweenBioAndOtherElements.length > 0 ? (
-        <div className="flex space-x-2 justify-around w-full">
+        <div className="flex space-x-2 justify-between w-full">
           {categories.betweenBioAndOtherElements}
         </div>
       ) : null;
@@ -173,7 +173,6 @@ export default function Page({ params }: { params: { slug: string } }) {
         {categories.beforeBio}
         {categories.bio}
         {betweenBioAndOther}
-        {categories.other ? categories.other : null}
       </>
     );
   };
@@ -181,7 +180,7 @@ export default function Page({ params }: { params: { slug: string } }) {
   return (
     <div className="min-h-screen w-screen">
       <main className="w-full max-w-2xl shadow-lg rounded-lg overflow-hidden">
-        <article className="shadow rounded-lg p-4 sm:py-5 sm:px-10 lg:px-16 lg:py-8 prose lg:prose-xl prose-zinc dark:prose-invert antialiased flex flex-col gap-8">
+        <article className="shadow rounded-lg p-4 sm:py-5 sm:px-10 lg:px-16 lg:py-8 prose lg:prose-xl prose-zinc dark:prose-invert antialiased flex flex-col gap-8 w-fit">
           {decodedData ? renderDecodedData() : <p>Loading...</p>}
         </article>
       </main>
