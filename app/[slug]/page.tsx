@@ -133,7 +133,7 @@ export default function Page({ params }: { params: { slug: string } }) {
       <>
         <CardHeader>
           {decodedData.name && (
-            <CardTitle className="!mb-4 text-balance flex items-center">
+            <CardTitle className="!mb-8 text-balance flex items-center">
               <span className="inline-block mr-4 text-[0.76em]">👤</span>
               {decodedData.name.charAt(0).toUpperCase() +
                 decodedData.name.slice(1)}
@@ -174,7 +174,7 @@ export default function Page({ params }: { params: { slug: string } }) {
     <div className="min-h-screen flex justify-center items-center">
       <main>
         <article className="mb-8 sm:mb-10 lg:mb-16 shadow rounded-lg prose lg:prose-xl prose-zinc dark:prose-invert antialiased flex flex-col gap-8 w-fit">
-          <Card className="bg-zinc-100/60 dark:bg-zinc-800/60">
+          <Card className="bg-zinc-50/90 dark:bg-zinc-950/60">
             {decodedData ? renderDecodedData(decodedData) : <p>Loading...</p>}
           </Card>
         </article>
