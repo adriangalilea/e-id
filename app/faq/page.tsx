@@ -21,7 +21,7 @@ import {
 export default function Faq() {
   return (
     <div className="w-full h-full flex justify-center items-start">
-      <Card className="prose prose-zinc dark:prose-invert bg-zinc-50/90 sm:dark:bg-zinc-950/60 dark:bg-zinc-800 backdrop-blur-2xl transition-all ease-in-out duration-500 w-full">
+      <Card className="lg:prose lg:prose-sm lg:prose-zinc lg:dark:prose-invert bg-zinc-50/90 sm:dark:bg-zinc-950/60 dark:bg-zinc-800 backdrop-blur-2xl transition-all ease-in-out duration-500 w-full">
         <CardHeader>
           <CardTitle>
             <h1>Frequently Asked Questions</h1>
