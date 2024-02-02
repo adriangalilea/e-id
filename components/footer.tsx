@@ -24,8 +24,10 @@ export default function Footer() {
   return (
     <footer
       className={cn(
-        open ? "opacity-0 cursor-none" : "opacity-100",
-        "fixed w-screen bottom-0 bg-zinc-50 dark:bg-zinc-950/50 text-zinc-500 shadow-xl backdrop-blur-2xl"
+        open
+          ? "opacity-0 cursor-none"
+          : "bg-zinc-50/50 dark:bg-zinc-950/50 backdrop-blur-2xl",
+        "fixed w-screen bottom-0 text-zinc-500 border-t border-border shadow-xl "
       )}
     >
       {isMobile && (
@@ -38,8 +40,8 @@ export default function Footer() {
           <DrawerContent>
             <ButtonGetEID />
             <ButtonEIDAdrian />
-            <ButtonGithub />
-            <ButtonFAQ />
+            <ButtonGithub description={true} />
+            <ButtonFAQ description={true} />
             <DrawerFooter className="pt-2">
               <DrawerClose asChild>
                 <Button variant="secondary">
@@ -88,26 +90,29 @@ function ButtonEIDAdrian() {
     </Button>
   );
 }
-function ButtonGithub() {
+function ButtonGithub({ description = false }: { description?: boolean }) {
   return (
     <Button asChild variant="ghost" className="rounded-none">
       <Link
         className="lg:decoration-transparent hover:decoration-inherit opacity-80 hover:opacity-100 transition-all duration-500"
         href="https://github.com/adriangalilea/e-id"
+        target="_blank"
       >
-        <Github size={20} strokeWidth={1} />
+        <Github size={16} strokeWidth={1} />
+        {description && <span className="ml-0.5">Source code</span>}
       </Link>
     </Button>
   );
 }
-function ButtonFAQ() {
+function ButtonFAQ({ description = false }: { description?: boolean }) {
   return (
     <Button asChild variant="ghost" className="rounded-none">
       <Link
         className="lg:decoration-transparent hover:decoration-inherit opacity-80 hover:opacity-100 transition-all duration-500"
         href="/faq"
       >
-        <HelpCircle size={20} strokeWidth={1} />
+        <HelpCircle size={16} strokeWidth={1} />
+        {description && <span className="ml-1">FAQ</span>}
       </Link>
     </Button>
   );
