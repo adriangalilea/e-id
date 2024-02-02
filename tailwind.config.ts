@@ -1,6 +1,9 @@
 import type { Config } from "tailwindcss";
 
 const config = {
+  experimental: {
+    optimizeUniversalDefaults: true
+  },
   content: [
     "./pages/**/*.{ts,tsx}",
     "./components/**/*.{ts,tsx}",

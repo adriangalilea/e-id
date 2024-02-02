@@ -1,6 +1,14 @@
 "use client";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import Link from "next/link";
 import {
   Mail,
@@ -14,6 +22,7 @@ import {
   Send,
 } from "lucide-react";
 import { UserProfile1 } from "@/utils/model";
+import { Separator } from "@/components/ui/separator";
 
 const keyToIconAndUrl: Record<
   string,
@@ -102,31 +111,19 @@ export default function Page({ params }: { params: { slug: string } }) {
       .map(([key, value]) => {
         if (value && key !== "version" && keyToIconAndUrl[key]) {
           const { icon, url } = keyToIconAndUrl[key];
-          if (key === "other" && value !== "") {
-            // For "other", render the button to display as a block (own line)
+          if (key !== "other") {
+            // For all other keys, render as inline buttons
             return (
-              <div className="w-full" key={key}>
-                <Button
-                  asChild
-                  variant="outline"
-                  className="size-12 w-full block flex mt-8" // Add `block` to ensure it displays as a block-level element
-                >
-                  <Link href={url(value)}>{value}</Link>
-                </Button>
-              </div>
+              <Button
+                key={key}
+                asChild
+                variant="outline"
+                className="size-12 rounded-full inline-flex"
+              >
+                <Link href={url(value)}>{icon}</Link>
+              </Button>
             );
           }
-          // For all other keys, render as inline buttons
-          return (
-            <Button
-              key={key}
-              asChild
-              variant="secondary"
-              className="size-12 rounded-full inline-flex"
-            >
-              <Link href={url(value)}>{icon}</Link>
-            </Button>
-          );
         }
         return null;
       })
@@ -134,35 +131,54 @@ export default function Page({ params }: { params: { slug: string } }) {
 
     return (
       <>
-        {decodedData.name && (
-          <h1 className="text-2xl font-semibold !mb-0">
-            👤{" "}
-            {decodedData.name.charAt(0).toUpperCase() +
-              decodedData.name.slice(1)}
-          </h1>
-        )}
-        {decodedData.bio && <p className="!m-0">{decodedData.bio}</p>}
-        <div className="flex flex-wrap gap-2 justify-between w-full">
-          {renderLinksWithIcons}
+        <CardHeader>
+          {decodedData.name && (
+            <CardTitle className="!mb-4 text-balance flex items-center">
+              <span className="inline-block mr-4 text-[0.76em]">👤</span>
+              {decodedData.name.charAt(0).toUpperCase() +
+                decodedData.name.slice(1)}
+            </CardTitle>
+          )}
+          {decodedData.bio && (
+            <CardDescription>{decodedData.bio}</CardDescription>
+          )}
+        </CardHeader>
+        <div className="p-8 pt-4">
+          <Separator />
         </div>
+
+        <CardContent className="flex justify-around gap-4">
+          {renderLinksWithIcons}
+        </CardContent>
+        {decodedData.other && (
+          <CardFooter className="pt-2">
+            <Button
+              asChild
+              variant="outline"
+              className="size-12 w-full mx-4 border"
+            >
+              <Link
+                href={decodedData.other}
+                className="text-sm text-muted-foreground font-normal no-underline"
+              >
+                {decodedData.other}
+              </Link>
+            </Button>
+          </CardFooter>
+        )}
       </>
     );
   };
 
   return (
-    <div className="min-h-screen w-screen">
-      <main className="w-full max-w-2xl shadow-lg rounded-lg overflow-hidden">
-        <article className="shadow rounded-lg prose lg:prose-xl prose-zinc dark:prose-invert antialiased flex flex-col gap-8 w-fit">
-          {decodedData ? renderDecodedData(decodedData) : <p>Loading...</p>}
+    <div className="min-h-screen flex justify-center items-center">
+      <main>
+        <article className="mb-8 sm:mb-10 lg:mb-16 shadow rounded-lg prose lg:prose-xl prose-zinc dark:prose-invert antialiased flex flex-col gap-8 w-fit">
+          <Card className="bg-zinc-100/60 dark:bg-zinc-800/60">
+            {decodedData ? renderDecodedData(decodedData) : <p>Loading...</p>}
+          </Card>
         </article>
       </main>
-      <footer className="w-full prose lg:prose-xl prose-zinc dark:prose-invert fixed bottom-0">
-        <Button asChild variant="link">
-          <Link className="lg:no-underline" href="/">
-            👤 Get your e-id
-          </Link>
-        </Button>
-      </footer>
     </div>
   );
 }
