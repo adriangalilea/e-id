@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Github, HelpCircle, Menu, X } from "lucide-react";
+import { ExternalLink, Github, HelpCircle, Menu, X } from "lucide-react";
 import { useMediaQuery } from "@mantine/hooks";
 import { useState } from "react";
 
@@ -100,6 +100,7 @@ function ButtonGithub({ description = false }: { description?: boolean }) {
       >
         <Github size={16} strokeWidth={1} />
         {description && <span className="ml-0.5">Source code</span>}
+        <ExternalLink size={16} strokeWidth={1} className="ml-0.5" />
       </Link>
     </Button>
   );
