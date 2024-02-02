@@ -21,7 +21,7 @@ import {
   Hash,
   Send,
 } from "lucide-react";
-import { UserProfile1 } from "@/utils/model";
+import { UserProfile1, orderedKeys1 } from "@/utils/model";
 import { Separator } from "@/components/ui/separator";
 
 const keyToIconAndUrl: Record<
@@ -36,7 +36,7 @@ const keyToIconAndUrl: Record<
     icon: <Globe className="size-4" />,
     url: (value: string) => value,
   },
-  telegramLink: {
+  telegramHandle: {
     icon: <Send className="size-4" />,
     url: (value: string) => `https://t.me/${value}`,
   },
@@ -88,10 +88,33 @@ export default function Page({ params }: { params: { slug: string } }) {
         const textDecoder = new TextDecoder();
         const originalData = textDecoder.decode(decompressed);
 
-        console.log("Decoded data:", originalData);
-        // Parse the JSON string to an object
-        const dataObj = JSON.parse(originalData);
-        setDecodedData(dataObj);
+        const trimmedOriginalData = originalData.replace(/^"|"$/g, "");
+
+        const dataArray = trimmedOriginalData.split(";");
+
+        // Assuming dataArray is already populated with your data split by ";"
+        if (dataArray.length > 0 && dataArray[0] === "1") {
+          // Manually construct the UserProfile1 object from dataArray
+          const dataObj: UserProfile1 = {
+            version: "1", // Directly set, as we've verified the first element is "1"
+            name: dataArray[1] || "", // Ensuring a string is assigned; adjust based on your requirements
+            bio: dataArray[2] || undefined,
+            personalSite: dataArray[3] || undefined,
+            email: dataArray[4] || undefined,
+            telegramHandle: dataArray[5] || undefined,
+            twitterHandle: dataArray[6] || undefined,
+            instagramHandle: dataArray[7] || undefined,
+            facebookHandle: dataArray[8] || undefined,
+            linkedInHandle: dataArray[9] || undefined,
+            other: dataArray[10] || undefined,
+          };
+          console.log("Decoded Data:", dataObj);
+          // Now you can safely call setDecodedData with dataObj
+          setDecodedData(dataObj);
+        } else {
+          console.error("Invalid version number in decoded data");
+          setDecodedData(null);
+        }
       } catch (error) {
         console.error("Error decoding data:", error);
         setDecodedData(null);
@@ -109,21 +132,25 @@ export default function Page({ params }: { params: { slug: string } }) {
     // Dynamically render social links and other fields with icons
     const renderLinksWithIcons = Object.entries(decodedData)
       .map(([key, value]) => {
-        if (value && key !== "version" && keyToIconAndUrl[key]) {
+        console.log("Rendering", key, "with value", value);
+        if (
+          value &&
+          key !== "version" &&
+          key !== "other" &&
+          keyToIconAndUrl[key]
+        ) {
           const { icon, url } = keyToIconAndUrl[key];
-          if (key !== "other") {
-            // For all other keys, render as inline buttons
-            return (
-              <Button
-                key={key}
-                asChild
-                variant="outline"
-                className="size-12 rounded-full inline-flex"
-              >
-                <Link href={url(value)}>{icon}</Link>
-              </Button>
-            );
-          }
+          // For all other keys, render as inline buttons
+          return (
+            <Button
+              key={key}
+              asChild
+              variant="outline"
+              className="size-12 rounded-full inline-flex"
+            >
+              <Link href={url(value)}>{icon}</Link>
+            </Button>
+          );
         }
         return null;
       })
@@ -143,11 +170,8 @@ export default function Page({ params }: { params: { slug: string } }) {
             <CardDescription>{decodedData.bio}</CardDescription>
           )}
         </CardHeader>
-        <div className="p-8 pt-4">
-          <Separator />
-        </div>
 
-        <CardContent className="flex justify-around gap-4">
+        <CardContent className="flex justify-center gap-4">
           {renderLinksWithIcons}
         </CardContent>
         {decodedData.other && (
@@ -174,7 +198,11 @@ export default function Page({ params }: { params: { slug: string } }) {
     <main>
       <article className="mb-8 sm:mb-10 lg:mb-16 shadow rounded-lg prose lg:prose-xl prose-zinc dark:prose-invert antialiased flex flex-col gap-8 w-fit">
         <Card className="bg-zinc-50/90 sm:dark:bg-zinc-950/60 dark:bg-zinc-800 backdrop-blur-2xl transition-all ease-in-out duration-500">
-          {decodedData ? renderDecodedData(decodedData) : <p className="p-12">Loading...</p>}
+          {decodedData ? (
+            renderDecodedData(decodedData)
+          ) : (
+            <p className="p-12">Loading...</p>
+          )}
         </Card>
       </article>
     </main>

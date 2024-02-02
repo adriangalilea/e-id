@@ -1,7 +1,7 @@
 "use client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { userProfileSchema1, UserProfile1 } from "../utils/model";
+import { userProfileSchema1, UserProfile1, normalizeHandle } from "../utils/model";
 import { encodeData } from "../utils/dataTransform";
 import {
   Card,
@@ -30,23 +30,36 @@ export default function UserProfileForm() {
     resolver: zodResolver(userProfileSchema1),
     defaultValues: {
       version: "1",
-      name: "",
-      bio: "",
-      personalSite: "",
-      email: "",
-      telegramLink: "",
-      twitterHandle: "",
-      instagramHandle: "",
-      facebookHandle: "",
-      linkedInHandle: "",
-      other: "",
+      name: undefined,
+      bio: undefined,
+      personalSite: undefined,
+      email: undefined,
+      telegramHandle: undefined,
+      twitterHandle: undefined,
+      instagramHandle: undefined,
+      facebookHandle: undefined,
+      linkedInHandle: undefined,
+      other: undefined,
     },
   });
 
   async function onSubmit(values: UserProfile1) {
     try {
-      const encoded = await encodeData(values);
-      // console.log("Encoded Data:", encoded);
+      const sanitizedValues = {
+        ...values,
+        telegramHandle: values.telegramHandle
+          ? normalizeHandle(values.telegramHandle)
+          : undefined,
+        twitterHandle: values.twitterHandle
+          ? normalizeHandle(values.twitterHandle)
+          : undefined,
+        instagramHandle: values.instagramHandle
+          ? normalizeHandle(values.instagramHandle)
+          : undefined,
+        // Repeat for other handles as necessary
+      };
+      const encoded = await encodeData(sanitizedValues);
+      console.log("Encoded Data:", encoded);
       // redirect to the generated path
       window.location.href = `/${encoded}`;
     } catch (error) {
@@ -136,13 +149,13 @@ export default function UserProfileForm() {
             />
             <FormField
               control={form.control}
-              name="telegramLink"
+              name="telegramHandle"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Telegram</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="https://t.me/adriangalilea"
+                      placeholder="@adriangalilea"
                       {...field}
                     />
                   </FormControl>
