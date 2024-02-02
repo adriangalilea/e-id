@@ -5,7 +5,11 @@ e-ID is your digital business card.
 - **Interchangeable Domains** e-id.to, eid.to, and the visually unique emoji domain [👤️️.to](xn--mq8h.to) all point to your profile e-id.to/profile eid.to/profile [👤️️.to/profile](xn--mq8h.to/profile)
 - **Easy Setup**
 - **No data storage** Literally, we don't even use a database, your data is compressed and encoded which ends up being the url itself, try it out yourself and inspect the code if you wish, after extensively testing(2 hours and chatgpt) several compression and encoding methods, and arrived at the conclusion that base64-url and brotli.
-![telegram-cloud-photo-size-4-5899819325966110101-y](https://github.com/adriangalilea/e-id/assets/90320947/a06d37a0-54b9-4aec-ae14-a096bcac31f9)
+- **Progressive enhancing browsers that support emoji domain** Preserves the slug so it works without hiccups
+  - e-id.to and eid.to redirect to 👤️️️️.to in safari
+  - 👤.to redirects to e-id.to in anything else.
+
+
 
 ⚠️ This is a work in progress.
 
@@ -19,3 +23,7 @@ e-ID is your digital business card.
 - [ ] feat: premium claimable username
 - [ ] feat: premium analytics
 - [ ] feat: wishlist
+- [x] feat: progressive enhancing browsers that support emoji domain
+
+# Testing
+![telegram-cloud-photo-size-4-5899819325966110101-y](https://github.com/adriangalilea/e-id/assets/90320947/a06d37a0-54b9-4aec-ae14-a096bcac31f9)
