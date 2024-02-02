@@ -22,42 +22,41 @@ import {
   Send,
 } from "lucide-react";
 import { UserProfile1, orderedKeys1 } from "@/utils/model";
-import { Separator } from "@/components/ui/separator";
 
 const keyToIconAndUrl: Record<
   string,
   { icon: JSX.Element; url: (value: string) => string }
 > = {
   email: {
-    icon: <Mail className="size-4" />,
+    icon: <Mail strokeWidth={1} className="size-12 text-indigo-500" />,
     url: (value: string) => `mailto:${value}`,
   },
   personalSite: {
-    icon: <Globe className="size-4" />,
+    icon: <Globe strokeWidth={1} className="size-12 text-indigo-500"/>,
     url: (value: string) => value,
   },
   telegramHandle: {
-    icon: <Send className="size-4" />,
+    icon: <Send strokeWidth={1} className="size-12 text-indigo-500"/>,
     url: (value: string) => `https://t.me/${value}`,
   },
   twitterHandle: {
-    icon: <Twitter className="size-4" />,
+    icon: <Twitter strokeWidth={1} className="size-12 text-indigo-500"/>,
     url: (value: string) => `https://twitter.com/${value}`,
   },
   instagramHandle: {
-    icon: <Instagram className="size-4" />,
+    icon: <Instagram strokeWidth={1} className="size-12 text-indigo-500"/>,
     url: (value: string) => `https://instagram.com/${value}`,
   },
   facebookHandle: {
-    icon: <Facebook className="size-4" />,
+    icon: <Facebook strokeWidth={1} className="size-12 text-indigo-500"/>,
     url: (value: string) => `https://facebook.com/${value}`,
   },
   linkedInHandle: {
-    icon: <Linkedin className="size-4" />,
+    icon: <Linkedin strokeWidth={1} className="size-12 text-indigo-500"/>,
     url: (value: string) => `https://linkedin.com/in/${value}`,
   },
   other: {
-    icon: <Hash className="mr-2 h-4 w-4" />,
+    icon: <Hash className="size-12 text-indigo-500" />,
     url: (value: string) => value, // Assuming 'other' is an array of URLs or similar
   },
 };
@@ -146,7 +145,7 @@ export default function Page({ params }: { params: { slug: string } }) {
               key={key}
               asChild
               variant="outline"
-              className="size-12 rounded-full inline-flex"
+              className="size-14 rounded-full inline-flex backdrop-blur-sm bg-white/40 border-indigo-100/40 hover:bg-indigo-200/80 dark:bg-black/40 dark:border-indigo-950/40 dark:hover:bg-indigo-950/80"
             >
               <Link href={url(value)}>{icon}</Link>
             </Button>
@@ -160,7 +159,7 @@ export default function Page({ params }: { params: { slug: string } }) {
       <>
         <CardHeader>
           {decodedData.name && (
-            <CardTitle className="!mb-8 text-balance flex items-center">
+            <CardTitle className="!mb-8 text-balance flex items-center opacity-90">
               <span className="inline-block mr-4 text-[0.76em]">👤</span>
               {decodedData.name.charAt(0).toUpperCase() +
                 decodedData.name.slice(1)}
@@ -196,8 +195,8 @@ export default function Page({ params }: { params: { slug: string } }) {
 
   return (
     <main>
-      <article className="mb-8 sm:mb-10 lg:mb-16 shadow rounded-lg prose lg:prose-xl prose-zinc dark:prose-invert antialiased flex flex-col gap-8 w-fit">
-        <Card className="bg-zinc-50/90 sm:dark:bg-zinc-950/60 dark:bg-zinc-800 backdrop-blur-2xl transition-all ease-in-out duration-500">
+      <article className="mb-8 sm:mb-10 lg:mb-16 shadow-sm rounded-lg prose lg:prose-xl prose-zinc dark:prose-invert antialiased flex flex-col gap-8 w-fit">
+        <Card className="bg-white/40 border border-indigo-200/80 dark:border-indigo-900/30 dark:hover:border-indigo-900/40 sm:dark:bg-black/40 dark:bg-black/60 backdrop-blur-sm transition-all ease-in-out duration-500">
           {decodedData ? (
             renderDecodedData(decodedData)
           ) : (
