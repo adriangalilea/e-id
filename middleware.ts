@@ -41,7 +41,8 @@ export function middleware(request: NextRequest) {
     console.log("targetUrl is the same as the current");
     return;
   }
-
+  console.log("targetDomain", targetDomain);
+  console.log("hostHeaders", hostHeaders);
   console.log("targetUrl", targetUrl);
   return NextResponse.rewrite(new URL(pathname, targetUrl));
 }
