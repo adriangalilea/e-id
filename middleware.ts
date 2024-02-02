@@ -4,12 +4,17 @@ import type { NextRequest } from "next/server";
 export function middleware(request: NextRequest) {
   const hostHeaders = request.headers.get("host") ?? "";
 
-   const localhost = "localhost:3000";
+  const localhost = "localhost:3000";
 
   // list of domains
   const shortDomain = "eid.to";
   const mainDomain = "e-id.to";
   const emojiDomain = "👤.to";
+
+  // list of domains with www
+  const shortDomainWWW = `www.${shortDomain}`;
+  const mainDomainWWW = `www.${mainDomain}`;
+  const emojiDomainWWW = `www.${emojiDomain}`;
 
   // list https url's
   const shortHttps = `https://${shortDomain}`;
@@ -35,12 +40,14 @@ export function middleware(request: NextRequest) {
 
   const targetUrl = useEmojiDomain ? emojiHttps : mainHttps;
   const targetDomain = useEmojiDomain ? emojiDomain : mainDomain;
+  const targetDomainWWW = useEmojiDomain ? emojiDomainWWW : mainDomainWWW;
 
   // rewrite only if targetUrl is not the same as the current
-  if (targetDomain === hostHeaders) {
+  if (targetDomain === hostHeaders || targetDomainWWW === hostHeaders) {
     console.log("targetUrl is the same as the current");
     return;
   }
+  
   console.log("targetDomain", targetDomain);
   console.log("hostHeaders", hostHeaders);
   console.log("targetUrl", targetUrl);
