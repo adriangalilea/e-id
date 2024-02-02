@@ -5,8 +5,8 @@ const UserProfileForm = dynamic(() => import("../components/Form"), {
 
 export default function Home() {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className="z-10 max-w-5xl w-full items-center justify-between font-mono text-sm lg:flex">
+    <main className="flex min-h-screen flex-col items-center justify-between p-4 sm:py-5 sm:px-10 lg:px-16 lg:py-8">
+      <div className="z-10 max-w-5xl w-full items-center justify-between font-mono text-sm sm:flex">
         <UserProfileForm />
       </div>
     </main>
