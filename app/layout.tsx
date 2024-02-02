@@ -21,7 +21,7 @@ export default function RootLayout({
       <body
         className={cn(
           inter.className,
-          "min-h-screen p-4 sm:py-5 sm:px-10 lg:px-16 lg:py-8 bg-[conic-gradient(at_bottom_left,_var(--tw-gradient-stops))] from-zinc-400 via-zinc-300 to-zinc-100 dark:from-zinc-700 dark:via-zinc-500 sm:dark:from-zinc-800 sm:dark:via-zinc-700 to-zinc-100 flex justify-center items-center"
+          "antialised min-h-screen p-4 sm:py-5 sm:px-10 lg:px-16 lg:py-8 bg-[conic-gradient(at_bottom_left,_var(--tw-gradient-stops))] from-zinc-400 via-zinc-300 to-zinc-100 dark:from-zinc-700 dark:via-zinc-500 sm:dark:from-zinc-800 sm:dark:via-zinc-700 to-zinc-100 flex justify-center items-center"
         )}
       >
         {children}
