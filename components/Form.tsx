@@ -31,7 +31,7 @@ export default function UserProfileForm() {
       instagramHandle: "",
       facebookHandle: "",
       linkedInHandle: "",
-      other: [],
+      other: "",
     },
   });
 
