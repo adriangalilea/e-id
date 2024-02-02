@@ -9,7 +9,7 @@ export default function Footer() {
         <Button asChild variant="ghost" className="rounded-none">
           <Link
             className="lg:decoration-transparent hover:decoration-inherit opacity-80 hover:opacity-100 transition-all duration-500"
-            href="https://www.e-id.to/GyUBABwHbqxsyimxOWtuqT6Xh2Bo0yJmQzrxGA_bT-aaqcPSFyJv2xjbuVUEdUmdoPiN2aponNZsn2xzBCIGs57C2xeWf_wHWAs2wfYMZ9jB6lVEt3fYZbS3qy1pnK_Lp-Axp8ZwL4xXkRr8zR-5eBg1TFWVwVbSFlzRntKPjyiyTtI9vskUQg3pmBc7rSA4A5t9XoQO"
+            href="/"
           >
             👤 Get your e-id
           </Link>
@@ -17,7 +17,7 @@ export default function Footer() {
         <Button asChild variant="ghost" className="rounded-none">
           <Link
             className="lg:decoration-transparent hover:decoration-inherit opacity-80 hover:opacity-100 transition-all duration-500"
-            href="/"
+            href="https://www.e-id.to/GyUBABwHbqxsyimxOWtuqT6Xh2Bo0yJmQzrxGA_bT-aaqcPSFyJv2xjbuVUEdUmdoPiN2aponNZsn2xzBCIGs57C2xeWf_wHWAs2wfYMZ9jB6lVEt3fYZbS3qy1pnK_Lp-Axp8ZwL4xXkRr8zR-5eBg1TFWVwVbSFlzRntKPjyiyTtI9vskUQg3pmBc7rSA4A5t9XoQO"
           >
             👤 Adrian Galilea
           </Link>
