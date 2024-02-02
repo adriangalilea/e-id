@@ -104,11 +104,8 @@ export default function Page({ params }: { params: { slug: string } }) {
           if (key === "other" && value !== "") {
             // For "other", render the button to display as a block (own line)
             return (
-              <div className="w-full">
-                {" "}
-                {/* Wrap in a div with w-full to ensure it takes up its own line */}
+              <div className="w-full" key={key}>
                 <Button
-                  key={key}
                   asChild
                   variant="outline"
                   className="size-12 w-full block flex mt-8" // Add `block` to ensure it displays as a block-level element
