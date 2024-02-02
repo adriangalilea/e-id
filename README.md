@@ -17,15 +17,15 @@ e-ID is your digital business card.
 - [ ] feat: encode profile image
 - [ ] chore: add testing write-up and code
 - [ ] chore: test requested [HS256](https://pypi.org/project/python-jose/)
-- [x] style: responsive
-- [ ] style: generation UI
-- [x] style: [slug] page
-- [ ] feat: premium claimable username
-- [ ] feat: premium analytics
+- [ ] feat: improve faq
 - [ ] feat: wishlist
+- [ ] feat: premium analytics
+- [ ] feat: premium claimable username
+- [ ] style: generation UI
+- [x] style: responsive
+- [x] style: [slug] page
 - [x] feat: progressive enhancing browsers that support emoji domain
 - [x] feat: faq section
-- [ ] feat: improve faq
 - [x] feat: array data model
 
 # Testing
