@@ -47,7 +47,10 @@ export default function UserProfileForm() {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+      <form
+        onSubmit={form.handleSubmit(onSubmit)}
+        className="space-y-8 prose lg:prose-xl prose-zinc dark:prose-invert antialiased"
+      >
         <FormField
           control={form.control}
           name="name"
