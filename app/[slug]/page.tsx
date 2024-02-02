@@ -96,6 +96,8 @@ export default function Page({ params }: { params: { slug: string } }) {
   const renderDecodedData = (decodedData: UserProfile1) => {
     if (!decodedData) return <p>No valid data to display.</p>;
 
+    document.title = `${decodedData.name}`;
+
     // Dynamically render social links and other fields with icons
     const renderLinksWithIcons = Object.entries(decodedData)
       .map(([key, value]) => {
