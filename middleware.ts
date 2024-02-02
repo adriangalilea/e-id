@@ -34,9 +34,10 @@ export function middleware(request: NextRequest) {
     !/CriOS/i.test(userAgent);
 
   const targetUrl = useEmojiDomain ? emojiHttps : mainHttps;
+  const targetDomain = useEmojiDomain ? emojiDomain : mainDomain;
 
   // rewrite only if targetUrl is not the same as the current
-  if (targetUrl === hostHeaders) {
+  if (targetDomain === hostHeaders) {
     console.log("targetUrl is the same as the current");
     return;
   }
