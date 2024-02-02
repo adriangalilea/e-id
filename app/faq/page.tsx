@@ -28,23 +28,23 @@ export default function Faq() {
         <CardContent>
           <Accordion type="single" collapsible className="w-full">
             <AccordionItem value="item-1">
-              <AccordionTrigger>What is e-id?</AccordionTrigger>
+              <AccordionTrigger>What is e-ID?</AccordionTrigger>
               <AccordionContent>
-                e-id is a digital business card that allows you to share all
+                e-ID is a digital business card that allows you to share all
                 your social links and contact information in one place.
               </AccordionContent>
             </AccordionItem>
             <AccordionItem value="item-2">
-              <AccordionTrigger>How do I get an e-id?</AccordionTrigger>
+              <AccordionTrigger>How do I get an e-ID?</AccordionTrigger>
               <AccordionContent>
-                Visit our homepage and fill-in the form to get your e-id, no
+                Visit our homepage and fill-in the form to get your e-ID, no
                 sign-up required.
               </AccordionContent>
             </AccordionItem>
             <AccordionItem value="item-3">
-              <AccordionTrigger>Is e-id safe and secure?</AccordionTrigger>
+              <AccordionTrigger>Is e-ID safe and secure?</AccordionTrigger>
               <AccordionContent>
-                Yes, e-id is safe and secure. We literally don't store any of
+                Yes, e-ID is safe and secure. We literally don't store any of
                 your data. All the data is encoded in the URL and is only
                 accessible by the person who has the link.
               </AccordionContent>
