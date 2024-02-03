@@ -1,8 +1,12 @@
 "use client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { userProfileSchema1, UserProfile1, normalizeHandle } from "../utils/model";
-import { encodeData } from "../utils/dataTransform";
+import {
+  userProfileSchema1,
+  UserProfile1,
+  normalizeHandle,
+} from "../lib/codec/model";
+import { encodeData } from "../lib/codec/codec";
 import {
   Card,
   CardContent,
@@ -154,10 +158,7 @@ export default function UserProfileForm() {
                 <FormItem>
                   <FormLabel>Telegram</FormLabel>
                   <FormControl>
-                    <Input
-                      placeholder="@adriangalilea"
-                      {...field}
-                    />
+                    <Input placeholder="@adriangalilea" {...field} />
                   </FormControl>
                   <FormDescription className="sr-only">
                     This is your public Telegram link. It will be displayed on
