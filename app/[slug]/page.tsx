@@ -145,7 +145,7 @@ export default function Page({ params }: { params: { slug: string } }) {
               key={key}
               asChild
               variant="outline"
-              className="size-14 rounded-full inline-flex backdrop-blur-sm bg-white/40 border-indigo-100/40 hover:bg-indigo-200/80 dark:bg-slate-950/80 dark:border-indigo-900/40 dark:hover:bg-indigo-950/80"
+              className="size-14 rounded-full inline-flex backdrop-blur-sm bg-indigo-50/80 border-indigo-300/40 hover:bg-indigo-200/80 dark:bg-slate-950/80 dark:border-indigo-900/40 dark:hover:bg-indigo-950/80"
             >
               <Link href={url(value)}>{icon}</Link>
             </Button>
