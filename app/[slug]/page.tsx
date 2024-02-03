@@ -145,7 +145,7 @@ export default function Page({ params }: { params: { slug: string } }) {
               key={key}
               asChild
               variant="outline"
-              className="size-14 rounded-full inline-flex backdrop-blur-sm bg-white/40 border-indigo-100/40 hover:bg-indigo-200/80 dark:bg-black/40 dark:border-indigo-950/40 dark:hover:bg-indigo-950/80"
+              className="size-14 rounded-full inline-flex backdrop-blur-sm bg-white/40 border-indigo-100/40 hover:bg-indigo-200/80 dark:bg-slate-950/80 dark:border-indigo-900/40 dark:hover:bg-indigo-950/80"
             >
               <Link href={url(value)}>{icon}</Link>
             </Button>
@@ -195,8 +195,8 @@ export default function Page({ params }: { params: { slug: string } }) {
 
   return (
     <main>
-      <article className="mb-8 sm:mb-10 lg:mb-16 shadow-sm rounded-lg prose lg:prose-xl prose-zinc dark:prose-invert antialiased flex flex-col gap-8 w-fit">
-        <Card className="bg-white/40 border border-indigo-200/80 dark:border-indigo-900/30 dark:hover:border-indigo-900/40 sm:dark:bg-black/40 dark:bg-black/60 backdrop-blur-sm transition-all ease-in-out duration-500">
+      <article className="mb-8 sm:mb-10 lg:mb-16 shadow-lg rounded-lg prose lg:prose-xl prose-zinc dark:prose-invert antialiased flex flex-col gap-8 w-fit">
+        <Card className="bg-white/40 border border-indigo-200/80 dark:border-indigo-900/20 dark:hover:border-indigo-900/40 sm:dark:bg-slate-950/60 dark:bg-slate-950/40 backdrop-blur-sm transition-all ease-in-out duration-500">
           {decodedData ? (
             renderDecodedData(decodedData)
           ) : (
