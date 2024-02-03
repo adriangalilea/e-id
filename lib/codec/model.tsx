@@ -32,7 +32,7 @@ export const userProfileSchema1 = z.object({
   other: z.string().url().or(z.literal("")).optional(),
 });
 
+export type UserProfile1 = z.infer<typeof userProfileSchema1>;
+
 // handling "@" prefix in handles and using a custom resolver for validation
 export const normalizeHandle = (handle: string) => handle.replace(/^@/, "");
-
-export type UserProfile1 = z.infer<typeof userProfileSchema1>;
