@@ -26,7 +26,6 @@ export function middleware(request: NextRequest) {
 
   // if the request is localhost, do nothing
   if (hostHeaders === localhost) {
-    console.log("request url is localhost");
     return;
   }
 
