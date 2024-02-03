@@ -6,5 +6,5 @@ const EID = dynamic(() => import("@/components/e-id"), {
 });
 
 export default function Page({ params }: { params: { slug: string } }) {
-  return <EID params={params}/>;
+  return <EID slug={params.slug}/>;
 }

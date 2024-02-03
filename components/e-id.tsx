@@ -14,25 +14,22 @@ import { keyToIconAndUrl } from "@/lib/codec/buttons";
 import { UserProfile1 } from "@/lib/codec/model";
 import { decodeData } from "@/lib/codec/codec";
 
-export default function EID({ params }: { params: { slug: string } }) {
+export default function EID({ slug }: { slug: string }) {
   const [decodedData, setDecodedData] = useState<UserProfile1 | null>(null);
 
   useEffect(() => {
-    // This function is defined inside useEffect to ensure it's not called outside the client-side lifecycle
-    const fetchData = async () => {
+    (async () => {
       try {
-        console.log("Fetching data for slug:", params.slug);
-        const data = await decodeData(params.slug);
+        console.log("Fetching data for slug:", slug);
+        const data = await decodeData(slug);
         console.log("Decoded Data:", data);
         setDecodedData(data); // Update state with the decoded data
       } catch (error) {
         console.error("Error decoding data:", error);
         setDecodedData(null); // Handle error by resetting the state
       }
-    };
-
-    fetchData();
-  }, [params.slug]);
+    })();
+  }, [slug]);
 
   const renderDecodedData = (decodedData: UserProfile1) => {
     if (!decodedData) return <p>No valid data to display.</p>;
@@ -57,7 +54,13 @@ export default function EID({ params }: { params: { slug: string } }) {
               variant="outline"
               className="group size-14 rounded-full inline-flex transition-all duration-500 ease-in-out backdrop-blur-sm bg-indigo-50/80 border-indigo-300/40 hover:bg-indigo-200/80 dark:bg-slate-700/80 dark:border-indigo-900/30 dark:hover:bg-indigo-800/50"
             >
-              <Link href={url(value)}>{icon}</Link>
+              <Link
+                href={url(value)}
+                className="size-12 text-indigo-500  group-hover:text-indigo-400 dark:group-hover:text-indigo-400
+transition-all ease-in-out duration-500"
+              >
+                {icon}
+              </Link>
             </Button>
           );
         }
