@@ -32,7 +32,7 @@ const keyToIconAndUrl: Record<
       <Mail
         strokeWidth={1}
         className="size-12 text-indigo-500  group-hover:text-indigo-400 dark:group-hover:text-indigo-400
-group-hover:text-indigo-600 transition-all ease-in-out duration-500"
+transition-all ease-in-out duration-500"
       />
     ),
     url: (value: string) => `mailto:${value}`,
@@ -41,8 +41,7 @@ group-hover:text-indigo-600 transition-all ease-in-out duration-500"
     icon: (
       <Globe
         strokeWidth={1}
-        className="size-12 text-indigo-500  group-hover:text-indigo-400 dark:group-hover:text-indigo-400
-group-hover:text-indigo-600 transition-all ease-in-out duration-500"
+        className="size-12 text-indigo-500  group-hover:text-indigo-400 dark:group-hover:text-indigo-400 transition-all ease-in-out duration-500"
       />
     ),
     url: (value: string) => value,
@@ -51,8 +50,8 @@ group-hover:text-indigo-600 transition-all ease-in-out duration-500"
     icon: (
       <Send
         strokeWidth={1}
-        className="size-12 text-indigo-500/80 group-hover:text-indigo-400 dark:group-hover:text-indigo-400
-group-hover:text-indigo-600 transition-all ease-in-out duration-500"
+        className="size-12 text-indigo-500 group-hover:text-indigo-400 dark:group-hover:text-indigo-400
+transition-all ease-in-out duration-500"
       />
     ),
     url: (value: string) => `https://t.me/${value}`,
@@ -62,7 +61,7 @@ group-hover:text-indigo-600 transition-all ease-in-out duration-500"
       <Twitter
         strokeWidth={1}
         className="size-12 text-indigo-500  group-hover:text-indigo-400 dark:group-hover:text-indigo-400
-group-hover:text-indigo-600 transition-all ease-in-out duration-500"
+transition-all ease-in-out duration-500"
       />
     ),
     url: (value: string) => `https://twitter.com/${value}`,
@@ -72,7 +71,7 @@ group-hover:text-indigo-600 transition-all ease-in-out duration-500"
       <Instagram
         strokeWidth={1}
         className="size-12 text-indigo-500  group-hover:text-indigo-400 dark:group-hover:text-indigo-400
-group-hover:text-indigo-600 transition-all ease-in-out duration-500"
+transition-all ease-in-out duration-500"
       />
     ),
     url: (value: string) => `https://instagram.com/${value}`,
@@ -82,7 +81,7 @@ group-hover:text-indigo-600 transition-all ease-in-out duration-500"
       <Facebook
         strokeWidth={1}
         className="size-12 text-indigo-500  group-hover:text-indigo-400 dark:group-hover:text-indigo-400
-group-hover:text-indigo-600 transition-all ease-in-out duration-500"
+transition-all ease-in-out duration-500"
       />
     ),
     url: (value: string) => `https://facebook.com/${value}`,
@@ -92,7 +91,7 @@ group-hover:text-indigo-600 transition-all ease-in-out duration-500"
       <Linkedin
         strokeWidth={1}
         className="size-12 text-indigo-500  group-hover:text-indigo-400 dark:group-hover:text-indigo-400
-group-hover:text-indigo-600 transition-all ease-in-out duration-500"
+transition-all ease-in-out duration-500"
       />
     ),
     url: (value: string) => `https://linkedin.com/in/${value}`,
@@ -101,7 +100,7 @@ group-hover:text-indigo-600 transition-all ease-in-out duration-500"
     icon: (
       <Hash
         className="size-12 text-indigo-500  group-hover:text-indigo-400 dark:group-hover:text-indigo-400
-group-hover:text-indigo-600 transition-all ease-in-out duration-500"
+transition-all ease-in-out duration-500"
       />
     ),
     url: (value: string) => value, // Assuming 'other' is an array of URLs or similar
