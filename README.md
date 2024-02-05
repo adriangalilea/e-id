@@ -14,13 +14,17 @@ e-ID is your digital business card.
 ⚠️ This is a work in progress.
 
 # TO-DO
-- [ ] feat: encode profile image
+- [ ] style: generation UI
 - [ ] chore: add testing write-up and code
 - [ ] feat: improve faq
+- [ ] style: improve dark theme contrast
+- [ ] style: coherent card styles
+- [ ] feat: reddit/blog post
+- [ ] feat: remove the notion of brotli client side to clean-up the code since it does not offer much.
+- [ ] feat: encode profile image (would require image hosting because encoding it would produce a massive slug)
 - [ ] feat: wishlist
 - [ ] feat: premium analytics
 - [ ] feat: premium claimable username
-- [ ] style: generation UI
 - [x] style: responsive
 - [x] style: [slug] page
 - [x] feat: progressive enhancing browsers that support emoji domain
