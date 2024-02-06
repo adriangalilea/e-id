@@ -1,6 +1,6 @@
 e-ID is your digital business card.
 
-### ⭐ Features
+# ⭐ Features
 - **Minimalist Design**
 - **Interchangeable Domains** e-id.to, eid.to, and the visually unique emoji domain [👤️️.to](xn--mq8h.to) all point to your profile e-id.to/profile eid.to/profile [👤️️.to/profile](xn--mq8h.to/profile)
 - **Easy Setup**
@@ -13,7 +13,7 @@ e-ID is your digital business card.
 
 ⚠️ This is a work in progress.
 
-# TO-DO
+# 📝 TO-DO
 - [ ] style: generation UI
 - [ ] chore: add testing write-up and code
 - [ ] feat: improve faq
