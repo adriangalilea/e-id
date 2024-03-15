@@ -5,8 +5,8 @@ import {
   userProfileSchema1,
   UserProfile1,
   normalizeHandle,
-} from "../lib/codec/model";
-import { encodeData } from "../lib/codec/codec";
+} from "./codec/model";
+import { encodeData } from "./codec/codec";
 import {
   Card,
   CardContent,
@@ -27,7 +27,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "./ui/textarea";
+import { Textarea } from "../../components/ui/textarea";
 
 export default function UserProfileForm() {
   const form = useForm<UserProfile1>({

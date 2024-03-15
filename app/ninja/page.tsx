@@ -1,5 +1,5 @@
 import dynamic from "next/dynamic";
-const UserProfileForm = dynamic(() => import("../components/Form"), {
+const UserProfileForm = dynamic(() => import("./Form"), {
   ssr: false,
 });
 

@@ -1,7 +1,7 @@
 
 
 import dynamic from "next/dynamic";
-const EID = dynamic(() => import("@/components/e-id"), {
+const EID = dynamic(() => import("@/app/ninja/e-id"), {
   ssr: false,
 });
 
