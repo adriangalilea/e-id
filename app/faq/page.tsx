@@ -40,29 +40,6 @@ export default function Faq() {
                 </p>
               </AccordionContent>
             </AccordionItem>
-            <AccordionItem value="item-2">
-              <AccordionTrigger>
-                <h2>How do I get an e-ID?</h2>
-              </AccordionTrigger>
-              <AccordionContent>
-                <p className="prose prose-zinc dark:prose-invert w-full">
-                  Visit our homepage and fill-in the form to get your e-ID, no
-                  sign-up required.
-                </p>
-              </AccordionContent>
-            </AccordionItem>
-            <AccordionItem value="item-3">
-              <AccordionTrigger>
-                <h2>Is e-ID safe and secure?</h2>
-              </AccordionTrigger>
-              <AccordionContent>
-                <p className="prose prose-zinc dark:prose-invert w-full">
-                  Yes, e-ID is safe and secure. We literally don&apos;t store
-                  any of your data. All the data is encoded in the URL and is
-                  only accessible by the person who has the link.
-                </p>
-              </AccordionContent>
-            </AccordionItem>
           </Accordion>
         </CardContent>
       </Card>
