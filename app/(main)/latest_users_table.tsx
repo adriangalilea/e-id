@@ -5,7 +5,6 @@ import {
   TableBody,
   TableCaption,
   TableCell,
-  TableFooter,
   TableHead,
   TableHeader,
   TableRow,
@@ -13,15 +12,12 @@ import {
 import { SelectUser } from "@/db/schema";
 import { ReactCountryFlag } from "react-country-flag";
 import HumanTime from "@/components/human_date";
-import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
 export function LatestUsersTable({
   users,
-  createRandomUser,
 }: {
   users: SelectUser[];
-  createRandomUser: any;
 }) {
   return (
     <Table className="w-fill">
@@ -66,16 +62,6 @@ export function LatestUsersTable({
           </TableRow>
         ))}
       </TableBody>
-      <TableFooter>
-        <TableRow>
-          <TableCell colSpan={3}>
-            <form action={createRandomUser}>
-              <Button type="submit">Add random user</Button>
-            </form>
-          </TableCell>
-          <TableCell>____</TableCell>
-        </TableRow>
-      </TableFooter>
     </Table>
   );
 }

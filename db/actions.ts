@@ -27,16 +27,21 @@ export async function createUser(
   return created_user[0];
 }
 
-export async function createRandomUser(): Promise<SelectUser> {
-  let created_user = await createUser(
+type FormState = {
+  message: string;
+};
+
+export async function createRandomUser(prevState: FormState, data: FormData) {
+  await createUser(
     faker.person.fullName(),
     faker.internet.userName(),
     faker.lorem.sentence(),
     faker.location.countryCode()
   );
   revalidatePath("/");
-  // redirect("/")
-  return created_user;
+  return {
+    message: "Form data processed",
+  };
 }
 
 export async function getUsers(): Promise<SelectUser[]> {
