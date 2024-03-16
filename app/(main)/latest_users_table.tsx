@@ -29,7 +29,7 @@ export function LatestUsersTable({ users }: { users: SelectUser[] }) {
       <TableBody>
         {users.map((user) => (
           <TableRow key={user.id}>
-            <TableCell className="text-center">
+            <TableCell >
               <ReactCountryFlag
                 svg
                 countryCode={user.country_code}
@@ -46,8 +46,7 @@ export function LatestUsersTable({ users }: { users: SelectUser[] }) {
                 href={`/${user.id}`}
                 className="no-underline hover:underline"
               >
-                {user.name}{" "}
-                <span className="font-light opacity-80">@{user.username}</span>
+                {user.name}
               </Link>
             </TableCell>
             <TableCell className="prose dark:prose-invert prose-zinc antialiased text-sm">
