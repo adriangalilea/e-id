@@ -15,38 +15,21 @@ import HumanTime from "@/components/human_date";
 import Link from "next/link";
 import { getName } from "country-list";
 
-export function LatestUsersTable({
-  users,
-}: {
-  users: SelectUser[];
-}) {
+export function LatestUsersTable({ users }: { users: SelectUser[] }) {
   return (
     <Table className="w-fill">
-      <TableCaption>A list of the latest users.</TableCaption>
+      <TableCaption>latest sign-ups</TableCaption>
       <TableHeader>
         <TableRow>
+          <TableHead>country</TableHead>
           <TableHead>user</TableHead>
-          <TableHead>Bio</TableHead>
-          <TableHead>Country</TableHead>
-          <TableHead>Time</TableHead>
+          <TableHead>time</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
         {users.map((user) => (
           <TableRow key={user.id}>
-            <TableCell className="prose dark:prose-invert prose-zinc antialiased text-sm">
-              <Link
-                href={`/${user.id}`}
-                className="no-underline hover:underline"
-              >
-                {user.name}{" "}
-                <span className="font-light opacity-80">@{user.username}</span>
-              </Link>
-            </TableCell>
-            <TableCell className="prose dark:prose-invert prose-zinc antialiased text-sm">
-              {user.bio}
-            </TableCell>
-            <TableCell>
+            <TableCell className="text-center">
               <ReactCountryFlag
                 svg
                 countryCode={user.country_code}
@@ -57,6 +40,15 @@ export function LatestUsersTable({
                   height: "1.5em",
                 }}
               />
+            </TableCell>
+            <TableCell className="prose dark:prose-invert prose-zinc antialiased text-sm">
+              <Link
+                href={`/${user.id}`}
+                className="no-underline hover:underline"
+              >
+                {user.name}{" "}
+                <span className="font-light opacity-80">@{user.username}</span>
+              </Link>
             </TableCell>
             <TableCell className="prose dark:prose-invert prose-zinc antialiased text-sm">
               <HumanTime date={user.created_at} />
