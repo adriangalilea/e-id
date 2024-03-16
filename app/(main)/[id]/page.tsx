@@ -57,6 +57,7 @@ export default async function Page({ params }: { params: { id: string } }) {
                 username={commentAndCommentator.users.username}
                 timestamp={commentAndCommentator.comments?.created_at!}
                 content={commentAndCommentator.comments?.body!}
+                user_id={commentAndCommentator.users.id}
               />
             </div>
           ))}
