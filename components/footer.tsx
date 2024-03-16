@@ -113,7 +113,7 @@ function ButtonFAQ({ description = false }: { description?: boolean }) {
   return (
     <Button asChild variant="ghost" className="rounded-none">
       <Link
-        className="lg:decoration-transparent hover:decoration-inherit opacity-80 hover:opacity-100 transition-all duration-500 font-light antialiased"
+        className="lg:decoration-transparent hover:decoration-inherit hover:opacity-100 transition-all duration-500 font-light antialiased"
         href="/faq"
       >
         <HelpCircle size={16} strokeWidth={1} />
