@@ -10,7 +10,6 @@ interface CommentProps {
 
 export default function Comment(props: CommentProps) {
   const { profilePicture, username, timestamp, content } = props;
-  const dateObject = new Date(timestamp);
 
   return (
     <div className="flex items-center gap-2">
@@ -21,7 +20,7 @@ export default function Comment(props: CommentProps) {
       <article className="flex items-start flex-col prose dark:prose-invert antialiased prose-zinc">
         <header className="flex items-center gap-2">
           <h4 className="flex items-center !mt-0 !mb-0">{username}</h4>
-          <HumanTime date={dateObject} />
+          <HumanTime date={timestamp} />
         </header>
         <p className="flex !mt-0">{content}</p>
       </article>
