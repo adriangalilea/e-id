@@ -57,7 +57,7 @@ export function LatestUsersTable({
               />
             </TableCell>
             <TableCell className="prose dark:prose-invert prose-zinc antialiased text-sm">
-              <HumanTime date={new Date(user.created_at)} />
+              <HumanTime date={user.created_at} />
             </TableCell>
           </TableRow>
         ))}

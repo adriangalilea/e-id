@@ -1,10 +1,11 @@
+"use client";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
 import LocalizedFormat from "dayjs/plugin/localizedFormat";
 
-// Extend dayjs with the plugins
+// Extend dayjs with the necessary plugins
 dayjs.extend(LocalizedFormat);
 dayjs.extend(relativeTime);
 dayjs.extend(utc);
@@ -14,20 +15,24 @@ export default async function HumanTime({
   date,
   pretext = "",
 }: {
-  date: Date;
+  date: string;
   pretext?: string;
 }) {
-  const now = dayjs();
-  const dateDayjs = dayjs(date);
-  const isToday = dateDayjs.isSame(now, "day");
-  const isoString = dateDayjs.toISOString();
-  const localeString = dateDayjs.format("LLLL");
+  const currentUserTimezone = dayjs.tz.guess();
+  const dateLocal = dayjs.utc(date).tz(currentUserTimezone);
+  const nowLocal = dayjs().tz(currentUserTimezone);
+
+  const isToday = dateLocal.isSame(nowLocal, "day");
+  const isoString = dateLocal.toISOString();
+  const localeString = dateLocal.format("LLLL");
 
   const displayPretext = pretext ? `${pretext} ` : "";
 
+  // Use the local time for accurate "from now" calculations
   const formatBasedOnDay = isToday
-    ? dateDayjs.fromNow()
-    : dateDayjs.format("MMM D");
+    ? dateLocal.from(nowLocal)
+    : dateLocal.format("MMM D");
+
   return (
     <time
       dateTime={isoString}
