@@ -26,8 +26,8 @@ export default function Footer() {
       className={cn(
         open
           ? "opacity-0 cursor-none"
-          : "bg-zinc-50/50 dark:bg-zinc-950/50 backdrop-blur-2xl",
-        "fixed w-screen bottom-0 text-zinc-500 border-t border-indigo-50/40 dark:border-indigo-950/50 shadow-xl "
+          : "bg-zinc-50/60 dark:bg-zinc-950/60 backdrop-blur-2xl",
+        "fixed w-screen bg-white/60 dark:bg-black/60 bottom-0 text-zinc-500 border-t-[0.1px] border-black/15 dark:border-white/15 shadow-2xl "
       )}
     >
       {isMobile && (
