@@ -10,9 +10,9 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import Link from "next/link";
-import { keyToIconAndUrl } from "@/app/ninja/codec/buttons";
-import { UserProfile1 } from "@/app/ninja/codec/model";
-import { decodeData } from "@/app/ninja/codec/codec";
+import { keyToIconAndUrl } from "@/app/(ninja)/ninja/codec/buttons";
+import { UserProfile1 } from "@/app/(ninja)/ninja/codec/model";
+import { decodeData } from "@/app/(ninja)/ninja/codec/codec";
 
 export default function EID({ slug }: { slug: string }) {
   const [decodedData, setDecodedData] = useState<UserProfile1 | null>(null);
