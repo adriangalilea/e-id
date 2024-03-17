@@ -10,10 +10,9 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { SelectUser } from "@/db/schema";
-import { ReactCountryFlag } from "react-country-flag";
 import HumanTime from "@/components/human_date";
 import Link from "next/link";
-import { getName } from "country-list";
+import Flag from "@/components/flag";
 
 export function LatestUsersTable({ users }: { users: SelectUser[] }) {
   return (
@@ -30,16 +29,7 @@ export function LatestUsersTable({ users }: { users: SelectUser[] }) {
         {users.map((user) => (
           <TableRow key={user.id}>
             <TableCell >
-              <ReactCountryFlag
-                svg
-                countryCode={user.country_code}
-                title={getName(user.country_code)}
-                aria-label={`${getName(user.country_code)} country flag`}
-                style={{
-                  width: "1.5em",
-                  height: "1.5em",
-                }}
-              />
+              <Flag country={user.country_code} />
             </TableCell>
             <TableCell className="prose dark:prose-invert prose-zinc antialiased text-sm">
               <Link
