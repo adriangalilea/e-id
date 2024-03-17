@@ -2,7 +2,7 @@
 
 e-ID is your digital dynamic business card.
 
-A constant pointer to store your ever changing web presence and links.
+A constant pointer to your ever changing web presence.
 
 # ⭐ Features
 - Emoji domain to standout.
