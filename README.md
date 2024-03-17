@@ -1,6 +1,6 @@
 ⚠️ WIP
 
-e-ID is your digital dynamic business card.
+e-ID is your dynamic digital business card.
 
 A constant pointer to your ever changing web presence.
 
