@@ -1,12 +1,12 @@
 import Comment from "@/components/comment";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import ReactCountryFlag from "react-country-flag";
 import {
   getUser,
   getAllCommentsAndCommentatorsFromProfile,
   createCommentFromForm,
 } from "@/db/actions";
+import Flag from "@/components/flag";
 
 export default async function Page({ params }: { params: { id: string } }) {
   const user_id = Number(params.id);
@@ -29,16 +29,7 @@ export default async function Page({ params }: { params: { id: string } }) {
           </span>
         </p>
       </div>
-      <ReactCountryFlag
-        svg
-        countryCode={user.country_code}
-        title={user.country_code}
-        aria-label={`${user.country_code} country flag`}
-        style={{
-          width: "1.5em",
-          height: "1.5em",
-        }}
-      />
+      <Flag country={user.country_code} />
 
       <p className="font-extralight">{user.bio}</p>
 
