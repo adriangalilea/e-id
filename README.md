@@ -16,8 +16,20 @@ A constant pointer to store your ever changing web presence and links.
   - [👤️️.to](https://👤️️.to) redirects to [e-id.to](https://e-id.to) in anything else.
 
 # 📝 TO-DO
-- [ ] feat: premium analytics
 - [ ] feat: premium claimable username
+- [ ] feat: premium analytics (tinybird)
+- [ ] feat: /username/[social_media_name]
+  - [ ] if exists: redirects to said social media and log.
+  - [ ] if not exists: redirects to e-id profile and log user demand.
+- [ ] feat: API
+  - [ ] get
+    - [ ] userByID
+    - [ ] userByUsername
+  - [ ] post
+    - [ ] patchUser
+- [ ] consider cheap username fee/time to prevent squatting.
+  - [ ] allow speculation (?)
+- [ ] consider tracking last active item for every social media
 
 
 # Credits
