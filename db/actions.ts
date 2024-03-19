@@ -5,57 +5,24 @@ import { db } from "@/db";
 
 import { SelectComment, SelectUser, users, comments } from "@/db/schema";
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
-import { faker } from "@faker-js/faker";
-
-export async function createUser(
-  name: SelectUser["name"],
-  username: SelectUser["username"],
-  bio: SelectUser["bio"],
-  country_code: SelectUser["country_code"]
-): Promise<SelectUser> {
-  let created_user = await db
-    .insert(users)
-    .values({
-      name: name,
-      username: username,
-      bio: bio,
-      country_code: country_code,
-    })
-    .onConflictDoNothing()
-    .returning();
-  return created_user[0];
-}
-
-type FormState = {
-  message: string;
-};
-
-export async function createRandomUser(prevState: FormState, data: FormData) {
-  await createUser(
-    faker.person.fullName(),
-    faker.internet.userName(),
-    faker.lorem.sentence(),
-    faker.location.countryCode()
-  );
-  revalidatePath("/");
-  return {
-    message: "Form data processed",
-  };
-}
 
 export async function getUsers(): Promise<SelectUser[]> {
   return await db.select().from(users).orderBy(desc(users.id)).limit(6);
 }
 
 export async function getUser(id: SelectUser["id"]): Promise<SelectUser> {
-  const result = await db.select().from(users).where(eq(users.id, id)).limit(1);
+  const result = await db
+    .select()
+    .from(users)
+    .where(eq(users.id, id))
+    .limit(1);
   return result[0];
 }
 
 export async function getUserByUsername(
   username: SelectUser["username"]
 ): Promise<SelectUser> {
+  if (!username) throw new Error("username is required");
   const result = await db
     .select()
     .from(users)

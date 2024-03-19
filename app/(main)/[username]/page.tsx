@@ -2,22 +2,26 @@ import Comment from "@/components/comment";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
-  getUser,
   getAllCommentsAndCommentatorsFromProfile,
   createCommentFromForm,
+  getUserByUsername,
 } from "@/db/actions";
 import Flag from "@/components/flag";
 
-export default async function Page({ params }: { params: { id: string } }) {
-  const user_id = Number(params.id);
-  const createCommentFromFormWithID = createCommentFromForm.bind(
-    null,
-    user_id,
-    1
-  );
-  const user = await getUser(user_id);
-  const allCommentsAndCommentators =
-    await getAllCommentsAndCommentatorsFromProfile(user_id);
+export default async function Page({
+  params,
+}: {
+  params: { username: string };
+}) {
+  // const createCommentFromFormWithID = createCommentFromForm.bind(
+  //   null,
+  //   params.username,
+  //   1
+  // );
+  const user = await getUserByUsername(params.username);
+  console.log(user);
+  // const allCommentsAndCommentators =
+  //   await getAllCommentsAndCommentatorsFromProfile(params.username);
 
   return (
     <div className="flex flex-col gap-10">
@@ -33,7 +37,7 @@ export default async function Page({ params }: { params: { id: string } }) {
 
       <p className="font-extralight">{user.bio}</p>
 
-      <div>
+      {/* <div>
         <form action={createCommentFromFormWithID}>
           <div className="flex w-full max-w-sm items-center space-x-2">
             <Input type="text" name="body" placeholder="Comment" />
@@ -45,7 +49,7 @@ export default async function Page({ params }: { params: { id: string } }) {
             <div key={commentAndCommentator.comments?.id}>
               <Comment
                 profilePicture={commentAndCommentator.users.avatar!}
-                username={commentAndCommentator.users.username}
+                username={commentAndCommentator.users.username!}
                 timestamp={commentAndCommentator.comments?.created_at!}
                 content={commentAndCommentator.comments?.body!}
                 user_id={commentAndCommentator.users.id}
@@ -53,7 +57,7 @@ export default async function Page({ params }: { params: { id: string } }) {
             </div>
           ))}
         </div>
-      </div>
+      </div> */}
     </div>
   );
 }

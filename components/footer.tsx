@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/drawer";
 import { cn } from "@/lib/utils";
 
-export default function Footer() {
+export default function Footer({ children }: { children?: React.ReactNode }) {
   const [open, setOpen] = useState(false);
   const isMobile = useMediaQuery("(max-width: 640px)");
 
@@ -56,6 +56,7 @@ export default function Footer() {
         <div className="flex justify-between items-center">
           <ButtonGetEID />
           {/* <ButtonEIDAdrian /> */}
+          {children}
           <div>
             <ButtonGithub />
             <ButtonFAQ />
@@ -94,7 +95,7 @@ function ButtonGithub({ description = false }: { description?: boolean }) {
   return (
     <Button asChild variant="ghost" className="rounded-none">
       <Link
-        className="lg:decoration-transparent hover:decoration-inherit opacity-90 hover:opacity-100 transition-all duration-500 font-light antialiased"
+        className="lg:decoration-transparent hover:decoration-inherit opacity-90 hover:opacity-100 font-light antialiased"
         href="https://github.com/adriangalilea/e-id"
         target="_blank"
       >
@@ -113,7 +114,7 @@ function ButtonFAQ({ description = false }: { description?: boolean }) {
   return (
     <Button asChild variant="ghost" className="rounded-none">
       <Link
-        className="lg:decoration-transparent hover:decoration-inherit hover:opacity-100 transition-all duration-500 font-light antialiased"
+        className="lg:decoration-transparent hover:decoration-inherit hover:opacity-100 font-light antialiased"
         href="/faq"
       >
         <HelpCircle size={16} strokeWidth={1} />

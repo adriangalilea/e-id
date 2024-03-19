@@ -1,13 +1,12 @@
-import { getUsers, createRandomUser } from "@/db/actions";
+import { getUsers } from "@/db/actions";
 import { LatestUsersTable } from "./latest_users_table";
-import AddForm from "./add_random_user";
+import UserButton from "@/components/user-button";
 
 export default async function Page() {
   const users = await getUsers();
   return (
     <div className="flex-col">
       <LatestUsersTable users={users} />
-      <AddForm />
     </div>
   );
 }
