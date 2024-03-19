@@ -16,8 +16,11 @@ A constant pointer to your ever changing web presence.
   - [👤️️.to](https://👤️️.to) redirects to [e-id.to](https://e-id.to) in anything else.
 
 # 📝 TO-DO
+- [ ] feat: display profile info, minimal style.
 - [ ] feat: comments on profile
 - [ ] feat: custom auth login window
+  - [ ] https://authjs.dev/guides/basics/pages#theming
+  - [ ] https://github.com/ndom91/next-auth-example-sign-in-page
 - [ ] feat: add google
 - [ ] feat: being able to choose another username
 - [ ] feat: API
