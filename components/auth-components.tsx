@@ -8,6 +8,7 @@ export function SignIn({
 }: { provider?: string } & React.ComponentPropsWithRef<typeof Button>) {
   return (
     <form
+    className="w-full sm:w-fit"
       action={async () => {
         "use server";
         await signIn(provider);
@@ -15,7 +16,7 @@ export function SignIn({
     >
       <Button
         variant="ghost"
-        className="rounded-none lg:decoration-transparent hover:decoration-inherit opacity-80 hover:opacity-100 transition-all duration-500 font-light antialiased"
+        className="w-full sm:w-fit rounded-none lg:decoration-transparent hover:decoration-inherit opacity-80 hover:opacity-100 transition-all duration-500 font-light antialiased"
       >
         👤 you
       </Button>

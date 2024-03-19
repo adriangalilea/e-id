@@ -39,6 +39,8 @@ export default function Footer({ children }: { children?: React.ReactNode }) {
           </DrawerTrigger>
           <DrawerContent>
             {/* <ButtonEIDAdrian /> */}
+            <div className="w-full flex justify-between items-center">{children}</div>
+
             <ButtonGithub description={true} />
             <ButtonFAQ description={true} />
             <DrawerFooter className="pt-2">
@@ -64,7 +66,6 @@ export default function Footer({ children }: { children?: React.ReactNode }) {
     </footer>
   );
 }
-
 
 // function ButtonEIDAdrian() {
 //   return (

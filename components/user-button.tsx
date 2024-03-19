@@ -8,10 +8,10 @@ export default async function UserButton() {
   const session = await auth();
   if (!session?.user) return <SignIn />;
   return (
-    <div className="flex items-center">
+    <div className="flex justify-around items-center w-full sm:w-fit">
       <Button
         variant="ghost"
-        className="rounded-none"
+        className="rounded-none w-full sm:w-fit"
         asChild
       >
         <Link href={`/${session.user.username}`}>
