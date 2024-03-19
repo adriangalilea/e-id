@@ -18,6 +18,7 @@ A constant pointer to your ever changing web presence.
 # 📝 TO-DO
 - [ ] feat: display profile info, minimal style.
 - [ ] feat: comments on profile
+- [ ] feat: being able to edit your own profile
 - [ ] feat: custom auth login window
   - [ ] https://authjs.dev/guides/basics/pages#theming
   - [ ] https://github.com/ndom91/next-auth-example-sign-in-page
