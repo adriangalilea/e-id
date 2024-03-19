@@ -16,7 +16,11 @@ A constant pointer to your ever changing web presence.
   - [👤️️.to](https://👤️️.to) redirects to [e-id.to](https://e-id.to) in anything else.
 
 # 📝 TO-DO
-- [ ] feat: premium claimable username
+- [x] feat: signup and auth on every domain
+- [ ] feat: list of forbidden handles
+- [ ] feat: sign in on mobile
+- [ ] feat: comments on profile
+- [ ] feat: being able to claim another username if your auth provider one is taken
 - [ ] feat: premium analytics (tinybird)
 - [ ] feat: /username/[social_media_name]
   - [ ] if exists: redirects to said social media and log.
@@ -30,6 +34,7 @@ A constant pointer to your ever changing web presence.
 - [ ] consider cheap username fee/time to prevent squatting.
   - [ ] allow speculation (?)
 - [ ] consider tracking last active item for every social media
+- [ ] feat: premium claimable username
 
 
 # Credits
