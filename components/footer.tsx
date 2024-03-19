@@ -15,6 +15,7 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
+import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 
 export default function Footer({ children }: { children?: React.ReactNode }) {
@@ -38,13 +39,18 @@ export default function Footer({ children }: { children?: React.ReactNode }) {
             </Button>
           </DrawerTrigger>
           <DrawerContent>
-            <div className="w-full flex justify-between items-center">{children}</div>
-
+            <Separator className="mt-4" />
+            <div className="w-full flex justify-between items-center">
+              {children}
+            </div>
+            <Separator />
             <ButtonGithub description={true} />
+            <Separator />
             <ButtonFAQ description={true} />
-            <DrawerFooter className="pt-2">
-              <DrawerClose asChild>
-                <Button variant="secondary">
+            <Separator />
+            <DrawerFooter className="p-0">
+              <DrawerClose asChild >
+                <Button variant="ghost" className="rounded-none">
                   <X size={20} strokeWidth={1} />
                 </Button>
               </DrawerClose>
