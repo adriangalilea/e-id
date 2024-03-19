@@ -38,7 +38,6 @@ export default function Footer({ children }: { children?: React.ReactNode }) {
             </Button>
           </DrawerTrigger>
           <DrawerContent>
-            {/* <ButtonEIDAdrian /> */}
             <div className="w-full flex justify-between items-center">{children}</div>
 
             <ButtonGithub description={true} />
@@ -55,7 +54,6 @@ export default function Footer({ children }: { children?: React.ReactNode }) {
       )}
       {!isMobile && (
         <div className="flex justify-between items-center">
-          {/* <ButtonEIDAdrian /> */}
           {children}
           <div>
             <ButtonGithub />
@@ -67,18 +65,6 @@ export default function Footer({ children }: { children?: React.ReactNode }) {
   );
 }
 
-// function ButtonEIDAdrian() {
-//   return (
-//     <Button asChild variant="ghost" className="rounded-none">
-//       <Link
-//         className="lg:decoration-transparent hover:decoration-inherit opacity-80 hover:opacity-100 transition-all duration-500 font-light antialiased"
-//         href="https://e-id.to/ninja/G2wAYETdluo5XTCvqMWSB55zuCo65YC52oI6y40PRveUFZMlKA_tP1rR1w8emcxII4YJ5V3bBc-ZlpNx8NyN6NB8M7KQNaEo"
-//       >
-//         👤 Adrian Galilea
-//       </Link>
-//     </Button>
-//   );
-// }
 function ButtonGithub({ description = false }: { description?: boolean }) {
   return (
     <Button asChild variant="ghost" className="rounded-none">
