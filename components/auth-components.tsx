@@ -15,14 +15,13 @@ export function SignIn({
     >
       <Button
         variant="ghost"
-        className="rounded-none"
+        className="rounded-none lg:decoration-transparent hover:decoration-inherit opacity-80 hover:opacity-100 transition-all duration-500 font-light antialiased"
       >
-        <LogIn strokeWidth={1} size={16} />
+        👤 Get your e-ID
       </Button>
     </form>
   );
 }
-
 export function SignOut(props: React.ComponentPropsWithRef<typeof Button>) {
   return (
     <form
@@ -31,11 +30,7 @@ export function SignOut(props: React.ComponentPropsWithRef<typeof Button>) {
         await signOut();
       }}
     >
-      <Button
-        variant="destructiveGhost"
-        className="rounded-none"
-        {...props}
-      >
+      <Button variant="destructiveGhost" className="rounded-none" {...props}>
         <LogOut strokeWidth={1} size={16} />
       </Button>
     </form>
