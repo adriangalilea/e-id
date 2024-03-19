@@ -33,9 +33,12 @@ A constant pointer to your ever changing web presence.
     - [ ] patchUser
 - [ ] consider cheap username fee/time to prevent squatting.
   - [ ] allow speculation (?)
-- [ ] consider tracking last active item for every social media
+- [ ] allow befriending/following
+- [ ] consider tracking for every social media
+  - [ ] default being only the last element
+  - [ ] aliveness score
+  - [ ] notify when friends make new places
 - [ ] feat: premium claimable username
-
 
 # Credits
 [Progressive enhancement emoji URL's idea](https://github.com/jonroig/emojiurlifier). I implemented it on the next.js middleware so it's a bit cleaner.
