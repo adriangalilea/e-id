@@ -7,12 +7,11 @@ export default async function Page() {
   const users = await getUsersWithUsername();
   const session = await auth();
   const username = session?.user?.username;
-  console.log("logging from front-page username: ", username);
 
   return (
     <div className="flex-col">
       <LatestUsersTable users={users} />
-      {!username && <UsernameToast />}
+      <UsernameToast username={username}/>
     </div>
   );
 }

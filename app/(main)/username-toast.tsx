@@ -3,7 +3,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { ToastAction } from "@/components/ui/toast";
 import { useEffect } from "react";
 
-export default function UsernameToast() {
+export default function UsernameToast({username}: {username: string | null | undefined}) {
   const { toast } = useToast();
   useEffect(() => {
     toast({
