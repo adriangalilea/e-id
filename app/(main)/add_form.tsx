@@ -1,8 +1,15 @@
 "use client";
-import { createRandomUser } from "@/db/actions";
 import { Button } from "@/components/ui/button";
 import { useFormState, useFormStatus } from "react-dom";
 import { Loader2, Plus } from "lucide-react";
+
+function dummy(prevState: { message: string }, data: FormData) {
+  "use server";
+  console.log("dummy");
+  return {
+    message: "Form data processed",
+  };
+}
 
 function SubmitButton() {
   const { pending } = useFormStatus();
@@ -23,7 +30,7 @@ function SubmitButton() {
 }
 
 export default function AddForm() {
-  const [state, formAction] = useFormState(createRandomUser, {
+  const [state, formAction] = useFormState(dummy, {
     message: "",
   });
   return (
