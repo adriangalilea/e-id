@@ -38,7 +38,6 @@ export default function Footer({ children }: { children?: React.ReactNode }) {
             </Button>
           </DrawerTrigger>
           <DrawerContent>
-            <ButtonGetEID />
             {/* <ButtonEIDAdrian /> */}
             <ButtonGithub description={true} />
             <ButtonFAQ description={true} />
@@ -54,7 +53,6 @@ export default function Footer({ children }: { children?: React.ReactNode }) {
       )}
       {!isMobile && (
         <div className="flex justify-between items-center">
-          <ButtonGetEID />
           {/* <ButtonEIDAdrian /> */}
           {children}
           <div>
@@ -67,18 +65,7 @@ export default function Footer({ children }: { children?: React.ReactNode }) {
   );
 }
 
-function ButtonGetEID() {
-  return (
-    <Button asChild variant="ghost" className="rounded-none">
-      <Link
-        className="lg:decoration-transparent hover:decoration-inherit opacity-80 hover:opacity-100 transition-all duration-500 font-light antialiased"
-        href="/"
-      >
-        👤 Get your e-ID
-      </Link>
-    </Button>
-  );
-}
+
 // function ButtonEIDAdrian() {
 //   return (
 //     <Button asChild variant="ghost" className="rounded-none">
