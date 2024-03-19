@@ -8,7 +8,6 @@ export default function UsernameToast({
 }: {
   username: string | null | undefined;
 }) {
-  console.log(username);
   const { toast } = useToast();
   useEffect(() => {
     if (username) return;
