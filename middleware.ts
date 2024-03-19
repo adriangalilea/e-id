@@ -6,6 +6,9 @@ export function middleware(request: NextRequest) {
 
   const localhost = "localhost:3000";
 
+  // check if we are trying to go into /auth
+  const isAuth = request.nextUrl.pathname.includes("/auth");
+
   // list of domains
   const shortDomain = "eid.to";
   const mainDomain = "e-id.to";
@@ -27,6 +30,14 @@ export function middleware(request: NextRequest) {
   // if the request is localhost, do nothing
   if (hostHeaders === localhost) {
     return;
+  }
+
+  // if is /auth use main domain
+  // this is because github only allows 1 callback url
+  if (isAuth) {
+    const pathname = request.nextUrl.pathname;
+    const targetUrl = mainHttps;
+    return NextResponse.rewrite(new URL(pathname, targetUrl));
   }
 
   const pathname = request.nextUrl.pathname;
@@ -69,5 +80,5 @@ export function middleware(request: NextRequest) {
 
 // Optionally, don't invoke Middleware on some paths
 export const config = {
-  matcher: ['/((?!.+\\.[\\w]+$|_next).*)', '/', '/(api|trpc)(.*)'],
-}
+  matcher: ["/((?!.+\\.[\\w]+$|_next).*)", "/", "/(api|trpc)(.*)"],
+};
