@@ -1,0 +1,39 @@
+import Flag from "@/components/flag";
+import { Separator } from "@/components/ui/separator";
+import { SelectUser } from "@/db/schema";
+import { Github, Home, MapPin, Twitter } from "lucide-react";
+
+export default async function UserProfile({ user }: { user: SelectUser }) {
+  return (
+    <div>
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex gap-1">
+          <p>👤 {user.name}</p>
+          <p className="font-extralight opacity-70">@{user.username}</p>
+        </div>
+        <div className="flex gap-0.5 items-center">
+          <MapPin size={18} strokeWidth={1} className="opacity-80" />
+          <Flag country={user.country_code} />
+        </div>
+      </div>
+      <Separator />
+      <div className="flex flex-col gap-2 p-2 ">
+        <p className="prose prose-zinc dark:prose-invert antialiased">
+          {user.bio}
+        </p>
+        <div className="flex gap-0.5 items-center prose prose-zinc dark:prose-invert antialiased">
+          <Github size={18} strokeWidth={1} className="opacity-80" />
+          <p className="!mt-0">@{user.gh_username}</p>
+        </div>
+        <div className="flex gap-0.5 items-center prose prose-zinc dark:prose-invert antialiased">
+          <Twitter size={18} strokeWidth={1} className="opacity-80" />
+          <p className="!mt-0">@adrigalilea</p>
+        </div>
+        <div className="flex gap-0.5 items-center prose prose-zinc dark:prose-invert antialiased">
+          <Home size={18} strokeWidth={1} className="opacity-80" />
+          <p className="!mt-0">adriangalilea.com</p>
+        </div>
+      </div>
+    </div>
+  );
+}
