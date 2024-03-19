@@ -3,11 +3,26 @@ import type { NextRequest } from "next/server";
 
 export function middleware(request: NextRequest) {
   const hostHeaders = request.headers.get("host") ?? "";
-
   const localhost = "localhost:3000";
+  // if the request is localhost, do nothing
+  if (hostHeaders === localhost) {
+    console.log("localhost");
+    return;
+  }
 
   // check if we are trying to go into /auth
-  const isAuth = request.nextUrl.pathname.includes("/auth");
+  const isAuth =
+    request.nextUrl.pathname.includes("/auth") ||
+    request.nextUrl.pathname.includes("/signin");
+
+  // if is /auth use main domain
+  // this is because github only allows 1 callback url
+  if (isAuth) {
+    const pathname = request.nextUrl.pathname;
+    const targetUrl = "https://e-id.to";
+    console.log("isAuth", pathname);
+    return NextResponse.redirect(new URL(pathname, targetUrl));
+  }
 
   // list of domains
   const shortDomain = "eid.to";
@@ -26,20 +41,6 @@ export function middleware(request: NextRequest) {
   const mainHttps = `https://${mainDomain}`;
   const emojiHttps = `https://${emojiDomain}`;
   const emojiHttpsPunycode = `https://${emojiDomainPunycode}`;
-
-  // if the request is localhost, do nothing
-  if (hostHeaders === localhost) {
-    return;
-  }
-
-  // if is /auth use main domain
-  // this is because github only allows 1 callback url
-  if (isAuth) {
-    const pathname = request.nextUrl.pathname;
-    const targetUrl = mainHttps;
-    console.log("isAuth", pathname);
-    return NextResponse.rewrite(new URL(pathname, targetUrl));
-  }
 
   const pathname = request.nextUrl.pathname;
   const userAgent = request.headers.get("user-agent") ?? "";
