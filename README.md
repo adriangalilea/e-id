@@ -17,6 +17,8 @@ A constant pointer to your ever changing web presence.
 
 # 📝 TO-DO
 - [ ] feat: comments on profile
+- [ ] feat: custom auth login window
+- [ ] feat: add google
 - [ ] feat: being able to choose another username
 - [ ] feat: API
   - [ ] get
