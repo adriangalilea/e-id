@@ -17,7 +17,7 @@ export function SignIn({
         variant="ghost"
         className="rounded-none lg:decoration-transparent hover:decoration-inherit opacity-80 hover:opacity-100 transition-all duration-500 font-light antialiased"
       >
-        👤 your e-ID
+        👤 you
       </Button>
     </form>
   );
