@@ -81,7 +81,7 @@ export function middleware(request: NextRequest) {
   console.log("targetDomain", targetDomain);
   console.log("hostHeaders", hostHeaders);
   console.log("targetUrl", targetUrl);
-  return NextResponse.rewrite(new URL(pathname, targetUrl));
+  return NextResponse.redirect(new URL(pathname, targetUrl));
 }
 
 // Optionally, don't invoke Middleware on some paths
