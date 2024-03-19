@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import Footer from "@/components/footer";
 import { Analytics } from "@vercel/analytics/react";
 import UserButton from "@/components/user-button";
+import { Toaster } from "@/components/ui/toaster";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -27,11 +28,12 @@ export default function RootLayout({
         )}
       >
         {children}
+        <Toaster />
         <Analytics />
+        <Footer>
+          <UserButton />
+        </Footer>
       </body>
-      <Footer>
-        <UserButton />
-      </Footer>
     </html>
   );
 }
