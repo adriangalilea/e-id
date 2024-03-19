@@ -33,7 +33,7 @@ export function LatestUsersTable({ users }: { users: SelectUser[] }) {
             </TableCell>
             <TableCell className="prose dark:prose-invert prose-zinc antialiased text-sm">
               <Link
-                href={`/${user.id}`}
+                href={`/${user.username}`}
                 className="no-underline hover:underline"
               >
                 {user.name}
