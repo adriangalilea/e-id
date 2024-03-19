@@ -7,18 +7,26 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 
-export default async function CommentSection({ userId }: { userId: string }) {
+export default async function CommentSection({
+  profileUserId,
+  visitorUserId,
+}: {
+  profileUserId: string;
+  visitorUserId: string | null | undefined;
+}) {
+  if (!visitorUserId) return null;
+
   const createCommentFromFormWithID = createCommentFromForm.bind(
     null,
-    userId,
-    1
+    profileUserId,
+    visitorUserId
   );
   const allCommentsAndCommentators =
-    await getAllCommentsAndCommentatorsFromProfile(userId);
+    await getAllCommentsAndCommentatorsFromProfile(profileUserId);
 
   return (
     <div>
-      <Separator  className="mb-2"/>
+      <Separator className="mb-2" />
       <form action={createCommentFromFormWithID}>
         <div className="flex w-full max-w-sm items-center space-x-2">
           <Input type="text" name="body" placeholder="Comment" />
@@ -30,10 +38,11 @@ export default async function CommentSection({ userId }: { userId: string }) {
           <div key={commentAndCommentator.comments?.id}>
             <Comment
               profilePicture={commentAndCommentator.users.avatar!}
-              username={commentAndCommentator.users.username!}
-              timestamp={commentAndCommentator.comments?.created_at!}
-              content={commentAndCommentator.comments?.body!}
+              username={commentAndCommentator.users.username}
+              created_at={commentAndCommentator.comments?.created_at!}
+              body={commentAndCommentator.comments?.body!}
               user_id={commentAndCommentator.users.id}
+              updated_at={commentAndCommentator.comments?.updated_at!}
             />
           </div>
         ))}

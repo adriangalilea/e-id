@@ -81,10 +81,10 @@ export const verificationTokens = sqliteTable(
 
 export const comments = sqliteTable("comment", {
   id: integer("id", { mode: "number" }).notNull().primaryKey(),
-  profile_id: integer("profile_user_id", { mode: "number" })
+  profile_user_id: text("profile_user_id")
     .notNull()
     .references(() => users.id),
-  commentator_id: integer("commentator_id", { mode: "number" })
+  commentator_id: text("commentator_id")
     .notNull()
     .references(() => users.id),
   created_at: text("created_at")
