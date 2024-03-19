@@ -46,25 +46,27 @@ export async function getAllCommentsAndCommentatorsFromProfile(
   return await db
     .select({ users: users, comments: comments })
     .from(users)
-    .innerJoin(comments, eq(users.id, comments.profile_id));
+    .innerJoin(comments, eq(users.id, comments.profile_user_id));
 }
 
 export async function createComment(
-  profile_id: SelectComment["profile_id"],
+  profile_user_id: SelectComment["profile_user_id"],
   commentator_id: SelectComment["commentator_id"],
   body: SelectComment["body"]
 ) {
-  console.log({ profile_id, commentator_id, body });
+  console.log({ profile_user_id, commentator_id, body });
   await db
     .insert(comments)
-    .values({ profile_id, commentator_id, body })
+    .values({ profile_user_id, commentator_id, body })
     .returning({ insertedId: comments.id });
-  revalidatePath(`/${profile_id}`);
+
+  const user_profile = await getUser(profile_user_id);
+  revalidatePath(`/${user_profile.username}`);
 }
 
 export async function createCommentFromForm(
-  profileId: number,
-  commentatorId: number,
+  profileId: string,
+  commentatorId: string,
   formData: FormData
 ) {
   const body = String(formData.get("body"));
@@ -80,7 +82,7 @@ export async function patchComment(
     .set({ body })
     .where(eq(comments.id, id))
     .returning();
-  revalidatePath(`/${patched_comment[0].profile_id}`);
+  revalidatePath(`/${patched_comment[0].profile_user_id}`);
 }
 
 export async function deleteComment(id: SelectComment["id"]): Promise<void> {
@@ -88,5 +90,5 @@ export async function deleteComment(id: SelectComment["id"]): Promise<void> {
     .delete(comments)
     .where(eq(comments.id, id))
     .returning();
-  revalidatePath(`/${deleted_comment[0].profile_id}`);
+  revalidatePath(`/${deleted_comment[0].profile_user_id}`);
 }
