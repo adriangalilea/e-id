@@ -1,6 +1,6 @@
 "use server";
 
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, isNotNull } from "drizzle-orm";
 import { db } from "@/db";
 
 import { SelectComment, SelectUser, users, comments } from "@/db/schema";
@@ -8,6 +8,15 @@ import { revalidatePath } from "next/cache";
 
 export async function getUsers(): Promise<SelectUser[]> {
   return await db.select().from(users).orderBy(desc(users.id)).limit(6);
+}
+
+export async function getUsersWithUsername(): Promise<SelectUser[]> {
+  return await db
+    .select()
+    .from(users)
+    .where(isNotNull(users.username))
+    .orderBy(desc(users.id))
+    .limit(6);
 }
 
 export async function getUser(id: SelectUser["id"]): Promise<SelectUser> {
