@@ -5,8 +5,9 @@ import UsernameToast from "./username-toast";
 
 export default async function Page() {
   const users = await getUsersWithUsername();
-
-  const username = await auth().then((session) => session?.user?.username);
+  const session = await auth();
+  const username = session?.user?.username;
+  console.log(username);
 
   return (
     <div className="flex-col">
