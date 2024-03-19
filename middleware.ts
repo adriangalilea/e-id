@@ -10,19 +10,19 @@ export function middleware(request: NextRequest) {
     return;
   }
 
-  // check if we are trying to go into /auth
-  const isAuth =
-    request.nextUrl.pathname.includes("/auth") ||
-    request.nextUrl.pathname.includes("/signin");
+  // // check if we are trying to go into /auth
+  // const isAuth =
+  //   request.nextUrl.pathname.includes("/auth") ||
+  //   request.nextUrl.pathname.includes("/signin");
 
-  // if is /auth use main domain
-  // this is because github only allows 1 callback url
-  if (isAuth && hostHeaders !== "e-id.to") {
-    const pathname = request.nextUrl.pathname;
-    const targetUrl = "https://e-id.to";
-    console.log("isAuth", pathname);
-    return NextResponse.rewrite(new URL(pathname, targetUrl));
-  }
+  // // if is /auth use main domain
+  // // this is because github only allows 1 callback url
+  // if (isAuth && hostHeaders !== "e-id.to") {
+  //   const pathname = request.nextUrl.pathname;
+  //   const targetUrl = "https://e-id.to";
+  //   console.log("isAuth", pathname);
+  //   return NextResponse.rewrite(new URL(pathname, targetUrl));
+  // }
 
   // list of domains
   const shortDomain = "eid.to";
