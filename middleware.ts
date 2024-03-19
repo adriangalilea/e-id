@@ -37,6 +37,7 @@ export function middleware(request: NextRequest) {
   if (isAuth) {
     const pathname = request.nextUrl.pathname;
     const targetUrl = mainHttps;
+    console.log("isAuth", pathname);
     return NextResponse.rewrite(new URL(pathname, targetUrl));
   }
 
