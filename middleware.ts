@@ -21,7 +21,7 @@ export function middleware(request: NextRequest) {
     const pathname = request.nextUrl.pathname;
     const targetUrl = "https://e-id.to";
     console.log("isAuth", pathname);
-    return NextResponse.redirect(new URL(pathname, targetUrl));
+    return NextResponse.rewrite(new URL(pathname, targetUrl));
   }
 
   // list of domains
@@ -62,6 +62,10 @@ export function middleware(request: NextRequest) {
   const targetDomainPunycodeWWW = useEmojiDomain
     ? emojiDomainPunycodeWWW
     : mainDomainWWW;
+
+  console.log("targetDomain pre", targetDomain);
+  console.log("hostHeaders pre", hostHeaders);
+  console.log("targetUrl pre", targetUrl);
 
   // rewrite only if targetUrl is not the same as the current
   if (
