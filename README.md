@@ -46,6 +46,7 @@ A constant pointer to your ever changing web presence.
   - [ ] aliveness score
   - [ ] notify when friends make new places
 - [ ] feat: premium claimable username
+- [ ] fix: flash of mobile menu
 
 - [x] feat: signup
 - [x] feat: auth on every domain
