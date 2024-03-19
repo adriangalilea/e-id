@@ -17,7 +17,7 @@ export function middleware(request: NextRequest) {
 
   // if is /auth use main domain
   // this is because github only allows 1 callback url
-  if (isAuth && hostHeaders !== "eid.to") {
+  if (isAuth && hostHeaders !== "e-id.to") {
     const pathname = request.nextUrl.pathname;
     const targetUrl = "https://e-id.to";
     console.log("isAuth", pathname);
