@@ -6,7 +6,6 @@ export function middleware(request: NextRequest) {
   const localhost = "localhost:3000";
   // if the request is localhost, do nothing
   if (hostHeaders === localhost) {
-    console.log("localhost");
     return;
   }
 
