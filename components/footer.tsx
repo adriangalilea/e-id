@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { ExternalLink, Github, HelpCircle, Menu, X } from "lucide-react";
+import { ExternalLink, Github, HelpCircle, Home, Menu, X } from "lucide-react";
 import { useMediaQuery } from "@mantine/hooks";
 import { useState } from "react";
 
@@ -28,7 +28,7 @@ export default function Footer({ children }: { children?: React.ReactNode }) {
         open
           ? "opacity-0 cursor-none"
           : "bg-zinc-50/60 dark:bg-zinc-950/60 backdrop-blur-2xl",
-        "fixed w-screen bg-white/60 dark:bg-black/60 bottom-0 text-zinc-500 border-t-[0.1px] border-black/15 dark:border-white/15 shadow-2xl "
+        "fixed w-screen bg-white/60 dark:bg-black/60 bottom-0 text-zinc-500 border-t-[0.1px] border-black/15 dark:border-white/15 shadow-2xl ",
       )}
     >
       {isMobile && (
@@ -39,6 +39,8 @@ export default function Footer({ children }: { children?: React.ReactNode }) {
             </Button>
           </DrawerTrigger>
           <DrawerContent>
+            <Separator />
+            <Home size={20} strokeWidth={1} />
             <Separator className="mt-4" />
             <div className="w-full flex justify-between items-center">
               {children}
@@ -49,7 +51,7 @@ export default function Footer({ children }: { children?: React.ReactNode }) {
             <ButtonFAQ description={true} />
             <Separator />
             <DrawerFooter className="p-0">
-              <DrawerClose asChild >
+              <DrawerClose asChild>
                 <Button variant="ghost" className="rounded-none">
                   <X size={20} strokeWidth={1} />
                 </Button>
@@ -60,7 +62,14 @@ export default function Footer({ children }: { children?: React.ReactNode }) {
       )}
       {!isMobile && (
         <div className="flex justify-between items-center">
-          {children}
+          <div className="flex items-center">
+            <Button asChild variant="ghost" className="rounded-none">
+              <Link href="/">
+                <Home size={20} strokeWidth={1} />
+              </Link>
+            </Button>
+            {children}
+          </div>
           <div>
             <ButtonGithub />
             <ButtonFAQ />

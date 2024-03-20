@@ -21,7 +21,7 @@ export default async function UserButton() {
             )}
             <AvatarFallback>{session.user.username}</AvatarFallback>
           </Avatar>
-          <span className="text-sm antialiased sm:inline-flex ml-2">
+          <span className="sm:hidden text-sm antialiased sm:inline-flex ml-2">
             {session.user.name}
           </span>
         </Link>
