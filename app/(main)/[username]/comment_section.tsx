@@ -15,7 +15,7 @@ export default async function CommentSection({
   visitorUserId: string | null | undefined;
 }) {
   if (!visitorUserId) return null;
-
+  console.log("whatever")
   const createCommentFromFormWithID = createCommentFromForm.bind(
     null,
     profileUserId,
