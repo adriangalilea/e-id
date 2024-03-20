@@ -15,11 +15,11 @@ export default async function CommentSection({
   visitorUserId: string | null | undefined;
 }) {
   if (!visitorUserId) return null;
-  console.log("whatever")
+  console.log("whatever");
   const createCommentFromFormWithID = createCommentFromForm.bind(
     null,
     profileUserId,
-    visitorUserId
+    visitorUserId,
   );
   const allCommentsAndCommentators =
     await getAllCommentsAndCommentatorsFromProfile(profileUserId);
@@ -37,7 +37,7 @@ export default async function CommentSection({
         {allCommentsAndCommentators.map((commentAndCommentator) => (
           <div key={commentAndCommentator.comments?.id}>
             <Comment
-              profilePicture={commentAndCommentator.users.avatar!}
+              profilePicture={commentAndCommentator.users.gh_image}
               username={commentAndCommentator.users.username}
               created_at={commentAndCommentator.comments?.created_at!}
               body={commentAndCommentator.comments?.body!}
