@@ -15,11 +15,12 @@ interface CommentProps {
 export default function Comment(props: CommentProps) {
   const { profilePicture, username, created_at, updated_at, body, user_id } =
     props;
+  console.log(profilePicture);
 
   return (
     <div className="flex items-center gap-2">
       <Avatar>
-        <AvatarImage src="https://github.com/shadcn.png" />
+        <AvatarImage src={profilePicture!} />
         <AvatarFallback>{username}</AvatarFallback>
       </Avatar>
       <article className="flex items-start flex-col prose dark:prose-invert antialiased prose-zinc">
