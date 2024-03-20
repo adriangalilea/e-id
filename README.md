@@ -11,7 +11,7 @@ A constant pointer to your ever-changing web presence.
   - [e-id.to](https://e-id.to)
   - [eid.to](https://eid.to)
   - [👤️️.to](https://👤️️.to)
-- **Progressive enhancing browsers that support emoji domain** 
+- **Progressive enhancement browsers that support emoji domain** 
   - [e-id.to](https://e-id.to) and [eid.to](https://eid.to) redirect to [👤️️.to](https://👤️️.to) in safari
   - [👤️️.to](https://👤️️.to) redirects to [e-id.to](https://e-id.to) in anything else.
 
