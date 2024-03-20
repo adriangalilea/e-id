@@ -2,7 +2,7 @@
 
 e-ID is your dynamic digital business card.
 
-A constant pointer to your ever changing web presence.
+A constant pointer to your ever-changing web presence.
 
 # ⭐ Features
 - Emoji domain to standout.
@@ -26,10 +26,10 @@ A constant pointer to your ever changing web presence.
 - [ ] feat: being able to choose another username
 - [ ] feat: API
   - [ ] get
-    - [ ] userByID
-    - [ ] userByUsername
+    - [ ] `userByID`
+    - [ ] `userByUsername`
   - [ ] post
-    - [ ] patchUser
+    - [ ] `patchUser`
 - [ ] feat: /username/[social_media_name]
   - [ ] if exists: redirects to said social media and log.
   - [ ] if not exists: redirects to e-id profile and log user demand.
@@ -38,7 +38,7 @@ A constant pointer to your ever changing web presence.
 - [ ] feat: list of forbidden handles
   - [x] I don't need auth because it has higher priority than [username]
   - [ ] I'll need the path for setting your username when you don't have one maybe /limbo or /settings
-- [ ] feat: premium analytics (tinybird)
+- [ ] feat: premium analytics (Tinybird)
 - [ ] consider cheap username fee/time to prevent squatting.
   - [ ] allow speculation (?)
 - [ ] allow befriending/following
@@ -55,4 +55,4 @@ A constant pointer to your ever changing web presence.
 - [x] feat: sign in on mobile
 
 # Credits
-[Progressive enhancement emoji URL's idea](https://github.com/jonroig/emojiurlifier). I implemented it on the next.js middleware so it's a bit cleaner.
+[Progressive enhancement emoji URL's idea](https://github.com/jonroig/emojiurlifier). I implemented it on the next.js middleware, so it's a bit cleaner.
