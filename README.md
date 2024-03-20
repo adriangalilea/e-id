@@ -16,7 +16,6 @@ A constant pointer to your ever-changing web presence.
   - [👤️️.to](https://👤️️.to) redirects to [e-id.to](https://e-id.to) in anything else.
 
 # 📝 TO-DO
-- [ ] feat: comments on profile
 - [ ] feat: preserve user email
 - [ ] feat: being able to edit your own profile
 - [ ] feat: custom auth login window
@@ -53,6 +52,7 @@ A constant pointer to your ever-changing web presence.
 - [x] feat: auth on every domain
 - [x] feat: display profile info, minimal style.
 - [x] feat: sign in on mobile
+- [x] feat: comments on profile
 
 # Credits
 [Progressive enhancement emoji URL's idea](https://github.com/jonroig/emojiurlifier). I implemented it on the next.js middleware, so it's a bit cleaner.
