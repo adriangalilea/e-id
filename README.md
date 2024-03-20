@@ -5,15 +5,21 @@ e-ID is your dynamic digital business card.
 A constant pointer to your ever-changing web presence.
 
 # ⭐ Features
-- Emoji domain to standout.
-  - [👤️️.to](xn--mq8h.to)
+- Mnemonic and readable.
+  - e-ID to [[your_name]] 
+  - [e-id.to/adriangalilea](https://e-id.to/adriangalilea)
+- Visual.
+  - [👤️️.to](https://👤️️.to)
+- Useful.
+  - e-id.to/adriangalilea/x will redirect you to adriangalilea's x profile if it exists.
+  - if it doesn't, it will redirect to e-id.to/adriangalilea BUT it will log this intention, meaning that you'll know the demand for a social network you may not have.
 - **Interchangeable Domains**
   - [e-id.to](https://e-id.to)
   - [eid.to](https://eid.to)
   - [👤️️.to](https://👤️️.to)
-- **Progressive enhancement browsers that support emoji domain** 
-  - [e-id.to](https://e-id.to) and [eid.to](https://eid.to) redirect to [👤️️.to](https://👤️️.to) in safari
-  - [👤️️.to](https://👤️️.to) redirects to [e-id.to](https://e-id.to) in anything else.
+  - **Progressive enhancement on browsers that support emoji domain** 
+    - [e-id.to](https://e-id.to) and [eid.to](https://eid.to) redirect to [👤️️.to](https://👤️️.to) in safari
+    - [👤️️.to](https://👤️️.to) redirects to [e-id.to](https://e-id.to) in anything else.
 
 # 📝 TO-DO
 - [ ] feat: being able to edit your own profile
@@ -28,6 +34,9 @@ A constant pointer to your ever-changing web presence.
     - [ ] `userByUsername`
   - [ ] post
     - [ ] `patchUser`
+- [ ] feat: curl
+  - [ ] /adriangalilea
+  - [ ] /adriangalilea/x
 - [ ] feat: /username/[social_media_name]
   - [ ] if exists: redirects to said social media and log.
   - [ ] if not exists: redirects to e-id profile and log user demand.
