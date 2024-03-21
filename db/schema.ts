@@ -22,10 +22,10 @@ export const users = sqliteTable("user", {
   country_code: text("country_code").default("XX").notNull(),
   avatar: text("avatar"),
   created_at: text("created_at")
-    .default(sql`CURRENT_TIMESTAMP`)
+    .default(sql`(CURRENT_TIMESTAMP)`)
     .notNull(),
   updated_at: text("updated_at")
-    .default(sql`CURRENT_TIMESTAMP`)
+    .default(sql`(CURRENT_TIMESTAMP)`)
     .notNull(),
   bio: text("bio"),
   website: text("website"),
@@ -56,7 +56,7 @@ export const accounts = sqliteTable(
     compoundKey: primaryKey({
       columns: [account.provider, account.providerAccountId],
     }),
-  })
+  }),
 );
 
 export const sessions = sqliteTable("session", {
@@ -76,7 +76,7 @@ export const verificationTokens = sqliteTable(
   },
   (vt) => ({
     compoundKey: primaryKey({ columns: [vt.identifier, vt.token] }),
-  })
+  }),
 );
 
 export const comments = sqliteTable("comment", {
@@ -88,10 +88,10 @@ export const comments = sqliteTable("comment", {
     .notNull()
     .references(() => users.id),
   created_at: text("created_at")
-    .default(sql`CURRENT_TIMESTAMP`)
+    .default(sql`(CURRENT_TIMESTAMP)`)
     .notNull(),
   updated_at: text("updated_at")
-    .default(sql`CURRENT_TIMESTAMP`)
+    .default(sql`(CURRENT_TIMESTAMP)`)
     .notNull(),
   body: text("body").notNull(),
 });
