@@ -14,24 +14,28 @@ export default async function CommentSection({
   profileUserId: string;
   visitorUserId: string | null | undefined;
 }) {
-  if (!visitorUserId) return null;
-  const createCommentFromFormWithID = createCommentFromForm.bind(
-    null,
-    profileUserId,
-    visitorUserId,
-  );
+  let createCommentFromFormWithID = null;
+  if (visitorUserId) {
+    createCommentFromFormWithID = createCommentFromForm.bind(
+      null,
+      profileUserId,
+      visitorUserId,
+    );
+  }
   const allCommentsAndCommentators =
     await getAllCommentsAndCommentatorsFromProfile(profileUserId);
 
   return (
     <div>
       <Separator className="mb-2" />
-      <form action={createCommentFromFormWithID}>
-        <div className="flex w-full max-w-sm items-center space-x-2">
-          <Input type="text" name="body" placeholder="Comment" />
-          <Button type="submit">add comment</Button>
-        </div>
-      </form>
+      {createCommentFromFormWithID && (
+        <form action={createCommentFromFormWithID}>
+          <div className="flex w-full max-w-sm items-center space-x-2">
+            <Input type="text" name="body" placeholder="Comment" />
+            <Button type="submit">add comment</Button>
+          </div>
+        </form>
+      )}
       <div className="flex flex-col px-4 py-2 gap-2">
         {allCommentsAndCommentators.map((commentAndCommentator) => (
           <div key={commentAndCommentator.comments?.id}>
