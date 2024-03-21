@@ -8,7 +8,6 @@ export default async function Page() {
   const session = await auth();
   const username = session?.user?.username;
   let isUsernameNull = session ? username === null : false;
-  console.log(isUsernameNull);
   return (
     <div className="flex-col">
       <LatestUsersTable users={users} />
