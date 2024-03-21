@@ -39,9 +39,13 @@ export default function Footer({ children }: { children?: React.ReactNode }) {
             </Button>
           </DrawerTrigger>
           <DrawerContent>
-            <Separator />
-            <Home size={20} strokeWidth={1} />
             <Separator className="mt-4" />
+            <Button asChild variant="ghost" className="rounded-none">
+              <Link href="/">
+                <Home size={16} strokeWidth={1} />
+              </Link>
+            </Button>
+            <Separator />
             <div className="w-full flex justify-between items-center">
               {children}
             </div>
