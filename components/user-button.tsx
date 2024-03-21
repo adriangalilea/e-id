@@ -12,7 +12,7 @@ export default async function UserButton() {
     <div className="flex justify-around items-center w-full sm:w-fit">
       <Button variant="ghost" className="rounded-none w-full sm:w-fit" asChild>
         <Link href={`/${session.user.username}`}>
-          <Avatar className="w-6 h-6">
+          <Avatar className="w-6 h-6 rounded-none">
             {session.user.gh_image && (
               <AvatarImage
                 src={session.user.gh_image}
@@ -21,14 +21,11 @@ export default async function UserButton() {
             )}
             <AvatarFallback>{session.user.username}</AvatarFallback>
           </Avatar>
-          <span className="sm:hidden text-sm antialiased sm:inline-flex ml-2">
-            {session.user.name}
-          </span>
         </Link>
       </Button>
       <Separator
         orientation="vertical"
-        className="sm:hidden visible h-full py-5 px-0!"
+        className="sm:hidden h-full py-5 px-0!"
       />
       <SignOut />
     </div>

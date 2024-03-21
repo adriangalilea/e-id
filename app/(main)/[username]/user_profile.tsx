@@ -1,5 +1,4 @@
 import Flag from "@/components/flag";
-import { Separator } from "@/components/ui/separator";
 import { SelectUser } from "@/db/schema";
 import { MapPin } from "lucide-react";
 import { SocialComponent } from "./social_component";
@@ -28,24 +27,31 @@ function renderSocialLinks(user: SelectUser) {
 
 export default function UserProfile({ user }: { user: SelectUser }) {
   return (
-    <div>
-      <div className="flex items-center justify-between gap-2">
-        <div className="flex gap-1">
-          <p>👤 {user.name}</p>
-          <p className="font-extralight opacity-70">@{user.username}</p>
-        </div>
-        <div className="flex gap-0.5 items-center">
-          <MapPin size={18} strokeWidth={1} className="opacity-80" />
-          <Flag country={user.country_code} />
+    <main>
+      <div>
+        <div className="flex flex-col sm:flex-row justify-between sm:items-end gap-1 sm:gap-3 prose prose-zinc dark:prose-invert">
+          <h1 className="font-normal sm:font-normal text-2xl !m-0">
+            {user.name}
+          </h1>
+          <div className="flex justify-between sm:grow">
+            <p className="font-extralight !m-0 opacity-70 prose prose-zinc dark:prose-invert">
+              @{user.username}
+            </p>
+            <div className="flex content-between gap-1 items-center">
+              <MapPin size={18} strokeWidth={1} className="opacity-80" />
+              <Flag country={user.country_code} />
+            </div>
+          </div>
         </div>
       </div>
-      <Separator />
-      <div className="flex flex-col gap-2 p-2">
-        <blockquote className="prose prose-zinc dark:prose-invert antialiased dark:bg-white/10 bg-black/10 px-1 rounded-sm italic mb-2">
-          {user.bio}
-        </blockquote>
+      <div className="flex flex-col gap-1 pt-1 sm:px-2">
+        {user.bio && (
+          <blockquote className="prose prose-zinc dark:prose-invert dark:bg-white/10 bg-black/10 px-2 py-2 italic mb-2">
+            {user.bio}
+          </blockquote>
+        )}
         {renderSocialLinks(user)}
       </div>
-    </div>
+    </main>
   );
 }

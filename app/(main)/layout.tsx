@@ -24,7 +24,7 @@ export default function RootLayout({
       <body
         className={cn(
           inter.className,
-          "antialised min-h-screen p-4 sm:py-5 sm:px-10 lg:px-16 lg:py-8 flex justify-center items-center bg-zinc-50 dark:bg-zinc-950"
+          "antialiased min-h-dvh flex flex-col justify-between bg-zinc-50 dark:bg-zinc-950",
         )}
       >
         {children}

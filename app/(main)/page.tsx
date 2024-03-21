@@ -9,7 +9,7 @@ export default async function Page() {
   const username = session?.user?.username;
   let isUsernameNull = session ? username === null : false;
   return (
-    <div className="flex-col">
+    <div className="flex justify-between">
       <LatestUsersTable users={users} />
       <UsernameToast isUsernameNull={isUsernameNull} />
     </div>
