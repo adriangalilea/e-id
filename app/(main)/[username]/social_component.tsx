@@ -6,13 +6,15 @@ import {
   Instagram,
   Github,
   Link as LinkIcon,
+  Youtube,
 } from "lucide-react";
 
-type SocialNetwork =
+export type SocialNetwork =
   | "twitter"
   | "facebook"
   | "instagram"
   | "github"
+  | "youtube"
   | "custom_website"
   | "personal_website";
 
@@ -25,6 +27,7 @@ export function getSocialUrl(
     facebook: `https://facebook.com/${identifier}`,
     instagram: `https://instagram.com/${identifier}`,
     github: `https://github.com/${identifier}`,
+    youtube: `https://youtube.com/@${identifier}`,
     custom_website: identifier,
     personal_website: identifier,
   };
@@ -37,6 +40,7 @@ function getSocialIcon(network: SocialNetwork): ReactElement {
     facebook: <Facebook size={18} strokeWidth={1} className="opacity-80" />,
     instagram: <Instagram size={18} strokeWidth={1} className="opacity-80" />,
     github: <Github size={18} strokeWidth={1} className="opacity-80" />,
+    youtube: <Youtube size={18} strokeWidth={1} className="opacity-80" />,
     custom_website: (
       <LinkIcon size={18} strokeWidth={1} className="opacity-80" />
     ),
