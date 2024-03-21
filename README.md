@@ -62,6 +62,7 @@ A constant pointer to your ever-changing web presence.
 - [x] feat: sign in on mobile
 - [x] feat: comments on profile
 - [x] feat: preserve user email
+- [x] fix: username taken warning on a non logged-in user
 
 # Credits
 [Progressive enhancement emoji URL's idea](https://github.com/jonroig/emojiurlifier). I implemented it on the next.js middleware, so it's a bit cleaner.
