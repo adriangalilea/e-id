@@ -17,6 +17,7 @@ export default function Flag({ country }: { country: string }) {
   return (
     <ReactCountryFlag
       svg
+      className="!m-0"
       countryCode={country}
       title={getName(country)}
       aria-label={`${getName(country)} country flag`}

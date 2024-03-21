@@ -22,7 +22,7 @@ export default function Comment(props: CommentProps) {
         <AvatarImage src={profilePicture!} />
         <AvatarFallback>{username}</AvatarFallback>
       </Avatar>
-      <article className="flex items-start flex-col prose dark:prose-invert antialiased prose-zinc">
+      <article className="flex items-start flex-col prose dark:prose-invert prose-zinc">
         <header className="flex items-center gap-2">
           <h4 className="flex items-center !mt-0 !mb-0">
             <Link

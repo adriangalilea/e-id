@@ -28,10 +28,10 @@ export function LatestUsersTable({ users }: { users: SelectUser[] }) {
       <TableBody>
         {users.map((user) => (
           <TableRow key={user.id}>
-            <TableCell >
+            <TableCell>
               <Flag country={user.country_code} />
             </TableCell>
-            <TableCell className="prose dark:prose-invert prose-zinc antialiased text-sm">
+            <TableCell className="prose dark:prose-invert prose-zinc text-sm">
               <Link
                 href={`/${user.username}`}
                 className="no-underline hover:underline"
@@ -39,7 +39,7 @@ export function LatestUsersTable({ users }: { users: SelectUser[] }) {
                 {user.name}
               </Link>
             </TableCell>
-            <TableCell className="prose dark:prose-invert prose-zinc antialiased text-sm">
+            <TableCell className="prose dark:prose-invert prose-zinc text-sm">
               <HumanTime date={user.created_at} />
             </TableCell>
           </TableRow>
