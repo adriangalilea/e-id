@@ -14,7 +14,10 @@ export default async function Page({
   return (
     <div className="flex flex-col gap-10">
       <UserProfile user={user} />
-      <CommentSection profileUserId={user.id} visitorUserId={session?.user?.id} />
+      <CommentSection
+        profileUserId={user.id}
+        visitorUserId={session?.user?.id}
+      />
     </div>
   );
 }
