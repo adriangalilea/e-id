@@ -4,19 +4,19 @@ import { ToastAction } from "@/components/ui/toast";
 import { useEffect } from "react";
 
 export default function UsernameToast({
-  username,
+  isUsernameNull,
 }: {
-  username: string | null | undefined;
+  isUsernameNull: boolean;
 }) {
   const { toast } = useToast();
   useEffect(() => {
-    if (username) return;
+    if (!isUsernameNull) return;
     toast({
       variant: "destructive",
       title: "Uh oh! Username taken.",
       description: "Someone already had your auth provider username.",
       action: <ToastAction altText="Set username">Set username</ToastAction>,
     });
-  }, [toast, username]);
+  }, [toast, isUsernameNull]);
   return <></>;
 }
