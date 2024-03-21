@@ -2,6 +2,7 @@ import Flag from "@/components/flag";
 import { Separator } from "@/components/ui/separator";
 import { SelectUser } from "@/db/schema";
 import { Github, Home, MapPin, Twitter } from "lucide-react";
+import { SocialComponent } from "./social_link";
 
 export default async function UserProfile({ user }: { user: SelectUser }) {
   return (
@@ -21,18 +22,7 @@ export default async function UserProfile({ user }: { user: SelectUser }) {
         <p className="prose prose-zinc dark:prose-invert antialiased">
           {user.bio}
         </p>
-        <div className="flex gap-0.5 items-center prose prose-zinc dark:prose-invert antialiased">
-          <Github size={18} strokeWidth={1} className="opacity-80" />
-          <p className="!mt-0">@{user.gh_username}</p>
-        </div>
-        <div className="flex gap-0.5 items-center prose prose-zinc dark:prose-invert antialiased">
-          <Twitter size={18} strokeWidth={1} className="opacity-80" />
-          <p className="!mt-0">@adrigalilea</p>
-        </div>
-        <div className="flex gap-0.5 items-center prose prose-zinc dark:prose-invert antialiased">
-          <Home size={18} strokeWidth={1} className="opacity-80" />
-          <p className="!mt-0">adriangalilea.com</p>
-        </div>
+        <SocialComponent network="twitter" identifier="adriangalilea" />
       </div>
     </div>
   );
