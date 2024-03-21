@@ -46,7 +46,7 @@ export default function UserProfile({ user }: { user: SelectUser }) {
       </div>
       <div className="flex flex-col gap-1 pt-1 sm:px-2">
         {user.bio && (
-          <blockquote className="prose prose-zinc dark:prose-invert dark:bg-white/10 bg-black/10 px-2 py-2 italic mb-2">
+          <blockquote className="prose prose-zinc dark:prose-invert dark:bg-white/5 bg-black/5 px-2 py-2 italic mb-2 border-l border-zinc-500">
             {user.bio}
           </blockquote>
         )}
