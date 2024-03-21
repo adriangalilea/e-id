@@ -41,7 +41,7 @@ export default function UserProfile({ user }: { user: SelectUser }) {
       </div>
       <Separator />
       <div className="flex flex-col gap-2 p-2">
-        <blockquote className="prose prose-zinc dark:prose-invert antialiased bg-white/10 px-1 rounded-sm italic mb-2">
+        <blockquote className="prose prose-zinc dark:prose-invert antialiased dark:bg-white/10 bg-black/10 px-1 rounded-sm italic mb-2">
           {user.bio}
         </blockquote>
         {renderSocialLinks(user)}
