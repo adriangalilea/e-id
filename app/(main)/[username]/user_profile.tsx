@@ -38,18 +38,19 @@ export default function UserProfile({ user }: { user: SelectUser }) {
               @{user.username}
             </p>
             <div className="flex content-between gap-1 items-center">
-              <MapPin size={18} strokeWidth={1} className="opacity-80" />
               <Flag country={user.country_code} />
             </div>
           </div>
         </div>
       </div>
-      <div className="flex flex-col gap-1 pt-1 sm:px-2">
-        {user.bio && (
-          <blockquote className="prose prose-zinc dark:prose-invert dark:bg-white/5 bg-black/5 px-2 py-2 italic mb-2 border-l border-zinc-500">
-            {user.bio}
-          </blockquote>
-        )}
+      <div className="flex flex-col gap-1 pt-1">
+        <div className="mt-6">
+          {user.bio && (
+            <blockquote className="prose prose-zinc dark:prose-invert dark:bg-white/5 bg-black/5 px-2 py-2 italic mb-2 border-l border-zinc-500">
+              {user.bio}
+            </blockquote>
+          )}
+        </div>
         {renderSocialLinks(user)}
       </div>
     </main>
