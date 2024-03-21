@@ -2,7 +2,7 @@ import Flag from "@/components/flag";
 import { Separator } from "@/components/ui/separator";
 import { SelectUser } from "@/db/schema";
 import { Github, Home, MapPin, Twitter } from "lucide-react";
-import { SocialComponent } from "./social_link";
+import { SocialComponent } from "./social_component";
 
 export default async function UserProfile({ user }: { user: SelectUser }) {
   return (
