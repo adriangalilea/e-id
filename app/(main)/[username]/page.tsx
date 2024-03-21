@@ -12,7 +12,7 @@ export default async function Page({
   const user = await getUserByUsername(params.username);
 
   return (
-    <div className="flex flex-col gap-10">
+    <div className="flex flex-col gap-2">
       <UserProfile user={user} />
       <CommentSection
         profileUserId={user.id}
