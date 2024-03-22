@@ -22,6 +22,7 @@ A constant pointer to your ever-changing web presence.
     - [👤️️.to](https://👤️️.to) redirects to [e-id.to](https://e-id.to) in anything else.
 
 # 📝 TO-DO
+- [ ] feat: SEO
 - [ ] feat: dub.co license
 - [ ] style: comment input button disabled while not text
 - [ ] feat: being able to edit your own profile
