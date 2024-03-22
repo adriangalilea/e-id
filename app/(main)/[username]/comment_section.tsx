@@ -5,7 +5,7 @@ import {
 import Comment from "@/components/comment";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Send } from "lucide-react";
+import { SendHorizontal } from "lucide-react";
 // import { useState } from "react";
 
 export default async function CommentSection({
@@ -47,7 +47,7 @@ export default async function CommentSection({
               className="z-10 rounded-none"
               variant="secondary"
             >
-              <Send size={18} strokeWidth={1} />
+              <SendHorizontal size={18} strokeWidth={1} />
             </Button>
           </div>
         </form>
