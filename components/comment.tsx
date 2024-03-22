@@ -30,7 +30,7 @@ export default function Comment(props: CommentProps) {
         <AvatarImage src={profilePicture!} />
         <AvatarFallback>{username}</AvatarFallback>
       </Avatar>
-      <article className="prose prose-zinc flex w-full items-center justify-between border-l border-zinc-500 bg-black/5 px-3 py-1.5 dark:prose-invert dark:bg-white/5">
+      <article className="prose prose-zinc flex w-full items-center justify-between border-l border-zinc-500 bg-zinc-500/10 px-3 py-1.5 dark:prose-invert">
         <p className="!m-0 italic">{body}</p>
         <header className="flex items-center gap-2">
           <Link href={`/${username}`} className="no-underline hover:underline">
