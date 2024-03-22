@@ -24,7 +24,7 @@ export default function Comment(props: CommentProps) {
       </Avatar>
       <article className="prose prose-zinc flex flex-col items-start dark:prose-invert">
         <header className="flex items-center gap-2">
-          <h4 className="!mb-0 !mt-0 flex items-center">
+          <h4 className="!my-0 flex items-center">
             <Link
               href={`/${username}`}
               className="no-underline hover:underline"
