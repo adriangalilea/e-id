@@ -22,12 +22,20 @@ A constant pointer to your ever-changing web presence.
     - [👤️️.to](https://👤️️.to) redirects to [e-id.to](https://e-id.to) in anything else.
 
 # 📝 TO-DO
+- [ ] feat: dub.co license
+- [ ] style: comment input button disabled while not text
 - [ ] feat: being able to edit your own profile
+  - [ ] flag picker
+  - [ ] higlight comment -> testimonial
 - [ ] feat: custom auth login window
   - [ ] https://authjs.dev/guides/basics/pages#theming
   - [ ] https://github.com/ndom91/next-auth-example-sign-in-page
-- [ ] feat: add google
+- [ ] feat: auth
+  - [ ] google
+  - [ ] apple passkey
 - [ ] feat: being able to choose another username
+  - [ ] redirect on the toast to user profile
+  - [ ] add warning on username to prompt editing `i your profile is unreachable without username` 
 - [ ] feat: API
   - [ ] get
     - [ ] `userByID`
