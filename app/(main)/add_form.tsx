@@ -17,7 +17,7 @@ function SubmitButton() {
     <Button
       disabled={pending}
       type="submit"
-      className="transition-all ease-in-out duration-100"
+      className="transition-all duration-100 ease-in-out"
     >
       {pending ? (
         <Loader2 className="mr-2 h-4 w-4 animate-spin" />

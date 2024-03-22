@@ -3,7 +3,13 @@ import GitHub from "next-auth/providers/github";
 import { DrizzleAdapter } from "@auth/drizzle-adapter";
 import { db } from "./db";
 import { type AdapterUser, Adapter } from "@auth/core/adapters";
-import { users, accounts, verificationTokens, sessions, SelectUser } from "@/db/schema";
+import {
+  users,
+  accounts,
+  verificationTokens,
+  sessions,
+  SelectUser,
+} from "@/db/schema";
 import { eq, and } from "drizzle-orm";
 
 declare module "next-auth" {
@@ -106,8 +112,8 @@ function customAdapter(): Adapter {
       .where(
         and(
           eq(accounts.provider, account.provider),
-          eq(accounts.providerAccountId, account.providerAccountId)
-        )
+          eq(accounts.providerAccountId, account.providerAccountId),
+        ),
       )
       .get();
 
@@ -142,8 +148,8 @@ function customAdapter(): Adapter {
         .where(
           and(
             eq(verificationTokens.identifier, token.identifier),
-            eq(verificationTokens.token, token.token)
-          )
+            eq(verificationTokens.token, token.token),
+          ),
         )
         .returning()
         .get();
@@ -168,8 +174,8 @@ function customAdapter(): Adapter {
       .where(
         and(
           eq(accounts.providerAccountId, account.providerAccountId),
-          eq(accounts.provider, account.provider)
-        )
+          eq(accounts.provider, account.provider),
+        ),
       )
       .run();
   };

@@ -1,6 +1,5 @@
 import Flag from "@/components/flag";
 import { SelectUser } from "@/db/schema";
-import { MapPin } from "lucide-react";
 import { SocialComponent } from "./social_component";
 import { type SocialNetwork } from "./social_component";
 
@@ -29,15 +28,15 @@ export default function UserProfile({ user }: { user: SelectUser }) {
   return (
     <main>
       <div>
-        <div className="flex flex-col sm:flex-row justify-between sm:items-end gap-1 sm:gap-3 prose prose-zinc dark:prose-invert">
-          <h1 className="font-normal sm:font-normal text-2xl !m-0">
+        <div className="prose prose-zinc flex flex-col justify-between gap-1 dark:prose-invert sm:flex-row sm:items-end sm:gap-3">
+          <h1 className="!m-0 text-2xl font-normal sm:font-normal">
             {user.name}
           </h1>
           <div className="flex justify-between sm:grow">
-            <p className="font-extralight !m-0 opacity-70 prose prose-zinc dark:prose-invert">
+            <p className="prose prose-zinc !m-0 font-extralight opacity-70 dark:prose-invert">
               @{user.username}
             </p>
-            <div className="flex content-between gap-1 items-center">
+            <div className="flex content-between items-center gap-1">
               <Flag country={user.country_code} />
             </div>
           </div>
@@ -46,7 +45,7 @@ export default function UserProfile({ user }: { user: SelectUser }) {
       <div className="flex flex-col gap-1 pt-1">
         <div className="mt-6">
           {user.bio && (
-            <blockquote className="prose prose-zinc dark:prose-invert dark:bg-white/5 bg-black/5 px-2 py-2 italic mb-2 border-l border-zinc-500">
+            <blockquote className="prose prose-zinc mb-2 border-l border-zinc-500 bg-black/5 px-2 py-2 italic dark:prose-invert dark:bg-white/5">
               {user.bio}
             </blockquote>
           )}

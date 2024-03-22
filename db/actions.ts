@@ -20,16 +20,12 @@ export async function getUsersWithUsername(): Promise<SelectUser[]> {
 }
 
 export async function getUser(id: SelectUser["id"]): Promise<SelectUser> {
-  const result = await db
-    .select()
-    .from(users)
-    .where(eq(users.id, id))
-    .limit(1);
+  const result = await db.select().from(users).where(eq(users.id, id)).limit(1);
   return result[0];
 }
 
 export async function getUserByUsername(
-  username: SelectUser["username"]
+  username: SelectUser["username"],
 ): Promise<SelectUser> {
   if (!username) throw new Error("username is required");
   const result = await db
@@ -41,7 +37,7 @@ export async function getUserByUsername(
 }
 
 export async function getAllCommentsAndCommentatorsFromProfile(
-  id: SelectUser["id"]
+  id: SelectUser["id"],
 ): Promise<Array<{ users: SelectUser; comments: SelectComment | null }>> {
   return await db
     .select({ users: users, comments: comments })
@@ -52,7 +48,7 @@ export async function getAllCommentsAndCommentatorsFromProfile(
 export async function createComment(
   profile_user_id: SelectComment["profile_user_id"],
   commentator_id: SelectComment["commentator_id"],
-  body: SelectComment["body"]
+  body: SelectComment["body"],
 ) {
   console.log({ profile_user_id, commentator_id, body });
   await db
@@ -67,7 +63,7 @@ export async function createComment(
 export async function createCommentFromForm(
   profileId: string,
   commentatorId: string,
-  formData: FormData
+  formData: FormData,
 ) {
   const body = String(formData.get("body"));
   await createComment(profileId, commentatorId, body);
@@ -75,7 +71,7 @@ export async function createCommentFromForm(
 
 export async function patchComment(
   id: SelectComment["id"],
-  body: SelectComment["body"]
+  body: SelectComment["body"],
 ) {
   const patched_comment = await db
     .update(comments)

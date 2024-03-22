@@ -22,9 +22,9 @@ export default function Comment(props: CommentProps) {
         <AvatarImage src={profilePicture!} />
         <AvatarFallback>{username}</AvatarFallback>
       </Avatar>
-      <article className="flex items-start flex-col prose dark:prose-invert prose-zinc">
+      <article className="prose prose-zinc flex flex-col items-start dark:prose-invert">
         <header className="flex items-center gap-2">
-          <h4 className="flex items-center !mt-0 !mb-0">
+          <h4 className="!mb-0 !mt-0 flex items-center">
             <Link
               href={`/${username}`}
               className="no-underline hover:underline"
@@ -34,7 +34,7 @@ export default function Comment(props: CommentProps) {
           </h4>
           <HumanTime date={created_at} />
         </header>
-        <p className="flex !mt-0">{body}</p>
+        <p className="!mt-0 flex">{body}</p>
       </article>
     </div>
   );
