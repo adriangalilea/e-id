@@ -33,7 +33,7 @@ export default function UserProfile({ user }: { user: SelectUser }) {
             {user.name}
           </h1>
           <div className="flex justify-between sm:grow">
-            <p className="prose prose-zinc !m-0 font-extralight opacity-70 dark:prose-invert">
+            <p className="prose prose-zinc !m-0 font-extralight dark:prose-invert">
               @{user.username}
             </p>
             <div className="flex content-between items-center gap-1">
@@ -45,7 +45,7 @@ export default function UserProfile({ user }: { user: SelectUser }) {
       <div className="flex flex-col gap-1 pt-1">
         <div className="mt-6">
           {user.bio && (
-            <blockquote className="prose prose-zinc mb-2 border-l border-zinc-500 bg-black/5 px-2 py-2 italic dark:prose-invert dark:bg-white/5">
+            <blockquote className="prose prose-zinc mb-2 border-l border-zinc-500 bg-black/5 p-2 italic dark:prose-invert dark:bg-white/5">
               {user.bio}
             </blockquote>
           )}
