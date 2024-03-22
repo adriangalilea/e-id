@@ -34,7 +34,9 @@ export default function Comment(props: CommentProps) {
         <p className="!m-0 italic">{body}</p>
         <header className="flex items-center gap-2">
           <Link href={`/${username}`} className="no-underline hover:underline">
-            <span className="whitespace-nowrap font-extralight">{name}</span>
+            <span className="whitespace-nowrap text-pretty font-extralight">
+              {name}
+            </span>
           </Link>
 
           <HumanTime date={created_at} dateOnly={true} />
