@@ -74,10 +74,10 @@ export function SocialComponent({
   const icon = getSocialIcon(network);
   const displayText = getSocialDisplayText(network, identifier);
   return (
-    <div className="flex gap-0.5 items-center prose prose-zinc dark:prose-invert antialiased">
+    <div className="prose prose-zinc flex items-center gap-0.5 antialiased dark:prose-invert">
       <Link
         href={url}
-        className="no-underline flex items-center gap-1 font-light"
+        className="flex items-center gap-1 font-light no-underline"
       >
         {icon} {displayText}
       </Link>

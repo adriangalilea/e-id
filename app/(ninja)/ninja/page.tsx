@@ -6,7 +6,7 @@ const UserProfileForm = dynamic(() => import("./Form"), {
 export default function Home() {
   return (
     <>
-      <main className="max-w-sm w-full items-center justify-between">
+      <main className="w-full max-w-sm items-center justify-between">
         <UserProfileForm />
       </main>
     </>

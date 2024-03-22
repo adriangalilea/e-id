@@ -52,12 +52,12 @@ export default function EID({ slug }: { slug: string }) {
               key={key}
               asChild
               variant="outline"
-              className="size-14 rounded-full inline-flex transition-all duration-500 ease-in-out backdrop-blur-sm bg-indigo-50/80 border-indigo-300/40 hover:bg-indigo-200/80 dark:bg-slate-700/80 dark:border-indigo-900/30 dark:hover:bg-indigo-800/50"
+              className="inline-flex size-14 rounded-full border-indigo-300/40 bg-indigo-50/80 backdrop-blur-sm transition-all duration-500 ease-in-out hover:bg-indigo-200/80 dark:border-indigo-900/30 dark:bg-slate-700/80 dark:hover:bg-indigo-800/50"
             >
               <Link
                 href={url(value)}
-                className="size-12 text-indigo-500 hover:text-indigo-400 
-transition-all ease-in-out duration-500"
+                className="size-12 text-indigo-500 transition-all 
+duration-500 ease-in-out hover:text-indigo-400"
               >
                 {icon}
               </Link>
@@ -72,8 +72,8 @@ transition-all ease-in-out duration-500"
       <>
         <CardHeader>
           {decodedData.name && (
-            <CardTitle className="!mb-8 text-balance flex items-center opacity-90">
-              <span className="inline-block mr-4 text-[0.76em]">👤</span>
+            <CardTitle className="!mb-8 flex items-center text-balance opacity-90">
+              <span className="mr-4 inline-block text-[0.76em]">👤</span>
               {decodedData.name.charAt(0).toUpperCase() +
                 decodedData.name.slice(1)}
             </CardTitle>
@@ -91,11 +91,11 @@ transition-all ease-in-out duration-500"
             <Button
               asChild
               variant="outline"
-              className="size-12 w-full mx-4 border"
+              className="mx-4 size-12 w-full border"
             >
               <Link
                 href={decodedData.other}
-                className="text-sm text-muted-foreground font-normal no-underline"
+                className="text-sm font-normal text-muted-foreground no-underline"
               >
                 {decodedData.other}
               </Link>
@@ -108,8 +108,8 @@ transition-all ease-in-out duration-500"
 
   return (
     <main>
-      <article className="mb-8 sm:mb-10 lg:mb-16 shadow-lg rounded-lg prose lg:prose-xl prose-zinc dark:prose-invert antialiased flex flex-col gap-8 w-fit">
-        <Card className="bg-white/40 border border-indigo-200/80 dark:border-indigo-900/20 dark:hover:border-indigo-900/40 sm:dark:bg-slate-700/60 dark:bg-slate-700/60 backdrop-blur-sm transition-all ease-in-out duration-500">
+      <article className="prose prose-zinc mb-8 flex w-fit flex-col gap-8 rounded-lg antialiased shadow-lg lg:prose-xl dark:prose-invert sm:mb-10 lg:mb-16">
+        <Card className="border border-indigo-200/80 bg-white/40 backdrop-blur-sm transition-all duration-500 ease-in-out dark:border-indigo-900/20 dark:bg-slate-700/60 dark:hover:border-indigo-900/40 sm:dark:bg-slate-700/60">
           {decodedData ? (
             renderDecodedData(decodedData)
           ) : (

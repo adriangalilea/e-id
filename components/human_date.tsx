@@ -36,7 +36,7 @@ export default function HumanTime({
     <time
       dateTime={isoString}
       title={displayPretext + localeString}
-      className="text-sm underline underline-offset-2 decoration-transparent hover:decoration-neutral-500 transition-all ease-in-out duration-300"
+      className="text-sm underline decoration-transparent underline-offset-2 transition-all duration-300 ease-in-out hover:decoration-neutral-500"
     >
       {pretext === "edited" ? "✎" : ""}
       {formatBasedOnDay}

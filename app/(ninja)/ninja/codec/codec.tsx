@@ -7,7 +7,7 @@ export const encodeData = async (formData: UserProfile1): Promise<string> => {
   const textEncoder = new TextEncoder();
 
   const dataArray = orderedKeys1.map((key) =>
-    formData[key] === undefined ? "" : formData[key]
+    formData[key] === undefined ? "" : formData[key],
   );
 
   console.log(dataArray);
@@ -19,7 +19,7 @@ export const encodeData = async (formData: UserProfile1): Promise<string> => {
   const uncompressedData = textEncoder.encode(JSON.stringify(joinedData));
   const compressed = await brotli.compress(uncompressedData);
   const base64Encoded = btoa(
-    String.fromCharCode(...new Uint8Array(compressed))
+    String.fromCharCode(...new Uint8Array(compressed)),
   );
   return base64Encoded
     .replace(/\+/g, "-")
@@ -34,7 +34,7 @@ export const decodeData = async (
   const textDecoder = new TextDecoder();
   const base64Decoded = atob(encodedData.replace(/-/g, "+").replace(/_/g, "/"));
   const decompressed = await brotli.decompress(
-    new Uint8Array(base64Decoded.split("").map((c) => c.charCodeAt(0)))
+    new Uint8Array(base64Decoded.split("").map((c) => c.charCodeAt(0))),
   );
 
   const decompressedString = textDecoder.decode(decompressed);

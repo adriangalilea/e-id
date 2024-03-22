@@ -12,7 +12,7 @@ export default async function Page({
   const user = await getUserByUsername(params.username);
 
   return (
-    <div className="flex flex-col grow h-fit max-h-dvh justify-between max-w-2xl w-full px-6 pt-3 md:pt-6 mx-auto">
+    <div className="mx-auto flex h-fit max-h-dvh w-full max-w-2xl grow flex-col justify-between px-6 pt-3 md:pt-6">
       <UserProfile user={user} />
       <CommentSection
         profileUserId={user.id}

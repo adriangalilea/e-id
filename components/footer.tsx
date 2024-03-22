@@ -6,8 +6,8 @@ import { Separator } from "@/components/ui/separator";
 
 export default function Footer({ children }: { children?: React.ReactNode }) {
   return (
-    <footer className="fixed bottom-0 bg-zinc-50/60 dark:bg-zinc-950/60 backdrop-blur-2xl w-screen text-zinc-500 border-t-[0.1px] border-black/15 dark:border-white/15 shadow-2xl ">
-      <div className="flex justify-between items-center">
+    <footer className="fixed bottom-0 w-screen border-t-[0.1px] border-black/15 bg-zinc-50/60 text-zinc-500 shadow-2xl backdrop-blur-2xl dark:border-white/15 dark:bg-zinc-950/60 ">
+      <div className="flex items-center justify-between">
         <div className="flex items-center">
           <Button asChild variant="ghost" className="rounded-none">
             <Link href="/">
@@ -16,7 +16,7 @@ export default function Footer({ children }: { children?: React.ReactNode }) {
           </Button>
           <Separator
             orientation="vertical"
-            className="sm:hidden h-full py-5 px-0!"
+            className="px-0! h-full py-5 sm:hidden"
           />
           {children}
         </div>
@@ -24,7 +24,7 @@ export default function Footer({ children }: { children?: React.ReactNode }) {
           <ButtonGithub />
           <Separator
             orientation="vertical"
-            className="sm:hidden h-full py-5 px-0!"
+            className="px-0! h-full py-5 sm:hidden"
           />
           <ButtonFAQ />
         </div>
@@ -37,7 +37,7 @@ function ButtonGithub({ description = false }: { description?: boolean }) {
   return (
     <Button asChild variant="ghost" className="rounded-none">
       <Link
-        className="lg:decoration-transparent hover:decoration-inherit opacity-90 hover:opacity-100 font-light"
+        className="font-light opacity-90 hover:decoration-inherit hover:opacity-100 lg:decoration-transparent"
         href="https://github.com/adriangalilea/e-id"
         target="_blank"
       >
@@ -56,7 +56,7 @@ function ButtonFAQ({ description = false }: { description?: boolean }) {
   return (
     <Button asChild variant="ghost" className="rounded-none">
       <Link
-        className="lg:decoration-transparent hover:decoration-inherit hover:opacity-100 font-light"
+        className="font-light hover:decoration-inherit hover:opacity-100 lg:decoration-transparent"
         href="/faq"
       >
         <HelpCircle size={16} strokeWidth={1} />

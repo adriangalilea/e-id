@@ -72,7 +72,7 @@ export default function UserProfileForm() {
   }
 
   return (
-    <Card className="bg-zinc-50/90 sm:dark:bg-zinc-950/60 dark:bg-zinc-800 backdrop-blur-2xl mb-20">
+    <Card className="mb-20 bg-zinc-50/90 backdrop-blur-2xl dark:bg-zinc-800 sm:dark:bg-zinc-950/60">
       <CardHeader>
         <CardTitle>👤 e-ID</CardTitle>
         <CardDescription>Digital identity</CardDescription>
@@ -81,7 +81,7 @@ export default function UserProfileForm() {
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
-          className="space-y-4 prose lg:prose-xl xl:prose-2xl prose-zinc dark:prose-invert antialiased"
+          className="prose prose-zinc space-y-4 antialiased lg:prose-xl xl:prose-2xl dark:prose-invert"
         >
           <CardContent className="grid gap-4">
             <FormField
