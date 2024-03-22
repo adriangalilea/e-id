@@ -39,7 +39,7 @@ export default async function CommentSection({
             <Input
               type="text"
               name="body"
-              className="rounded-none bg-zinc-200/80 text-[16px] backdrop-blur-md focus-visible:border-zinc-500 focus-visible:ring-0 focus-visible:ring-transparent focus-visible:ring-offset-0 dark:bg-zinc-700/80 sm:dark:bg-zinc-800/80"
+              className="rounded-none bg-zinc-200/60 text-[16px] backdrop-blur-md focus-visible:border-zinc-500 focus-visible:ring-0 focus-visible:ring-transparent focus-visible:ring-offset-0 dark:bg-zinc-700/80 sm:dark:bg-zinc-800/60"
               placeholder="I want everyone to know..."
             />
             <Button
