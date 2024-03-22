@@ -5,6 +5,7 @@ import { SelectUser } from "@/db/schema";
 
 interface CommentProps {
   profilePicture: SelectUser["avatar"];
+  name: SelectUser["name"];
   username: SelectUser["username"];
   created_at: SelectUser["created_at"];
   updated_at: SelectUser["updated_at"];
@@ -13,28 +14,31 @@ interface CommentProps {
 }
 
 export default function Comment(props: CommentProps) {
-  const { profilePicture, username, created_at, updated_at, body, user_id } =
-    props;
+  const {
+    profilePicture,
+    name,
+    username,
+    created_at,
+    updated_at,
+    body,
+    user_id,
+  } = props;
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-start gap-2">
       <Avatar>
         <AvatarImage src={profilePicture!} />
         <AvatarFallback>{username}</AvatarFallback>
       </Avatar>
-      <article className="prose prose-zinc flex flex-col items-start dark:prose-invert">
+      <article className="prose prose-zinc flex w-full items-center justify-between border-l border-zinc-500 bg-black/5 px-3 py-1.5 dark:prose-invert dark:bg-white/5">
+        <p className="!m-0 italic">{body}</p>
         <header className="flex items-center gap-2">
-          <h4 className="!my-0 flex items-center">
-            <Link
-              href={`/${username}`}
-              className="no-underline hover:underline"
-            >
-              {username}
-            </Link>
-          </h4>
+          <Link href={`/${username}`} className="no-underline hover:underline">
+            <span className="font-extralight">{name}</span>
+          </Link>
+
           <HumanTime date={created_at} />
         </header>
-        <p className="!mt-0 flex">{body}</p>
       </article>
     </div>
   );
