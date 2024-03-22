@@ -57,6 +57,7 @@ export default async function CommentSection({
           <div key={commentAndCommentator.comments?.id}>
             <Comment
               profilePicture={commentAndCommentator.users.gh_image}
+              name={commentAndCommentator.users.name}
               username={commentAndCommentator.users.username}
               created_at={commentAndCommentator.comments?.created_at!}
               body={commentAndCommentator.comments?.body!}
