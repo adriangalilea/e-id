@@ -32,7 +32,7 @@ export function SignOut(props: React.ComponentPropsWithRef<typeof Button>) {
       }}
     >
       <Button variant="destructiveGhost" className="rounded-none" {...props}>
-        <LogOut strokeWidth={1} size={16} />
+        <LogOut strokeWidth={1} />
       </Button>
     </form>
   );

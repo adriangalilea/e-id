@@ -11,7 +11,7 @@ export default function Footer({ children }: { children?: React.ReactNode }) {
         <div className="flex items-center">
           <Button asChild variant="ghost" className="rounded-none">
             <Link href="/">
-              <Home size={20} strokeWidth={1} />
+              <Home strokeWidth={1} />
             </Link>
           </Button>
           <Separator
@@ -41,11 +41,11 @@ function ButtonGithub({ description = false }: { description?: boolean }) {
         href="https://github.com/adriangalilea/e-id"
         target="_blank"
       >
-        <Github size={16} strokeWidth={1} />
+        <Github strokeWidth={1} />
         {description && (
           <>
             <span className="ml-0.5">Source code</span>
-            <ExternalLink size={16} strokeWidth={1} className="ml-0.5" />
+            <ExternalLink strokeWidth={1} className="ml-0.5" />
           </>
         )}
       </Link>
@@ -59,7 +59,7 @@ function ButtonFAQ({ description = false }: { description?: boolean }) {
         className="font-light hover:decoration-inherit hover:opacity-100 lg:decoration-transparent"
         href="/faq"
       >
-        <HelpCircle size={16} strokeWidth={1} />
+        <HelpCircle strokeWidth={1} />
         {description && <span className="ml-1">FAQ</span>}
       </Link>
     </Button>
