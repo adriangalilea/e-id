@@ -78,7 +78,7 @@ export default async function CommentSection({
         </form>
       )}
 
-      <div className="flex flex-col gap-2 overflow-auto py-2">
+      <div className="flex flex-col gap-2 overflow-auto">
         {allCommentsAndCommentators.map((commentAndCommentator) => (
           <div key={commentAndCommentator.comments?.id}>
             <Comment
