@@ -45,7 +45,7 @@ export default async function CommentSection({
             />
             <Button
               type="submit"
-              className="z-10 rounded-none"
+              className="z-10 !h-10 !w-10 rounded-none !p-0"
               variant="secondary"
             >
               <SendHorizontal strokeWidth={1} />
@@ -70,7 +70,7 @@ export default async function CommentSection({
             <Button
               disabled
               type="submit"
-              className="z-10 rounded-none"
+              className="z-10 !h-10 !w-10 rounded-none !p-0"
               variant="secondary"
             >
               <SendHorizontal strokeWidth={1} />
