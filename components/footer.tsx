@@ -6,7 +6,7 @@ import { Separator } from "@/components/ui/separator";
 
 export default function Footer({ children }: { children?: React.ReactNode }) {
   return (
-    <footer className="fixed bottom-0 flex w-full max-w-2xl justify-between border-t-[0.1px] border-black/15 bg-zinc-50/60 text-zinc-500 shadow-2xl backdrop-blur-2xl dark:border-white/15 dark:bg-zinc-950/60 ">
+    <footer className="flex w-full justify-between border-t-[0.1px] border-black/15 bg-zinc-50/60 text-zinc-500 shadow-2xl backdrop-blur-2xl dark:border-white/15 dark:bg-zinc-950/60 ">
       <div className="flex items-center">
         <ButtonHome />
         <Separator

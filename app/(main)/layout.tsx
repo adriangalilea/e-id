@@ -24,7 +24,7 @@ export default function RootLayout({
       <body
         className={cn(
           inter.className,
-          "flex min-h-dvh flex-col justify-between bg-zinc-50 antialiased dark:bg-zinc-950",
+          "mx-auto flex h-dvh w-full max-w-2xl flex-col justify-between bg-zinc-50 px-6 pt-3 antialiased md:pt-6 dark:bg-zinc-950",
         )}
       >
         {children}
