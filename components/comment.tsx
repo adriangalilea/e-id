@@ -28,7 +28,7 @@ export default function Comment(props: CommentProps) {
     <div className="flex items-start gap-2">
       <Avatar>
         <AvatarImage src={profilePicture!} />
-        <AvatarFallback>{username}</AvatarFallback>
+        <AvatarFallback>{name.trim().slice(0, 2).toUpperCase()}</AvatarFallback>
       </Avatar>
       <article className="prose prose-zinc flex w-full items-center justify-between border-l border-zinc-500 bg-zinc-500/10 px-3 py-1.5 dark:prose-invert">
         <p className="!m-0 text-pretty italic">{body}</p>
