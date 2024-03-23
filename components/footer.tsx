@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { HelpCircle, Home, X } from "lucide-react";
+import { Github, HelpCircle, Home } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 
 export default function Footer({ children }: { children?: React.ReactNode }) {
