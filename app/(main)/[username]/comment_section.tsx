@@ -34,7 +34,7 @@ export default async function CommentSection({
       {createCommentFromFormWithID ? (
         <form
           action={createCommentFromFormWithID}
-          className="sticky top-0 z-10"
+          className="sticky top-0 z-10 pb-2"
         >
           <div className="flex items-center">
             <Input
@@ -54,7 +54,7 @@ export default async function CommentSection({
         </form>
       ) : (
         <form
-          className="sticky top-0 z-10"
+          className="sticky top-0 z-10 pb-2"
           action={async () => {
             "use server";
             await signIn("github");
