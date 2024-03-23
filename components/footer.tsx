@@ -6,15 +6,15 @@ import { Separator } from "@/components/ui/separator";
 
 export default function Footer({ children }: { children?: React.ReactNode }) {
   return (
-    <footer className="flex w-full justify-between border-t-[0.1px] border-black/15 bg-zinc-50/60 text-zinc-500 shadow-2xl backdrop-blur-2xl dark:border-white/15 dark:bg-zinc-950/60 ">
-      <div className="flex items-center">
+    <footer className="flex w-full justify-between border-t-[0.1px] border-black/15 bg-zinc-50/60 text-zinc-500 shadow-2xl backdrop-blur-2xl dark:border-white/15 dark:bg-zinc-950/60">
+      <div className="flex">
         {children}
         <Separator
           orientation="vertical"
           className="px-0! h-full py-5 sm:hidden"
         />
       </div>
-      <div className="flex">
+      <div className="flex gap-2">
         <ButtonGithub />
         <Separator
           orientation="vertical"
@@ -33,7 +33,7 @@ export default function Footer({ children }: { children?: React.ReactNode }) {
 
 function ButtonHome() {
   return (
-    <Button asChild variant="ghost" className="rounded-none">
+    <Button asChild variant="ghost" className="!h-10 !w-10 rounded-none !p-0">
       <Link href="/">
         <Home strokeWidth={1} />
       </Link>
@@ -43,7 +43,7 @@ function ButtonHome() {
 
 function ButtonGithub() {
   return (
-    <Button asChild variant="ghost" className="rounded-none">
+    <Button asChild variant="ghost" className="!h-10 !w-10 rounded-none !p-0">
       <Link href="https://github.com/adriangalilea/e-id" target="_blank">
         <Github strokeWidth={1} />
       </Link>
@@ -52,7 +52,7 @@ function ButtonGithub() {
 }
 function ButtonFAQ() {
   return (
-    <Button asChild variant="ghost" className="rounded-none">
+    <Button asChild variant="ghost" className="!h-10 !w-10 rounded-none !p-0">
       <Link href="/faq">
         <HelpCircle strokeWidth={1} />
       </Link>

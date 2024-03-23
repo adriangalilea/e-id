@@ -6,6 +6,8 @@ import Footer from "@/components/footer";
 import { Analytics } from "@vercel/analytics/react";
 import UserButton from "@/components/user-button";
 import { Toaster } from "@/components/ui/toaster";
+import { auth } from "@/auth";
+import { SignIn, SignOut } from "@/components/auth-components";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -14,11 +16,12 @@ export const metadata: Metadata = {
   description: "Digital identity",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const session = await auth();
   return (
     <html lang="en">
       <body
@@ -31,7 +34,17 @@ export default function RootLayout({
         <Toaster />
         <Analytics />
         <Footer>
-          <UserButton />
+          {session ? (
+            <div className="flex gap-2">
+              <UserButton
+                username={session.user?.username!}
+                image={session.user?.gh_image!}
+              />
+              <SignOut />
+            </div>
+          ) : (
+            <SignIn />
+          )}
         </Footer>
       </body>
     </html>

@@ -1,6 +1,6 @@
 import { signIn, signOut } from "@/auth";
 import { Button } from "./ui/button";
-import { LogIn, LogOut } from "lucide-react";
+import { LogIn, LogOut, UserRound } from "lucide-react";
 
 export function SignIn({
   provider,
@@ -14,11 +14,8 @@ export function SignIn({
         await signIn(provider);
       }}
     >
-      <Button
-        variant="ghost"
-        className="w-full rounded-none font-light antialiased opacity-80 transition-all duration-500 hover:decoration-inherit hover:opacity-100 sm:w-fit lg:decoration-transparent"
-      >
-        👤 you
+      <Button variant="ghost" className="!h-10 !w-10 rounded-none !p-0">
+        <UserRound strokeWidth={1} />
       </Button>
     </form>
   );
@@ -31,7 +28,11 @@ export function SignOut(props: React.ComponentPropsWithRef<typeof Button>) {
         await signOut();
       }}
     >
-      <Button variant="destructiveGhost" className="rounded-none" {...props}>
+      <Button
+        variant="destructiveGhost"
+        className="!h-10 !w-10 rounded-none !p-0"
+        {...props}
+      >
         <LogOut strokeWidth={1} />
       </Button>
     </form>
