@@ -48,7 +48,7 @@ export default async function CommentSection({
               className="z-10 rounded-none"
               variant="secondary"
             >
-              <SendHorizontal size={18} strokeWidth={1} />
+              <SendHorizontal strokeWidth={1} />
             </Button>
           </div>
         </form>
@@ -68,11 +68,12 @@ export default async function CommentSection({
               placeholder="I want everyone to know..."
             />
             <Button
+              disabled
               type="submit"
               className="z-10 rounded-none"
               variant="secondary"
             >
-              <SendHorizontal size={18} strokeWidth={1} />
+              <SendHorizontal strokeWidth={1} />
             </Button>
           </div>
         </form>
