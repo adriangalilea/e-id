@@ -6,25 +6,11 @@ import { Separator } from "@/components/ui/separator";
 
 export default function Footer({ children }: { children?: React.ReactNode }) {
   return (
-    <footer className="flex w-full justify-between border-t-[0.1px] border-black/15 bg-zinc-50/60 text-zinc-500 shadow-2xl backdrop-blur-2xl dark:border-white/15 dark:bg-zinc-950/60">
-      <div className="flex">
-        {children}
-        <Separator
-          orientation="vertical"
-          className="px-0! h-full py-5 sm:hidden"
-        />
-      </div>
+    <footer className="flex w-full justify-between bg-zinc-500/10 text-zinc-500 shadow-2xl backdrop-blur-2xl dark:border-white/15">
+      <div className="flex">{children}</div>
       <div className="flex gap-2">
         <ButtonGithub />
-        <Separator
-          orientation="vertical"
-          className="px-0! h-full py-5 sm:hidden"
-        />
         <ButtonFAQ />
-        <Separator
-          orientation="vertical"
-          className="px-0! h-full py-5 sm:hidden"
-        />
         <ButtonHome />
       </div>
     </footer>

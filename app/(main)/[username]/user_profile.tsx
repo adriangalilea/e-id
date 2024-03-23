@@ -42,7 +42,7 @@ export default function UserProfile({ user }: { user: SelectUser }) {
           </div>
         </div>
       </div>
-      <div className="flex flex-col gap-1 pt-1">
+      <div className="flex flex-col gap-1">
         <div className="mt-6">
           {user.bio && (
             <blockquote className="prose prose-zinc mb-2 border-l border-zinc-500 bg-black/5 p-2 italic dark:prose-invert dark:bg-white/5">
@@ -50,7 +50,7 @@ export default function UserProfile({ user }: { user: SelectUser }) {
             </blockquote>
           )}
         </div>
-        {renderSocialLinks(user)}
+        <div className="flex gap-1">{renderSocialLinks(user)}</div>
       </div>
     </main>
   );
