@@ -8,6 +8,7 @@ import {
   Link as LinkIcon,
   Youtube,
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export type SocialNetwork =
   | "twitter"
@@ -74,13 +75,13 @@ export function SocialComponent({
   const icon = getSocialIcon(network);
   const displayText = getSocialDisplayText(network, identifier);
   return (
-    <div className="prose prose-zinc flex items-center gap-0.5 antialiased dark:prose-invert">
+    <Button variant="outline" className="rounded-none">
       <Link
         href={url}
         className="flex items-center gap-1 font-light no-underline"
       >
-        {icon} {displayText}
+        {icon}
       </Link>
-    </div>
+    </Button>
   );
 }
