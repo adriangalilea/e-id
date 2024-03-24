@@ -102,7 +102,7 @@ type UserSocialInfo = {
 type ValidSocial = {
   id: SocialNetwork;
   url: string;
-  icon: string;
+  icon: ReactElement;
   displayText: string;
 };
 function getValidSocials(user: SelectUser): ValidSocial[] {
