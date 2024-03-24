@@ -23,6 +23,7 @@ A constant pointer to your ever-changing web presence.
 
 # 📝 TO-DO
 - [ ] feat: opengraph
+  - [ ] [fetch-opengraph node](https://github.com/purphoros/fetch-opengraph)
 - [ ] feat: SEO
 - [ ] style: comment input button disabled while not text
 - [ ] feat: being able to edit your own profile
