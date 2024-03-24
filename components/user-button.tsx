@@ -13,7 +13,7 @@ export default async function UserButton({
     <div className="flex items-center justify-around">
       <Button
         variant="ghost"
-        className="w-full rounded-none hover:opacity-80 !p-0"
+        className="w-full rounded-none !p-0 hover:opacity-80"
         asChild
       >
         <Link href={`/${username}`} className="!p-0">
