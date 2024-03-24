@@ -22,6 +22,7 @@ A constant pointer to your ever-changing web presence.
     - [👤️️.to](https://👤️️.to) redirects to [e-id.to](https://e-id.to) in anything else.
 
 # 📝 TO-DO
+- [ ] feat: opengraph
 - [ ] feat: SEO
 - [ ] feat: dub.co license
 - [ ] style: comment input button disabled while not text
@@ -63,8 +64,8 @@ A constant pointer to your ever-changing web presence.
   - [ ] aliveness score
   - [ ] notify when friends make new places
 - [ ] feat: premium claimable username
-- [ ] fix: flash of mobile menu
 
+- [x] fix: flash of mobile menu
 - [x] feat: signup
 - [x] feat: auth on every domain
 - [x] feat: display profile info, minimal style.
