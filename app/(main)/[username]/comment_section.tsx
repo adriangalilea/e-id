@@ -34,7 +34,7 @@ export default async function CommentSection({
       {createCommentFromFormWithID ? (
         <form
           action={createCommentFromFormWithID}
-          className="sticky top-0 z-10 pb-2"
+          className="sticky top-0 z-10"
         >
           <div className="flex items-center gap-2">
             <Input
@@ -54,7 +54,7 @@ export default async function CommentSection({
         </form>
       ) : (
         <form
-          className="sticky top-0 z-10 pb-2"
+          className="sticky top-0 z-10"
           action={async () => {
             "use server";
             await signIn("github");
@@ -79,8 +79,7 @@ export default async function CommentSection({
           </div>
         </form>
       )}
-
-      <div className="flex flex-col gap-2 overflow-auto">
+      <div className="mt-2 flex flex-col gap-2 overflow-auto">
         {allCommentsAndCommentators
           .filter(
             (commentAndCommentator) =>
