@@ -97,6 +97,7 @@ export default async function CommentSection({
                 body={commentAndCommentator.comments?.body!}
                 user_id={commentAndCommentator.users.id}
                 updated_at={commentAndCommentator.comments?.updated_at!}
+                commentId={commentAndCommentator.comments?.id!}
               />
             </div>
           ))}
