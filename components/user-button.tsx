@@ -1,6 +1,5 @@
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Button } from "./ui/button";
-import { auth } from "@/auth";
 import Link from "next/link";
 import { Separator } from "./ui/separator";
 
@@ -19,7 +18,7 @@ export default async function UserButton({
         asChild
       >
         <Link href={`/${username}`} className="!p-0">
-          <Avatar className="!s-10 rounded-none">
+          <Avatar className="!size-10 rounded-none">
             <AvatarImage src={image} alt={username + " avatar"} />
             <AvatarFallback>
               {username.trim().slice(0, 2).toUpperCase()}
@@ -29,7 +28,7 @@ export default async function UserButton({
       </Button>
       <Separator
         orientation="vertical"
-        className="px-0! h-full py-5 sm:hidden"
+        className="h-full !px-0 py-5 sm:hidden"
       />
     </div>
   );
