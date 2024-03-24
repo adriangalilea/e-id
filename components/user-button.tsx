@@ -1,7 +1,6 @@
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Button } from "./ui/button";
 import Link from "next/link";
-import { Separator } from "./ui/separator";
 
 export default async function UserButton({
   username,
@@ -11,10 +10,10 @@ export default async function UserButton({
   image: string;
 }) {
   return (
-    <div className="flex w-full items-center justify-around sm:w-fit">
+    <div className="flex items-center justify-around">
       <Button
         variant="ghost"
-        className="w-full rounded-none hover:opacity-80 sm:w-fit"
+        className="w-full rounded-none hover:opacity-80 !p-0"
         asChild
       >
         <Link href={`/${username}`} className="!p-0">
@@ -26,10 +25,6 @@ export default async function UserButton({
           </Avatar>
         </Link>
       </Button>
-      <Separator
-        orientation="vertical"
-        className="h-full !px-0 py-5 sm:hidden"
-      />
     </div>
   );
 }
