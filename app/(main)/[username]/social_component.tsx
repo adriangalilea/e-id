@@ -140,7 +140,7 @@ export function SocialComponent({ user }: { user: SelectUser }): JSX.Element {
           <TabsTrigger
             key={id}
             value={id}
-            className="flex h-full justify-center rounded-none px-2"
+            className="flex h-full justify-center rounded-none px-2 !shadow-none"
           >
             {icon}
           </TabsTrigger>
