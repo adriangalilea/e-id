@@ -5,7 +5,7 @@ import { Github, HelpCircle, Home } from "lucide-react";
 
 export default function Footer({ children }: { children?: React.ReactNode }) {
   return (
-    <footer className="flex w-full justify-between bg-zinc-500/10 text-zinc-500 shadow-2xl backdrop-blur-2xl dark:border-white/15">
+    <footer className="mt-2 flex w-full justify-between bg-zinc-500/10 text-zinc-500 shadow-2xl backdrop-blur-2xl dark:border-white/15">
       <div className="flex">{children}</div>
       <div className="flex gap-2">
         <ButtonGithub />
