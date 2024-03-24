@@ -66,6 +66,8 @@ export async function createCommentFromForm(
   formData: FormData,
 ) {
   const body = String(formData.get("body"));
+  // TODO: should be done with zod
+  if (!body) return;
   await createComment(profileId, commentatorId, body);
 }
 
