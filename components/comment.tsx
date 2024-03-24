@@ -35,7 +35,7 @@ export default async function Comment(props: CommentProps) {
         "use server";
         await deleteComment(commentId);
       }}
-      className="flex items-start gap-2 mt-2"
+      className="mt-2 flex items-start gap-2"
     >
       <UserButton username={username!} image={profilePicture!} />
       <article className="prose prose-zinc dark:prose-invert flex w-full items-center justify-between border-l border-zinc-500 bg-zinc-500/10 px-3 py-1.5">
