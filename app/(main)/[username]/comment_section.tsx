@@ -36,7 +36,7 @@ export default async function CommentSection({
           action={createCommentFromFormWithID}
           className="sticky top-0 z-10 pb-2"
         >
-          <div className="flex items-center">
+          <div className="flex items-center gap-2">
             <Input
               type="text"
               name="body"
@@ -45,8 +45,8 @@ export default async function CommentSection({
             />
             <Button
               type="submit"
-              className="z-10 !h-10 !w-10 shrink-0 grow-0 rounded-none !p-0"
-              variant="secondary"
+              className="z-10 !h-10 !w-10 shrink-0 grow-0 rounded-none bg-zinc-500/20 !p-0"
+              variant="ghost"
             >
               <SendHorizontal strokeWidth={1} />
             </Button>
@@ -60,7 +60,7 @@ export default async function CommentSection({
             await signIn("github");
           }}
         >
-          <div className="flex items-center">
+          <div className="flex items-center gap-2">
             <Input
               disabled
               type="text"
@@ -71,8 +71,8 @@ export default async function CommentSection({
             <Button
               disabled
               type="submit"
-              className="z-10 !h-10 !w-10 shrink-0 grow-0 rounded-none !p-0"
-              variant="secondary"
+              className="z-10 !h-10 !w-10 shrink-0 grow-0 rounded-none bg-zinc-500/20 !p-0"
+              variant="ghost"
             >
               <SendHorizontal strokeWidth={1} />
             </Button>
