@@ -81,19 +81,25 @@ export default async function CommentSection({
       )}
 
       <div className="flex flex-col gap-2 overflow-auto">
-        {allCommentsAndCommentators.map((commentAndCommentator) => (
-          <div key={commentAndCommentator.comments?.id}>
-            <Comment
-              profilePicture={commentAndCommentator.users.gh_image}
-              name={commentAndCommentator.users.name}
-              username={commentAndCommentator.users.username}
-              created_at={commentAndCommentator.comments?.created_at!}
-              body={commentAndCommentator.comments?.body!}
-              user_id={commentAndCommentator.users.id}
-              updated_at={commentAndCommentator.comments?.updated_at!}
-            />
-          </div>
-        ))}
+        {allCommentsAndCommentators
+          .filter(
+            (commentAndCommentator) =>
+              visitorUserId === profileUserId ||
+              visitorUserId === commentAndCommentator.users.id,
+          )
+          .map((commentAndCommentator) => (
+            <div key={commentAndCommentator.comments?.id}>
+              <Comment
+                profilePicture={commentAndCommentator.users.gh_image}
+                name={commentAndCommentator.users.name}
+                username={commentAndCommentator.users.username}
+                created_at={commentAndCommentator.comments?.created_at!}
+                body={commentAndCommentator.comments?.body!}
+                user_id={commentAndCommentator.users.id}
+                updated_at={commentAndCommentator.comments?.updated_at!}
+              />
+            </div>
+          ))}
       </div>
     </div>
   );
