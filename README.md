@@ -24,7 +24,6 @@ A constant pointer to your ever-changing web presence.
 # 📝 TO-DO
 - [ ] feat: opengraph
 - [ ] feat: SEO
-- [ ] feat: dub.co license
 - [ ] style: comment input button disabled while not text
 - [ ] feat: being able to edit your own profile
   - [ ] flag picker
@@ -65,6 +64,7 @@ A constant pointer to your ever-changing web presence.
   - [ ] notify when friends make new places
 - [ ] feat: premium claimable username
 
+- [x] feat: dub.co license
 - [x] fix: flash of mobile menu
 - [x] feat: signup
 - [x] feat: auth on every domain
