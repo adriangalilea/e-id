@@ -1,9 +1,14 @@
 {
   "extends": [
+    "next",
     "next/core-web-vitals",
     "plugin:tailwindcss/recommended",
-    "prettier"
+    "plugin:prettier/recommended"
   ],
+  "plugins": ["prettier"],
+  "rules": {
+    "prettier/prettier": "error"
+  },
   "overrides": [
     {
       "files": ["*.ts", "*.tsx", "*.js"],
