@@ -71,6 +71,9 @@ function getSocialDisplayText(
   if (network === "website") {
     return identifier.replace(/^https?:\/\//, "");
   }
+  if (network === "email") {
+    return identifier;
+  }
   return `@${identifier}`;
 }
 
@@ -148,7 +151,7 @@ export function SocialComponent({ user }: { user: SelectUser }): JSX.Element {
           <Card className="rounded-none border-t-transparent">
             <CardContent className="space-y-2 p-0">
               <Link href={url} className="flex items-center no-underline">
-                <Button variant="ghost" className="w-full h-full rounded-none">
+                <Button variant="ghost" className="size-full rounded-none">
                   <div className="flex flex-col items-center space-y-2">
                     {displayText}
                   </div>
