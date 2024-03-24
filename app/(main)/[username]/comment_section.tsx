@@ -79,7 +79,7 @@ export default async function CommentSection({
           </div>
         </form>
       )}
-      <div className="mt-2 flex flex-col gap-2 overflow-auto">
+      <div className="flex flex-col gap-2 overflow-auto">
         {allCommentsAndCommentators
           .filter(
             (commentAndCommentator) =>
