@@ -1,7 +1,7 @@
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import HumanTime from "./human_date";
 import Link from "next/link";
 import { SelectUser } from "@/db/schema";
+import UserButton from "./user-button";
 
 interface CommentProps {
   profilePicture: SelectUser["avatar"];
@@ -26,13 +26,8 @@ export default function Comment(props: CommentProps) {
 
   return (
     <div className="flex items-start gap-2">
-      <Avatar>
-        <AvatarImage src={profilePicture!} />
-        <AvatarFallback>
-          {name?.trim().slice(0, 2).toUpperCase()}
-        </AvatarFallback>
-      </Avatar>
-      <article className="prose prose-zinc flex w-full items-center justify-between border-l border-zinc-500 bg-zinc-500/10 px-3 py-1.5 dark:prose-invert">
+      <UserButton username={username!} image={profilePicture!} />
+      <article className="prose prose-zinc dark:prose-invert flex w-full items-center justify-between border-l border-zinc-500 bg-zinc-500/10 px-3 py-1.5">
         <p className="!m-0 text-pretty italic">{body}</p>
         <header className="flex items-center gap-2">
           <Link href={`/${username}`} className="no-underline hover:underline">
