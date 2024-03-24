@@ -22,13 +22,15 @@ A constant pointer to your ever-changing web presence.
     - [👤️️.to](https://👤️️.to) redirects to [e-id.to](https://e-id.to) in anything else.
 
 # 📝 TO-DO
+- [ ] feat: Socials as a different table
+- [ ] feat: do not show email by default, only suggest.
 - [ ] feat: opengraph
   - [ ] [fetch-opengraph node](https://github.com/purphoros/fetch-opengraph)
 - [ ] feat: SEO
 - [ ] style: comment input button disabled while not text
 - [ ] feat: being able to edit your own profile
   - [ ] flag picker
-  - [ ] higlight comment -> testimonial
+  - [ ] highlight comment -> testimonial
 - [ ] feat: custom auth login window
   - [ ] https://authjs.dev/guides/basics/pages#theming
   - [ ] https://github.com/ndom91/next-auth-example-sign-in-page
