@@ -12,7 +12,6 @@ import {
   SelectUser,
   socials,
   github,
-  google,
 } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
 
