@@ -13,7 +13,6 @@ export const users = sqliteTable("user", {
   name: text("name"),
   email: text("email").notNull(),
   emailVerified: integer("emailVerified", { mode: "timestamp_ms" }),
-  email_public: integer("email_public", { mode: "boolean" }).default(false),
   image: text("image"),
   bio: text("bio"),
   country_code: text("country_code").default("XX").notNull(),
@@ -111,6 +110,14 @@ export const socials = sqliteTable("social", {
   context_message: text("context_message"),
   order: integer("order"),
   public: integer("public", { mode: "boolean" }).notNull().default(false),
+});
+
+export const email = sqliteTable("email", {
+  id: text("id").notNull().primaryKey(),
+  social_id: text("social_id").references(() => socials.id, {
+    onDelete: "cascade",
+  }),
+  address: text("address"),
 });
 
 export const github = sqliteTable("github", {
