@@ -16,8 +16,10 @@ import Flag from "@/components/flag";
 
 export function LatestUsersTable({ users }: { users: SelectUser[] }) {
   return (
-    <Table className="w-fill">
-      <TableCaption>latest sign-ups</TableCaption>
+    <Table>
+      <TableCaption className="text-left italic opacity-60">
+        latest sign-ups
+      </TableCaption>
       <TableHeader>
         <TableRow>
           <TableHead>country</TableHead>
@@ -31,7 +33,7 @@ export function LatestUsersTable({ users }: { users: SelectUser[] }) {
             <TableCell>
               <Flag country={user.country_code} />
             </TableCell>
-            <TableCell className="prose prose-zinc text-sm dark:prose-invert">
+            <TableCell className="prose prose-zinc dark:prose-invert text-sm">
               <Link
                 href={`/${user.username}`}
                 className="no-underline hover:underline"
@@ -39,7 +41,7 @@ export function LatestUsersTable({ users }: { users: SelectUser[] }) {
                 {user.name}
               </Link>
             </TableCell>
-            <TableCell className="prose prose-zinc text-sm dark:prose-invert">
+            <TableCell className="prose prose-zinc dark:prose-invert text-sm">
               <HumanTime date={user.created_at} />
             </TableCell>
           </TableRow>
