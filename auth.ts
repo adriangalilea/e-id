@@ -146,6 +146,28 @@ function customAdapter(): Adapter {
     return userCreated;
   };
 
+  adapter.linkAccount = async (rawAccount): Promise<any> => {
+    console.log(rawAccount);
+    const updatedAccount = await db
+      .insert(accounts)
+      .values(rawAccount)
+      .returning()
+      .get();
+
+    const account: any = {
+      ...updatedAccount,
+      type: updatedAccount.type,
+      access_token: updatedAccount.access_token ?? undefined,
+      token_type: updatedAccount.token_type ?? undefined,
+      id_token: updatedAccount.id_token ?? undefined,
+      refresh_token: updatedAccount.refresh_token ?? undefined,
+      scope: updatedAccount.scope ?? undefined,
+      expires_at: updatedAccount.expires_at ?? undefined,
+      session_state: updatedAccount.session_state ?? undefined,
+    };
+
+    return account;
+  };
   // the rest of the methods need to be copy-pasted, else the custom session data will not appear
   adapter.getUser = async (data) => {
     const result = await db
@@ -177,6 +199,7 @@ function customAdapter(): Adapter {
   };
 
   adapter.updateUser = async (data) => {
+    console.log(data);
     if (!data.id) {
       throw new Error("No user id.");
     }
