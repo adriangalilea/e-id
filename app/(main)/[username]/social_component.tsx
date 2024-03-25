@@ -89,8 +89,12 @@ export async function SocialComponent({
 }: {
   user: SelectUser;
 }): Promise<JSX.Element> {
-  const validSocials = await getSocials(user.id);
-  console.log(validSocials);
+  let validSocials = await getSocials(user.id);
+
+  // filter out non public ones
+  validSocials = validSocials.filter((social) => social.public === true);
+
+  if (validSocials.length === 0) return <></>;
 
   const populatedSocials = validSocials.map(
     ({ platform, value, image, ...rest }) => ({
