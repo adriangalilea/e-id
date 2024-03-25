@@ -22,7 +22,7 @@ A constant pointer to your ever-changing web presence.
     - [👤️️.to](https://👤️️.to) redirects to [e-id.to](https://e-id.to) in anything else.
 
 # 📝 TO-DO
-- [ ] feat: Socials as a different table
+- [x] feat: Socials as a different table
 - [ ] feat: do not show email by default, only suggest.
 - [ ] feat: opengraph
   - [ ] [fetch-opengraph node](https://github.com/purphoros/fetch-opengraph)
@@ -35,7 +35,7 @@ A constant pointer to your ever-changing web presence.
   - [ ] https://authjs.dev/guides/basics/pages#theming
   - [ ] https://github.com/ndom91/next-auth-example-sign-in-page
 - [ ] feat: auth
-  - [ ] google
+  - [x] google
   - [ ] apple passkey
 - [ ] feat: being able to choose another username
   - [ ] redirect on the toast to user profile
