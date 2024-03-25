@@ -22,11 +22,13 @@ export const users = sqliteTable("user", {
   updated_at: text("updated_at")
     .default(sql`(CURRENT_TIMESTAMP)`)
     .notNull(),
+  allow_comments: integer("allow_comments", { mode: "boolean" })
+    .notNull()
+    .default(false),
+  theme: text("theme"),
+  languages: text("languages", { mode: "json" }),
+  birthDate: integer("birth_date", { mode: "timestamp" }),
 });
-// TODO: add birthdate
-// TODO: add languages
-// TODO: add allow comments boolean
-// TODO: add theme casey
 
 export const accounts = sqliteTable(
   "account",
