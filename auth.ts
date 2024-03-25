@@ -13,6 +13,7 @@ import {
   socials,
   github,
   google,
+  email,
 } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
 
@@ -77,6 +78,22 @@ function customAdapter(): Adapter {
           // @ts-ignore
           image: data.gh_image,
         });
+        // create his email social
+        const emailCreated = await db
+          .insert(socials)
+          .values({
+            id: crypto.randomUUID(),
+            user_id: userCreated.id,
+            platform: "email",
+          })
+          .returning()
+          .then((res) => res[0] ?? null);
+
+        await db.insert(email).values({
+          id: crypto.randomUUID(),
+          social_id: emailCreated.id,
+          address: data.email,
+        });
 
         // we try to set his image
         await db
@@ -86,6 +103,7 @@ function customAdapter(): Adapter {
           .where(eq(users.id, userCreated.id));
 
         // last we try to claim his username given his gh_username
+        // this may fail if username is not unique hence we do it last and isolated
         await db
           .update(users)
           // @ts-ignore
@@ -115,13 +133,31 @@ function customAdapter(): Adapter {
           image: data.image,
         });
 
-        // we try to set his image
+        // create his email social
+        const emailCreated = await db
+          .insert(socials)
+          .values({
+            id: crypto.randomUUID(),
+            user_id: userCreated.id,
+            platform: "email",
+          })
+          .returning()
+          .then((res) => res[0] ?? null);
+
+        await db.insert(email).values({
+          id: crypto.randomUUID(),
+          social_id: emailCreated.id,
+          address: data.email,
+        });
+
+        // set his image and email
         await db
           .update(users)
           .set({ image: data.image })
           .where(eq(users.id, userCreated.id));
 
         // last we try to claim his username given his gh_username
+        // this may fail if username is not unique hence we do it last and isolated
         await db
           .update(users)
           // @ts-ignore
