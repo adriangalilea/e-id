@@ -10,11 +10,11 @@ export default function UserProfile({ user }: { user: SelectUser }) {
           <h1 className="!m-0 text-2xl font-normal sm:font-normal">
             {user.name}
           </h1>
-          <div className="flex justify-between sm:grow">
+          <div className="flex justify-between items-end sm:grow">
             <p className="prose prose-zinc dark:prose-invert !m-0 font-extralight">
               @{user.username}
             </p>
-            <div className="flex content-between items-center gap-1">
+            <div className="flex content-between items-start gap-1">
               <Flag country={user.country_code} />
             </div>
           </div>

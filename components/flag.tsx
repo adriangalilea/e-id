@@ -8,7 +8,7 @@ export default function Flag({ country }: { country: string }) {
         role="img"
         aria-label="unknown country"
         title="unknown country"
-        className="text-xl"
+        className="text-2xl"
       >
         🌐
       </span>
@@ -22,8 +22,8 @@ export default function Flag({ country }: { country: string }) {
       title={getName(country)}
       aria-label={`${getName(country)} country flag`}
       style={{
-        width: "1.5em",
-        height: "1.5em",
+        width: "1.75em",
+        height: "1.75em",
       }}
     />
   );
