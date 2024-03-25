@@ -95,6 +95,7 @@ export const socials = sqliteTable("social", {
   user_id: text("user_id").references(() => users.id, { onDelete: "cascade" }),
   platform: text("platform", {
     enum: [
+      "email",
       "youtube",
       "github",
       "google",
