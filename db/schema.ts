@@ -9,31 +9,25 @@ import type { AdapterAccount } from "@auth/core/adapters";
 
 export const users = sqliteTable("user", {
   id: text("id").notNull().primaryKey(),
+  username: text("username").unique(),
   name: text("name"),
   email: text("email").notNull(),
   emailVerified: integer("emailVerified", { mode: "timestamp_ms" }),
+  email_public: integer("email_public", { mode: "boolean" }).default(false),
   image: text("image"),
-
-  gh_username: text("gh_username").notNull(),
-  gh_id: text("gh_id").notNull(),
-  gh_image: text("gh_image").notNull(),
-
-  username: text("username").unique(),
+  bio: text("bio"),
   country_code: text("country_code").default("XX").notNull(),
-  avatar: text("avatar"),
   created_at: text("created_at")
     .default(sql`(CURRENT_TIMESTAMP)`)
     .notNull(),
   updated_at: text("updated_at")
     .default(sql`(CURRENT_TIMESTAMP)`)
     .notNull(),
-  bio: text("bio"),
-  website: text("website"),
-  twitter: text("twitter"),
-  youtube: text("youtube"),
 });
-// TODO: do not allow only numbers in username
-// TODO: create a non allowed usernames - ninja
+// TODO: add birthdate
+// TODO: add languages
+// TODO: add allow comments boolean
+// TODO: add theme casey
 
 export const accounts = sqliteTable(
   "account",
@@ -83,10 +77,10 @@ export const comments = sqliteTable("comment", {
   id: integer("id", { mode: "number" }).notNull().primaryKey(),
   profile_user_id: text("profile_user_id")
     .notNull()
-    .references(() => users.id),
+    .references(() => users.id, { onDelete: "cascade" }),
   commentator_id: text("commentator_id")
     .notNull()
-    .references(() => users.id),
+    .references(() => users.id, { onDelete: "cascade" }),
   created_at: text("created_at")
     .default(sql`(CURRENT_TIMESTAMP)`)
     .notNull(),
@@ -96,8 +90,99 @@ export const comments = sqliteTable("comment", {
   body: text("body").notNull(),
 });
 
+export const socials = sqliteTable("social", {
+  id: text("id").notNull().primaryKey(),
+  user_id: text("user_id").references(() => users.id, { onDelete: "cascade" }),
+  platform: text("platform", {
+    enum: [
+      "youtube",
+      "github",
+      "google",
+      "twitter",
+      "website",
+      "self",
+      "instagram",
+      "email",
+      "telegram",
+    ],
+  }).notNull(),
+  custom_data: text("custom_data", { mode: "json" }).$type<{ a: 1 }>(),
+  context_message: text("context_message"),
+  order: integer("order"),
+  public: integer("public", { mode: "boolean" }).notNull().default(false),
+});
+
+export const github = sqliteTable("github", {
+  id: text("id").notNull().primaryKey(),
+  social_id: text("social_id").references(() => socials.id, {
+    onDelete: "cascade",
+  }),
+  github_user_id: integer("github_user_id"),
+  username: text("username"),
+  image: text("image"),
+  code_frequency_graph: text("code_frequency_graph"),
+  followers: integer("followers"),
+});
+
+export const google = sqliteTable("google", {
+  id: text("id").notNull().primaryKey(),
+  social_id: text("social_id").references(() => socials.id, {
+    onDelete: "cascade",
+  }),
+  google_user_id: text("google_user_id"),
+  email: text("email"),
+  image: text("image"),
+});
+
+export const youtube = sqliteTable("youtube", {
+  id: text("id").notNull().primaryKey(),
+  social_id: text("social_id").references(() => socials.id, {
+    onDelete: "cascade",
+  }),
+  channel_id: text("channel_id"),
+  username: text("username"),
+  image: text("image"),
+  highlighted_video: text("highlighted_video"),
+  followers: integer("followers"),
+});
+
+export const twitter = sqliteTable("twitter", {
+  id: text("id").notNull().primaryKey(),
+  social_id: text("social_id").references(() => socials.id, {
+    onDelete: "cascade",
+  }),
+  username: text("username"),
+  image: text("image"),
+  highlighted_tweet: text("highlighted_tweet"),
+  followers: integer("followers"),
+});
+
+export const telegram = sqliteTable("telegram", {
+  id: text("id").notNull().primaryKey(),
+  social_id: text("social_id").references(() => socials.id, {
+    onDelete: "cascade",
+  }),
+  username: text("username"),
+  image: text("image"),
+});
+
 export type InsertUser = typeof users.$inferInsert;
 export type SelectUser = typeof users.$inferSelect;
 
 export type InsertComment = typeof comments.$inferSelect;
 export type SelectComment = typeof comments.$inferSelect;
+
+export type InsertSocial = typeof socials.$inferInsert;
+export type SelectSocial = typeof socials.$inferSelect;
+
+export type InsertGithub = typeof github.$inferInsert;
+export type SelectGithub = typeof github.$inferSelect;
+
+export type InsertGoogle = typeof google.$inferInsert;
+export type SelectGoogle = typeof google.$inferSelect;
+
+export type InsertTwitter = typeof twitter.$inferInsert;
+export type SelectTwitter = typeof twitter.$inferSelect;
+
+export type InsertTelegram = typeof telegram.$inferInsert;
+export type SelectTelegram = typeof telegram.$inferSelect;

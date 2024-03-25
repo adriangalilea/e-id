@@ -1,5 +1,6 @@
 import NextAuth from "next-auth";
 import GitHub from "next-auth/providers/github";
+import Google from "next-auth/providers/google";
 import { DrizzleAdapter } from "@auth/drizzle-adapter";
 import { db } from "./db";
 import { type AdapterUser, Adapter } from "@auth/core/adapters";
@@ -9,6 +10,9 @@ import {
   verificationTokens,
   sessions,
   SelectUser,
+  socials,
+  github,
+  google,
 } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
 
@@ -22,32 +26,113 @@ function customAdapter(): Adapter {
 
   // Overwrite createUser method on adapter
   adapter.createUser = async (data): Promise<AdapterUser> => {
-    const dataEntered = await db
+    // TODO: create a non allowed usernames - ninja
+
+    // Google returns this format
+    // {
+    //   id: '279f3a0b-5aa1-4eab-b72a-f0ff4c4b67c2',
+    //   name: 'Adrian Galilea Delgado',
+    //   email: 'adriangalilea@gmail.com',
+    //   image: 'https://lh3.googleusercontent.com/a/ACg8ocKYnnkCAxRw6qspAIG425xBn9AiGvXW_El-vSVDv15tAic=s96-c',
+    //   emailVerified: null
+    // }
+
+    // Github returns
+    // gh_id gh_username gh_image
+
+    console.log(data);
+    const userCreated = await db
       .insert(users)
       .values({
         ...data,
-        // @ts-ignore
         id: crypto.randomUUID(),
-        gh_id: data.gh_id,
-        gh_username: data.gh_username,
-        gh_image: data.gh_image,
       })
       .returning()
       .then((res) => res[0] ?? null);
 
-    if (!dataEntered) {
+    if (!userCreated) {
       throw new Error("User Creation Failed");
     }
-    try {
-      await db
-        .update(users)
-        .set({ username: dataEntered.gh_username })
-        .where(eq(users.id, dataEntered.id));
-    } catch (error) {
-      console.error("Error updating user:", error);
+
+    // @ts-ignore
+    if (data.gh_id) {
+      try {
+        const socialCreated = await db
+          .insert(socials)
+          .values({
+            id: crypto.randomUUID(),
+            user_id: userCreated.id,
+            platform: "github",
+          })
+          .returning()
+          .then((res) => res[0] ?? null);
+        await db.insert(github).values({
+          id: crypto.randomUUID(),
+          // @ts-ignore
+          social_id: socialCreated.id,
+          // @ts-ignore
+          github_user_id: data.gh_id,
+          // @ts-ignore
+          username: data.gh_username,
+          // @ts-ignore
+          image: data.gh_image,
+        });
+
+        // we try to set his image
+        await db
+          .update(users)
+          // @ts-ignore
+          .set({ image: data.gh_image })
+          .where(eq(users.id, userCreated.id));
+
+        // last we try to claim his username given his gh_username
+        await db
+          .update(users)
+          // @ts-ignore
+          .set({ username: data.gh_username })
+          .where(eq(users.id, userCreated.id));
+      } catch (error) {
+        console.error("Error updating user:", error);
+      }
+    } else if (data.name) {
+      // we assume this is google
+      // we propose an username given it's email
+      const username = data.email.split("@")[0];
+      try {
+        const socialCreated = await db
+          .insert(socials)
+          .values({
+            id: crypto.randomUUID(),
+            user_id: userCreated.id,
+            platform: "google",
+          })
+          .returning()
+          .then((res) => res[0] ?? null);
+        await db.insert(google).values({
+          id: crypto.randomUUID(),
+          social_id: socialCreated.id,
+          google_user_id: data.id,
+          image: data.image,
+        });
+
+        // we try to set his image
+        await db
+          .update(users)
+          .set({ image: data.image })
+          .where(eq(users.id, userCreated.id));
+
+        // last we try to claim his username given his gh_username
+        await db
+          .update(users)
+          // @ts-ignore
+          .set({ username: username })
+          .where(eq(users.id, userCreated.id));
+      } catch (error) {
+        console.error("Error updating user:", error);
+      }
     }
 
-    return dataEntered;
+    return userCreated;
   };
 
   // the rest of the methods need to be copy-pasted, else the custom session data will not appear
@@ -194,6 +279,9 @@ export const {
   basePath: "/auth",
   adapter: customAdapter(),
   providers: [
+    Google({
+      allowDangerousEmailAccountLinking: true,
+    }),
     GitHub({
       allowDangerousEmailAccountLinking: true,
       profile(profile) {
