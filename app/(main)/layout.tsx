@@ -38,7 +38,7 @@ export default async function RootLayout({
             <div className="flex gap-2">
               <UserButton
                 username={session.user?.username!}
-                image={session.user?.gh_image!}
+                image={session.user?.image!}
               />
               <SignOut />
             </div>
