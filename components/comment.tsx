@@ -7,7 +7,7 @@ import { X } from "lucide-react";
 import { deleteComment } from "@/db/actions";
 
 interface CommentProps {
-  profilePicture: SelectUser["avatar"];
+  profilePicture: SelectUser["image"];
   name: SelectUser["name"];
   username: SelectUser["username"];
   created_at: SelectUser["created_at"];
