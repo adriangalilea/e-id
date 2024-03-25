@@ -13,7 +13,6 @@ import {
   socials,
   github,
   google,
-  email,
 } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
 
@@ -64,36 +63,32 @@ function customAdapter(): Adapter {
             id: crypto.randomUUID(),
             user_id: userCreated.id,
             platform: "github",
+            // @ts-ignore
+            value: data.gh_username,
+            // @ts-ignore
+            image: data.gh_image,
           })
           .returning()
           .then((res) => res[0] ?? null);
+
         await db.insert(github).values({
           id: crypto.randomUUID(),
           // @ts-ignore
           social_id: socialCreated.id,
           // @ts-ignore
           github_user_id: data.gh_id,
-          // @ts-ignore
-          username: data.gh_username,
-          // @ts-ignore
-          image: data.gh_image,
         });
         // create his email social
-        const emailCreated = await db
+        await db
           .insert(socials)
           .values({
             id: crypto.randomUUID(),
             user_id: userCreated.id,
             platform: "email",
+            value: data.email,
           })
           .returning()
           .then((res) => res[0] ?? null);
-
-        await db.insert(email).values({
-          id: crypto.randomUUID(),
-          social_id: emailCreated.id,
-          address: data.email,
-        });
 
         // we try to set his image
         await db
@@ -117,38 +112,18 @@ function customAdapter(): Adapter {
       // we propose an username given it's email
       const username = data.email.split("@")[0];
       try {
-        const socialCreated = await db
-          .insert(socials)
-          .values({
-            id: crypto.randomUUID(),
-            user_id: userCreated.id,
-            platform: "google",
-          })
-          .returning()
-          .then((res) => res[0] ?? null);
-        await db.insert(google).values({
-          id: crypto.randomUUID(),
-          social_id: socialCreated.id,
-          google_user_id: data.id,
-          image: data.image,
-        });
-
-        // create his email social
-        const emailCreated = await db
+        await db
           .insert(socials)
           .values({
             id: crypto.randomUUID(),
             user_id: userCreated.id,
             platform: "email",
+            value: data.email,
+            image: data.image,
+            custom_data: { google_user_id: data.id },
           })
           .returning()
           .then((res) => res[0] ?? null);
-
-        await db.insert(email).values({
-          id: crypto.randomUUID(),
-          social_id: emailCreated.id,
-          address: data.email,
-        });
 
         // set his image and email
         await db

@@ -97,7 +97,6 @@ export const socials = sqliteTable("social", {
       "email",
       "youtube",
       "github",
-      "google",
       "twitter",
       "website",
       "self",
@@ -106,18 +105,12 @@ export const socials = sqliteTable("social", {
       "telegram",
     ],
   }).notNull(),
-  custom_data: text("custom_data", { mode: "json" }).$type<{ a: 1 }>(),
-  context_message: text("context_message"),
+  value: text("value").notNull(),
+  image: text("image"),
   order: integer("order"),
+  context_message: text("context_message"),
   public: integer("public", { mode: "boolean" }).notNull().default(false),
-});
-
-export const email = sqliteTable("email", {
-  id: text("id").notNull().primaryKey(),
-  social_id: text("social_id").references(() => socials.id, {
-    onDelete: "cascade",
-  }),
-  address: text("address"),
+  custom_data: text("custom_data", { mode: "json" }),
 });
 
 export const github = sqliteTable("github", {
@@ -126,20 +119,8 @@ export const github = sqliteTable("github", {
     onDelete: "cascade",
   }),
   github_user_id: integer("github_user_id"),
-  username: text("username"),
-  image: text("image"),
   code_frequency_graph: text("code_frequency_graph"),
   followers: integer("followers"),
-});
-
-export const google = sqliteTable("google", {
-  id: text("id").notNull().primaryKey(),
-  social_id: text("social_id").references(() => socials.id, {
-    onDelete: "cascade",
-  }),
-  google_user_id: text("google_user_id"),
-  email: text("email"),
-  image: text("image"),
 });
 
 export const youtube = sqliteTable("youtube", {
@@ -148,8 +129,6 @@ export const youtube = sqliteTable("youtube", {
     onDelete: "cascade",
   }),
   channel_id: text("channel_id"),
-  username: text("username"),
-  image: text("image"),
   highlighted_video: text("highlighted_video"),
   followers: integer("followers"),
 });
@@ -159,19 +138,8 @@ export const twitter = sqliteTable("twitter", {
   social_id: text("social_id").references(() => socials.id, {
     onDelete: "cascade",
   }),
-  username: text("username"),
-  image: text("image"),
   highlighted_tweet: text("highlighted_tweet"),
   followers: integer("followers"),
-});
-
-export const telegram = sqliteTable("telegram", {
-  id: text("id").notNull().primaryKey(),
-  social_id: text("social_id").references(() => socials.id, {
-    onDelete: "cascade",
-  }),
-  username: text("username"),
-  image: text("image"),
 });
 
 export type InsertUser = typeof users.$inferInsert;
@@ -186,11 +154,5 @@ export type SelectSocial = typeof socials.$inferSelect;
 export type InsertGithub = typeof github.$inferInsert;
 export type SelectGithub = typeof github.$inferSelect;
 
-export type InsertGoogle = typeof google.$inferInsert;
-export type SelectGoogle = typeof google.$inferSelect;
-
 export type InsertTwitter = typeof twitter.$inferInsert;
 export type SelectTwitter = typeof twitter.$inferSelect;
-
-export type InsertTelegram = typeof telegram.$inferInsert;
-export type SelectTelegram = typeof telegram.$inferSelect;
