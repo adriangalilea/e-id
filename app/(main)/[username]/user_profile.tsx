@@ -6,7 +6,7 @@ export default function UserProfile({ user }: { user: SelectUser }) {
   return (
     <main>
       <div>
-        <div className="prose prose-zinc dark:prose-invert flex flex-col justify-between gap-1 sm:flex-row sm:items-end sm:gap-3">
+        <div className="prose prose-zinc dark:prose-invert flex flex-col justify-between gap-1 pt-2 sm:flex-row sm:items-end sm:gap-3">
           <h1 className="!m-0 text-2xl font-normal sm:font-normal">
             {user.name}
           </h1>
