@@ -89,7 +89,7 @@ export default async function CommentSection({
           .map((commentAndCommentator) => (
             <div key={commentAndCommentator.comments?.id}>
               <Comment
-                profilePicture={commentAndCommentator.users.gh_image}
+                profilePicture={commentAndCommentator.users.image}
                 name={commentAndCommentator.users.name}
                 username={commentAndCommentator.users.username}
                 created_at={commentAndCommentator.comments?.created_at!}
