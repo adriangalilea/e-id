@@ -102,7 +102,7 @@ export const socialPlatforms = [
   "telegram",
 ] as const;
 
-export type SocialPlatform = typeof socialPlatforms[number];
+export type SocialPlatform = (typeof socialPlatforms)[number];
 
 export const socials = sqliteTable("social", {
   id: text("id").notNull().primaryKey(),
@@ -118,34 +118,13 @@ export const socials = sqliteTable("social", {
   custom_data: text("custom_data", { mode: "json" }),
 });
 
-export const github = sqliteTable("github", {
-  id: text("id").notNull().primaryKey(),
-  social_id: text("social_id").references(() => socials.id, {
-    onDelete: "cascade",
-  }),
-  github_user_id: integer("github_user_id"),
-  code_frequency_graph: text("code_frequency_graph"),
-  followers: integer("followers"),
-});
+// custom data can contain:
+// followers in [github, twitter, instagram, self, youtube]
+// highlight in [twitter, youtube, self]
+// channel_id in [youtube]
+// platform_user_id in [github, google] created on auth from provider
 
-export const youtube = sqliteTable("youtube", {
-  id: text("id").notNull().primaryKey(),
-  social_id: text("social_id").references(() => socials.id, {
-    onDelete: "cascade",
-  }),
-  channel_id: text("channel_id"),
-  highlighted_video: text("highlighted_video"),
-  followers: integer("followers"),
-});
-
-export const twitter = sqliteTable("twitter", {
-  id: text("id").notNull().primaryKey(),
-  social_id: text("social_id").references(() => socials.id, {
-    onDelete: "cascade",
-  }),
-  highlighted_tweet: text("highlighted_tweet"),
-  followers: integer("followers"),
-});
+// this is likely not a good idea long term but for now it's fine and makes less db calls
 
 export type InsertUser = typeof users.$inferInsert;
 export type SelectUser = typeof users.$inferSelect;
@@ -155,9 +134,3 @@ export type SelectComment = typeof comments.$inferSelect;
 
 export type InsertSocial = typeof socials.$inferInsert;
 export type SelectSocial = typeof socials.$inferSelect;
-
-export type InsertGithub = typeof github.$inferInsert;
-export type SelectGithub = typeof github.$inferSelect;
-
-export type InsertTwitter = typeof twitter.$inferInsert;
-export type SelectTwitter = typeof twitter.$inferSelect;
