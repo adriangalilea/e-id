@@ -90,3 +90,11 @@ export async function deleteComment(id: SelectComment["id"]): Promise<void> {
     .returning();
   revalidatePath(`/${deleted_comment[0].profile_user_id}`);
 }
+
+export async function updateUser(profileId: string, formData: FormData) {
+  console.log(profileId, formData);
+  // const body = String(formData.get("body"));
+  // TODO: should be done with zod
+  // if (!body) return;
+  // console.log({ profileId, body });
+}
