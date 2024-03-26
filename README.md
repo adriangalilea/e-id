@@ -23,18 +23,19 @@ A constant pointer to your ever-changing web presence.
 
 # 📝 TO-DO
 - [ ] feat: google auth prod
-- [ ] feat: do not show email by default, only suggest.
 - [ ] feat: opengraph
   - [ ] [fetch-opengraph node](https://github.com/purphoros/fetch-opengraph)
 - [ ] feat: SEO
 - [ ] style: comment input button disabled while not text
 - [ ] feat: being able to edit your own profile
   - [x] country combobox
-  - [ ] simple input for all data
-  - [ ] allows toggling visibility
+  - [x] simple input for all data
+  - [x] allows toggling visibility
   - [ ] highlight comment -> testimonial
+  - [ ] add new socials
 - [ ] /edit 2.0
-  - [ ] socials is the same visually as SocialComponent
+  - [x] socials is the same visually as SocialComponent
+  - [ ] disallow comments
   - [ ] country combobox with flags
 - [ ] feat: custom auth login window
   - [ ] https://authjs.dev/guides/basics/pages#theming
@@ -75,6 +76,7 @@ A constant pointer to your ever-changing web presence.
   - [x] google
   - [.] apple passkey -> revisit when [lucia-auth has passkeys](https://lucia-auth.com/guides/passkeys)
   
+- [x] feat: do not show email by default, only suggest.
 - [x] feat: Socials as a different table
 - [x] feat: dub.co license
 - [x] fix: flash of mobile menu
