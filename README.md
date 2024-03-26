@@ -25,16 +25,41 @@ A constant pointer to your ever-changing web presence.
 # 📝 TO-DO
 
 - [ ] feat: google auth prod
-- [ ] feat: opengraph
-  - [ ] [fetch-opengraph node](https://github.com/purphoros/fetch-opengraph)
 - [ ] feat: SEO
-- [ ] style: comment input button disabled while not text
 - [ ] feat: being able to edit your own profile
   - [x] country combobox
   - [x] simple input for all data
   - [x] allows toggling visibility
   - [ ] highlight comment -> testimonial
   - [ ] add new socials
+- [x] feat: list of forbidden handles
+  - [x] I don't need auth because it has higher priority than [username]
+  - [x] /null path to edit null username
+  - [ ] enforce non allowing such handles in user creation from auth
+  - [ ] enforce non allowing such handles in server actions
+  - [ ] enforce non allowing such handles in /null
+- [ ] feat: custom auth login window
+  - [ ] https://authjs.dev/guides/basics/pages#theming
+  - [ ] https://github.com/ndom91/next-auth-example-sign-in-page
+  - [ ] https://github.com/shadcn-ui/ui/blob/5c50a32e8f02bd745d2524cd68de6b7cd8d0e8f8/apps/www/app/(app)/examples/authentication/page.tsx
+- [ ] feat: premium analytics (Tinybird)
+- [ ] feat: opengraph on custom website for social component
+  - [ ] [fetch-opengraph node](https://github.com/purphoros/fetch-opengraph)
+- [ ] feat: API
+  - [ ] get
+    - [ ] `userByID`
+    - [ ] `userByUsername`
+  - [ ] post
+    - [ ] `patchUser`
+- [ ] feat: curl
+  - [ ] /adriangalilea
+  - [ ] /adriangalilea/x
+- [ ] feat: /username/[social_media_name]
+  - [ ] if exists: redirects to said social media and log.
+  - [ ] if not exists: redirects to e-id profile and log user demand.
+- [ ] consider cheap username fee/time to prevent squatting.
+  - [ ] allow speculation (?)
+- [ ] allow befriending/following
 - [ ] /edit 2.0
   - [x] socials is the same visually as SocialComponent
   - [ ] [branch](https://github.com/adriangalilea/e-id/tree/edit-tabs-preserve-state) preserve state when switching tabs using [zustand](https://github.com/pmndrs/zustand/blob/main/docs/guides/nextjs.md)
@@ -52,39 +77,13 @@ A constant pointer to your ever-changing web presence.
     - [ ] display flag at rest
   - [ ] birthdate
   - [ ] ensure name and username inputs are similar in size to regular profile
-- [ ] feat: custom auth login window
-  - [ ] https://authjs.dev/guides/basics/pages#theming
-  - [ ] https://github.com/ndom91/next-auth-example-sign-in-page
-  - [ ] https://github.com/shadcn-ui/ui/blob/5c50a32e8f02bd745d2524cd68de6b7cd8d0e8f8/apps/www/app/(app)/examples/authentication/page.tsx
-- [ ] feat: being able to choose another username
-  - [ ] redirect on the toast to user profile
-  - [ ] add warning on username to prompt editing `i your profile is unreachable without username`
-- [ ] feat: API
-  - [ ] get
-    - [ ] `userByID`
-    - [ ] `userByUsername`
-  - [ ] post
-    - [ ] `patchUser`
-- [ ] feat: curl
-  - [ ] /adriangalilea
-  - [ ] /adriangalilea/x
-- [ ] feat: /username/[social_media_name]
-  - [ ] if exists: redirects to said social media and log.
-  - [ ] if not exists: redirects to e-id profile and log user demand.
-- [ ] feat: handle username by auth provider taken
-  - [ ] It's null `user.username`
-- [ ] feat: list of forbidden handles
-  - [x] I don't need auth because it has higher priority than [username]
-  - [ ] I'll need the path for setting your username when you don't have one maybe /limbo or /settings
-- [ ] feat: premium analytics (Tinybird)
-- [ ] consider cheap username fee/time to prevent squatting.
-  - [ ] allow speculation (?)
-- [ ] allow befriending/following
 - [ ] consider tracking for every social media
   - [ ] default being only the last element
   - [ ] aliveness score
   - [ ] notify when friends make new places
 - [ ] feat: premium claimable username
+- [ ] style: comment input button disabled while not text
+
 
 # blocked
 
@@ -102,6 +101,9 @@ A constant pointer to your ever-changing web presence.
 - [x] feat: comments on profile
 - [x] feat: preserve user email
 - [x] fix: username taken warning on a non logged-in user
+- [x] feat: handle username by auth provider taken
+- [x] feat: being able to choose another username
+  - [x] add warning on username to prompt editing `i your profile is unreachable without username`
 
 # Credits
 
