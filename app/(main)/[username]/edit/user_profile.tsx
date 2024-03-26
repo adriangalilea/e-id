@@ -51,6 +51,7 @@ export default function UserProfile({ user }: { user: SelectUser }) {
               name="bio"
               defaultValue={user.bio!}
               className="prose prose-zinc dark:prose-invert !m-0 mb-2 rounded-none bg-black/5 p-2 text-[16px] italic focus-visible:border-zinc-500 focus-visible:ring-0 focus-visible:ring-transparent focus-visible:ring-offset-0 dark:bg-white/5"
+              placeholder="Message to the world..."
             />
           </div>
           <SocialComponent user={user} edit={true} />
