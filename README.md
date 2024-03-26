@@ -29,8 +29,13 @@ A constant pointer to your ever-changing web presence.
 - [ ] feat: SEO
 - [ ] style: comment input button disabled while not text
 - [ ] feat: being able to edit your own profile
-  - [ ] flag picker
+  - [x] country combobox
+  - [ ] simple input for all data
+  - [ ] allows toggling visibility
   - [ ] highlight comment -> testimonial
+- [ ] /edit 2.0
+  - [ ] socials is the same visually as SocialComponent
+  - [ ] country combobox with flags
 - [ ] feat: custom auth login window
   - [ ] https://authjs.dev/guides/basics/pages#theming
   - [ ] https://github.com/ndom91/next-auth-example-sign-in-page
