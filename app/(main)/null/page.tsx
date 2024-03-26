@@ -15,8 +15,8 @@ export default async function Page() {
   return (
     <div className="flex justify-between flex-col gap-4">
       <Alert variant="warning">
-        <TriangleAlert className="h-4 w-4" />
-        <AlertTitle>You don't have a username!</AlertTitle>
+        <TriangleAlert className="size-4" />
+        <AlertTitle>{"You don't have a username!"}</AlertTitle>
         <AlertDescription>
           This happened because the inferred username from your authentication
           provider was already taken(or because you were naughty...).

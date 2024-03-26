@@ -78,7 +78,7 @@ export default function CountryPicker({
                 >
                   <Check
                     className={cn(
-                      "mr-2 h-4 w-4",
+                      "mr-2 size-4",
                       value === country.value ? "opacity-100" : "opacity-0",
                     )}
                   />
