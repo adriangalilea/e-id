@@ -19,6 +19,7 @@ import {
 } from "@/lib/socials";
 import { Input } from "./ui/input";
 import { Switch } from "./ui/switch";
+import { Label } from "./ui/label";
 
 export async function SocialComponent({
   user,
@@ -69,36 +70,51 @@ export async function SocialComponent({
         <TabsContent key={social.id} value={social.id} className="mt-0">
           <Card className="rounded-none border-t-transparent">
             <CardHeader className="p-2 flex flex-col gap-2">
-              <CardTitle>{social.platform}</CardTitle>
+              <CardTitle className="flex justify-between items-center">
+                {social.platform}
+                {edit && (
+                  <div className="flex justify-between items-center gap-1">
+                    <Label
+                      htmlFor={`${social.platform}_${social.id}_public`}
+                      className="opacity-60"
+                    >
+                      Visibility
+                    </Label>
+                    <Switch
+                      id={`${social.platform}_${social.id}_public`}
+                      defaultChecked={social.public}
+                      name={`${social.platform}_${social.id}_public`}
+                    />
+                  </div>
+                )}
+              </CardTitle>
               <CardDescription>
-                <blockquote className="prose prose-zinc dark:prose-invert mb-2 border-l border-zinc-500 bg-black/5 p-2 italic dark:bg-white/5">
-                  {social.context_message}
-                </blockquote>
+                {edit ? (
+                  <div className="mt-4 border-l border-zinc-500">
+                    <Input
+                      type="text"
+                      name={`${social.platform}_${social.id}_contextmessage`}
+                      defaultValue={social.context_message ?? ""}
+                      className="prose prose-zinc dark:prose-invert !m-0 mb-2 rounded-none bg-black/5 p-2 text-[16px] italic focus-visible:border-zinc-500 focus-visible:ring-0 focus-visible:ring-transparent focus-visible:ring-offset-0 dark:bg-white/5"
+                      placeholder="Optional contextual message"
+                    />
+                  </div>
+                ) : (
+                  <blockquote className="prose prose-zinc dark:prose-invert mb-2 border-l border-zinc-500 bg-black/5 p-2 italic dark:bg-white/5">
+                    {social.context_message}
+                  </blockquote>
+                )}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-2 px-2 pb-2 flex flex-col gap-2">
               {edit ? (
                 <>
-                  Visibility
-                  <Switch
-                    defaultChecked={social.public}
-                    name={`${social.platform}_${social.id}_public`}
-                  />
-                  Username(handle)
                   <Input
                     type="text"
                     name={`${social.platform}_${social.id}_value`}
                     defaultValue={social.value}
                     className="!m-0 min-w-[160px] grow rounded-none text-[16px] focus-visible:border-zinc-500 focus-visible:ring-0 focus-visible:ring-transparent focus-visible:ring-offset-0 sm:font-normal"
                     placeholder="handle"
-                  />
-                  Optional contextual Message
-                  <Input
-                    type="text"
-                    name={`${social.platform}_${social.id}_contextmessage`}
-                    defaultValue={social.context_message!}
-                    className="!m-0 min-w-[160px] grow rounded-none text-[16px] focus-visible:border-zinc-500 focus-visible:ring-0 focus-visible:ring-transparent focus-visible:ring-offset-0 sm:font-normal"
-                    placeholder="Optional contextual message"
                   />
                 </>
               ) : (
