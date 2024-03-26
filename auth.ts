@@ -11,7 +11,6 @@ import {
   sessions,
   SelectUser,
   socials,
-  github,
 } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
 
