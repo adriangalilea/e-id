@@ -35,6 +35,8 @@ A constant pointer to your ever-changing web presence.
   - [ ] add new socials
 - [ ] /edit 2.0
   - [x] socials is the same visually as SocialComponent
+  - [ ] [branch] preserve state when switching tabs using [zustand](https://github.com/pmndrs/zustand/blob/main/docs/guides/nextjs.md)
+  - [ ] custom order
   - [ ] github
     - [ ] activity
       - [ ] toggle
