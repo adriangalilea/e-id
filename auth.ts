@@ -66,17 +66,12 @@ function customAdapter(): Adapter {
             value: data.gh_username,
             // @ts-ignore
             image: data.gh_image,
+            // @ts-ignore
+            custom_data: { platform_user_id: data.gh_id },
           })
           .returning()
           .then((res) => res[0] ?? null);
 
-        await db.insert(github).values({
-          id: crypto.randomUUID(),
-          // @ts-ignore
-          social_id: socialCreated.id,
-          // @ts-ignore
-          github_user_id: data.gh_id,
-        });
         // create his email social
         await db
           .insert(socials)
@@ -119,12 +114,12 @@ function customAdapter(): Adapter {
             platform: "email",
             value: data.email,
             image: data.image,
-            custom_data: { google_user_id: data.id },
+            custom_data: { platform_user_id: data.id },
           })
           .returning()
           .then((res) => res[0] ?? null);
 
-        // set his image and email
+        // set his image
         await db
           .update(users)
           .set({ image: data.image })
