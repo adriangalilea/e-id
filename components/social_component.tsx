@@ -99,10 +99,12 @@ export async function SocialComponent({
                       placeholder="Optional contextual message"
                     />
                   </div>
-                ) : (
+                ) : social.context_message ? (
                   <blockquote className="prose prose-zinc dark:prose-invert mb-2 border-l border-zinc-500 bg-black/5 p-2 italic dark:bg-white/5">
                     {social.context_message}
                   </blockquote>
+                ) : (
+                  <></>
                 )}
               </CardDescription>
             </CardHeader>
