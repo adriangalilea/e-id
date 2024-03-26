@@ -18,7 +18,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { useEffect, useState } from "react";
-import { countryList } from "./country_list";
+import { countryList } from "@/lib/country_list";
 
 export default function CountryPicker({
   savedCountry,
@@ -33,7 +33,6 @@ export default function CountryPicker({
   )?.label;
 
   useEffect(() => {
-    // Assuming your form has an identifiable ID or class
     const form = document.querySelector("form");
     const hiddenInput = form?.querySelector(
       'input[name="country_code"]',

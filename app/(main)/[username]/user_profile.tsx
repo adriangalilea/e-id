@@ -1,6 +1,6 @@
 import Flag from "@/components/flag";
 import { SelectUser } from "@/db/schema";
-import { SocialComponent } from "./social_component";
+import { SocialComponent } from "@/components/social_component";
 
 export default function UserProfile({ user }: { user: SelectUser }) {
   return (

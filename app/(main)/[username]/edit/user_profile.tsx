@@ -2,18 +2,7 @@ import { Input } from "@/components/ui/input";
 import CountryPicker from "./country_picker";
 import { SelectUser } from "@/db/schema";
 import { Button } from "@/components/ui/button";
-import {
-  SendHorizontal,
-  Twitter,
-  LinkIcon,
-  Mail,
-  Github,
-  Youtube,
-  Instagram,
-  Facebook,
-} from "lucide-react";
-import { updateUser } from "@/db/actions";
-import { SocialComponent } from "../social_component";
+import { SocialComponent } from "@/components/social_component";
 
 export default function UserProfile({ user }: { user: SelectUser }) {
   const updateUserWithUser = updateUser.bind(null, user.id);
