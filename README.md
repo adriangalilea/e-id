@@ -5,8 +5,9 @@ e-ID is your dynamic digital business card.
 A constant pointer to your ever-changing web presence.
 
 # ⭐ Features
+
 - Mnemonic and readable.
-  - e-ID to [[your_name]] 
+  - e-ID to [[your_name]]
   - [e-id.to/adriangalilea](https://e-id.to/adriangalilea)
 - Visual.
   - [👤️️.to](https://👤️️.to)
@@ -17,11 +18,12 @@ A constant pointer to your ever-changing web presence.
   - [e-id.to](https://e-id.to)
   - [eid.to](https://eid.to)
   - [👤️️.to](https://👤️️.to)
-  - **Progressive enhancement on browsers that support emoji domain** 
+  - **Progressive enhancement on browsers that support emoji domain**
     - [e-id.to](https://e-id.to) and [eid.to](https://eid.to) redirect to [👤️️.to](https://👤️️.to) in safari
     - [👤️️.to](https://👤️️.to) redirects to [e-id.to](https://e-id.to) in anything else.
 
 # 📝 TO-DO
+
 - [ ] feat: google auth prod
 - [ ] feat: opengraph
   - [ ] [fetch-opengraph node](https://github.com/purphoros/fetch-opengraph)
@@ -35,7 +37,7 @@ A constant pointer to your ever-changing web presence.
   - [ ] add new socials
 - [ ] /edit 2.0
   - [x] socials is the same visually as SocialComponent
-  - [ ] [branch] preserve state when switching tabs using [zustand](https://github.com/pmndrs/zustand/blob/main/docs/guides/nextjs.md)
+  - [ ] [branch](https://github.com/adriangalilea/e-id/tree/edit-tabs-preserve-state) preserve state when switching tabs using [zustand](https://github.com/pmndrs/zustand/blob/main/docs/guides/nextjs.md)
   - [ ] custom order
   - [ ] github
     - [ ] activity
@@ -56,7 +58,7 @@ A constant pointer to your ever-changing web presence.
   - [ ] https://github.com/shadcn-ui/ui/blob/5c50a32e8f02bd745d2524cd68de6b7cd8d0e8f8/apps/www/app/(app)/examples/authentication/page.tsx
 - [ ] feat: being able to choose another username
   - [ ] redirect on the toast to user profile
-  - [ ] add warning on username to prompt editing `i your profile is unreachable without username` 
+  - [ ] add warning on username to prompt editing `i your profile is unreachable without username`
 - [ ] feat: API
   - [ ] get
     - [ ] `userByID`
@@ -85,10 +87,10 @@ A constant pointer to your ever-changing web presence.
 - [ ] feat: premium claimable username
 
 # blocked
+
 - [.] feat: auth
   - [x] google
   - [.] apple passkey -> revisit when [lucia-auth has passkeys](https://lucia-auth.com/guides/passkeys)
-  
 - [x] feat: do not show email by default, only suggest.
 - [x] feat: Socials as a different table
 - [x] feat: dub.co license
@@ -102,4 +104,5 @@ A constant pointer to your ever-changing web presence.
 - [x] fix: username taken warning on a non logged-in user
 
 # Credits
+
 [Progressive enhancement emoji URL's idea](https://github.com/jonroig/emojiurlifier). I implemented it on the next.js middleware, so it's a bit cleaner.
