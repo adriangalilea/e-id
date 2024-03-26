@@ -35,8 +35,19 @@ A constant pointer to your ever-changing web presence.
   - [ ] add new socials
 - [ ] /edit 2.0
   - [x] socials is the same visually as SocialComponent
+  - [ ] github
+    - [ ] activity
+      - [ ] toggle
+      - [x] implementation
+    - [ ] followers
+  - [ ] twitter
+    - [ ] followers
+    - [ ] highlighted tweet
   - [ ] disallow comments
-  - [ ] country combobox with flags
+  - [ ] country
+    - [ ] display flag at rest
+  - [ ] birthdate
+  - [ ] ensure name and username inputs are similar in size to regular profile
 - [ ] feat: custom auth login window
   - [ ] https://authjs.dev/guides/basics/pages#theming
   - [ ] https://github.com/ndom91/next-auth-example-sign-in-page
