@@ -20,9 +20,9 @@ function SubmitButton() {
       className="transition-all duration-100 ease-in-out"
     >
       {pending ? (
-        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+        <Loader2 className="mr-2 size-4 animate-spin" />
       ) : (
-        <Plus className="mr-2 h-4 w-4" />
+        <Plus className="mr-2 size-4" />
       )}
       add user
     </Button>

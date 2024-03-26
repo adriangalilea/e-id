@@ -32,12 +32,12 @@ export function ClientForm() {
           size="icon"
           className="shrink-0"
         >
-          <Check className="h-4 w-4" />
+          <Check className="size-4" />
         </Button>
       </div>
       {state.message && (
         <Alert variant={state?.error ? "destructive" : "default"}>
-          <Ban className="h-4 w-4" />
+          <Ban className="size-4" />
           <AlertTitle>{state?.message}</AlertTitle>
         </Alert>
       )}

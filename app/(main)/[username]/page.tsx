@@ -13,11 +13,7 @@ export default async function Page({
 
   // TODO: perform this in middleware
   // check if user session has username if not redirect to /null if not already there
-  if (
-    session?.user &&
-    !session.user.username &&
-    params.username !== "null"
-  ) {
+  if (session?.user && !session.user.username && params.username !== "null") {
     redirect("/null");
   }
   const user = await getUserByUsername(params.username);
