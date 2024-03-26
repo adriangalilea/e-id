@@ -14,11 +14,7 @@ export default async function Page({
   if (!user) redirect("/");
 
   if (session?.user?.username) {
-    return (
-      <div className="flex flex-1 flex-col justify-between">
-        <UserProfile user={user} />
-      </div>
-    );
+    return <UserProfile user={user} />;
   }
   redirect(`/${params.username}`);
 }

@@ -3,7 +3,16 @@
 import { eq, desc, isNotNull } from "drizzle-orm";
 import { db } from "@/db";
 
-import { SelectComment, SelectUser, users, comments } from "@/db/schema";
+import {
+  SelectComment,
+  SelectUser,
+  users,
+  comments,
+  socials,
+  SelectSocial,
+  socialPlatforms,
+  SocialPlatform,
+} from "@/db/schema";
 import { revalidatePath } from "next/cache";
 
 export async function getUsers(): Promise<SelectUser[]> {
@@ -91,10 +100,94 @@ export async function deleteComment(id: SelectComment["id"]): Promise<void> {
   revalidatePath(`/${deleted_comment[0].profile_user_id}`);
 }
 
-export async function updateUser(profileId: string, formData: FormData) {
+export async function getSocials(
+  userId: SelectUser["id"],
+): Promise<SelectSocial[]> {
+  return await db.select().from(socials).where(eq(socials.user_id, userId));
+}
+
+export async function updateUserAndSocials(
+  profileId: string,
+  formData: FormData,
+) {
   console.log(profileId, formData);
-  // const body = String(formData.get("body"));
-  // TODO: should be done with zod
-  // if (!body) return;
-  // console.log({ profileId, body });
+  const name = String(formData.get("name"));
+  const username = String(formData.get("username"));
+  const bio = String(formData.get("bio"));
+  const country_code = String(formData.get("country_code"));
+
+  // update the user data first
+  const updatedUser = await db
+    .update(users)
+    .set({ name, username, bio, country_code })
+    .where(eq(users.id, profileId))
+    .returning()
+    .then((res) => res[0] ?? null);
+  console.log(updatedUser);
+
+  // update the socials
+  const socialEntries = new Map<
+    string,
+    {
+      platform?: SocialPlatform;
+      value?: string;
+      public?: boolean;
+      contextmessage?: string;
+    }
+  >();
+  // Aggregate formData into socialEntries
+  for (let [key, value] of formData.entries()) {
+    const elements = key.split("_");
+    const platform = elements[0] as SocialPlatform;
+    const socialId = elements[1];
+    const type = elements[2];
+
+    if (!platform || !socialId || !type) continue;
+
+    if (!socialEntries.has(socialId)) {
+      socialEntries.set(socialId, { platform });
+    }
+
+    const entry = socialEntries.get(socialId);
+    if (entry) {
+      if (type === "value") {
+        entry.value = value.toString();
+      } else if (type === "public") {
+        entry.public = Boolean(value);
+      } else if (type === "contextmessage") {
+        entry.contextmessage = value.toString();
+      }
+    }
+  }
+
+  for (let [key, content] of socialEntries) {
+    // Ensure content.platform is defined to satisfy db insertion requirements
+    if (content.platform) {
+      const insertedSocial = await db
+        .insert(socials)
+        .values([
+          {
+            id: key,
+            value: content.value || "",
+            platform: content.platform,
+            public: content.public ?? false,
+            context_message: content.contextmessage,
+          },
+        ])
+        .onConflictDoUpdate({
+          target: socials.id,
+          set: {
+            value: content.value || "",
+            public: content.public ?? false,
+            context_message: content.contextmessage,
+          },
+        })
+        .returning()
+        .then((res) => res[0] ?? null);
+
+      console.log({ insertedSocial });
+    }
+  }
+
+  revalidatePath(`/${updatedUser.username}`);
 }
