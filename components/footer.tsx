@@ -18,7 +18,7 @@ export default function Footer({ children }: { children?: React.ReactNode }) {
 
 function ButtonHome() {
   return (
-    <Button asChild variant="ghost" className="!h-10 !w-10 rounded-none !p-0">
+    <Button asChild variant="ghost" className="!h-10 !w-10 !p-0">
       <Link href="/">
         <Home strokeWidth={1} />
       </Link>
@@ -28,7 +28,7 @@ function ButtonHome() {
 
 function ButtonGithub() {
   return (
-    <Button asChild variant="ghost" className="!h-10 !w-10 rounded-none !p-0">
+    <Button asChild variant="ghost" className="!h-10 !w-10 !p-0">
       <Link href="https://github.com/adriangalilea/e-id" target="_blank">
         <Github strokeWidth={1} />
       </Link>
@@ -37,7 +37,7 @@ function ButtonGithub() {
 }
 function ButtonFAQ() {
   return (
-    <Button asChild variant="ghost" className="!h-10 !w-10 rounded-none !p-0">
+    <Button asChild variant="ghost" className="!h-10 !w-10 !p-0">
       <Link href="/faq">
         <HelpCircle strokeWidth={1} />
       </Link>

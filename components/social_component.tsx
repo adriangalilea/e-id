@@ -55,12 +55,12 @@ export async function SocialComponent({
 
   return (
     <Tabs defaultValue={populatedSocials[0]?.id} className="w-full">
-      <TabsList className="grid auto-cols-fr grid-flow-col rounded-none border-x border-t !p-0">
+      <TabsList className="grid auto-cols-fr grid-flow-col border-x border-t !p-0">
         {populatedSocials.map(({ id, icon }) => (
           <TabsTrigger
             key={id}
             value={id}
-            className="flex h-full justify-center rounded-none px-2 !shadow-none"
+            className="flex h-full justify-center px-2 !shadow-none"
           >
             {icon}
           </TabsTrigger>
@@ -68,7 +68,7 @@ export async function SocialComponent({
       </TabsList>
       {populatedSocials.map((social) => (
         <TabsContent key={social.id} value={social.id} className="mt-0">
-          <Card className="rounded-none border-t-transparent">
+          <Card className="border-t-transparent">
             <CardHeader className="p-2 flex flex-col gap-2">
               <CardTitle className="flex justify-between items-center">
                 {social.platform}
@@ -95,7 +95,7 @@ export async function SocialComponent({
                       type="text"
                       name={`${social.platform}_${social.id}_contextmessage`}
                       defaultValue={social.context_message ?? ""}
-                      className="prose prose-zinc dark:prose-invert !m-0 mb-2 rounded-none bg-black/5 p-2 text-[16px] italic focus-visible:border-zinc-500 focus-visible:ring-0 focus-visible:ring-transparent focus-visible:ring-offset-0 dark:bg-white/5"
+                      className="prose prose-zinc dark:prose-invert !m-0 mb-2 bg-black/5 p-2 text-[16px] italic focus-visible:border-zinc-500 focus-visible:ring-0 focus-visible:ring-transparent focus-visible:ring-offset-0 dark:bg-white/5"
                       placeholder="Optional contextual message"
                     />
                   </div>
@@ -115,7 +115,7 @@ export async function SocialComponent({
                     type="text"
                     name={`${social.platform}_${social.id}_value`}
                     defaultValue={social.value}
-                    className="!m-0 min-w-[160px] grow rounded-none text-[16px] focus-visible:border-zinc-500 focus-visible:ring-0 focus-visible:ring-transparent focus-visible:ring-offset-0 sm:font-normal"
+                    className="!m-0 min-w-[160px] grow text-[16px] focus-visible:border-zinc-500 focus-visible:ring-0 focus-visible:ring-transparent focus-visible:ring-offset-0 sm:font-normal"
                     placeholder="handle"
                   />
                 </>
@@ -125,10 +125,7 @@ export async function SocialComponent({
                     href={social.url}
                     className="flex items-center no-underline"
                   >
-                    <Button
-                      variant="secondary"
-                      className="size-full rounded-none"
-                    >
+                    <Button variant="secondary" className="size-full ">
                       <div className="flex flex-col items-center space-y-2">
                         {social.displayText}
                       </div>

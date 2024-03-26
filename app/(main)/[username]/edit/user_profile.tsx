@@ -21,7 +21,7 @@ export default function UserProfile({ user }: { user: SelectUser }) {
               type="text"
               name="name"
               defaultValue={user.name!}
-              className="!m-0 rounded-none text-2xl font-normal focus-visible:border-zinc-500 focus-visible:ring-0 focus-visible:ring-transparent focus-visible:ring-offset-0 sm:font-normal"
+              className="!m-0 text-2xl font-normal focus-visible:border-zinc-500 focus-visible:ring-0 focus-visible:ring-transparent focus-visible:ring-offset-0 sm:font-normal"
               placeholder="Name"
             />
             <div className="flex items-center gap-1 font-extralight">
@@ -30,7 +30,7 @@ export default function UserProfile({ user }: { user: SelectUser }) {
                 type="text"
                 name="username"
                 defaultValue={user.username!}
-                className="!m-0 min-w-[160px] grow rounded-none text-[16px] focus-visible:border-zinc-500 focus-visible:ring-0 focus-visible:ring-transparent focus-visible:ring-offset-0 sm:font-normal"
+                className="!m-0 min-w-[160px] grow text-[16px] focus-visible:border-zinc-500 focus-visible:ring-0 focus-visible:ring-transparent focus-visible:ring-offset-0 sm:font-normal"
                 placeholder="handle"
               />
             </div>
@@ -50,7 +50,7 @@ export default function UserProfile({ user }: { user: SelectUser }) {
               type="text"
               name="bio"
               defaultValue={user.bio!}
-              className="prose prose-zinc dark:prose-invert !m-0 mb-2 rounded-none bg-black/5 p-2 text-[16px] italic focus-visible:border-zinc-500 focus-visible:ring-0 focus-visible:ring-transparent focus-visible:ring-offset-0 dark:bg-white/5"
+              className="prose prose-zinc dark:prose-invert !m-0 mb-2 bg-black/5 p-2 text-[16px] italic focus-visible:border-zinc-500 focus-visible:ring-0 focus-visible:ring-transparent focus-visible:ring-offset-0 dark:bg-white/5"
               placeholder="Message to the world..."
             />
           </div>
@@ -61,7 +61,7 @@ export default function UserProfile({ user }: { user: SelectUser }) {
       <Button
         type="submit"
         variant="secondary"
-        className="!h-10 w-full rounded-none hover:text-emerald-500 hover:bg-emerald-500/10 !p-0 mt-2"
+        className="!h-10 w-full hover:text-emerald-500 hover:bg-emerald-500/10 !p-0 mt-2"
       >
         <Save strokeWidth={1} />
       </Button>
