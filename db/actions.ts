@@ -1,5 +1,6 @@
 "use server";
 
+import { z } from "zod";
 import { eq, desc, isNotNull } from "drizzle-orm";
 import { db } from "@/db";
 
@@ -14,6 +15,7 @@ import {
   SocialPlatform,
 } from "@/db/schema";
 import { revalidatePath } from "next/cache";
+import { auth } from "@/auth";
 
 export async function getUsers(): Promise<SelectUser[]> {
   return await db.select().from(users).orderBy(desc(users.id)).limit(6);
@@ -191,4 +193,66 @@ export async function updateUserAndSocials(
   }
 
   revalidatePath(`/${updatedUser.username}`);
+}
+
+const schema = z.object({
+  username: z
+    .string()
+    .min(1, { message: "Username cannot be empty." })
+    .regex(/^[a-z0-9-_]+$/, {
+      message:
+        "Username must only contain lowercase letters, numbers, '-' and '_'.",
+    }),
+});
+
+export type FormState = {
+  message: string;
+  error?: boolean;
+};
+
+export async function setUsername(
+  prevState: FormState,
+  formData: FormData,
+): Promise<FormState> {
+  try {
+    let username = String(formData.get("username"));
+    const validatedFields = schema.safeParse({
+      username: formData.get("username"),
+    });
+
+    if (!validatedFields.success) {
+      return {
+        message:
+          "Username must only contain lowercase letters, numbers, '-' and '_'.",
+        error: true,
+      };
+    }
+
+    const session = await auth();
+    const userId = session?.user?.id;
+
+    if (!userId) {
+      return {
+        message: "You are not logged in.",
+        error: true,
+      };
+    }
+
+    await db
+      .update(users)
+      .set({ username })
+      .where(eq(users.id, userId))
+      .returning({ updatedId: users.id });
+
+    revalidatePath('/null');
+
+    return {
+      message: "Username updated.",
+    };
+  } catch (error) {
+    return {
+      message: "The username is taken",
+      error: true,
+    };
+  }
 }
