@@ -8,7 +8,7 @@ import UserButton from "@/components/user-button";
 import { Toaster } from "@/components/ui/toaster";
 import { auth } from "@/auth";
 import { SignIn, SignOut } from "@/components/auth-components";
-import { Pen } from "lucide-react";
+import { Pen, TriangleAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
@@ -38,23 +38,34 @@ export default async function RootLayout({
         <Analytics />
         <Footer>
           {session ? (
-            <div className="flex gap-2">
-              <UserButton
-                username={session.user?.username!}
-                image={session.user?.image!}
-              />
+            session.user?.username ? (
+              <div className="flex gap-2">
+                <UserButton
+                  username={session.user.username}
+                  image={session.user.image || null}
+                />
+                <Button asChild variant="ghost" className="!h-10 !w-10 !p-0">
+                  <Link href={`/${session.user?.username}/edit`}>
+                    <Pen strokeWidth={1} />
+                  </Link>
+                </Button>
+
+                <SignOut />
+              </div>
+            ) : (
               <Button
                 asChild
                 variant="ghost"
-                className="!h-10 !w-10 rounded-none !p-0"
+                className="!h-10 !w-10 !p-0 relative hover:bg-orange-500/10"
               >
-                <Link href={`/${session.user?.username}/edit`}>
-                  <Pen strokeWidth={1} />
+                <Link href={`/${session.user?.username}`}>
+                  <TriangleAlert
+                    strokeWidth={1.5}
+                    className="text-orange-500"
+                  />
                 </Link>
               </Button>
-
-              <SignOut />
-            </div>
+            )
           ) : (
             <SignIn />
           )}
