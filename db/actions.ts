@@ -161,7 +161,6 @@ export async function updateUserAndSocials(
   }
 
   for (let [key, content] of socialEntries) {
-    // Ensure content.platform is defined to satisfy db insertion requirements
     if (content.platform) {
       const insertedSocial = await db
         .insert(socials)
@@ -171,7 +170,8 @@ export async function updateUserAndSocials(
             value: content.value || "",
             platform: content.platform,
             public: content.public ?? false,
-            context_message: content.contextmessage,
+            context_message:
+              content.contextmessage === "" ? null : content.contextmessage,
           },
         ])
         .onConflictDoUpdate({
@@ -179,7 +179,8 @@ export async function updateUserAndSocials(
           set: {
             value: content.value || "",
             public: content.public ?? false,
-            context_message: content.contextmessage,
+            context_message:
+              content.contextmessage === "" ? null : content.contextmessage,
           },
         })
         .returning()
