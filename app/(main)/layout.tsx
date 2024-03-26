@@ -8,6 +8,9 @@ import UserButton from "@/components/user-button";
 import { Toaster } from "@/components/ui/toaster";
 import { auth } from "@/auth";
 import { SignIn, SignOut } from "@/components/auth-components";
+import { Pen } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -40,6 +43,16 @@ export default async function RootLayout({
                 username={session.user?.username!}
                 image={session.user?.image!}
               />
+              <Button
+                asChild
+                variant="ghost"
+                className="!h-10 !w-10 rounded-none !p-0"
+              >
+                <Link href={`/${session.user?.username}/edit`}>
+                  <Pen strokeWidth={1} />
+                </Link>
+              </Button>
+
               <SignOut />
             </div>
           ) : (
