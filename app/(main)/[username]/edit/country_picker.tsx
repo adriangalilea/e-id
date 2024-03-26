@@ -35,7 +35,9 @@ export default function CountryPicker({
   useEffect(() => {
     // Assuming your form has an identifiable ID or class
     const form = document.querySelector("form");
-    const hiddenInput = form?.querySelector('input[name="country_code"]') as HTMLInputElement;
+    const hiddenInput = form?.querySelector(
+      'input[name="country_code"]',
+    ) as HTMLInputElement;
     if (hiddenInput) {
       hiddenInput.value = value;
     }
