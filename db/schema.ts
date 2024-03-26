@@ -91,21 +91,24 @@ export const comments = sqliteTable("comment", {
   body: text("body").notNull(),
 });
 
+export const socialPlatforms = [
+  "email",
+  "youtube",
+  "github",
+  "twitter",
+  "website",
+  "self",
+  "instagram",
+  "telegram",
+] as const;
+
+export type SocialPlatform = typeof socialPlatforms[number];
+
 export const socials = sqliteTable("social", {
   id: text("id").notNull().primaryKey(),
   user_id: text("user_id").references(() => users.id, { onDelete: "cascade" }),
   platform: text("platform", {
-    enum: [
-      "email",
-      "youtube",
-      "github",
-      "twitter",
-      "website",
-      "self",
-      "instagram",
-      "email",
-      "telegram",
-    ],
+    enum: socialPlatforms,
   }).notNull(),
   value: text("value").notNull(),
   image: text("image"),
