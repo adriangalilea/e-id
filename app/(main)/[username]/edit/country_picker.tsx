@@ -49,13 +49,13 @@ export default function CountryPicker({
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="w-[200px] justify-between rounded-none"
+          className="w-[200px] justify-between "
         >
           {selectedCountryLabel || "Select country..."}
           <ChevronsUpDown className="ml-2 size-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[200px] rounded-none p-0">
+      <PopoverContent className="w-[200px] p-0">
         <Command
           filter={(value, search) => {
             if (value.toLowerCase().includes(search.toLowerCase())) return 1;
@@ -74,7 +74,7 @@ export default function CountryPicker({
                     setValue(country.value);
                     setOpen(false);
                   }}
-                  className="rounded-none"
+                  className=""
                 >
                   <Check
                     className={cn(

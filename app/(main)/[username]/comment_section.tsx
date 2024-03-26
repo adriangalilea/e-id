@@ -40,12 +40,12 @@ export default async function CommentSection({
             <Input
               type="text"
               name="body"
-              className="rounded-none bg-zinc-200/60 text-[16px] backdrop-blur-md focus-visible:border-zinc-500 focus-visible:ring-0 focus-visible:ring-transparent focus-visible:ring-offset-0 dark:bg-zinc-700/80 sm:dark:bg-zinc-800/60"
+              className="bg-zinc-200/60 text-[16px] backdrop-blur-md"
               placeholder="I want everyone to know..."
             />
             <Button
               type="submit"
-              className="z-10 !h-10 !w-10 shrink-0 grow-0 rounded-none bg-zinc-500/20 !p-0"
+              className="z-10 !h-10 !w-10 shrink-0 grow-0 bg-zinc-500/20 !p-0"
               variant="ghost"
             >
               <SendHorizontal strokeWidth={1} />
@@ -65,13 +65,13 @@ export default async function CommentSection({
               disabled
               type="text"
               name="body"
-              className="rounded-none bg-zinc-200/60 text-[16px] backdrop-blur-md focus-visible:border-zinc-500 focus-visible:ring-0 focus-visible:ring-transparent focus-visible:ring-offset-0 dark:bg-zinc-700/80 sm:dark:bg-zinc-800/60"
+              className="bg-zinc-200/60 text-[16px] backdrop-blur-md focus-visible:border-zinc-500 focus-visible:ring-0 focus-visible:ring-transparent focus-visible:ring-offset-0 dark:bg-zinc-700/80 sm:dark:bg-zinc-800/60"
               placeholder="I want everyone to know..."
             />
             <Button
               disabled
               type="submit"
-              className="z-10 !h-10 !w-10 shrink-0 grow-0 rounded-none bg-zinc-500/20 !p-0"
+              className="z-10 !h-10 !w-10 shrink-0 grow-0 bg-zinc-500/20 !p-0"
               variant="ghost"
             >
               <SendHorizontal strokeWidth={1} />

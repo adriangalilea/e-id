@@ -50,7 +50,7 @@ export default async function Comment(props: CommentProps) {
       </article>
       <Button
         variant="destructiveGhost"
-        className="!h-10 !w-10 shrink-0 grow-0 rounded-none bg-zinc-500/20 !p-0"
+        className="!h-10 !w-10 shrink-0 grow-0 bg-zinc-500/20 !p-0"
       >
         <X strokeWidth={1} />
       </Button>
