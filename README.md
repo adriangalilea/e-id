@@ -22,6 +22,7 @@ A constant pointer to your ever-changing web presence.
     - [👤️️.to](https://👤️️.to) redirects to [e-id.to](https://e-id.to) in anything else.
 
 # 📝 TO-DO
+- [ ] feat: google auth prod
 - [ ] feat: do not show email by default, only suggest.
 - [ ] feat: opengraph
   - [ ] [fetch-opengraph node](https://github.com/purphoros/fetch-opengraph)
@@ -33,6 +34,7 @@ A constant pointer to your ever-changing web presence.
 - [ ] feat: custom auth login window
   - [ ] https://authjs.dev/guides/basics/pages#theming
   - [ ] https://github.com/ndom91/next-auth-example-sign-in-page
+  - [ ] https://github.com/shadcn-ui/ui/blob/5c50a32e8f02bd745d2524cd68de6b7cd8d0e8f8/apps/www/app/(app)/examples/authentication/page.tsx
 - [ ] feat: being able to choose another username
   - [ ] redirect on the toast to user profile
   - [ ] add warning on username to prompt editing `i your profile is unreachable without username` 
