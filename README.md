@@ -24,11 +24,13 @@ A constant pointer to your ever-changing web presence.
 
 # 📝 TO-DO
 
-- [ ] feat: optimizations
-  - [ ] do not use session on [username]/page.tsx since it breaks the static site generation
-  - [ ] cache github activity component
-  - [ ] cache opengraph from custom website
 - [ ] feat: opengraph on custom website for social component
+- [ ] feat: curl
+  - [ ] /adriangalilea
+  - [ ] /adriangalilea/x
+- [ ] feat: /username/[social_media_name]
+  - [ ] if exists: redirects to said social media and log.
+  - [ ] if not exists: redirects to e-id profile and log user demand.
 - [x] feat: list of forbidden handles
   - [x] I don't need auth because it has higher priority than [username]
   - [x] /null path to edit null username
@@ -47,12 +49,6 @@ A constant pointer to your ever-changing web presence.
     - [ ] `userByUsername`
   - [ ] post
     - [ ] `patchUser`
-- [ ] feat: curl
-  - [ ] /adriangalilea
-  - [ ] /adriangalilea/x
-- [ ] feat: /username/[social_media_name]
-  - [ ] if exists: redirects to said social media and log.
-  - [ ] if not exists: redirects to e-id profile and log user demand.
 - [ ] consider cheap username fee/time to prevent squatting.
   - [ ] allow speculation (?)
 - [ ] allow befriending/following
@@ -90,6 +86,10 @@ A constant pointer to your ever-changing web presence.
   - [ ] aliveness score
   - [ ] notify when friends make new places
 - [ ] feat: premium claimable username
+- [ ] feat: optimizations
+  - [ ] do not use session on [username]/page.tsx since it breaks the static site generation
+  - [ ] cache github activity component
+  - [ ] cache opengraph from custom website
 - [ ] style: comment input button disabled while not text
 
 # blocked
