@@ -129,7 +129,7 @@ export async function SocialComponent({
         <TabsContent key={social.id} value={social.id} className="mt-0">
           <Card className="border-t-transparent p-2">
             {(edit || social.context_message) && (
-              <CardHeader className="flex flex-col gap-1">
+              <CardHeader className="flex flex-col p-0 gap-1 mb-2">
                 {edit ? (
                   <CardTitle>
                     <div className="flex justify-between items-center">
