@@ -66,18 +66,24 @@ A constant pointer to your ever-changing web presence.
   - [ ] [branch](https://github.com/adriangalilea/e-id/tree/edit-tabs-preserve-state) preserve state when switching tabs using [zustand](https://github.com/pmndrs/zustand/blob/main/docs/guides/nextjs.md)
   - [ ] custom order
   - [ ] github
+    - [ ] followers
     - [ ] activity
       - [ ] toggle
       - [x] implementation
+  - [.] youtube
     - [ ] followers
-  - [ ] youtube
-    - [ ] activity
+    - [ ] highlight
+      - [x] implementation
+      - [ ] input
       - [ ] toggle
-      - [ ] implementation
-    - [ ] followers
+      - [ ] activity(last video/pinned video)
   - [ ] twitter
     - [ ] followers
-    - [ ] highlighted tweet
+    - [.] highlight
+      - [x] implemented
+      - [ ] input
+      - [ ] toggle
+      - [ ] activity(last tweet/pinned tweet)
   - [ ] disallow comments
   - [ ] country
     - [ ] display flag at rest
