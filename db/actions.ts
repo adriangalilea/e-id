@@ -18,6 +18,10 @@ import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 
 export async function getUsers(): Promise<SelectUser[]> {
+  return await db.select().from(users);
+}
+
+export async function getLatestUsers(): Promise<SelectUser[]> {
   return await db.select().from(users).orderBy(desc(users.id)).limit(6);
 }
 

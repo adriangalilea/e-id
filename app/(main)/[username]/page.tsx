@@ -1,4 +1,4 @@
-import { getUserByUsername } from "@/db/actions";
+import { getUsers, getUserByUsername } from "@/db/actions";
 import CommentSection from "./comment_section";
 import UserProfile from "./user_profile";
 import { auth } from "@/auth";
@@ -6,6 +6,31 @@ import { redirect } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Pen } from "lucide-react";
+
+import type { Metadata, ResolvingMetadata } from "next";
+
+export async function generateMetadata(
+  { params }: { params: { username: string } },
+  parent: ResolvingMetadata,
+): Promise<Metadata> {
+  // read route params
+  const username = params.username;
+
+  // fetch data
+  const user = await getUserByUsername(params.username);
+
+  return {
+    title: user.username,
+  };
+}
+
+export async function generateStaticParams() {
+  const users = await getUsers();
+
+  return users.map((user) => ({
+    username: user.username,
+  }));
+}
 
 export default async function Page({
   params,
