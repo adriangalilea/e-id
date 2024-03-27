@@ -135,12 +135,6 @@ export async function SocialComponent({
                     {social.platform}
                     <div className="flex gap-2">
                       <div className="flex justify-between items-center gap-1">
-                        {/* <Label
-                        htmlFor={`${social.platform}_${social.id}_public`}
-                        className="opacity-20"
-                      >
-                        Visibility
-                      </Label> */}
                         <Switch
                           id={`${social.platform}_${social.id}_public`}
                           defaultChecked={social.public}
@@ -190,6 +184,14 @@ export async function SocialComponent({
                 </>
               ) : (
                 <>
+                  {social.platform === "github" && user.username && (
+                    <div className="flex justify-end overflow-auto relative">
+                      <div className="min-w-max">
+                        <GitHubActivity username={user.username} />
+                      </div>
+                      <div className="absolute inset-y-0 left-0 w-10 bg-gradient-to-r from-black to-transparent pointer-events-none" />
+                    </div>
+                  )}
                   <Link
                     href={social.url}
                     className="flex items-center no-underline"
@@ -200,14 +202,6 @@ export async function SocialComponent({
                       </div>
                     </Button>
                   </Link>
-                  {social.platform === "github" && user.username && (
-                    <div className="flex justify-end overflow-auto relative">
-                      <div className="min-w-max">
-                        <GitHubActivity username={user.username} />
-                      </div>
-                      <div className="absolute inset-y-0 left-0 w-10 bg-gradient-to-r from-black to-transparent pointer-events-none" />
-                    </div>
-                  )}
                 </>
               )}
             </CardContent>
