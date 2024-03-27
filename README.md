@@ -24,15 +24,11 @@ A constant pointer to your ever-changing web presence.
 
 # 📝 TO-DO
 
+- [ ] feat: optimizations
+  - [ ] do not use session on [username]/page.tsx since it breaks the static site generation
+  - [ ] cache github activity component
+  - [ ] cache opengraph from custom website
 - [ ] feat: opengraph on custom website for social component
-- [ ] feat: SEO
-- [ ] feat: being able to edit your own profile
-  - [x] country combobox
-  - [x] simple input for all data
-  - [x] allows toggling visibility
-  - [ ] highlight comment -> testimonial
-  - [x] add new socials
-  - [x] remove socials
 - [x] feat: list of forbidden handles
   - [x] I don't need auth because it has higher priority than [username]
   - [x] /null path to edit null username
@@ -61,6 +57,7 @@ A constant pointer to your ever-changing web presence.
   - [ ] allow speculation (?)
 - [ ] allow befriending/following
 - [ ] /edit 2.0
+  - [ ] highlight comment -> testimonial
   - [x] socials is the same visually as SocialComponent
   - [ ] [branch](https://github.com/adriangalilea/e-id/tree/edit-tabs-preserve-state) preserve state when switching tabs using [zustand](https://github.com/pmndrs/zustand/blob/main/docs/guides/nextjs.md)
   - [ ] custom order
@@ -97,6 +94,13 @@ A constant pointer to your ever-changing web presence.
 
 # blocked
 
+- [x] feat: being able to edit your own profile
+  - [x] country combobox
+  - [x] simple input for all data
+  - [x] allows toggling visibility
+  - [x] add new socials
+  - [x] remove socials
+- [x] feat: SEO
 - [x] feat: google auth prod
 - [.] feat: auth
   - [x] google
