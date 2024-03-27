@@ -192,8 +192,8 @@ export async function SocialComponent({
                     href={social.url}
                     className="flex items-center no-underline !m-0"
                   >
-                    <Button variant="secondary" className="size-full ">
-                      <div className="flex flex-col items-center space-y-2">
+                    <Button variant="secondary" className="size-full">
+                      <div className="flex flex-col items-center !py-1 font-light opacity-80">
                         {social.displayText}
                       </div>
                     </Button>
