@@ -185,7 +185,7 @@ export async function SocialComponent({
                   {social.platform === "twitter" &&
                     social.custom_data &&
                     social.custom_data["highlight"] && (
-                      <div className="flex justify-center">
+                      <div className="flex justify-center *:!m-0 *:!w-full">
                         <Tweet id={social.custom_data["highlight"]} />
                       </div>
                     )}
