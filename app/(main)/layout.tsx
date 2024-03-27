@@ -15,7 +15,10 @@ import Link from "next/link";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "e-ID",
+  title: {
+    template: "e-ID @ %s",
+    default: "e-ID",
+  },
   description: "Digital identity",
 };
 
