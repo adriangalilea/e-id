@@ -30,7 +30,7 @@ export function getSocialDisplayText(
   platform: SocialPlatform,
   id: string,
 ): string {
-  if (platform === "website") {
+  if (platform === "website" && id) {
     return id.replace(/^https?:\/\//, "");
   }
   return id;
