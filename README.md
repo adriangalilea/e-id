@@ -4,7 +4,7 @@ e-ID is your dynamic digital business card.
 
 A constant pointer to your ever-changing web presence.
 
-# ⭐ Features
+# ⭐ features
 
 - Mnemonic and readable.
   - e-ID to [[your_name]]
@@ -22,7 +22,9 @@ A constant pointer to your ever-changing web presence.
     - [e-id.to](https://e-id.to) and [eid.to](https://eid.to) redirect to [👤️️.to](https://👤️️.to) in safari
     - [👤️️.to](https://👤️️.to) redirects to [e-id.to](https://e-id.to) in anything else.
 
-# 📝 TO-DO
+# 📝 tasks
+
+## todo
 
 - [ ] feat: opengraph on custom website for social component
 - [ ] feat: curl
@@ -49,9 +51,9 @@ A constant pointer to your ever-changing web presence.
     - [ ] `userByUsername`
   - [ ] post
     - [ ] `patchUser`
-- [ ] consider cheap username fee/time to prevent squatting.
-  - [ ] allow speculation (?)
-- [ ] allow befriending/following
+- [ ] feat: premium claimable username
+  - [ ] prevents squatting
+  - [ ] allows speculation (?)
 - [ ] /edit 2.0
   - [ ] highlight comment -> testimonial
   - [x] socials is the same visually as SocialComponent
@@ -81,18 +83,19 @@ A constant pointer to your ever-changing web presence.
     - [ ] display flag at rest
   - [ ] birthdate
   - [ ] ensure name and username inputs are similar in size to regular profile
-- [ ] consider tracking for every social media
+- [ ] tracking every social media / blog rss
   - [ ] default being only the last element
   - [ ] aliveness score
+- [ ] feat: friends / followers
   - [ ] notify when friends make new places
-- [ ] feat: premium claimable username
+- [ ] feat: create a widget, similar to those that can be embedded in github.
 - [ ] feat: optimizations
   - [ ] do not use session on [username]/page.tsx since it breaks the static site generation
   - [ ] cache github activity component
   - [ ] cache opengraph from custom website
 - [ ] style: comment input button disabled while not text
 
-# blocked
+# done
 
 - [x] feat: being able to edit your own profile
   - [x] country combobox
@@ -102,9 +105,7 @@ A constant pointer to your ever-changing web presence.
   - [x] remove socials
 - [x] feat: SEO
 - [x] feat: google auth prod
-- [.] feat: auth
-  - [x] google
-  - [.] apple passkey -> revisit when [lucia-auth has passkeys](https://lucia-auth.com/guides/passkeys)
+
 - [x] feat: do not show email by default, only suggest.
 - [x] feat: Socials as a different table
 - [x] feat: dub.co license
@@ -119,6 +120,12 @@ A constant pointer to your ever-changing web presence.
 - [x] feat: handle username by auth provider taken
 - [x] feat: being able to choose another username
   - [x] add warning on username to prompt editing `i your profile is unreachable without username`
+
+# blocked
+
+- [.] feat: auth
+  - [x] google
+  - [.] apple passkey -> revisit when [lucia-auth has passkeys](https://lucia-auth.com/guides/passkeys)
 
 # Credits
 
