@@ -24,7 +24,7 @@ A constant pointer to your ever-changing web presence.
 
 # 📝 TO-DO
 
-- [ ] feat: google auth prod
+- [ ] feat: opengraph on custom website for social component
 - [ ] feat: SEO
 - [ ] feat: being able to edit your own profile
   - [x] country combobox
@@ -44,7 +44,6 @@ A constant pointer to your ever-changing web presence.
   - [ ] https://github.com/ndom91/next-auth-example-sign-in-page
   - [ ] https://github.com/shadcn-ui/ui/blob/5c50a32e8f02bd745d2524cd68de6b7cd8d0e8f8/apps/www/app/(app)/examples/authentication/page.tsx
 - [ ] feat: premium analytics (Tinybird)
-- [ ] feat: opengraph on custom website for social component
   - [ ] [fetch-opengraph node](https://github.com/purphoros/fetch-opengraph)
 - [ ] feat: API
   - [ ] get
@@ -98,6 +97,7 @@ A constant pointer to your ever-changing web presence.
 
 # blocked
 
+- [x] feat: google auth prod
 - [.] feat: auth
   - [x] google
   - [.] apple passkey -> revisit when [lucia-auth has passkeys](https://lucia-auth.com/guides/passkeys)
