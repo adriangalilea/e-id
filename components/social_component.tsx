@@ -6,10 +6,41 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  Cloud,
+  CreditCard,
+  Github,
+  Keyboard,
+  LifeBuoy,
+  LogOut,
+  Mail,
+  MessageSquare,
+  PlusCircle,
+  Settings,
+  User,
+  UserPlus,
+  Users,
+  X,
+} from "lucide-react";
+
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuPortal,
+  DropdownMenuSeparator,
+  DropdownMenuShortcut,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import GitHubCalendar from "react-github-calendar";
 import Link from "next/link";
-import { SelectUser } from "@/db/schema";
+import { SelectUser, socialPlatforms } from "@/db/schema";
 import { Button } from "@/components/ui/button";
 import { getSocials } from "@/db/actions";
 import {
@@ -19,7 +50,8 @@ import {
 } from "@/lib/socials";
 import { Input } from "./ui/input";
 import { Switch } from "./ui/switch";
-import { Label } from "./ui/label";
+import { Plus } from "lucide-react";
+import GitHubActivity from "./github_activity";
 
 export async function SocialComponent({
   user,
@@ -65,26 +97,63 @@ export async function SocialComponent({
             {icon}
           </TabsTrigger>
         ))}
+        {edit && (
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              asChild
+              className="focus-visible:outline-none focus-visible:!ring-transparent focus-visible:!ring-0"
+            >
+              <Button
+                className="justify-center !shadow-none px-2 border-none hover:border-none hover:bg-indigo-500/10 text-indigo-500 hover:text-indigo-500 focus-visible:!ring-transparent"
+                variant="ghost"
+              >
+                <Plus />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-56">
+              <DropdownMenuLabel className="text-indigo-500">
+                Add Account
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              {socialPlatforms.map((platform) => (
+                <DropdownMenuItem key={platform} className="flex gap-2">
+                  {getSocialIcon(platform)}{" "}
+                  <span className="opacity-80">{platform}</span>
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
       </TabsList>
       {populatedSocials.map((social) => (
         <TabsContent key={social.id} value={social.id} className="mt-0">
           <Card className="border-t-transparent">
             <CardHeader className="p-2 flex flex-col gap-2">
-              <CardTitle className="flex justify-between items-center">
-                {social.platform}
+              <CardTitle>
                 {edit && (
-                  <div className="flex justify-between items-center gap-1">
-                    <Label
-                      htmlFor={`${social.platform}_${social.id}_public`}
-                      className="opacity-60"
-                    >
-                      Visibility
-                    </Label>
-                    <Switch
-                      id={`${social.platform}_${social.id}_public`}
-                      defaultChecked={social.public}
-                      name={`${social.platform}_${social.id}_public`}
-                    />
+                  <div className="flex justify-between items-center">
+                    {social.platform}
+                    <div className="flex gap-2">
+                      <div className="flex justify-between items-center gap-1">
+                        {/* <Label
+                        htmlFor={`${social.platform}_${social.id}_public`}
+                        className="opacity-20"
+                      >
+                        Visibility
+                      </Label> */}
+                        <Switch
+                          id={`${social.platform}_${social.id}_public`}
+                          defaultChecked={social.public}
+                          name={`${social.platform}_${social.id}_public`}
+                        />
+                      </div>
+                      <Button
+                        variant="destructiveGhost"
+                        className="!h-10 !w-10 !p-0 text-red-500"
+                      >
+                        <X />
+                      </Button>
+                    </div>
                   </div>
                 )}
               </CardTitle>
@@ -132,7 +201,12 @@ export async function SocialComponent({
                     </Button>
                   </Link>
                   {social.platform === "github" && user.username && (
-                    <GitHubCalendar username={user.username} />
+                    <div className="flex justify-end overflow-auto relative">
+                      <div className="min-w-max">
+                        <GitHubActivity username={user.username} />
+                      </div>
+                      <div className="absolute inset-y-0 left-0 w-10 bg-gradient-to-r from-black to-transparent pointer-events-none" />
+                    </div>
                   )}
                 </>
               )}
