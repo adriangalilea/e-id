@@ -12,7 +12,7 @@ export default function UserProfile({ user }: { user: SelectUser }) {
   return (
     <form
       action={updateUserWithUser}
-      className="flex flex-1 flex-col justify-between items-end"
+      className="flex flex-1 flex-col items-end gap-4"
     >
       <div className="flex flex-col">
         <div className="flex items-center gap-2 w-full">
@@ -61,7 +61,7 @@ export default function UserProfile({ user }: { user: SelectUser }) {
       <Button
         type="submit"
         variant="secondary"
-        className="!h-10 w-full hover:text-emerald-500 hover:bg-emerald-500/10 !p-0 mt-2"
+        className="!h-10 w-full text-emerald-500 hover:bg-emerald-500/10 !p-0 mt-2"
       >
         <Save strokeWidth={1} />
       </Button>
