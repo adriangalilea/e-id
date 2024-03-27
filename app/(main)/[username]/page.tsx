@@ -3,6 +3,9 @@ import CommentSection from "./comment_section";
 import UserProfile from "./user_profile";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import { Pen } from "lucide-react";
 
 export default async function Page({
   params,
@@ -20,7 +23,16 @@ export default async function Page({
 
   return (
     <div className="flex flex-1 flex-col justify-between">
-      <UserProfile user={user} />
+      <div className="flex flex-col gap-6">
+        <UserProfile user={user} />
+        {session && session.user?.username === user.username && (
+          <Button asChild variant="secondary" className="!h-10 !w-full !p-0">
+            <Link href={`/${session.user.username}/edit`}>
+              <Pen strokeWidth={1} className="opacity-60" />
+            </Link>
+          </Button>
+        )}
+      </div>
       <CommentSection
         profileUserId={user.id}
         visitorUserId={session?.user?.id}

@@ -30,7 +30,7 @@ export default async function RootLayout({
       <body
         className={cn(
           inter.className,
-          "mx-auto flex h-dvh w-full max-w-2xl flex-col justify-between bg-zinc-50 px-6 pt-3 antialiased md:pt-6 dark:bg-zinc-950",
+          "mx-auto flex h-dvh w-full max-w-2xl flex-col justify-between bg-zinc-50 px-6 antialiased md:pt-3 dark:bg-zinc-950",
         )}
       >
         {children}
@@ -44,12 +44,6 @@ export default async function RootLayout({
                   username={session.user.username}
                   image={session.user.image || null}
                 />
-                <Button asChild variant="ghost" className="!h-10 !w-10 !p-0">
-                  <Link href={`/${session.user?.username}/edit`}>
-                    <Pen strokeWidth={1} />
-                  </Link>
-                </Button>
-
                 <SignOut />
               </div>
             ) : (
