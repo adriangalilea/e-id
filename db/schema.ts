@@ -115,7 +115,12 @@ export const socials = sqliteTable("social", {
   order: integer("order"),
   context_message: text("context_message"),
   public: integer("public", { mode: "boolean" }).notNull().default(false),
-  custom_data: text("custom_data", { mode: "json" }),
+  custom_data: text("custom_data", { mode: "json" }).$type<{
+    highlight?: string;
+    platform_user_id?: string;
+    channel_id?: string;
+    followers?: number;
+  }>(),
 });
 
 // custom data can contain:
