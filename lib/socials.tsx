@@ -33,10 +33,11 @@ export function getSocialDisplayText(
   if (platform === "website") {
     return id.replace(/^https?:\/\//, "");
   }
-  if (platform === "email") {
-    return id;
-  }
-  return `@${id}`;
+  return id;
+  // if (platform === "email") {
+  //   return id;
+  // }
+  // return `@${id}`;
 }
 
 export function getSocialIcon(platform: SocialPlatform): ReactElement {
