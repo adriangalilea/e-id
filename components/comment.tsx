@@ -6,7 +6,6 @@ import { Button } from "./ui/button";
 import { X } from "lucide-react";
 import { deleteComment } from "@/db/actions";
 
-
 export default async function Comment({
   body,
   created_at,
@@ -15,12 +14,12 @@ export default async function Comment({
   username,
   commentId,
 }: {
-  body: SelectUser["bio"],
-  created_at: SelectUser["created_at"],
-  name: SelectUser["name"],
-  profilePicture: SelectUser["image"],
-  username: SelectUser["username"],
-  commentId: SelectComment["id"],
+  body: SelectUser["bio"];
+  created_at: SelectUser["created_at"];
+  name: SelectUser["name"];
+  profilePicture: SelectUser["image"];
+  username: SelectUser["username"];
+  commentId: SelectComment["id"];
 }): Promise<JSX.Element> {
   return (
     <form
