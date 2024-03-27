@@ -26,6 +26,8 @@ A constant pointer to your ever-changing web presence.
 
 ## todo
 
+- [ ] style: remove github icon from footer into FAQ
+- [ ] style: clean FAQ
 - [ ] feat: opengraph on custom website for social component
 - [ ] feat: curl
   - [ ] /adriangalilea
