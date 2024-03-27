@@ -14,7 +14,6 @@ export default function AddSocialDropdownMenuItem({
 }) {
   return (
     <DropdownMenuItem
-      key={platform}
       className="flex gap-2"
       onClick={async () => {
         await addSocial(userId, platform);
