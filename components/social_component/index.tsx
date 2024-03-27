@@ -30,6 +30,8 @@ import { Plus } from "lucide-react";
 import GitHubActivity from "@/components/social_component/github_activity";
 import AddSocialDropdownMenuItem from "./add_social_dropdown_menu_item";
 import RemoveSocialButton from "./remove_social_button";
+import { YouTubeEmbed } from "@next/third-parties/google";
+import { Tweet } from "react-tweet";
 
 export async function SocialComponent({
   user,
@@ -51,8 +53,14 @@ export async function SocialComponent({
     if (validSocials.length === 0) return <></>;
   }
 
-  const populatedSocials = validSocials.map(
-    ({ platform, value, image, ...rest }) => ({
+  const populatedSocials = validSocials
+    .sort((a, b) => {
+      const orderA = a.order === null ? Infinity : a.order;
+      const orderB = b.order === null ? Infinity : b.order;
+
+      return (orderA ?? 0) - (orderB ?? 0);
+    })
+    .map(({ platform, value, image, ...rest }) => ({
       url: getSocialUrl(platform, value!),
       icon: getSocialIcon(platform),
       displayText: getSocialDisplayText(platform, value!),
@@ -60,8 +68,7 @@ export async function SocialComponent({
       value,
       image,
       ...rest,
-    }),
-  );
+    }));
 
   // console.log({ populatedSocials });
 
@@ -166,6 +173,21 @@ export async function SocialComponent({
                   {social.platform === "github" && user.username && (
                     <GitHubActivity username={user.username} />
                   )}
+                  {social.platform === "youtube" &&
+                    social.custom_data &&
+                    social.custom_data["highlight"] && (
+                      <YouTubeEmbed
+                        videoid={social.custom_data["highlight"]}
+                        params="controls=0"
+                      />
+                    )}
+                  {social.platform === "twitter" &&
+                    social.custom_data &&
+                    social.custom_data["highlight"] && (
+                      <div className="flex justify-center">
+                        <Tweet id={social.custom_data["highlight"]} />
+                      </div>
+                    )}
                   <Link
                     href={social.url}
                     className="flex items-center no-underline !m-0"
