@@ -33,10 +33,12 @@ export default async function Page({
           </Button>
         )}
       </div>
-      <CommentSection
-        profileUserId={user.id}
-        visitorUserId={session?.user?.id}
-      />
+      {session && (
+        <CommentSection
+          profileUserId={user.id}
+          visitorUserId={session?.user?.id}
+        />
+      )}
     </div>
   );
 }
