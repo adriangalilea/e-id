@@ -6,29 +6,22 @@ import { Button } from "./ui/button";
 import { X } from "lucide-react";
 import { deleteComment } from "@/db/actions";
 
-interface CommentProps {
-  profilePicture: SelectUser["image"];
-  name: SelectUser["name"];
-  username: SelectUser["username"];
-  created_at: SelectUser["created_at"];
-  updated_at: SelectUser["updated_at"];
-  body: SelectUser["bio"];
-  user_id: SelectUser["id"];
-  commentId: SelectComment["id"];
-}
 
-export default async function Comment(props: CommentProps) {
-  const {
-    profilePicture,
-    name,
-    username,
-    created_at,
-    updated_at,
-    body,
-    user_id,
-    commentId,
-  } = props;
-
+export default async function Comment({
+  body,
+  created_at,
+  name,
+  profilePicture,
+  username,
+  commentId,
+}: {
+  body: SelectUser["bio"],
+  created_at: SelectUser["created_at"],
+  name: SelectUser["name"],
+  profilePicture: SelectUser["image"],
+  username: SelectUser["username"],
+  commentId: SelectComment["id"],
+}): Promise<JSX.Element> {
   return (
     <form
       action={async () => {
