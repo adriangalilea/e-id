@@ -104,6 +104,7 @@ export async function SocialComponent({
               <DropdownMenuSeparator />
               {socialPlatforms.map((platform) => (
                 <AddSocialDropdownMenuItem
+                  key={platform}
                   userId={user.id}
                   platform={platform}
                 />
