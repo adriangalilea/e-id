@@ -1,7 +1,9 @@
 "use server";
 
 import { z } from "zod";
-import { eq, desc, isNotNull } from "drizzle-orm";
+
+import { SQLiteSelectQueryBuilder } from "drizzle-orm/sqlite-core";
+import { eq, desc, isNotNull, sql, and } from "drizzle-orm";
 import { db } from "@/db";
 
 import {
@@ -11,7 +13,6 @@ import {
   comments,
   socials,
   SelectSocial,
-  socialPlatforms,
   SocialPlatform,
 } from "@/db/schema";
 import { revalidatePath } from "next/cache";
@@ -51,13 +52,64 @@ export async function getUserByUsername(
   return result[0];
 }
 
-export async function getAllCommentsAndCommentatorsFromProfile(
-  id: SelectUser["id"],
-): Promise<Array<{ users: SelectUser; comments: SelectComment | null }>> {
-  return await db
-    .select({ users: users, comments: comments })
-    .from(users)
-    .innerJoin(comments, eq(users.id, comments.profile_user_id));
+function applyCommentFilter<T extends SQLiteSelectQueryBuilder>(
+  qb: T,
+  profileUserId: SelectUser["id"],
+  visitorUserId: SelectUser["id"],
+) {
+  // If profileUserId is the same as visitorUserId, it means we are fetching comments by the owner on his profile
+  if (profileUserId === visitorUserId) {
+    return qb.where(
+      and(
+        eq(comments.profile_user_id, profileUserId),
+        eq(comments.commentator_id, profileUserId),
+      ),
+    );
+  } else {
+    // If profileUserId and visitorUserId are different, fetch comments made by visitorUserId on profileUserId's profile
+    return qb.where(
+      and(
+        eq(comments.profile_user_id, profileUserId),
+        eq(comments.commentator_id, visitorUserId),
+      ),
+    );
+  }
+}
+
+export async function fetchCommentsConditionally(
+  profileUserId: SelectUser["id"],
+  visitorUserId: SelectUser["id"],
+) {
+  console.log({ profileUserId, visitorUserId });
+
+  let query = db
+    .select({
+      commentId: comments.id,
+      commentBody: comments.body,
+      commentCreatedAt: comments.created_at,
+      commentatorName: users.name,
+      commentatorImage: users.image,
+      commentatorUsername: users.username,
+    })
+    .from(comments)
+    .innerJoin(users, eq(comments.commentator_id, users.id))
+    .$dynamic(); // Use dynamic mode for flexible query modification
+
+  // Apply the appropriate filter based on the relationship between profileUserId and visitorUserId
+  query = applyCommentFilter(query, profileUserId, visitorUserId);
+
+  const result = await query.all();
+
+  return result.map((row) => ({
+    commentId: row.commentId,
+    body: row.commentBody,
+    createdAt: row.commentCreatedAt,
+    user: {
+      name: row.commentatorName,
+      image: row.commentatorImage,
+      username: row.commentatorUsername,
+    },
+  }));
 }
 
 export async function createComment(

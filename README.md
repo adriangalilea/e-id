@@ -57,6 +57,7 @@ A constant pointer to your ever-changing web presence.
   - [ ] prevents squatting
   - [ ] allows speculation (?)
 - [ ] /edit 2.0
+  - [ ] unify social profile editing and display
   - [ ] highlight comment -> testimonial
   - [x] socials is the same visually as SocialComponent
   - [ ] [branch](https://github.com/adriangalilea/e-id/tree/edit-tabs-preserve-state) preserve state when switching tabs using [zustand](https://github.com/pmndrs/zustand/blob/main/docs/guides/nextjs.md)
@@ -122,6 +123,7 @@ A constant pointer to your ever-changing web presence.
 - [x] feat: handle username by auth provider taken
 - [x] feat: being able to choose another username
   - [x] add warning on username to prompt editing `i your profile is unreachable without username`
+- [x] fix: comments showing on the wrong account when commenting on another account
 
 # blocked
 

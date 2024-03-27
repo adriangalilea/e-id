@@ -1,5 +1,5 @@
 import {
-  getAllCommentsAndCommentatorsFromProfile,
+  fetchCommentsConditionally,
   createCommentFromForm,
 } from "@/db/actions";
 import Comment from "@/components/comment";
@@ -19,6 +19,7 @@ export default async function CommentSection({
   // TODO: make the form into a client component
   // const [commenntText, setCommentText] = useState("");
   let createCommentFromFormWithID = null;
+  let comments = null;
   if (visitorUserId) {
     createCommentFromFormWithID = createCommentFromForm.bind(
       null,
@@ -26,8 +27,20 @@ export default async function CommentSection({
       visitorUserId,
     );
   }
-  const allCommentsAndCommentators =
-    await getAllCommentsAndCommentatorsFromProfile(profileUserId);
+
+  if (visitorUserId) {
+    comments = await fetchCommentsConditionally(profileUserId, visitorUserId);
+  }
+  console.log(profileUserId, visitorUserId);
+  comments?.map((comment) =>
+    console.log(
+      comment.body,
+      comment.createdAt,
+      comment.user.name,
+      comment.user.username,
+      comment.commentId,
+    ),
+  );
 
   return (
     <div className="relative max-h-72 overflow-auto">
@@ -80,23 +93,16 @@ export default async function CommentSection({
         </form>
       )}
       <div className="flex flex-col gap-2 overflow-auto">
-        {allCommentsAndCommentators
-          .filter(
-            (commentAndCommentator) =>
-              visitorUserId === profileUserId ||
-              visitorUserId === commentAndCommentator.users.id,
-          )
-          .map((commentAndCommentator) => (
-            <div key={commentAndCommentator.comments?.id}>
+        {comments &&
+          comments.map((comment) => (
+            <div key={comment.commentId}>
               <Comment
-                profilePicture={commentAndCommentator.users.image}
-                name={commentAndCommentator.users.name}
-                username={commentAndCommentator.users.username}
-                created_at={commentAndCommentator.comments?.created_at!}
-                body={commentAndCommentator.comments?.body!}
-                user_id={commentAndCommentator.users.id}
-                updated_at={commentAndCommentator.comments?.updated_at!}
-                commentId={commentAndCommentator.comments?.id!}
+                profilePicture={comment.user.image}
+                name={comment.user.name}
+                username={comment.user.username}
+                created_at={comment.createdAt}
+                body={comment.body}
+                commentId={comment.commentId}
               />
             </div>
           ))}
