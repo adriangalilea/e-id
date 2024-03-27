@@ -31,7 +31,8 @@ A constant pointer to your ever-changing web presence.
   - [x] simple input for all data
   - [x] allows toggling visibility
   - [ ] highlight comment -> testimonial
-  - [ ] add new socials
+  - [x] add new socials
+  - [x] remove socials
 - [x] feat: list of forbidden handles
   - [x] I don't need auth because it has higher priority than [username]
   - [x] /null path to edit null username
@@ -69,6 +70,11 @@ A constant pointer to your ever-changing web presence.
       - [ ] toggle
       - [x] implementation
     - [ ] followers
+  - [ ] youtube
+    - [ ] activity
+      - [ ] toggle
+      - [ ] implementation
+    - [ ] followers
   - [ ] twitter
     - [ ] followers
     - [ ] highlighted tweet
@@ -83,7 +89,6 @@ A constant pointer to your ever-changing web presence.
   - [ ] notify when friends make new places
 - [ ] feat: premium claimable username
 - [ ] style: comment input button disabled while not text
-
 
 # blocked
 
