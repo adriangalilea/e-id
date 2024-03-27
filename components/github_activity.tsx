@@ -20,14 +20,19 @@ const selectLastHalfYear = (contributions: any) => {
 
 export default function GitHubActivity({ username }: { username: string }) {
   return (
-    <GitHubCalendar
-      username={username}
-      hideColorLegend
-      blockMargin={2}
-      blockRadius={0}
-      blockSize={10}
-      hideMonthLabels
-      hideTotalCount
-    />
+    <div className="flex justify-end overflow-auto relative">
+      <div className="min-w-max">
+        <GitHubCalendar
+          username={username}
+          hideColorLegend
+          blockMargin={2}
+          blockRadius={0}
+          blockSize={10}
+          hideMonthLabels
+          hideTotalCount
+        />
+      </div>
+      <div className="absolute inset-y-0 left-0 w-4 bg-gradient-to-r from-zinc-50 dark:from-zinc-950 to-transparent pointer-events-none" />
+    </div>
   );
 }
