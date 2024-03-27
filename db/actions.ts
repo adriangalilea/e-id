@@ -244,7 +244,7 @@ export async function setUsername(
       .where(eq(users.id, userId))
       .returning({ updatedId: users.id });
 
-    revalidatePath('/null');
+    revalidatePath("/null");
 
     return {
       message: "Username updated.",
@@ -254,5 +254,37 @@ export async function setUsername(
       message: "The username is taken",
       error: true,
     };
+  }
+}
+
+export async function addSocial(
+  userId: SelectUser["id"],
+  platform: SocialPlatform,
+) {
+  try {
+    await db
+      .insert(socials)
+      .values({ id: crypto.randomUUID(), user_id: userId, platform })
+      .returning({ insertedId: socials.id });
+    revalidatePath(`/${userId}/edit`);
+    revalidatePath(`/${userId}`);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+export async function removeSocial(
+  userId: SelectUser["id"],
+  platformId: SelectSocial["id"],
+) {
+  try {
+    await db
+      .delete(socials)
+      .where(eq(socials.id, platformId))
+      .returning({ deletedId: socials.id });
+    revalidatePath(`/${userId}/edit`);
+    revalidatePath(`/${userId}`);
+  } catch (error) {
+    console.error(error);
   }
 }

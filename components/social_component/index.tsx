@@ -2,39 +2,15 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  Cloud,
-  CreditCard,
-  Github,
-  Keyboard,
-  LifeBuoy,
-  LogOut,
-  Mail,
-  MessageSquare,
-  PlusCircle,
-  Settings,
-  User,
-  UserPlus,
-  Users,
-  X,
-} from "lucide-react";
 
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuPortal,
   DropdownMenuSeparator,
-  DropdownMenuShortcut,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
@@ -48,10 +24,12 @@ import {
   getSocialIcon,
   getSocialUrl,
 } from "@/lib/socials";
-import { Input } from "./ui/input";
-import { Switch } from "./ui/switch";
+import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
 import { Plus } from "lucide-react";
-import GitHubActivity from "./github_activity";
+import GitHubActivity from "@/components/social_component/github_activity";
+import AddSocialDropdownMenuItem from "./add_social_dropdown_menu_item";
+import RemoveSocialButton from "./remove_social_button";
 
 export async function SocialComponent({
   user,
@@ -62,20 +40,22 @@ export async function SocialComponent({
 }): Promise<JSX.Element> {
   let validSocials = await getSocials(user.id);
 
-  console.log({ validSocials });
+  // console.log({ validSocials });
 
   if (!edit) {
-    // filter out non public ones
-    validSocials = validSocials.filter((social) => social.public === true);
+    // filter out non public ones and those with null or empty social.value
+    validSocials = validSocials.filter(
+      (social) => social.public === true && social.value,
+    );
 
     if (validSocials.length === 0) return <></>;
   }
 
   const populatedSocials = validSocials.map(
     ({ platform, value, image, ...rest }) => ({
-      url: getSocialUrl(platform, value),
+      url: getSocialUrl(platform, value!),
       icon: getSocialIcon(platform),
-      displayText: getSocialDisplayText(platform, value),
+      displayText: getSocialDisplayText(platform, value!),
       platform,
       value,
       image,
@@ -83,7 +63,7 @@ export async function SocialComponent({
     }),
   );
 
-  console.log({ populatedSocials });
+  // console.log({ populatedSocials });
 
   return (
     <Tabs defaultValue={populatedSocials[0]?.id} className="w-full mt-0">
@@ -116,10 +96,10 @@ export async function SocialComponent({
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
               {socialPlatforms.map((platform) => (
-                <DropdownMenuItem key={platform} className="flex gap-2">
-                  {getSocialIcon(platform)}{" "}
-                  <span className="opacity-80">{platform}</span>
-                </DropdownMenuItem>
+                <AddSocialDropdownMenuItem
+                  userId={user.id}
+                  platform={platform}
+                />
               ))}
             </DropdownMenuContent>
           </DropdownMenu>
@@ -143,12 +123,10 @@ export async function SocialComponent({
                         </div>
                         <span className="font-light">{social.platform}</span>
                       </div>
-                      <Button
-                        variant="destructiveGhost"
-                        className="!h-10 !w-10 !p-0 text-red-500"
-                      >
-                        <X />
-                      </Button>
+                      <RemoveSocialButton
+                        userId={user.id}
+                        platformId={social.id}
+                      />
                     </div>
                     <div className="mt-3 border-l border-zinc-500">
                       <Input
@@ -178,7 +156,7 @@ export async function SocialComponent({
                   <Input
                     type="text"
                     name={`${social.platform}_${social.id}_value`}
-                    defaultValue={social.value}
+                    defaultValue={social.value || ""}
                     className="!m-0 min-w-[160px] !bg-transparent grow text-[16px] focus-visible:border-zinc-500 focus-visible:ring-0 focus-visible:ring-transparent focus-visible:ring-offset-0 sm:font-normal"
                     placeholder="handle"
                   />

@@ -110,7 +110,7 @@ export const socials = sqliteTable("social", {
   platform: text("platform", {
     enum: socialPlatforms,
   }).notNull(),
-  value: text("value").notNull(),
+  value: text("value"),
   image: text("image"),
   order: integer("order"),
   context_message: text("context_message"),
