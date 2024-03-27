@@ -40,7 +40,7 @@ export default async function CommentSection({
             <Input
               type="text"
               name="body"
-              className="bg-zinc-200/60 text-[16px] backdrop-blur-md"
+              className="bg-zinc-200/60 text-[16px] backdrop-blur-md  opacity-60"
               placeholder="I want everyone to know..."
             />
             <Button
@@ -48,7 +48,7 @@ export default async function CommentSection({
               className="z-10 !h-10 !w-10 shrink-0 grow-0 bg-zinc-500/20 !p-0"
               variant="ghost"
             >
-              <SendHorizontal strokeWidth={1} />
+              <SendHorizontal strokeWidth="1" className="opacity-60" />
             </Button>
           </div>
         </form>
@@ -65,7 +65,7 @@ export default async function CommentSection({
               disabled
               type="text"
               name="body"
-              className="bg-zinc-200/60 text-[16px] backdrop-blur-md focus-visible:border-zinc-500 focus-visible:ring-0 focus-visible:ring-transparent focus-visible:ring-offset-0 dark:bg-zinc-700/80 sm:dark:bg-zinc-800/60"
+              className="bg-zinc-200/60 text-[16px] backdrop-blur-md opacity-60"
               placeholder="I want everyone to know..."
             />
             <Button
@@ -74,7 +74,7 @@ export default async function CommentSection({
               className="z-10 !h-10 !w-10 shrink-0 grow-0 bg-zinc-500/20 !p-0"
               variant="ghost"
             >
-              <SendHorizontal strokeWidth={1} />
+              <SendHorizontal strokeWidth="1" className="opacity-60" />
             </Button>
           </div>
         </form>
