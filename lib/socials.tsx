@@ -17,7 +17,7 @@ export function getSocialUrl(platform: SocialPlatform, id: string): string {
     email: `mailto:${id}`,
     website: id,
     github: `https://github.com/${id}`,
-    youtube: `https://youtube.com/@${id}`,
+    youtube: `https://youtube.com/${id}`,
     twitter: `https://twitter.com/${id}`,
     telegram: `https://t.me/${id}`,
     self: `https://${id}.self.fm`,
