@@ -3,12 +3,10 @@
     "next",
     "next/core-web-vitals",
     "plugin:tailwindcss/recommended",
-    "plugin:prettier/recommended"
+    "plugin:@typescript-eslint/recommended",
+    "prettier"
   ],
-  "plugins": ["prettier"],
-  "rules": {
-    "prettier/prettier": "error"
-  },
+  "plugins": ["tailwindcss"],
   "overrides": [
     {
       "files": ["*.ts", "*.tsx", "*.js"],
