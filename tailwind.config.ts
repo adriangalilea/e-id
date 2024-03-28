@@ -20,6 +20,10 @@ const config = {
       },
     },
     extend: {
+      fontFamily: {
+        inter: ["var(--font-inter)"],
+        quote: ["var(--font-oooh-baby)"],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",

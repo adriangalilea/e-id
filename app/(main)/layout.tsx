@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Oooh_Baby } from "next/font/google";
 import "../globals.css";
 import { cn } from "@/lib/utils";
 import Footer from "@/components/footer";
@@ -8,11 +8,21 @@ import UserButton from "@/components/user-button";
 import { Toaster } from "@/components/ui/toaster";
 import { auth } from "@/auth";
 import { SignIn, SignOut } from "@/components/auth-components";
-import { Pen, TriangleAlert } from "lucide-react";
+import { TriangleAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
-const inter = Inter({ subsets: ["latin"] });
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+  display: "swap",
+});
+const ooohBaby = Oooh_Baby({
+  weight: "400",
+  subsets: ["latin"],
+  variable: "--font-oooh-baby",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: {
@@ -29,12 +39,10 @@ export default async function RootLayout({
 }>) {
   const session = await auth();
   return (
-    <html lang="en">
+    <html lang="en" className={`${inter.variable} ${ooohBaby.variable}`}>
       <body
-        className={cn(
-          inter.className,
-          "mx-auto flex h-dvh w-full max-w-2xl flex-col justify-between bg-zinc-50 px-6 antialiased md:pt-3 dark:bg-zinc-950",
-        )}
+        className="mx-auto flex h-dvh w-full max-w-2xl flex-col justify-between px-6 font-inter
+          antialiased md:pt-3"
       >
         {children}
         <Toaster />
@@ -53,7 +61,7 @@ export default async function RootLayout({
               <Button
                 asChild
                 variant="ghost"
-                className="!h-10 !w-10 !p-0 relative hover:bg-orange-500/10"
+                className="relative !h-10 !w-10 !p-0 hover:bg-orange-500/10"
               >
                 <Link href={`/${session.user?.username}`}>
                   <TriangleAlert
