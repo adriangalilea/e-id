@@ -16,7 +16,7 @@ export function ClientForm() {
   const [state, formAction] = useFormState(setUsername, initialState);
 
   return (
-    <form action={formAction} className="flex justify-between flex-col gap-2">
+    <form action={formAction} className="flex flex-col justify-between gap-2">
       <label htmlFor="username">username</label>
       <div className="flex">
         <Input

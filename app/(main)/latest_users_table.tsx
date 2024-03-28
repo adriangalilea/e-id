@@ -33,7 +33,7 @@ export function LatestUsersTable({ users }: { users: SelectUser[] }) {
             <TableCell>
               <Flag country={user.country_code} />
             </TableCell>
-            <TableCell className="prose prose-zinc dark:prose-invert text-sm">
+            <TableCell className="prose prose-zinc text-sm dark:prose-invert">
               <Link
                 href={`/${user.username}`}
                 className="no-underline hover:underline"
@@ -41,7 +41,7 @@ export function LatestUsersTable({ users }: { users: SelectUser[] }) {
                 {user.name}
               </Link>
             </TableCell>
-            <TableCell className="prose prose-zinc dark:prose-invert text-sm">
+            <TableCell className="prose prose-zinc text-sm dark:prose-invert">
               <HumanTime date={user.created_at} />
             </TableCell>
           </TableRow>

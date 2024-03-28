@@ -22,7 +22,9 @@ export default function RootLayout({
       <body
         className={cn(
           inter.className,
-          "antialised flex min-h-screen items-center justify-center bg-gradient-to-b bg-gradient-to-r from-slate-200 to-indigo-200 p-4 sm:px-10 sm:py-5 lg:px-16 lg:py-8 dark:from-gray-900 dark:to-indigo-950",
+          `antialised flex min-h-screen items-center justify-center bg-gradient-to-b
+          bg-gradient-to-r from-slate-200 to-indigo-200 p-4 sm:px-10 sm:py-5 lg:px-16
+          lg:py-8 dark:from-gray-900 dark:to-indigo-950`,
         )}
       >
         {children}

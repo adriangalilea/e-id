@@ -32,7 +32,8 @@ export default function HumanTime({
       <time
         dateTime={isoString}
         title={displayPretext + localeString}
-        className="text-sm underline decoration-transparent underline-offset-2 transition-all duration-300 ease-in-out hover:decoration-neutral-500"
+        className="text-sm underline decoration-transparent underline-offset-2 transition-all
+          duration-300 ease-in-out hover:decoration-neutral-500"
       >
         {dateLocal.format("YY/MM/DD")}
       </time>
@@ -50,7 +51,8 @@ export default function HumanTime({
     <time
       dateTime={isoString}
       title={displayPretext + localeString}
-      className="text-sm underline decoration-transparent underline-offset-2 transition-all duration-300 ease-in-out hover:decoration-neutral-500"
+      className="text-sm underline decoration-transparent underline-offset-2 transition-all
+        duration-300 ease-in-out hover:decoration-neutral-500"
     >
       {pretext === "edited" ? "✎" : ""}
       {formatBasedOnDay}

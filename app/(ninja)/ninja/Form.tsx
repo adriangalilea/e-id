@@ -81,7 +81,8 @@ export default function UserProfileForm() {
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
-          className="prose prose-zinc space-y-4 antialiased lg:prose-xl xl:prose-2xl dark:prose-invert"
+          className="prose prose-zinc space-y-4 antialiased lg:prose-xl xl:prose-2xl
+            dark:prose-invert"
         >
           <CardContent className="grid gap-4">
             <FormField

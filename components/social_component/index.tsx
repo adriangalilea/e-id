@@ -73,7 +73,7 @@ export async function SocialComponent({
   // console.log({ populatedSocials });
 
   return (
-    <Tabs defaultValue={populatedSocials[0]?.id} className="w-full mt-0">
+    <Tabs defaultValue={populatedSocials[0]?.id} className="mt-0 w-full">
       <TabsList className="grid auto-cols-fr grid-flow-col border-x border-t !p-0">
         {populatedSocials.map(({ id, icon }) => (
           <TabsTrigger
@@ -88,10 +88,11 @@ export async function SocialComponent({
           <DropdownMenu>
             <DropdownMenuTrigger
               asChild
-              className="focus-visible:outline-none focus-visible:!ring-transparent focus-visible:!ring-0"
+              className="focus-visible:outline-none focus-visible:!ring-0 focus-visible:!ring-transparent"
             >
               <Button
-                className="justify-center !shadow-none border-none hover:border-none hover:bg-indigo-500/10 text-indigo-500 hover:text-indigo-500 focus-visible:!ring-transparent"
+                className="justify-center border-none text-indigo-500 !shadow-none hover:border-none
+                  hover:bg-indigo-500/10 hover:text-indigo-500 focus-visible:!ring-transparent"
                 variant="ghost"
               >
                 <Plus />
@@ -117,12 +118,12 @@ export async function SocialComponent({
         <TabsContent key={social.id} value={social.id} className="mt-0">
           <Card className="border-t-transparent px-3 py-1.5">
             {(edit || social.context_message) && (
-              <CardHeader className="flex flex-col p-0 gap-1.5 mb-1.5">
+              <CardHeader className="mb-1.5 flex flex-col gap-1.5 p-0">
                 {edit ? (
                   <CardTitle>
-                    <div className="flex justify-between items-center">
+                    <div className="flex items-center justify-between">
                       <div className="flex gap-2">
-                        <div className="flex justify-between items-center gap-1">
+                        <div className="flex items-center justify-between gap-1">
                           <Switch
                             id={`${social.platform}_${social.id}_public`}
                             defaultChecked={social.public}
@@ -141,14 +142,19 @@ export async function SocialComponent({
                         type="text"
                         name={`${social.platform}_${social.id}_contextmessage`}
                         defaultValue={social.context_message ?? ""}
-                        className="prose prose-zinc font-light dark:prose-invert !m-0 bg-black/5 px-3 py-1.5 text-[16px] italic focus-visible:border-zinc-500 focus-visible:ring-0 focus-visible:ring-transparent focus-visible:ring-offset-0 dark:bg-white/5"
+                        className="prose prose-zinc !m-0 bg-black/5 px-3 py-1.5 text-[16px] font-light italic
+                          dark:prose-invert focus-visible:border-zinc-500 focus-visible:ring-0
+                          focus-visible:ring-transparent focus-visible:ring-offset-0 dark:bg-white/5"
                         placeholder="Optional contextual message"
                       />
                     </div>
                   </CardTitle>
                 ) : social.context_message ? (
                   <CardDescription>
-                    <blockquote className="prose prose-zinc dark:prose-invert border-l border-zinc-500 bg-black/5  px-3 py-1.5 italic dark:bg-white/5">
+                    <blockquote
+                      className="prose prose-zinc border-l border-zinc-500 bg-black/5 px-3 py-1.5 italic
+                        dark:prose-invert dark:bg-white/5"
+                    >
                       {social.context_message}
                     </blockquote>
                   </CardDescription>
@@ -158,14 +164,16 @@ export async function SocialComponent({
               </CardHeader>
             )}
 
-            <CardContent className="p-0 flex flex-col gap-1.5">
+            <CardContent className="flex flex-col gap-1.5 p-0">
               {edit ? (
                 <>
                   <Input
                     type="text"
                     name={`${social.platform}_${social.id}_value`}
                     defaultValue={social.value || ""}
-                    className="!m-0 min-w-[160px] !bg-transparent grow text-[16px] focus-visible:border-zinc-500 focus-visible:ring-0 focus-visible:ring-transparent focus-visible:ring-offset-0 sm:font-normal"
+                    className="!m-0 min-w-[160px] grow !bg-transparent text-[16px]
+                      focus-visible:border-zinc-500 focus-visible:ring-0
+                      focus-visible:ring-transparent focus-visible:ring-offset-0 sm:font-normal"
                     placeholder="handle"
                   />
                 </>
@@ -191,7 +199,7 @@ export async function SocialComponent({
                     )}
                   <Link
                     href={social.url}
-                    className="flex items-center no-underline !m-0"
+                    className="!m-0 flex items-center no-underline"
                   >
                     <Button variant="secondary" className="size-full">
                       <div className="flex flex-col items-center !py-3 font-light opacity-80">
