@@ -75,7 +75,7 @@ export const verificationTokens = sqliteTable(
 );
 
 export const comments = sqliteTable("comment", {
-  id: integer("id", { mode: "number" }).notNull().primaryKey(),
+  id: text("id").notNull().primaryKey(),
   profile_user_id: text("profile_user_id")
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),
@@ -89,6 +89,7 @@ export const comments = sqliteTable("comment", {
     .default(sql`(CURRENT_TIMESTAMP)`)
     .notNull(),
   body: text("body").notNull(),
+  pinned: integer("pinned", { mode: "boolean" }).notNull().default(false),
 });
 
 export const socialPlatforms = [
