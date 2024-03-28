@@ -1,54 +1,66 @@
-import HumanTime from "./human_date";
-import Link from "next/link";
 import { SelectComment, SelectUser } from "@/db/schema";
-import UserButton from "./user-button";
 import { Button } from "./ui/button";
-import { X } from "lucide-react";
-import { deleteComment } from "@/db/actions";
+import { Pin, PinOff, X } from "lucide-react";
+import { deleteComment, pinCommentToggle } from "@/db/actions";
+import { Testimonial } from "./quote";
 
 export default async function Comment({
   body,
-  created_at,
+  date,
   name,
   profilePicture,
   username,
   commentId,
+  pinned,
 }: {
   body: SelectUser["bio"];
-  created_at: SelectUser["created_at"];
+  date: SelectUser["created_at"];
   name: SelectUser["name"];
   profilePicture: SelectUser["image"];
   username: SelectUser["username"];
   commentId: SelectComment["id"];
+  pinned: SelectComment["pinned"];
 }): Promise<JSX.Element> {
+  console.log(pinned)
   return (
-    <form
-      action={async () => {
-        "use server";
-        await deleteComment(commentId);
-      }}
-      className="mt-2 flex items-start gap-2"
-    >
-      <UserButton username={username!} image={profilePicture!} />
-      <article
-        className="prose prose-zinc flex w-full items-center justify-between border-l
-          border-zinc-500 bg-zinc-500/10 px-3 py-1.5 dark:prose-invert"
-      >
-        <p className="!m-0 text-pretty italic">{body}</p>
-        <header className="flex items-center gap-2">
-          <Link href={`/${username}`} className="no-underline hover:underline">
-            <span className="whitespace-nowrap font-extralight">{name}</span>
-          </Link>
-
-          <HumanTime date={created_at} dateOnly={true} />
-        </header>
-      </article>
-      <Button
-        variant="destructiveGhost"
-        className="!h-10 !w-10 shrink-0 grow-0 bg-zinc-500/20 !p-0"
-      >
-        <X strokeWidth={1} />
-      </Button>
-    </form>
+    <div className="mt-2 flex items-start gap-2">
+      <Testimonial
+        text={body!}
+        name={name!}
+        username={username!}
+        date={date}
+        image={profilePicture!}
+      />
+      <div className="flex flex-col gap-2">
+        <form
+          action={async () => {
+            "use server";
+            await deleteComment(commentId);
+          }}
+        >
+          <Button
+            variant="destructiveGhost"
+            size="icon"
+            className="bg-zinc-500/20"
+          >
+            <X strokeWidth={1} className="opacity-60" />
+          </Button>
+        </form>
+        <form
+          action={async () => {
+            "use server";
+            await pinCommentToggle(commentId);
+          }}
+        >
+          <Button variant="ghost" size="icon" className="bg-zinc-500/20">
+            {pinned ? (
+              <PinOff strokeWidth={1} className="opacity-60" />
+            ) : (
+              <Pin strokeWidth={1} className="opacity-60" />
+            )}
+          </Button>
+        </form>
+      </div>
+    </div>
   );
 }

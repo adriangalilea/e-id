@@ -2,6 +2,7 @@ import { SelectUser } from "@/db/schema";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Button } from "./ui/button";
 import Link from "next/link";
+import CustomAvatar from "./custom_avatar";
 
 export default async function UserButton({
   username,
@@ -18,12 +19,7 @@ export default async function UserButton({
         asChild
       >
         <Link href={`/${username}`} className="!p-0">
-          <Avatar className="!size-10 ">
-            <AvatarImage src={image || ""} alt={username + " avatar"} />
-            <AvatarFallback>
-              {username ? username.trim().slice(0, 2).toUpperCase() : "ID"}
-            </AvatarFallback>
-          </Avatar>
+          <CustomAvatar username={username!} image={image!} />
         </Link>
       </Button>
     </div>

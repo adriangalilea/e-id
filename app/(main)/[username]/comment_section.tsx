@@ -100,9 +100,10 @@ export default async function CommentSection({
                 profilePicture={comment.user.image}
                 name={comment.user.name}
                 username={comment.user.username}
-                created_at={comment.createdAt}
+                date={comment.createdAt}
                 body={comment.body}
                 commentId={comment.commentId}
+                pinned={comment.pinned}
               />
             </div>
           ))}

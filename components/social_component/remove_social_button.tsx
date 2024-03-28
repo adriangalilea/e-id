@@ -29,7 +29,8 @@ export default function RemoveSocialButton({
       <AlertDialogTrigger asChild>
         <Button
           key={platformId}
-          className="!h-10 !w-10 !p-0 text-red-500"
+          className="bg-zinc-700"
+          size="icon"
           variant="destructiveGhost"
         >
           <X />
