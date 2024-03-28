@@ -20,32 +20,32 @@ const selectLastHalfYear = (contributions: any) => {
 
 const explicitTheme: ThemeInput = {
   light: [
-    "hsl(123, 0%, 98%)",
-    "hsl(123, 10%, 90%)",
-    "hsl(123, 20%, 75%)",
-    "hsl(123, 35%, 60%)",
-    "hsl(123, 55%, 52%)",
+    "hsl(190, 40%, 90%)",
+    "hsl(145, 55%, 76%)",
+    "hsl(135, 60%, 65%)",
+    "hsl(128, 55%, 55%)",
+    "hsl(123, 55%, 45%)",
   ],
   dark: [
-    "hsl(123, 6%, 8%)",
-    "hsl(123, 10%, 25%)",
-    "hsl(123, 30%, 35%)",
-    "hsl(123, 45%, 45%)",
+    "hsl(190, 25%, 8%)",
+    "hsl(150, 35%, 25%)",
+    "hsl(143, 40%, 35%)",
+    "hsl(133, 45%, 45%)",
     "hsl(123, 55%, 52%)",
   ],
 };
- // "#383838", "#4D455D", "#7DB9B6", "#F5E9CF", "#E96479"
+// "#383838", "#4D455D", "#7DB9B6", "#F5E9CF", "#E96479"
 
 export default function GitHubActivity({ username }: { username: string }) {
   return (
-    <div className="relative flex justify-end overflow-auto">
+    <div className="relative flex justify-end overflow-auto border py-0.5 pr-1 bg-zinc-300/80 dark:bg-zinc-700/80">
       <div className="min-w-max">
         <GitHubCalendar
           username={username}
           hideColorLegend
-          blockMargin={2}
+          blockMargin={1.5}
           blockRadius={0}
-          blockSize={10}
+          blockSize={11.5}
           hideMonthLabels
           hideTotalCount
           theme={explicitTheme}
