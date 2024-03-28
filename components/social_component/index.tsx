@@ -80,8 +80,9 @@ export async function SocialComponent({
           <TabsTrigger
             key={id}
             value={id}
-            className="flex h-full justify-center !shadow-none data-[state=active]:bg-zinc-800
-              data-[state=inactive]:bg-zinc-950/60"
+            className="flex h-full justify-center !shadow-none data-[state=active]:bg-zinc-200
+              data-[state=inactive]:bg-zinc-50/60 dark:data-[state=active]:bg-zinc-800
+              dark:data-[state=inactive]:bg-zinc-950/60"
           >
             {icon}
           </TabsTrigger>
@@ -118,7 +119,7 @@ export async function SocialComponent({
       </TabsList>
       {populatedSocials.map((social) => (
         <TabsContent key={social.id} value={social.id} className="mt-0">
-          <Card className="border-t-transparent bg-zinc-800 p-3">
+          <Card className="border-t-transparent bg-zinc-200 p-3 dark:bg-zinc-800">
             {(edit || social.context_message) && (
               <CardHeader className="mb-1.5 flex flex-col gap-1.5 p-0">
                 {edit ? (
@@ -139,12 +140,12 @@ export async function SocialComponent({
                         platformId={social.id}
                       />
                     </div>
-                    
-                      <InputQuote
-                        text={social.context_message ?? ""}
-                        name={`${social.platform}_${social.id}_contextmessage`}
-                        placeholder="Optional contextual message"
-                      />
+
+                    <InputQuote
+                      text={social.context_message ?? ""}
+                      name={`${social.platform}_${social.id}_contextmessage`}
+                      placeholder="Optional contextual message"
+                    />
                   </CardTitle>
                 ) : social.context_message ? (
                   <CardDescription>
@@ -190,7 +191,7 @@ export async function SocialComponent({
                       </div>
                     )}
                   <Link href={social.url} className="!m-0 flex items-center">
-                    <Button className="bg-zinc-300">
+                    <Button className="dark:bg-zinc-300 bg-zinc-600">
                       <div className="flex flex-col items-center !py-3 font-light opacity-80">
                         {social.displayText}
                       </div>
