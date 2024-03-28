@@ -3,7 +3,7 @@
 import { z } from "zod";
 
 import { SQLiteSelectQueryBuilder } from "drizzle-orm/sqlite-core";
-import { eq, desc, isNotNull, sql, and } from "drizzle-orm";
+import { eq, desc, isNotNull, sql, and, not } from "drizzle-orm";
 import { db } from "@/db";
 
 import {
@@ -87,6 +87,7 @@ export async function fetchCommentsConditionally(
       commentId: comments.id,
       commentBody: comments.body,
       commentCreatedAt: comments.created_at,
+      commentPinned: comments.pinned,
       commentatorName: users.name,
       commentatorImage: users.image,
       commentatorUsername: users.username,
@@ -104,6 +105,7 @@ export async function fetchCommentsConditionally(
     commentId: row.commentId,
     body: row.commentBody,
     createdAt: row.commentCreatedAt,
+    pinned: row.commentPinned,
     user: {
       name: row.commentatorName,
       image: row.commentatorImage,
@@ -120,7 +122,7 @@ export async function createComment(
   console.log({ profile_user_id, commentator_id, body });
   await db
     .insert(comments)
-    .values({ profile_user_id, commentator_id, body })
+    .values({ id: crypto.randomUUID(), profile_user_id, commentator_id, body })
     .returning({ insertedId: comments.id });
 
   const user_profile = await getUser(profile_user_id);
@@ -151,11 +153,28 @@ export async function patchComment(
 }
 
 export async function deleteComment(id: SelectComment["id"]): Promise<void> {
+  // TODO: check if the user is the owner of the comment or  the profile
+  const session = await auth();
+  if (!session?.user) return;
+
   const deleted_comment = await db
     .delete(comments)
     .where(eq(comments.id, id))
     .returning();
   revalidatePath(`/${deleted_comment[0].profile_user_id}`);
+}
+
+export async function pinCommentToggle(id: SelectComment["id"]) {
+  // TODO: check if the user is the owner of the profile
+  const session = await auth();
+  if (!session?.user) return;
+
+  const pinnedComment = await db
+    .update(comments)
+    .set({ pinned: not(comments.pinned) })
+    .where(eq(comments.id, id))
+    .returning();
+  revalidatePath(`/${pinnedComment[0].profile_user_id}`);
 }
 
 export async function getSocials(
