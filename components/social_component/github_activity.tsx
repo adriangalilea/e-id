@@ -20,7 +20,10 @@ const explicitTheme: ThemeInput = {
 
 export default function GitHubActivity({ username }: { username: string }) {
   return (
-    <div className="relative flex justify-end overflow-auto border py-0.5 pr-1 bg-zinc-300/80 dark:bg-zinc-700/80">
+    <div
+      className="relative flex justify-end overflow-auto border bg-zinc-300/80 py-0.5 pr-1
+        dark:bg-zinc-700/80"
+    >
       <div className="min-w-max">
         <GitHubCalendar
           username={username}
