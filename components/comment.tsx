@@ -12,6 +12,7 @@ export default async function Comment({
   username,
   commentId,
   pinned,
+  canPin,
 }: {
   body: SelectUser["bio"];
   date: SelectUser["created_at"];
@@ -20,8 +21,8 @@ export default async function Comment({
   username: SelectUser["username"];
   commentId: SelectComment["id"];
   pinned: SelectComment["pinned"];
+  canPin: boolean;
 }): Promise<JSX.Element> {
-  console.log(pinned)
   return (
     <div className="mt-2 flex items-start gap-2">
       <Testimonial
@@ -46,20 +47,22 @@ export default async function Comment({
             <X strokeWidth={1} className="opacity-60" />
           </Button>
         </form>
-        <form
-          action={async () => {
-            "use server";
-            await pinCommentToggle(commentId);
-          }}
-        >
-          <Button variant="ghost" size="icon" className="bg-zinc-500/20">
-            {pinned ? (
-              <PinOff strokeWidth={1} className="opacity-60" />
-            ) : (
-              <Pin strokeWidth={1} className="opacity-60" />
-            )}
-          </Button>
-        </form>
+        {canPin && (
+          <form
+            action={async () => {
+              "use server";
+              await pinCommentToggle(commentId);
+            }}
+          >
+            <Button variant="ghost" size="icon" className="bg-zinc-500/20">
+              {pinned ? (
+                <PinOff strokeWidth={1} className="opacity-60" />
+              ) : (
+                <Pin strokeWidth={1} className="opacity-60" />
+              )}
+            </Button>
+          </form>
+        )}
       </div>
     </div>
   );
