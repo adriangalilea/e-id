@@ -13,7 +13,7 @@ export default async function Page() {
   if (session.user.username) redirect("/");
 
   return (
-    <div className="flex justify-between flex-col gap-4">
+    <div className="flex flex-col justify-between gap-4">
       <Alert variant="warning">
         <TriangleAlert className="size-4" />
         <AlertTitle>{"You don't have a username!"}</AlertTitle>

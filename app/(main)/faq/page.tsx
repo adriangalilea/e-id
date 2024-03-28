@@ -21,7 +21,11 @@ import {
 export default function Faq() {
   return (
     <div className="flex h-full w-full items-start justify-center">
-      <Card className="w-full bg-zinc-50/90 backdrop-blur-2xl transition-all duration-500 ease-in-out lg:prose lg:prose-sm lg:prose-zinc lg:dark:prose-invert dark:bg-zinc-800 sm:dark:bg-zinc-950/60">
+      <Card
+        className="w-full bg-zinc-50/90 backdrop-blur-2xl transition-all duration-500 ease-in-out
+          lg:prose lg:prose-sm lg:prose-zinc lg:dark:prose-invert dark:bg-zinc-800
+          sm:dark:bg-zinc-950/60"
+      >
         <CardHeader>
           <CardTitle>
             <h1>Frequently Asked Questions</h1>

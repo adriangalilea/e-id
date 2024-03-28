@@ -52,12 +52,14 @@ export default function EID({ slug }: { slug: string }) {
               key={key}
               asChild
               variant="outline"
-              className="inline-flex size-14 rounded-full border-indigo-300/40 bg-indigo-50/80 backdrop-blur-sm transition-all duration-500 ease-in-out hover:bg-indigo-200/80 dark:border-indigo-900/30 dark:bg-slate-700/80 dark:hover:bg-indigo-800/50"
+              className="inline-flex size-14 rounded-full border-indigo-300/40 bg-indigo-50/80
+                backdrop-blur-sm transition-all duration-500 ease-in-out hover:bg-indigo-200/80
+                dark:border-indigo-900/30 dark:bg-slate-700/80 dark:hover:bg-indigo-800/50"
             >
               <Link
                 href={url(value)}
-                className="size-12 text-indigo-500 transition-all 
-duration-500 ease-in-out hover:text-indigo-400"
+                className="size-12 text-indigo-500 transition-all duration-500 ease-in-out
+                  hover:text-indigo-400"
               >
                 {icon}
               </Link>
@@ -108,8 +110,15 @@ duration-500 ease-in-out hover:text-indigo-400"
 
   return (
     <main>
-      <article className="prose prose-zinc mb-8 flex w-fit flex-col gap-8 rounded-lg antialiased shadow-lg lg:prose-xl dark:prose-invert sm:mb-10 lg:mb-16">
-        <Card className="border border-indigo-200/80 bg-white/40 backdrop-blur-sm transition-all duration-500 ease-in-out dark:border-indigo-900/20 dark:bg-slate-700/60 dark:hover:border-indigo-900/40 sm:dark:bg-slate-700/60">
+      <article
+        className="prose prose-zinc mb-8 flex w-fit flex-col gap-8 rounded-lg antialiased shadow-lg
+          lg:prose-xl dark:prose-invert sm:mb-10 lg:mb-16"
+      >
+        <Card
+          className="border border-indigo-200/80 bg-white/40 backdrop-blur-sm transition-all
+            duration-500 ease-in-out dark:border-indigo-900/20 dark:bg-slate-700/60
+            dark:hover:border-indigo-900/40 sm:dark:bg-slate-700/60"
+        >
           {decodedData ? (
             renderDecodedData(decodedData)
           ) : (

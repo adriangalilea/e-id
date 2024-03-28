@@ -53,7 +53,7 @@ export default async function CommentSection({
             <Input
               type="text"
               name="body"
-              className="bg-zinc-200/60 text-[16px] backdrop-blur-md  opacity-60"
+              className="bg-zinc-200/60 text-[16px] opacity-60 backdrop-blur-md"
               placeholder="I want everyone to know..."
             />
             <Button
@@ -78,7 +78,7 @@ export default async function CommentSection({
               disabled
               type="text"
               name="body"
-              className="bg-zinc-200/60 text-[16px] backdrop-blur-md opacity-60"
+              className="bg-zinc-200/60 text-[16px] opacity-60 backdrop-blur-md"
               placeholder="I want everyone to know..."
             />
             <Button

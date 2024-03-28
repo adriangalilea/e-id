@@ -46,7 +46,7 @@ export default function RemoveSocialButton({
           <AlertDialogCancel>Cancel</AlertDialogCancel>
           <Button
             asChild
-            className="bg-red-500/20 border border-red-500/10 text-red-500"
+            className="border border-red-500/10 bg-red-500/20 text-red-500"
             variant="destructiveGhost"
           >
             <AlertDialogAction

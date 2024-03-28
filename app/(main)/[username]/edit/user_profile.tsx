@@ -15,13 +15,15 @@ export default function UserProfile({ user }: { user: SelectUser }) {
       className="flex flex-1 flex-col items-end gap-6"
     >
       <div className="flex flex-col">
-        <div className="flex items-center gap-3 w-full">
+        <div className="flex w-full items-center gap-3">
           <div className="flex flex-col justify-between gap-1.5 sm:grow sm:flex-row sm:items-end">
             <Input
               type="text"
               name="name"
               defaultValue={user.name!}
-              className="!m-0 text-2xl font-normal !bg-transparent focus-visible:border-zinc-500 focus-visible:ring-0 focus-visible:ring-transparent focus-visible:ring-offset-0 sm:font-normal"
+              className="!m-0 !bg-transparent text-2xl font-normal focus-visible:border-zinc-500
+                focus-visible:ring-0 focus-visible:ring-transparent focus-visible:ring-offset-0
+                sm:font-normal"
               placeholder="Name"
             />
             <div className="flex items-center gap-1 font-extralight">
@@ -30,7 +32,9 @@ export default function UserProfile({ user }: { user: SelectUser }) {
                 type="text"
                 name="username"
                 defaultValue={user.username!}
-                className="!m-0 min-w-[160px] grow text-[16px] !bg-transparent focus-visible:border-zinc-500 focus-visible:ring-0 focus-visible:ring-transparent focus-visible:ring-offset-0 sm:font-normal"
+                className="!m-0 min-w-[160px] grow !bg-transparent text-[16px]
+                  focus-visible:border-zinc-500 focus-visible:ring-0
+                  focus-visible:ring-transparent focus-visible:ring-offset-0 sm:font-normal"
                 placeholder="handle"
               />
             </div>
@@ -44,13 +48,15 @@ export default function UserProfile({ user }: { user: SelectUser }) {
             </div>
           </div>
         </div>
-        <div className="flex flex-col gap-3 w-full">
+        <div className="flex w-full flex-col gap-3">
           <div className="mt-4 border-l border-zinc-500">
             <Input
               type="text"
               name="bio"
               defaultValue={user.bio!}
-              className="prose prose-zinc dark:prose-invert !m-0 mb-3 bg-black/5 py-1.5 px-3  text-[16px] italic focus-visible:border-zinc-500 focus-visible:ring-0 focus-visible:ring-transparent focus-visible:ring-offset-0 dark:bg-white/5"
+              className="prose prose-zinc !m-0 mb-3 bg-black/5 px-3 py-1.5 text-[16px] italic
+                dark:prose-invert focus-visible:border-zinc-500 focus-visible:ring-0
+                focus-visible:ring-transparent focus-visible:ring-offset-0 dark:bg-white/5"
               placeholder="Message to the world..."
             />
           </div>
@@ -61,7 +67,7 @@ export default function UserProfile({ user }: { user: SelectUser }) {
       <Button
         type="submit"
         variant="secondary"
-        className="!h-10 w-full text-emerald-500 hover:bg-emerald-500/10 !p-0"
+        className="!h-10 w-full !p-0 text-emerald-500 hover:bg-emerald-500/10"
       >
         <Save strokeWidth={1} />
       </Button>
