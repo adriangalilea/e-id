@@ -26,7 +26,7 @@ const spaceMono = Space_Mono({
 
 export const metadata: Metadata = {
   title: {
-    template: "e-ID @ %s",
+    template: "%s e-ID",
     default: "e-ID",
   },
   description: "Digital identity",

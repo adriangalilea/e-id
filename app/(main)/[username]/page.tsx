@@ -20,7 +20,7 @@ export async function generateMetadata(
   const user = await getUserByUsername(params.username);
 
   return {
-    title: user.username,
+    title: user.name,
   };
 }
 
