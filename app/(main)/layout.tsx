@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
-import { Inter, Oooh_Baby } from "next/font/google";
+import { Inter, Space_Mono } from "next/font/google";
 import "../globals.css";
-import { cn } from "@/lib/utils";
 import Footer from "@/components/footer";
 import { Analytics } from "@vercel/analytics/react";
 import UserButton from "@/components/user-button";
@@ -17,10 +16,11 @@ const inter = Inter({
   variable: "--font-inter",
   display: "swap",
 });
-const ooohBaby = Oooh_Baby({
-  weight: "400",
+
+const spaceMono = Space_Mono({
+  weight: ["400", "700"],
   subsets: ["latin"],
-  variable: "--font-oooh-baby",
+  variable: "--font-space-mono",
   display: "swap",
 });
 
@@ -39,7 +39,7 @@ export default async function RootLayout({
 }>) {
   const session = await auth();
   return (
-    <html lang="en" className={`${inter.variable} ${ooohBaby.variable}`}>
+    <html lang="en" className={`${inter.variable} ${spaceMono.variable}`}>
       <body
         className="mx-auto flex h-dvh w-full max-w-2xl flex-col justify-between px-6 font-inter
           antialiased md:pt-3"

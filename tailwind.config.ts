@@ -22,7 +22,7 @@ const config = {
     extend: {
       fontFamily: {
         inter: ["var(--font-inter)"],
-        quote: ["var(--font-oooh-baby)"],
+        code: ["var(--font-space-mono)"],
       },
       colors: {
         border: "hsl(var(--border))",

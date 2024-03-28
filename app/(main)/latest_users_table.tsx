@@ -17,7 +17,7 @@ import Flag from "@/components/flag";
 export function LatestUsersTable({ users }: { users: SelectUser[] }) {
   return (
     <Table>
-      <TableCaption className="text-left italic opacity-60">
+      <TableCaption className="text-left font-code opacity-60">
         latest sign-ups
       </TableCaption>
       <TableHeader>
