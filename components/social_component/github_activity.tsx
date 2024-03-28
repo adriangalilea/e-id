@@ -1,5 +1,5 @@
 "use client";
-import GitHubCalendar from "react-github-calendar";
+import GitHubCalendar, { ThemeInput } from "react-github-calendar";
 
 const selectLastHalfYear = (contributions: any) => {
   const currentYear = new Date().getFullYear();
@@ -18,6 +18,24 @@ const selectLastHalfYear = (contributions: any) => {
   });
 };
 
+const explicitTheme: ThemeInput = {
+  light: [
+    "hsl(123, 0%, 98%)",
+    "hsl(123, 10%, 90%)",
+    "hsl(123, 20%, 75%)",
+    "hsl(123, 35%, 60%)",
+    "hsl(123, 55%, 52%)",
+  ],
+  dark: [
+    "hsl(123, 6%, 8%)",
+    "hsl(123, 10%, 25%)",
+    "hsl(123, 30%, 35%)",
+    "hsl(123, 45%, 45%)",
+    "hsl(123, 55%, 52%)",
+  ],
+};
+ // "#383838", "#4D455D", "#7DB9B6", "#F5E9CF", "#E96479"
+
 export default function GitHubActivity({ username }: { username: string }) {
   return (
     <div className="relative flex justify-end overflow-auto">
@@ -30,12 +48,15 @@ export default function GitHubActivity({ username }: { username: string }) {
           blockSize={10}
           hideMonthLabels
           hideTotalCount
+          theme={explicitTheme}
+        />
+        <div
+          className="absolute inset-0 w-24 backdrop-blur-sm"
+          style={{
+            maskImage: "linear-gradient(to left, transparent, white)",
+          }}
         />
       </div>
-      <div
-        className="pointer-events-none absolute inset-y-0 left-0 w-4 bg-gradient-to-r from-zinc-50
-          to-transparent dark:from-zinc-950"
-      />
     </div>
   );
 }
