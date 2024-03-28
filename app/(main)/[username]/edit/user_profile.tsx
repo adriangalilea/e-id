@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Save } from "lucide-react";
 import { updateUserAndSocials } from "@/db/actions";
 import { SocialComponent } from "@/components/social_component";
+import { InputQuote } from "@/components/quote";
 
 export default function UserProfile({ user }: { user: SelectUser }) {
   const updateUserWithUser = updateUserAndSocials.bind(null, user.id);
@@ -49,17 +50,11 @@ export default function UserProfile({ user }: { user: SelectUser }) {
           </div>
         </div>
         <div className="flex w-full flex-col gap-3">
-          <div className="mt-4 border-l border-zinc-500">
-            <Input
-              type="text"
-              name="bio"
-              defaultValue={user.bio!}
-              className="prose prose-zinc !m-0 mb-3 bg-black/5 px-3 py-1.5 text-[16px] italic
-                dark:prose-invert focus-visible:border-zinc-500 focus-visible:ring-0
-                focus-visible:ring-transparent focus-visible:ring-offset-0 dark:bg-white/5"
-              placeholder="Message to the world..."
-            />
-          </div>
+          <InputQuote
+            text={user.bio ?? ""}
+            name="bio"
+            placeholder="Message to the world"
+          />
           <SocialComponent user={user} edit={true} />
         </div>
       </div>

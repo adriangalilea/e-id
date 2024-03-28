@@ -32,6 +32,7 @@ import AddSocialDropdownMenuItem from "./add_social_dropdown_menu_item";
 import RemoveSocialButton from "./remove_social_button";
 import { YouTubeEmbed } from "@next/third-parties/google";
 import { Tweet } from "react-tweet";
+import { InputQuote, Quote } from "../quote";
 
 export async function SocialComponent({
   user,
@@ -74,12 +75,13 @@ export async function SocialComponent({
 
   return (
     <Tabs defaultValue={populatedSocials[0]?.id} className="mt-0 w-full">
-      <TabsList className="grid auto-cols-fr grid-flow-col border-x border-t !p-0">
+      <TabsList className="grid auto-cols-fr grid-flow-col !p-0">
         {populatedSocials.map(({ id, icon }) => (
           <TabsTrigger
             key={id}
             value={id}
-            className="flex h-full justify-center !shadow-none"
+            className="flex h-full justify-center !shadow-none data-[state=active]:bg-zinc-800
+              data-[state=inactive]:bg-zinc-950/60"
           >
             {icon}
           </TabsTrigger>
@@ -116,7 +118,7 @@ export async function SocialComponent({
       </TabsList>
       {populatedSocials.map((social) => (
         <TabsContent key={social.id} value={social.id} className="mt-0">
-          <Card className="border-t-transparent px-3 py-1.5">
+          <Card className="border-t-transparent bg-zinc-800 p-3">
             {(edit || social.context_message) && (
               <CardHeader className="mb-1.5 flex flex-col gap-1.5 p-0">
                 {edit ? (
@@ -137,26 +139,16 @@ export async function SocialComponent({
                         platformId={social.id}
                       />
                     </div>
-                    <div className="mt-3 border-l border-zinc-500">
-                      <Input
-                        type="text"
+                    
+                      <InputQuote
+                        text={social.context_message ?? ""}
                         name={`${social.platform}_${social.id}_contextmessage`}
-                        defaultValue={social.context_message ?? ""}
-                        className="prose prose-zinc !m-0 bg-black/5 px-3 py-1.5 text-[16px] font-light italic
-                          dark:prose-invert focus-visible:border-zinc-500 focus-visible:ring-0
-                          focus-visible:ring-transparent focus-visible:ring-offset-0 dark:bg-white/5"
                         placeholder="Optional contextual message"
                       />
-                    </div>
                   </CardTitle>
                 ) : social.context_message ? (
                   <CardDescription>
-                    <blockquote
-                      className="prose prose-zinc border-l border-zinc-500 bg-black/5 px-3 py-1.5 italic
-                        dark:prose-invert dark:bg-white/5"
-                    >
-                      {social.context_message}
-                    </blockquote>
+                    <Quote text={social.context_message} />
                   </CardDescription>
                 ) : (
                   <></>
@@ -164,7 +156,7 @@ export async function SocialComponent({
               </CardHeader>
             )}
 
-            <CardContent className="flex flex-col gap-1.5 p-0">
+            <CardContent className="flex flex-col gap-3 p-0">
               {edit ? (
                 <>
                   <Input
@@ -197,11 +189,8 @@ export async function SocialComponent({
                         <Tweet id={social.custom_data["highlight"]} />
                       </div>
                     )}
-                  <Link
-                    href={social.url}
-                    className="!m-0 flex items-center no-underline"
-                  >
-                    <Button variant="secondary" className="size-full">
+                  <Link href={social.url} className="!m-0 flex items-center">
+                    <Button className="bg-zinc-300">
                       <div className="flex flex-col items-center !py-3 font-light opacity-80">
                         {social.displayText}
                       </div>
