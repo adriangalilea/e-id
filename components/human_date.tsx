@@ -32,8 +32,7 @@ export default function HumanTime({
       <time
         dateTime={isoString}
         title={displayPretext + localeString}
-        className="text-sm underline decoration-transparent underline-offset-2 transition-all
-          duration-300 ease-in-out hover:decoration-neutral-500"
+        className="font-code px-1 py-0.5 text-xs font-normal opacity-50 hover:bg-zinc-500/20"
       >
         {dateLocal.format("YY/MM/DD")}
       </time>
@@ -51,8 +50,8 @@ export default function HumanTime({
     <time
       dateTime={isoString}
       title={displayPretext + localeString}
-      className="text-sm underline decoration-transparent underline-offset-2 transition-all
-        duration-300 ease-in-out hover:decoration-neutral-500"
+      className="font-code px-1 py-0.5 text-xs font-normal underline-offset-2
+        hover:bg-zinc-500/20"
     >
       {pretext === "edited" ? "✎" : ""}
       {formatBasedOnDay}
