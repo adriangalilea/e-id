@@ -104,6 +104,7 @@ export default async function CommentSection({
                 body={comment.body}
                 commentId={comment.commentId}
                 pinned={comment.pinned}
+                canPin={visitorUserId === profileUserId}
               />
             </div>
           ))}
