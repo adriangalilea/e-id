@@ -52,19 +52,14 @@ export async function getUserByUsername(
   return result[0];
 }
 
-function applyCommentFilter<T extends SQLiteSelectQueryBuilder>(
+function applyDynamicFilter<T extends SQLiteSelectQueryBuilder>(
   qb: T,
   profileUserId: SelectUser["id"],
   visitorUserId: SelectUser["id"],
 ) {
-  // If profileUserId is the same as visitorUserId, it means we are fetching comments by the owner on his profile
+  // If profileUserId is the same as visitorUserId, we fetch all comments made on the profile
   if (profileUserId === visitorUserId) {
-    return qb.where(
-      and(
-        eq(comments.profile_user_id, profileUserId),
-        eq(comments.commentator_id, profileUserId),
-      ),
-    );
+    return qb.where(eq(comments.profile_user_id, profileUserId));
   } else {
     // If profileUserId and visitorUserId are different, fetch comments made by visitorUserId on profileUserId's profile
     return qb.where(
@@ -94,10 +89,9 @@ export async function fetchCommentsConditionally(
     })
     .from(comments)
     .innerJoin(users, eq(comments.commentator_id, users.id))
-    .$dynamic(); // Use dynamic mode for flexible query modification
+    .$dynamic();
 
-  // Apply the appropriate filter based on the relationship between profileUserId and visitorUserId
-  query = applyCommentFilter(query, profileUserId, visitorUserId);
+  query = applyDynamicFilter(query, profileUserId, visitorUserId);
 
   const result = await query.all();
 
