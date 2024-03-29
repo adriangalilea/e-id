@@ -20,9 +20,7 @@ export async function generateMetadata(
   const user = await getUserByUsername(params.username);
 
   if (!user) {
-    return {
-      title: "404",
-    };
+    notFound();
   }
 
   return {
@@ -51,12 +49,6 @@ export default async function Page({
     redirect("/null");
   }
   const user = await getUserByUsername(params.username);
-
-  if (!user) {
-    notFound();
-  }
-
-  console.log(user);
 
   return (
     <div className="flex flex-1 flex-col justify-between">
