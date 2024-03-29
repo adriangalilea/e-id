@@ -51,7 +51,7 @@ export default async function Page({
   const user = await getUserByUsername(params.username);
 
   return (
-    <div className="flex flex-1 flex-col justify-between">
+    <div className="flex flex-1 flex-col justify-between overflow-auto gap-6">
       <div className="flex flex-col gap-6">
         <UserProfile user={user} />
         {session && session.user?.username === user.username && (
