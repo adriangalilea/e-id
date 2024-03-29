@@ -1,4 +1,3 @@
-
 type GithubOutput = {
   data: {
     user: {
@@ -44,6 +43,10 @@ export const flattenData = (
       };
     });
 };
+
+// TODO: handle rate limits
+// https://docs.github.com/en/graphql/overview/rate-limits-and-node-limits-for-the-graphql-api#primary-rate-limit
+// consider non personal access token from the app
 
 export async function fetchGithubActivity(username: string) {
   return fetch(`https://api.github.com/graphql`, {
