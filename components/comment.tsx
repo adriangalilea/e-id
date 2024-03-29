@@ -3,6 +3,7 @@ import { Button } from "./ui/button";
 import { Pin, PinOff, X } from "lucide-react";
 import { deleteComment, pinCommentToggle } from "@/db/actions";
 import { Testimonial } from "./quote";
+import RemoveComment from "./remove_comment";
 
 export default async function Comment({
   body,
@@ -33,20 +34,7 @@ export default async function Comment({
         image={profilePicture!}
       />
       <div className="flex flex-col gap-2">
-        <form
-          action={async () => {
-            "use server";
-            await deleteComment(commentId);
-          }}
-        >
-          <Button
-            variant="destructiveGhost"
-            size="icon"
-            className="bg-zinc-500/20"
-          >
-            <X strokeWidth={1} className="opacity-60" />
-          </Button>
-        </form>
+        <RemoveComment commentId={commentId} />
         {canPin && (
           <form
             action={async () => {
