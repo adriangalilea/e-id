@@ -1,6 +1,6 @@
 import { signIn, signOut } from "@/auth";
 import { Button } from "./ui/button";
-import { LogIn, LogOut, UserRound } from "lucide-react";
+import { LogOut, UserRound } from "lucide-react";
 
 export function SignIn({
   provider,
@@ -14,7 +14,7 @@ export function SignIn({
         await signIn(provider);
       }}
     >
-      <Button variant="ghost" className="!h-10 !w-10 !p-0">
+      <Button variant="ghost" className="!h-10 !w-10 !p-0" {...props}>
         <UserRound strokeWidth={1} />
       </Button>
     </form>

@@ -1,5 +1,4 @@
 import { SelectUser } from "@/db/schema";
-import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Button } from "./ui/button";
 import Link from "next/link";
 import CustomAvatar from "./custom_avatar";

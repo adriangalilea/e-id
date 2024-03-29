@@ -1,7 +1,7 @@
 "use client";
 
 import { SelectComment } from "@/db/schema";
-import { deleteComment, removeSocial } from "@/db/actions";
+import { deleteComment } from "@/db/actions";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 

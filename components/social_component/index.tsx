@@ -28,7 +28,7 @@ import {
 } from "@/lib/socials";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
-import { Mail, Plus, Link as LinkIcon, AtSign } from "lucide-react";
+import { Plus } from "lucide-react";
 import AddSocialDropdownMenuItem from "./add_social_dropdown_menu_item";
 import RemoveSocialButton from "./remove_social_button";
 import { YouTubeEmbed } from "@next/third-parties/google";
