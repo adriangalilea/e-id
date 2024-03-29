@@ -26,10 +26,6 @@ A constant pointer to your ever-changing web presence.
 
 ## todo
 
-- [ ] style: fonts
-  - [ ] [space mono](https://fonts.google.com/specimen/Space+Mono) for stats, number, dates and system style
-  - [ ] inter for general text
-  - [ ] [Oooh Baby](https://fonts.google.com/specimen/Oooh+Baby?classification=Handwriting) for quotes
 - [ ] style: remove github icon from footer into FAQ
 - [ ] style: clean FAQ
 - [ ] feat: opengraph on custom website for social component
@@ -101,6 +97,10 @@ A constant pointer to your ever-changing web presence.
   - [ ] cache github activity component
   - [ ] cache opengraph from custom website
 - [ ] style: comment input button disabled while not text
+- [x] style: fonts
+  - [x] [space mono](https://fonts.google.com/specimen/Space+Mono) for stats, number, dates and system style
+  - [x] inter for general text
+  - [ ] consider [cormorant](https://fonts.google.com/specimen/Cormorant) for quotes?
 
 # done
 
