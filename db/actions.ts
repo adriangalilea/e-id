@@ -75,8 +75,6 @@ export async function fetchCommentsConditionally(
   profileUserId: SelectUser["id"],
   visitorUserId: SelectUser["id"],
 ) {
-  console.log({ profileUserId, visitorUserId });
-
   let query = db
     .select({
       commentId: comments.id,
@@ -113,7 +111,6 @@ export async function createComment(
   commentator_id: SelectComment["commentator_id"],
   body: SelectComment["body"],
 ) {
-  console.log({ profile_user_id, commentator_id, body });
   await db
     .insert(comments)
     .values({ id: crypto.randomUUID(), profile_user_id, commentator_id, body })
@@ -181,7 +178,6 @@ export async function updateUserAndSocials(
   profileId: string,
   formData: FormData,
 ) {
-  console.log(profileId, formData);
   const name = String(formData.get("name"));
   const username = String(formData.get("username"));
   const bio = String(formData.get("bio"));
@@ -194,7 +190,6 @@ export async function updateUserAndSocials(
     .where(eq(users.id, profileId))
     .returning()
     .then((res) => res[0] ?? null);
-  console.log(updatedUser);
 
   // update the socials
   const socialEntries = new Map<
@@ -256,8 +251,6 @@ export async function updateUserAndSocials(
         })
         .returning()
         .then((res) => res[0] ?? null);
-
-      console.log({ insertedSocial });
     }
   }
 
