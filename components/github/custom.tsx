@@ -1,5 +1,7 @@
 "use client";
-import GitHubCalendar, { ThemeInput } from "react-github-calendar";
+
+import ActivityCalendar  from "./index";
+import { ThemeInput } from "./types";
 
 const explicitTheme: ThemeInput = {
   light: [
@@ -18,22 +20,32 @@ const explicitTheme: ThemeInput = {
   ],
 };
 
-export default function GitHubActivity({ username }: { username: string }) {
+type flattenedData = {
+  date: string;
+  count: number;
+  level: number;
+}[];
+
+export default async function GitHubActivity({
+  data,
+}: {
+  data: flattenedData;
+}) {
   return (
     <div
       className="relative flex justify-end overflow-auto border bg-zinc-300/80 py-0.5 pr-1
         dark:bg-zinc-700/80"
     >
       <div className="min-w-max">
-        <GitHubCalendar
-          username={username}
+        <ActivityCalendar
+          data={data}
+          theme={explicitTheme}
           hideColorLegend
           blockMargin={1.5}
           blockRadius={0}
           blockSize={11.5}
           hideMonthLabels
           hideTotalCount
-          theme={explicitTheme}
         />
         <div
           className="absolute inset-0 w-24 backdrop-blur-sm"

@@ -27,12 +27,17 @@ import {
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Plus } from "lucide-react";
-import GitHubActivity from "@/components/social_component/github_activity";
 import AddSocialDropdownMenuItem from "./add_social_dropdown_menu_item";
 import RemoveSocialButton from "./remove_social_button";
 import { YouTubeEmbed } from "@next/third-parties/google";
 import { Tweet } from "react-tweet";
 import { InputQuote, Quote } from "../quote";
+
+import GitHubActivity from "@/components/github/custom";
+import {
+  fetchGithubActivity,
+  flattenData,
+} from "@/components/social_component/fetch_github_activity";
 
 export async function SocialComponent({
   user,
@@ -72,6 +77,20 @@ export async function SocialComponent({
     }));
 
   // console.log({ populatedSocials });
+
+  // fetch and flatten github data if user has github account
+  let githubActivityData: {
+    date: string;
+    count: number;
+    level: number;
+  }[] = [];
+  const githubSocial = populatedSocials.find(
+    (social) => social.platform === "github",
+  );
+  if (githubSocial && githubSocial.value) {
+    const data = await fetchGithubActivity(githubSocial.value);
+    githubActivityData = flattenData(data);
+  }
 
   return (
     <Tabs defaultValue={populatedSocials[0]?.id} className="mt-0 w-full">
@@ -172,9 +191,9 @@ export async function SocialComponent({
                 </>
               ) : (
                 <>
-                  {social.platform === "github" && user.username && (
-                    <GitHubActivity username={user.username} />
-                  )}
+                  {social.platform === "github" &&
+                    social.value &&
+                    githubActivityData && <GitHubActivity data={githubActivityData} />}
                   {social.platform === "youtube" &&
                     social.custom_data &&
                     social.custom_data["highlight"] && (
