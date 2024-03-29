@@ -48,9 +48,9 @@ export function middleware(request: NextRequest) {
     ? emojiDomainPunycodeWWW
     : mainDomainWWW;
 
-  console.log("targetDomain pre", targetDomain);
-  console.log("hostHeaders pre", hostHeaders);
-  console.log("targetUrl pre", targetUrl);
+  // console.log("targetDomain pre", targetDomain);
+  // console.log("hostHeaders pre", hostHeaders);
+  // console.log("targetUrl pre", targetUrl);
 
   // rewrite only if targetUrl is not the same as the current
   if (
@@ -59,13 +59,13 @@ export function middleware(request: NextRequest) {
     targetDomainPunycode === hostHeaders ||
     targetDomainPunycodeWWW === hostHeaders
   ) {
-    console.log("targetUrl is the same as the current");
+    // console.log("targetUrl is the same as the current");
     return;
   }
 
-  console.log("targetDomain", targetDomain);
-  console.log("hostHeaders", hostHeaders);
-  console.log("targetUrl", targetUrl);
+  // console.log("targetDomain", targetDomain);
+  // console.log("hostHeaders", hostHeaders);
+  // console.log("targetUrl", targetUrl);
   return NextResponse.redirect(new URL(pathname, targetUrl));
 }
 

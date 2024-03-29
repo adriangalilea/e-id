@@ -23,7 +23,6 @@ export const flattenData = (
   count: number;
   level: number;
 }[] => {
-  console.log(data);
   return data.data.user.contributionsCollection.contributionCalendar.weeks
     .flatMap((week) => week.contributionDays)
     .map(({ contributionCount, date }) => {

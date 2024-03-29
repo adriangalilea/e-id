@@ -48,8 +48,6 @@ export async function SocialComponent({
 }): Promise<JSX.Element> {
   let validSocials = await getSocials(user.id);
 
-  // console.log({ validSocials });
-
   if (!edit) {
     // filter out non public ones and those with null or empty social.value
     validSocials = validSocials.filter(
@@ -76,7 +74,6 @@ export async function SocialComponent({
       ...rest,
     }));
 
-  // console.log({ populatedSocials });
 
   // fetch and flatten github data if user has github account
   let githubActivityData: {

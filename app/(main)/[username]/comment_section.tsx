@@ -31,16 +31,6 @@ export default async function CommentSection({
   if (visitorUserId) {
     comments = await fetchCommentsConditionally(profileUserId, visitorUserId);
   }
-  console.log(profileUserId, visitorUserId);
-  comments?.map((comment) =>
-    console.log(
-      comment.body,
-      comment.createdAt,
-      comment.user.name,
-      comment.user.username,
-      comment.commentId,
-    ),
-  );
 
   const formAction =
     createCommentFromFormWithID ||
