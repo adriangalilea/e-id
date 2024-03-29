@@ -24,7 +24,7 @@ export default async function Comment({
   canPin: boolean;
 }): Promise<JSX.Element> {
   return (
-    <div className="mt-2 flex items-start gap-2">
+    <div className="flex items-start gap-2">
       <Testimonial
         text={body!}
         name={name!}

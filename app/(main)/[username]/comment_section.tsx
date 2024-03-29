@@ -42,57 +42,35 @@ export default async function CommentSection({
     ),
   );
 
+  const formAction =
+    createCommentFromFormWithID ||
+    (async () => {
+      "use server";
+      await signIn("github");
+    });
+
   return (
     <div className="relative overflow-auto">
-      {createCommentFromFormWithID ? (
-        <form
-          action={createCommentFromFormWithID}
-          className="sticky top-0 z-10"
-        >
-          <div className="flex items-center gap-2">
-            <Input
-              type="text"
-              name="body"
-              className="bg-zinc-200/60 text-[16px] opacity-60 backdrop-blur-md"
-              placeholder="I want everyone to know..."
-            />
-            <Button
-              type="submit"
-              className="z-10 !h-10 !w-10 shrink-0 grow-0 bg-zinc-500/20 !p-0"
-              variant="ghost"
-            >
-              <SendHorizontal strokeWidth="1" className="opacity-60" />
-            </Button>
-          </div>
-        </form>
-      ) : (
-        <form
-          className="sticky top-0 z-10"
-          action={async () => {
-            "use server";
-            await signIn("github");
-          }}
-        >
-          <div className="flex items-center gap-2">
-            <Input
-              disabled
-              type="text"
-              name="body"
-              className="bg-zinc-200/60 text-[16px] opacity-60 backdrop-blur-md"
-              placeholder="I want everyone to know..."
-            />
-            <Button
-              disabled
-              type="submit"
-              className="z-10 !h-10 !w-10 shrink-0 grow-0 bg-zinc-500/20 !p-0"
-              variant="ghost"
-            >
-              <SendHorizontal strokeWidth="1" className="opacity-60" />
-            </Button>
-          </div>
-        </form>
-      )}
-      <div className="flex flex-col gap-2 overflow-auto">
+      <form action={formAction} className="sticky top-0 z-10 shadow-md">
+        <div className="flex items-center gap-2">
+          <Input
+            disabled={!visitorUserId}
+            type="text"
+            name="body"
+            className="bg-zinc-200/60 text-[16px] backdrop-blur-md"
+            placeholder="I want everyone to know..."
+          />
+          <Button
+            disabled={!visitorUserId}
+            type="submit"
+            className="z-10 !h-10 !w-10 shrink-0 grow-0 bg-zinc-500/20 !p-0 backdrop-blur-md shadow-md"
+            variant="ghost"
+          >
+            <SendHorizontal strokeWidth="1" className="opacity-60" />
+          </Button>
+        </div>
+      </form>
+      <div className="flex flex-col gap-2 overflow-auto mt-2">
         {comments &&
           comments.map((comment) => (
             <div key={comment.commentId}>
