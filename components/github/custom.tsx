@@ -26,7 +26,7 @@ type flattenedData = {
   level: number;
 }[];
 
-export default async function GitHubActivity({
+export default function GitHubActivity({
   data,
 }: {
   data: flattenedData;
