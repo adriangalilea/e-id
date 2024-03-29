@@ -9,6 +9,8 @@ import {
   Mail,
   Send,
   CircleDotDashed,
+  LinkIcon,
+  AtSign,
 } from "lucide-react";
 import { SocialPlatform } from "@/db/schema";
 
@@ -17,7 +19,7 @@ export function getSocialUrl(platform: SocialPlatform, id: string): string {
     email: `mailto:${id}`,
     website: id,
     github: `https://github.com/${id}`,
-    youtube: `https://youtube.com/${id}`,
+    youtube: `https://youtube.com/@${id}`,
     twitter: `https://twitter.com/${id}`,
     telegram: `https://t.me/${id}`,
     self: `https://${id}.self.fm`,
@@ -39,10 +41,9 @@ export function getSocialDisplayText(
   // }
   // return `@${id}`;
 }
+const iconProps = { size: 18, strokeWidth: 1, className: "opacity-80" };
 
 export function getSocialIcon(platform: SocialPlatform): ReactElement {
-  const iconProps = { size: 18, strokeWidth: 1, className: "opacity-80" };
-
   const iconMap: { [key in SocialPlatform]: ReactElement } = {
     website: <Link {...iconProps} />,
     email: <Mail {...iconProps} />,
@@ -55,4 +56,24 @@ export function getSocialIcon(platform: SocialPlatform): ReactElement {
   };
 
   return iconMap[platform];
+}
+
+export function getSocialPlaceholder(platform: SocialPlatform): string {
+  if (platform === "email") {
+    return "email";
+  }
+  if (platform === "website") {
+    return "url";
+  }
+  return "username";
+}
+
+export function getSocialPretextIcon(platform: SocialPlatform): ReactElement {
+  if (platform === "email") {
+    return <Mail {...iconProps} />;
+  }
+  if (platform === "website") {
+    return <LinkIcon {...iconProps} />;
+  }
+  return <AtSign {...iconProps} />;
 }
