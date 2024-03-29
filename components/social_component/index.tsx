@@ -121,7 +121,7 @@ export async function SocialComponent({
         <TabsContent key={social.id} value={social.id} className="mt-0">
           <Card className="border-t-transparent bg-zinc-200 p-3 dark:bg-zinc-800">
             {(edit || social.context_message) && (
-              <CardHeader className="mb-1.5 flex flex-col gap-1.5 p-0">
+              <CardHeader className="mb-3 flex flex-col gap-3 p-0">
                 {edit ? (
                   <CardTitle>
                     <div className="flex items-center justify-between">
@@ -190,9 +190,12 @@ export async function SocialComponent({
                         <Tweet id={social.custom_data["highlight"]} />
                       </div>
                     )}
-                  <Link href={social.url} className="!m-0 flex items-center">
-                    <Button className="dark:bg-zinc-300 bg-zinc-600">
-                      <div className="flex flex-col items-center !py-3 font-light opacity-80">
+                  <Link
+                    href={social.url}
+                    className="!m-0 flex w-full items-center"
+                  >
+                    <Button className="size-full w-full bg-zinc-600 dark:bg-zinc-300">
+                      <div className="flex flex-col items-center !py-2 font-light opacity-80">
                         {social.displayText}
                       </div>
                     </Button>
