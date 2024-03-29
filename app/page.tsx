@@ -1,5 +1,5 @@
 import { getUsersWithUsername } from "@/db/actions";
-import { LatestUsersTable } from "./latest_users_table";
+import { LatestUsersTable } from "@/components/latest_users_table";
 
 export default async function Page() {
   const users = await getUsersWithUsername();
