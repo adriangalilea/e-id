@@ -22,11 +22,13 @@ import { getSocials } from "@/db/actions";
 import {
   getSocialDisplayText,
   getSocialIcon,
+  getSocialPlaceholder,
+  getSocialPretextIcon,
   getSocialUrl,
 } from "@/lib/socials";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
-import { Plus } from "lucide-react";
+import { Mail, Plus, Link as LinkIcon, AtSign } from "lucide-react";
 import AddSocialDropdownMenuItem from "./add_social_dropdown_menu_item";
 import RemoveSocialButton from "./remove_social_button";
 import { YouTubeEmbed } from "@next/third-parties/google";
@@ -38,6 +40,7 @@ import {
   fetchGithubActivity,
   flattenData,
 } from "@/components/social_component/fetch_github_activity";
+import { Label } from "../ui/label";
 
 export async function SocialComponent({
   user,
@@ -61,19 +64,21 @@ export async function SocialComponent({
     .sort((a, b) => {
       const orderA = a.order === null ? Infinity : a.order;
       const orderB = b.order === null ? Infinity : b.order;
-
       return (orderA ?? 0) - (orderB ?? 0);
     })
-    .map(({ platform, value, image, ...rest }) => ({
-      url: getSocialUrl(platform, value!),
-      icon: getSocialIcon(platform),
-      displayText: getSocialDisplayText(platform, value!),
-      platform,
-      value,
-      image,
-      ...rest,
-    }));
-
+    .map(({ platform, value, image, ...rest }) => {
+      return {
+        url: getSocialUrl(platform, value!),
+        icon: getSocialIcon(platform),
+        displayText: getSocialDisplayText(platform, value!),
+        platform,
+        value,
+        image,
+        placeholder: getSocialPlaceholder(platform),
+        placeholder_pretext: getSocialPretextIcon(platform),
+        ...rest,
+      };
+    });
 
   // fetch and flatten github data if user has github account
   let githubActivityData: {
@@ -175,22 +180,32 @@ export async function SocialComponent({
 
             <CardContent className="flex flex-col gap-3 p-0">
               {edit ? (
-                <>
+                <div className="flex items-center font-extralight">
+                  <Label
+                    htmlFor={social.id}
+                    className="flex size-10 items-center justify-center bg-zinc-50/10"
+                  >
+                    {social.placeholder_pretext}
+                  </Label>
                   <Input
+                    data-1p-ignore
                     type="text"
+                    id={social.id}
                     name={`${social.platform}_${social.id}_value`}
                     defaultValue={social.value || ""}
-                    className="!m-0 min-w-[160px] grow !bg-transparent text-[16px]
+                    className="!m-0 min-w-[140px] grow border border-border !bg-transparent text-[16px]
                       focus-visible:border-zinc-500 focus-visible:ring-0
                       focus-visible:ring-transparent focus-visible:ring-offset-0 sm:font-normal"
-                    placeholder="handle"
+                    placeholder={social.placeholder!}
                   />
-                </>
+                </div>
               ) : (
                 <>
                   {social.platform === "github" &&
                     social.value &&
-                    githubActivityData && <GitHubActivity data={githubActivityData} />}
+                    githubActivityData && (
+                      <GitHubActivity data={githubActivityData} />
+                    )}
                   {social.platform === "youtube" &&
                     social.custom_data &&
                     social.custom_data["highlight"] && (
