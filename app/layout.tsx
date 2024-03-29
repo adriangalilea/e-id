@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, Space_Mono } from "next/font/google";
-import "../globals.css";
+import "./globals.css";
 import Footer from "@/components/footer";
 import { Analytics } from "@vercel/analytics/react";
 import UserButton from "@/components/user-button";
