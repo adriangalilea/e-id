@@ -41,7 +41,7 @@ export function getSocialDisplayText(
   // }
   // return `@${id}`;
 }
-const iconProps = { size: 18, strokeWidth: 1, className: "opacity-80" };
+const iconProps = { strokeWidth: 1, className: "opacity-80" };
 
 export function getSocialIcon(platform: SocialPlatform): ReactElement {
   const iconMap: { [key in SocialPlatform]: ReactElement } = {
@@ -70,10 +70,10 @@ export function getSocialPlaceholder(platform: SocialPlatform): string {
 
 export function getSocialPretextIcon(platform: SocialPlatform): ReactElement {
   if (platform === "email") {
-    return <Mail {...iconProps} />;
+    return <Mail {...iconProps} size="18" />;
   }
   if (platform === "website") {
-    return <LinkIcon {...iconProps} />;
+    return <LinkIcon {...iconProps} size="18" />;
   }
-  return <AtSign {...iconProps} />;
+  return <AtSign {...iconProps} size="18" />;
 }
