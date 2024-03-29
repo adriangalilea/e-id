@@ -2,7 +2,7 @@ import { getUsers, getUserByUsername } from "@/db/actions";
 import CommentSection from "./comment_section";
 import UserProfile from "./user_profile";
 import { auth } from "@/auth";
-import { redirect } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Pen } from "lucide-react";
@@ -18,6 +18,12 @@ export async function generateMetadata(
 
   // fetch data
   const user = await getUserByUsername(params.username);
+
+  if (!user) {
+    return {
+      title: "404",
+    };
+  }
 
   return {
     title: user.name,
@@ -45,6 +51,12 @@ export default async function Page({
     redirect("/null");
   }
   const user = await getUserByUsername(params.username);
+
+  if (!user) {
+    notFound();
+  }
+
+  console.log(user);
 
   return (
     <div className="flex flex-1 flex-col justify-between">
