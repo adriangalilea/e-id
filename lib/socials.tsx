@@ -1,7 +1,6 @@
 import { ReactElement } from "react";
 import {
   Twitter,
-  Facebook,
   Instagram,
   Github,
   Link,

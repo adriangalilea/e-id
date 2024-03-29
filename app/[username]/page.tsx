@@ -9,15 +9,16 @@ import { Pen } from "lucide-react";
 
 import type { Metadata, ResolvingMetadata } from "next";
 
-export async function generateMetadata(
-  { params }: { params: { username: string } },
-  parent: ResolvingMetadata,
-): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: {
+  params: { username: string };
+}): Promise<Metadata> {
   // read route params
   const username = params.username;
 
   // fetch data
-  const user = await getUserByUsername(params.username);
+  const user = await getUserByUsername(username);
 
   if (!user) {
     notFound();
@@ -51,7 +52,7 @@ export default async function Page({
   const user = await getUserByUsername(params.username);
 
   return (
-    <div className="flex flex-1 flex-col justify-between overflow-auto gap-6">
+    <div className="flex flex-1 flex-col justify-between gap-6 overflow-auto">
       <div className="flex flex-col gap-6">
         <UserProfile user={user} />
         {session && session.user?.username === user.username && (

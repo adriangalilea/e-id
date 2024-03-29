@@ -1,7 +1,7 @@
 import { SelectComment, SelectUser } from "@/db/schema";
 import { Button } from "./ui/button";
-import { Pin, PinOff, X } from "lucide-react";
-import { deleteComment, pinCommentToggle } from "@/db/actions";
+import { Pin, PinOff } from "lucide-react";
+import { pinCommentToggle } from "@/db/actions";
 import { Testimonial } from "./quote";
 import RemoveComment from "./remove_comment";
 

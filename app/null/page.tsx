@@ -1,8 +1,6 @@
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { auth } from "@/auth";
-import { Check, TriangleAlert } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { TriangleAlert } from "lucide-react";
 import { ClientForm } from "./client_form";
 import { redirect } from "next/navigation";
 

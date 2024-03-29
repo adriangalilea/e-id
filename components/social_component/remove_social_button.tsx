@@ -1,6 +1,6 @@
 "use client";
 
-import { SelectSocial, SelectUser, SocialPlatform } from "@/db/schema";
+import { SelectSocial, SelectUser } from "@/db/schema";
 import { removeSocial } from "@/db/actions";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
