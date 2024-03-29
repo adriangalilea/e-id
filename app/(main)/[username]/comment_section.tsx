@@ -43,7 +43,7 @@ export default async function CommentSection({
   );
 
   return (
-    <div className="relative max-h-72 overflow-auto">
+    <div className="relative overflow-auto">
       {createCommentFromFormWithID ? (
         <form
           action={createCommentFromFormWithID}
