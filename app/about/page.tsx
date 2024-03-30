@@ -1,7 +1,3 @@
-// create a faq page
-// use card component
-// use accordion component
-
 import {
   Accordion,
   AccordionContent,
@@ -9,7 +5,6 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
 
 export default function Faq() {
