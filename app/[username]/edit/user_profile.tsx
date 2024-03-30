@@ -17,7 +17,7 @@ export default function UserProfile({ user }: { user: SelectUser }) {
   return (
     <form
       action={updateUserWithUser}
-      className="flex flex-1 flex-col items-end gap-6"
+      className="flex flex-1 flex-col gap-6"
     >
       <div className="flex flex-col">
         <div className="flex w-full items-center gap-3">
@@ -74,7 +74,8 @@ export default function UserProfile({ user }: { user: SelectUser }) {
       <Button
         type="submit"
         variant="secondary"
-        className="!h-10 w-full !p-0 text-emerald-500 hover:bg-emerald-500/10"
+        size="icon"
+        className="text-emerald-500 hover:bg-emerald-500/10"
       >
         <Save strokeWidth={1} />
       </Button>
