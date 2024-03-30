@@ -6,7 +6,7 @@ export default async function sitemap() {
   const users = await getUsers();
 
   const routes = users.map((user) => ({
-    url: `${URL}$/{user.username}`,
+    url: `${URL}/${user.username}`,
     changeFrequency: "weekly",
     priority: 1,
   }));
