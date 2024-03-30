@@ -5,8 +5,8 @@ const URL = "https://e-id.to";
 export default async function sitemap() {
   const users = await getUsers();
 
-  const routes = [""].map((route) => ({
-    url: `${URL}${route}`,
+  const routes = users.map((user) => ({
+    url: `${URL}${user.username}`,
     changeFrequency: "weekly",
     priority: 1,
   }));
