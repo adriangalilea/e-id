@@ -234,14 +234,12 @@ export async function SocialComponent({
                     </Label>
                     <div
                       id={social.id}
-                      className="flex flex h-10 items-center gap-2 bg-zinc-950/10 px-2 text-[16px]
-                        transition-colors group-hover:bg-zinc-600 group-hover:text-zinc-200
-                        sm:font-normal dark:bg-zinc-50/10 group-hover:dark:bg-zinc-300
-                        group-hover:dark:text-zinc-700"
+                      className="prose prose-zinc flex flex h-10 items-center gap-2 bg-zinc-950/10 px-2
+                        text-[16px] font-light transition-colors dark:prose-invert
+                        group-hover:bg-zinc-600 group-hover:text-zinc-200 sm:font-normal
+                        dark:bg-zinc-50/10 group-hover:dark:bg-zinc-300 group-hover:dark:text-zinc-700"
                     >
-                      <div className="prose prose-zinc font-light dark:prose-invert">
-                        {social.displayText}
-                      </div>
+                      {social.displayText}
                     </div>
                   </Link>
                 </>
