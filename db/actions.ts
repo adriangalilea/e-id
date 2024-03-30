@@ -106,6 +106,39 @@ export async function fetchCommentsConditionally(
   }));
 }
 
+export async function getTestimonials(profileUserId: SelectUser["id"]) {
+  // fetch all coments on a profile that are pinned true
+  const result = await db
+    .select({
+      commentId: comments.id,
+      commentBody: comments.body,
+      commentCreatedAt: comments.created_at,
+      commentatorName: users.name,
+      commentatorImage: users.image,
+      commentatorUsername: users.username,
+    })
+    .from(comments)
+    .innerJoin(users, eq(comments.commentator_id, users.id))
+    .where(
+      and(
+        eq(comments.profile_user_id, profileUserId),
+        eq(comments.pinned, true),
+      ),
+    )
+    .all();
+
+  return result.map((row) => ({
+    commentId: row.commentId,
+    body: row.commentBody,
+    createdAt: row.commentCreatedAt,
+    user: {
+      name: row.commentatorName,
+      image: row.commentatorImage,
+      username: row.commentatorUsername,
+    },
+  }));
+}
+
 export async function createComment(
   profile_user_id: SelectComment["profile_user_id"],
   commentator_id: SelectComment["commentator_id"],
