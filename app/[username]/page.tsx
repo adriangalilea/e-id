@@ -1,4 +1,9 @@
-import { getUsers, getUserByUsername, getSocials } from "@/db/actions";
+import {
+  getUsers,
+  getUserByUsername,
+  getSocials,
+  getTestimonials,
+} from "@/db/actions";
 import CommentSection from "./comment_section";
 import UserProfile from "./user_profile";
 import { auth } from "@/auth";
@@ -9,6 +14,9 @@ import { Pen } from "lucide-react";
 
 import type { Metadata } from "next";
 import { SocialPlatform } from "@/db/schema";
+import { Testimonial } from "@/components/quote";
+import test from "node:test";
+import { Separator } from "@/components/ui/separator";
 
 export async function generateMetadata({
   params,
@@ -86,6 +94,8 @@ export default async function Page({
   }
   const user = await getUserByUsername(params.username);
 
+  const testimonials = await getTestimonials(user.id);
+
   return (
     <div className="flex flex-1 flex-col justify-between gap-6 overflow-auto">
       <div className="flex flex-col gap-6">
@@ -96,6 +106,22 @@ export default async function Page({
               <Pen strokeWidth={1} className="opacity-60" />
             </Link>
           </Button>
+        )}
+        {testimonials.length > 0 && (
+          <>
+            <Separator />
+            {testimonials.map((testimonial) => (
+              <div key={testimonial.commentId}>
+                <Testimonial
+                  text={testimonial.body}
+                  name={testimonial.user.name!}
+                  image={testimonial.user.image!}
+                  date={testimonial.createdAt}
+                  username={testimonial.user.username!}
+                />
+              </div>
+            ))}
+          </>
         )}
       </div>
       {session && (
