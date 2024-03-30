@@ -193,7 +193,7 @@ export async function SocialComponent({
                     id={social.id}
                     name={`${social.platform}_${social.id}_value`}
                     defaultValue={social.value || ""}
-                    className="!m-0 min-w-[140px] grow border border-border !bg-transparent text-[16px]
+                    className="!m-0 w-fit border border-border !bg-transparent text-[16px]
                       focus-visible:border-zinc-500 focus-visible:ring-0
                       focus-visible:ring-transparent focus-visible:ring-offset-0 sm:font-normal"
                     placeholder={social.placeholder!}
