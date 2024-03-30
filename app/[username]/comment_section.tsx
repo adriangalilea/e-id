@@ -40,7 +40,7 @@ export default async function CommentSection({
     });
 
   return (
-    <div className="relative overflow-auto">
+    <div className="relative">
       <form action={formAction} className="sticky top-0 z-10 shadow-md">
         <div className="flex items-center gap-2">
           <Input
@@ -53,14 +53,14 @@ export default async function CommentSection({
           <Button
             disabled={!visitorUserId}
             type="submit"
-            className="z-10 !h-10 !w-10 shrink-0 grow-0 bg-zinc-500/20 !p-0 backdrop-blur-md shadow-md"
+            className="z-10 !h-10 !w-10 shrink-0 grow-0 bg-zinc-500/20 !p-0 shadow-md backdrop-blur-md"
             variant="ghost"
           >
             <SendHorizontal strokeWidth="1" className="opacity-60" />
           </Button>
         </div>
       </form>
-      <div className="flex flex-col gap-2 overflow-auto mt-2">
+      <div className="mt-2 flex flex-col gap-2">
         {comments &&
           comments.map((comment) => (
             <div key={comment.commentId}>
