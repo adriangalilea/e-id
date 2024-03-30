@@ -1,4 +1,4 @@
-import { getUsers, getUserByUsername } from "@/db/actions";
+import { getUsers, getUserByUsername, getSocials } from "@/db/actions";
 import CommentSection from "./comment_section";
 import UserProfile from "./user_profile";
 import { auth } from "@/auth";
@@ -8,6 +8,7 @@ import Link from "next/link";
 import { Pen } from "lucide-react";
 
 import type { Metadata, ResolvingMetadata } from "next";
+import { SocialPlatform } from "@/db/schema";
 
 export async function generateMetadata({
   params,
@@ -24,8 +25,42 @@ export async function generateMetadata({
     notFound();
   }
 
+  const allSocials = await getSocials(user.id);
+  const uniqueSocialsWithValue = allSocials.reduce<SocialPlatform[]>(
+    (uniquePlatforms, { value, platform }) => {
+      if (value && !uniquePlatforms.includes(platform as SocialPlatform)) {
+        uniquePlatforms.push(platform as SocialPlatform);
+      }
+      return uniquePlatforms;
+    },
+    [],
+  );
+
+  const ogUrl = new URL(`${process.env.URL}/api/og`);
+  ogUrl.searchParams.set("name", user.name || "");
+  ogUrl.searchParams.set("socials", uniqueSocialsWithValue.join(","));
+  // ogUrl.searchParams.set("image", user.image || "");
+
+  console.log(ogUrl.toString());
+
   return {
+    metadataBase: new URL(`${process.env.URL}`),
     title: user.name,
+    description: `@${user.name} - Digital Identity`,
+    openGraph: {
+      title: user.name || "",
+      description: `@${user.name} - Digital Identity`,
+      type: "profile",
+      url: `https://e-id.to/${user.username}`,
+      images: [
+        {
+          url: ogUrl.toString(),
+          width: 1200,
+          height: 630,
+          alt: `@${user.name} - Digital Identity`,
+        },
+      ],
+    },
   };
 }
 
