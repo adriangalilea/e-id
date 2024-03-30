@@ -28,7 +28,7 @@ import {
 } from "@/lib/socials";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
-import { Plus } from "lucide-react";
+import { MoveRight, Plus } from "lucide-react";
 import AddSocialDropdownMenuItem from "./add_social_dropdown_menu_item";
 import RemoveSocialButton from "./remove_social_button";
 import { YouTubeEmbed } from "@next/third-parties/google";
@@ -223,13 +223,26 @@ export async function SocialComponent({
                     )}
                   <Link
                     href={social.url}
-                    className="!m-0 flex w-full items-center"
+                    className="group flex w-fit items-center border border-border font-extralight"
                   >
-                    <Button className="size-full w-full bg-zinc-600 dark:bg-zinc-300">
-                      <div className="flex flex-col items-center !py-2 font-light opacity-80">
+                    <Label
+                      htmlFor={social.id}
+                      className="flex size-10 items-center justify-center bg-zinc-600 text-zinc-200
+                        dark:bg-zinc-300 dark:text-zinc-700"
+                    >
+                      {social.placeholder_pretext}
+                    </Label>
+                    <div
+                      id={social.id}
+                      className="flex flex h-10 items-center gap-2 bg-zinc-950/10 px-2 text-[16px]
+                        transition-colors group-hover:bg-zinc-600 group-hover:text-zinc-200
+                        sm:font-normal dark:bg-zinc-50/10 group-hover:dark:bg-zinc-300
+                        group-hover:dark:text-zinc-700"
+                    >
+                      <div className="prose prose-zinc font-light dark:prose-invert">
                         {social.displayText}
                       </div>
-                    </Button>
+                    </div>
                   </Link>
                 </>
               )}
