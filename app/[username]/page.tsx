@@ -15,7 +15,6 @@ import { Pen } from "lucide-react";
 import type { Metadata } from "next";
 import { SocialPlatform } from "@/db/schema";
 import { Testimonial } from "@/components/quote";
-import test from "node:test";
 import { Separator } from "@/components/ui/separator";
 
 export async function generateMetadata({

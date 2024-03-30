@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Github, HelpCircle, Home } from "lucide-react";
+import { HelpCircle, Home } from "lucide-react";
 
 export default function Footer({ children }: { children?: React.ReactNode }) {
   return (
@@ -28,15 +28,6 @@ function ButtonHome() {
   );
 }
 
-function ButtonGithub() {
-  return (
-    <Button asChild variant="ghost" className="!h-10 !w-10 !p-0">
-      <Link href="https://github.com/adriangalilea/e-id" target="_blank">
-        <Github strokeWidth={1} />
-      </Link>
-    </Button>
-  );
-}
 function ButtonFAQ() {
   return (
     <Button asChild variant="ghost" className="!h-10 !w-10 !p-0">
