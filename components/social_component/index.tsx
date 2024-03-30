@@ -141,42 +141,39 @@ export async function SocialComponent({
       {populatedSocials.map((social) => (
         <TabsContent key={social.id} value={social.id} className="mt-0">
           <Card className="border-t-transparent bg-zinc-200 p-3 dark:bg-zinc-800">
-            {(edit || social.context_message) && (
-              <CardHeader className="mb-3 flex flex-col gap-3 p-0">
-                {edit ? (
-                  <CardTitle>
-                    <div className="flex items-center justify-between">
-                      <div className="flex gap-2">
-                        <div className="flex items-center justify-between gap-1">
-                          <Switch
-                            id={`${social.platform}_${social.id}_public`}
-                            defaultChecked={social.public}
-                            name={`${social.platform}_${social.id}_public`}
-                          />
-                        </div>
-                        <span className="font-light">{social.platform}</span>
-                      </div>
-                      <RemoveSocialButton
-                        userId={user.id}
-                        platformId={social.id}
-                      />
-                    </div>
-
-                    <InputQuote
-                      text={social.context_message ?? ""}
-                      name={`${social.platform}_${social.id}_contextmessage`}
-                      placeholder="Optional contextual message"
+            <CardHeader className="mb-3 flex flex-col gap-3 p-0">
+              <CardTitle className="flex items-center justify-between font-light">
+                {social.platform}
+                {edit && (
+                  <div className="flex items-center gap-3">
+                    <Switch
+                      id={`${social.platform}_${social.id}_public`}
+                      defaultChecked={social.public}
+                      name={`${social.platform}_${social.id}_public`}
                     />
-                  </CardTitle>
-                ) : social.context_message ? (
+                    <RemoveSocialButton
+                      userId={user.id}
+                      platformId={social.id}
+                    />
+                  </div>
+                )}
+              </CardTitle>
+              {edit ? (
+                <CardDescription>
+                  <InputQuote
+                    text={social.context_message ?? ""}
+                    name={`${social.platform}_${social.id}_contextmessage`}
+                    placeholder="Optional contextual message"
+                  />
+                </CardDescription>
+              ) : (
+                social.context_message && (
                   <CardDescription>
                     <Quote text={social.context_message} />
                   </CardDescription>
-                ) : (
-                  <></>
-                )}
-              </CardHeader>
-            )}
+                )
+              )}
+            </CardHeader>
 
             <CardContent className="flex flex-col gap-3 p-0">
               {edit ? (
