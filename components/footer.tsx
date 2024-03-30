@@ -11,7 +11,6 @@ export default function Footer({ children }: { children?: React.ReactNode }) {
     >
       <div className="flex">{children}</div>
       <div className="flex gap-2">
-        <ButtonGithub />
         <ButtonFAQ />
         <ButtonHome />
       </div>
