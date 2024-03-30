@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Pen } from "lucide-react";
 
-import type { Metadata, ResolvingMetadata } from "next";
+import type { Metadata } from "next";
 import { SocialPlatform } from "@/db/schema";
 
 export async function generateMetadata({
