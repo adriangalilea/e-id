@@ -41,7 +41,7 @@ function ButtonGithub() {
 function ButtonFAQ() {
   return (
     <Button asChild variant="ghost" className="!h-10 !w-10 !p-0">
-      <Link href="/faq">
+      <Link href="/about">
         <HelpCircle strokeWidth={1} />
       </Link>
     </Button>
