@@ -22,8 +22,8 @@ export default function UserProfile({ user }: { user: SelectUser }) {
           </div>
         </div>
       </div>
-      <div className="mt-6 flex flex-col gap-6">
-        {user.bio && <Quote text={user.bio} />}
+      <div className="mt-6 sm:mt-12 flex flex-col gap-6">
+        {user.bio && <div className="sm:mb-6"><Quote text={user.bio} /></div>}
         <SocialComponent user={user} />
       </div>
     </main>
