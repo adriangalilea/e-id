@@ -26,9 +26,8 @@ A constant pointer to your ever-changing web presence.
 
 ## todo
 
-- [ ] style: remove github icon from footer into FAQ
-- [ ] style: clean FAQ
 - [ ] feat: opengraph on custom website for social component
+  - [ ] [fetch-opengraph node](https://github.com/purphoros/fetch-opengraph)
 - [ ] feat: curl
   - [ ] /adriangalilea
   - [ ] /adriangalilea/x
@@ -46,7 +45,6 @@ A constant pointer to your ever-changing web presence.
   - [ ] https://github.com/ndom91/next-auth-example-sign-in-page
   - [ ] https://github.com/shadcn-ui/ui/blob/5c50a32e8f02bd745d2524cd68de6b7cd8d0e8f8/apps/www/app/(app)/examples/authentication/page.tsx
 - [ ] feat: premium analytics (Tinybird)
-  - [ ] [fetch-opengraph node](https://github.com/purphoros/fetch-opengraph)
 - [ ] feat: API
   - [ ] get
     - [ ] `userByID`
@@ -57,8 +55,8 @@ A constant pointer to your ever-changing web presence.
   - [ ] prevents squatting
   - [ ] allows speculation (?)
 - [ ] /edit 2.0
-  - [ ] unify social profile editing and display
-  - [ ] highlight comment -> testimonial
+  - [x] unify social profile editing and display
+  - [x] highlight comment -> testimonial
   - [x] socials is the same visually as SocialComponent
   - [ ] [branch](https://github.com/adriangalilea/e-id/tree/edit-tabs-preserve-state) preserve state when switching tabs using [zustand](https://github.com/pmndrs/zustand/blob/main/docs/guides/nextjs.md)
   - [ ] custom order
@@ -97,10 +95,6 @@ A constant pointer to your ever-changing web presence.
   - [ ] cache github activity component
   - [ ] cache opengraph from custom website
 - [ ] style: comment input button disabled while not text
-- [x] style: fonts
-  - [x] [space mono](https://fonts.google.com/specimen/Space+Mono) for stats, number, dates and system style
-  - [x] inter for general text
-  - [ ] consider [cormorant](https://fonts.google.com/specimen/Cormorant) for quotes?
 
 # done
 
@@ -112,7 +106,8 @@ A constant pointer to your ever-changing web presence.
   - [x] remove socials
 - [x] feat: SEO
 - [x] feat: google auth prod
-
+- [x] style: remove github icon from footer into FAQ
+- [x] style: clean FAQ
 - [x] feat: do not show email by default, only suggest.
 - [x] feat: Socials as a different table
 - [x] feat: dub.co license
@@ -128,6 +123,10 @@ A constant pointer to your ever-changing web presence.
 - [x] feat: being able to choose another username
   - [x] add warning on username to prompt editing `i your profile is unreachable without username`
 - [x] fix: comments showing on the wrong account when commenting on another account
+- [x] style: fonts
+  - [x] [space mono](https://fonts.google.com/specimen/Space+Mono) for stats, number, dates and system style
+  - [x] inter for general text
+  - [.] consider [cormorant](https://fonts.google.com/specimen/Cormorant) for quotes?
 
 # blocked
 
