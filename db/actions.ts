@@ -31,7 +31,7 @@ export async function getUsersWithUsername(): Promise<SelectUser[]> {
     .select()
     .from(users)
     .where(isNotNull(users.username))
-    .orderBy(desc(users.id))
+    .orderBy(desc(users.created_at))
     .limit(6);
 }
 
