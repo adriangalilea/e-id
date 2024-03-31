@@ -22,6 +22,8 @@ const config = {
     extend: {
       boxShadow: {
         top: "0 -10px 15px -5px rgba(0, 0, 0, 0.5), 0 -10px 10px -5px rgba(0, 0, 0, 0.5)",
+        "top-light":
+          "0 -5px 5px -5px rgba(0, 0, 0, 0.1), 0 -10px 10px -5px rgba(0, 0, 0, 0.1)",
       },
       fontFamily: {
         inter: ["var(--font-inter)"],

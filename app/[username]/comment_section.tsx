@@ -41,13 +41,13 @@ export default async function CommentSection({
 
   return (
     <div className="relative">
-      <form action={formAction} className="sticky top-0 z-10 shadow-md">
+      <form action={formAction} className="sticky top-0 z-10">
         <div className="flex items-center gap-2">
           <Input
             disabled={!visitorUserId}
             type="text"
             name="body"
-            className="bg-zinc-200/60 text-[16px] backdrop-blur-md"
+            className="bg-zinc-200/60 text-[16px] shadow-md backdrop-blur-md"
             placeholder="I want everyone to know..."
           />
           <Button

@@ -9,10 +9,7 @@ import Link from "next/link";
 
 export default function Faq() {
   return (
-    <div
-      className="prose prose-zinc items-start justify-center bg-zinc-50/90 dark:prose-invert
-        dark:bg-zinc-800 sm:dark:bg-zinc-950/60"
-    >
+    <div className="prose prose-zinc items-start justify-center dark:prose-invert">
       <h1 className="font-light">Frequently Asked Questions</h1>
       <Accordion type="single" collapsible className="w-full">
         <AccordionItem value="item-1">
