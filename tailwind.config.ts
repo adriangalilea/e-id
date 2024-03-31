@@ -20,6 +20,9 @@ const config = {
       },
     },
     extend: {
+      boxShadow: {
+        top: "0 -10px 15px -5px rgba(0, 0, 0, 0.5), 0 -10px 10px -5px rgba(0, 0, 0, 0.5)",
+      },
       fontFamily: {
         inter: ["var(--font-inter)"],
         code: ["var(--font-space-mono)"],

@@ -17,7 +17,7 @@ export default function UserProfile({ user }: { user: SelectUser }) {
   return (
     <form
       action={updateUserWithUser}
-      className="flex flex-1 flex-col gap-6"
+      className="flex flex-1 flex-col gap-6 pt-3"
     >
       <div className="flex flex-col">
         <div className="flex w-full items-center gap-3">

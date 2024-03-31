@@ -60,7 +60,7 @@ export default async function CommentSection({
           </Button>
         </div>
       </form>
-      <div className="mt-2 flex flex-col gap-2">
+      <div className="my-2 flex flex-col gap-2">
         {comments &&
           comments.map((comment) => (
             <div key={comment.commentId}>

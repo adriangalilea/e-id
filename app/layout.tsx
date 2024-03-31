@@ -55,7 +55,7 @@ export default async function RootLayout({
     <html lang="en" className={`${inter.variable} ${spaceMono.variable}`}>
       <body
         className="mx-auto flex h-dvh max-h-full w-full max-w-2xl flex-col justify-between px-6
-          font-inter antialiased md:pt-3"
+          font-inter antialiased "
       >
         {children}
         <Toaster />
