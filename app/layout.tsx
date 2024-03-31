@@ -10,6 +10,7 @@ import { SignIn, SignOut } from "@/components/auth-components";
 import { TriangleAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -59,6 +60,7 @@ export default async function RootLayout({
         {children}
         <Toaster />
         <Analytics />
+        <SpeedInsights />
         <Footer>
           {session ? (
             session.user?.username ? (
