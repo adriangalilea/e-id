@@ -21,7 +21,7 @@ const config = {
     },
     extend: {
       boxShadow: {
-        top: "0 -10px 15px -5px rgba(0, 0, 0, 0.5), 0 -10px 10px -5px rgba(0, 0, 0, 0.5)",
+        top: "0 -5px 10px -5px rgba(0, 0, 0, 0.4), 0 -10px 10px -5px rgba(0, 0, 0, 0.4)",
         "top-light":
           "0 -5px 5px -5px rgba(0, 0, 0, 0.1), 0 -10px 10px -5px rgba(0, 0, 0, 0.1)",
       },
