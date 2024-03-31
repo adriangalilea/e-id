@@ -53,10 +53,10 @@ export async function generateMetadata({
   return {
     metadataBase: new URL(`${process.env.URL}`),
     title: user.name,
-    description: `@${user.name} - Digital Identity`,
+    description: `@${user.username} - Digital Identity`,
     openGraph: {
       title: user.name || "",
-      description: `@${user.name} - Digital Identity`,
+      description: `@${user.username} - Digital Identity`,
       type: "profile",
       url: `https://e-id.to/${user.username}`,
       images: [
@@ -96,8 +96,8 @@ export default async function Page({
   const testimonials = await getTestimonials(user.id);
 
   return (
-    <div className="flex flex-1 flex-col justify-between gap-6 overflow-auto">
-      <div className="flex flex-col gap-6">
+    <div className="flex flex-1 flex-col justify-between gap-12 overflow-auto">
+      <div className="flex flex-col gap-12">
         <UserProfile user={user} />
         {session && session.user?.username === user.username && (
           <Button asChild variant="secondary" size="icon">
@@ -108,7 +108,6 @@ export default async function Page({
         )}
         {testimonials.length > 0 && (
           <>
-            <Separator />
             {testimonials.map((testimonial) => (
               <div key={testimonial.commentId}>
                 <Testimonial

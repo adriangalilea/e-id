@@ -30,6 +30,18 @@ export const metadata: Metadata = {
     default: "e-ID",
   },
   description: "Digital identity",
+  authors: [{ name: "Adrian Galilea" }],
+  keywords: ["digital", "identity", "profile", "web", "link aggregator"],
+  creator: "Adrian Galilea",
+  publisher: "Adrian Galilea",
+  metadataBase: new URL(`${process.env.URL}`),
+  robots: "index, follow",
+  alternates: {
+    canonical: `${process.env.URL}`,
+  },
+  icons: {
+    icon: `${process.env.URL}/favicon.ico`,
+  },
 };
 
 export default async function RootLayout({
