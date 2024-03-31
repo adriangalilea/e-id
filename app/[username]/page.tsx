@@ -96,7 +96,7 @@ export default async function Page({
 
   return (
     <div className="flex flex-1 flex-col justify-between gap-6 overflow-auto">
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-6 sm:gap-12">
         <UserProfile user={user} />
         {session && session.user?.username === user.username && (
           <Button asChild variant="secondary" size="icon">
@@ -106,7 +106,7 @@ export default async function Page({
           </Button>
         )}
         {testimonials.length > 0 && (
-          <div className="mb-6">
+          <div className="mb-6 sm:mb-12">
             {testimonials.map((testimonial) => (
               <div key={testimonial.commentId}>
                 <Testimonial

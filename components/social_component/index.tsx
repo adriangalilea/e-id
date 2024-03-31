@@ -141,32 +141,32 @@ export async function SocialComponent({
       </TabsList>
       {populatedSocials.map((social) => (
         <TabsContent key={social.id} value={social.id} className="mt-0">
-          <Card className="border-t-transparent bg-zinc-200 p-3 dark:bg-zinc-800">
-            <CardHeader className="mb-3 flex flex-col gap-3 p-0">
+          <Card className="border-t-transparent bg-zinc-200 p-3 sm:p-6 dark:bg-zinc-800">
+            <CardHeader className="flex flex-col gap-3 p-0 sm:gap-6">
               <CardTitle className="flex items-center justify-between font-light">
                 {social.platform}
-                <Separator className="shrink mx-3 bg-zinc-300 opacity-40"/>
-                <Link
-                  href={social.url}
-                  className="group flex w-fit items-center border border-border font-extralight"
-                >
-                  <Label
-                    htmlFor={social.id}
-                    className="flex size-10 items-center justify-center bg-zinc-700 text-zinc-50
-                      dark:bg-zinc-300 dark:text-zinc-950"
-                  >
-                    {social.placeholder_pretext}
-                  </Label>
-                  <div
-                    id={social.id}
-                    className="prose prose-zinc flex h-10 items-center gap-2 bg-zinc-700/70 px-2 text-[16px]
-                      font-light text-zinc-50 transition-colors dark:prose-invert
-                      group-hover:bg-zinc-700 sm:font-normal dark:bg-zinc-50/10
-                      group-hover:dark:bg-zinc-300 group-hover:dark:text-zinc-900"
-                  >
-                    {social.displayText}
-                  </div>
-                </Link>
+                {!edit && (
+                  <>
+                    <Separator className="mx-3 shrink bg-zinc-300 opacity-10" />
+                    <Link
+                      href={social.url}
+                      className="group prose prose-zinc flex w-fit items-center bg-zinc-500 pr-3 text-white
+                        transition-colors dark:prose-invert hover:text-zinc-950 sm:font-normal
+                        dark:bg-zinc-50/10 hover:dark:bg-zinc-300"
+                    >
+                      <div
+                        className="flex size-10 items-center justify-center bg-zinc-700 text-zinc-50
+                          transition-colors dark:bg-zinc-400 dark:text-zinc-950
+                          group-hover:dark:bg-zinc-300"
+                      >
+                        {social.placeholder_pretext}
+                      </div>
+                      <span className="ml-2 font-light">
+                        {social.displayText}
+                      </span>
+                    </Link>
+                  </>
+                )}
                 {edit && (
                   <div className="flex items-center gap-3">
                     <Switch
@@ -200,7 +200,7 @@ export async function SocialComponent({
 
             <CardContent className="flex flex-col gap-3 p-0">
               {edit ? (
-                <div className="flex items-center font-extralight">
+                <div className="mt-3 flex items-center font-extralight sm:mt-6">
                   <Label
                     htmlFor={social.id}
                     className="flex size-10 items-center justify-center bg-zinc-50/10"
@@ -224,20 +224,24 @@ export async function SocialComponent({
                   {social.platform === "github" &&
                     social.value &&
                     githubActivityData && (
-                      <GitHubActivity data={githubActivityData} />
+                      <div className="mt-3 sm:mt-6">
+                        <GitHubActivity data={githubActivityData} />
+                      </div>
                     )}
                   {social.platform === "youtube" &&
                     social.custom_data &&
                     social.custom_data["highlight"] && (
-                      <YouTubeEmbed
-                        videoid={social.custom_data["highlight"]}
-                        params="controls=0"
-                      />
+                      <div className="mt-3 sm:mt-6">
+                        <YouTubeEmbed
+                          videoid={social.custom_data["highlight"]}
+                          params="controls=0"
+                        />
+                      </div>
                     )}
                   {social.platform === "twitter" &&
                     social.custom_data &&
                     social.custom_data["highlight"] && (
-                      <div className="flex justify-center *:!m-0 *:!w-full">
+                      <div className="mt-3 flex justify-center *:!m-0 *:!w-full sm:mt-6">
                         <Tweet id={social.custom_data["highlight"]} />
                       </div>
                     )}
