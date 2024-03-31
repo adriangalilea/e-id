@@ -69,10 +69,10 @@ export function getSocialPlaceholder(platform: SocialPlatform): string {
 
 export function getSocialPretextIcon(platform: SocialPlatform): ReactElement {
   if (platform === "email") {
-    return <Mail {...iconProps} size="18" />;
+    return <Mail {...iconProps} size="20" />;
   }
   if (platform === "website") {
-    return <LinkIcon {...iconProps} size="18" />;
+    return <LinkIcon {...iconProps} size="20" />;
   }
-  return <AtSign {...iconProps} size="18" />;
+  return <AtSign {...iconProps} size="20" />;
 }
