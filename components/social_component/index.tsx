@@ -41,6 +41,7 @@ import {
   flattenData,
 } from "@/components/social_component/fetch_github_activity";
 import { Label } from "../ui/label";
+import { Separator } from "../ui/separator";
 
 export async function SocialComponent({
   user,
@@ -144,6 +145,28 @@ export async function SocialComponent({
             <CardHeader className="mb-3 flex flex-col gap-3 p-0">
               <CardTitle className="flex items-center justify-between font-light">
                 {social.platform}
+                <Separator className="shrink mx-3 bg-zinc-300 opacity-40"/>
+                <Link
+                  href={social.url}
+                  className="group flex w-fit items-center border border-border font-extralight"
+                >
+                  <Label
+                    htmlFor={social.id}
+                    className="flex size-10 items-center justify-center bg-zinc-700 text-zinc-50
+                      dark:bg-zinc-300 dark:text-zinc-950"
+                  >
+                    {social.placeholder_pretext}
+                  </Label>
+                  <div
+                    id={social.id}
+                    className="prose prose-zinc flex h-10 items-center gap-2 bg-zinc-700/70 px-2 text-[16px]
+                      font-light text-zinc-50 transition-colors dark:prose-invert
+                      group-hover:bg-zinc-700 sm:font-normal dark:bg-zinc-50/10
+                      group-hover:dark:bg-zinc-300 group-hover:dark:text-zinc-900"
+                  >
+                    {social.displayText}
+                  </div>
+                </Link>
                 {edit && (
                   <div className="flex items-center gap-3">
                     <Switch
@@ -218,27 +241,6 @@ export async function SocialComponent({
                         <Tweet id={social.custom_data["highlight"]} />
                       </div>
                     )}
-                  <Link
-                    href={social.url}
-                    className="group flex w-fit items-center border border-border font-extralight"
-                  >
-                    <Label
-                      htmlFor={social.id}
-                      className="flex size-10 items-center justify-center bg-zinc-600 text-zinc-200
-                        dark:bg-zinc-300 dark:text-zinc-700"
-                    >
-                      {social.placeholder_pretext}
-                    </Label>
-                    <div
-                      id={social.id}
-                      className="prose prose-zinc flex flex h-10 items-center gap-2 bg-zinc-950/10 px-2
-                        text-[16px] font-light transition-colors dark:prose-invert
-                        group-hover:bg-zinc-600 group-hover:text-zinc-200 sm:font-normal
-                        dark:bg-zinc-50/10 group-hover:dark:bg-zinc-300 group-hover:dark:text-zinc-700"
-                    >
-                      {social.displayText}
-                    </div>
-                  </Link>
                 </>
               )}
             </CardContent>
