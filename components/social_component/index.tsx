@@ -27,7 +27,6 @@ import {
   getSocialUrl,
 } from "@/lib/socials";
 import { Input } from "@/components/ui/input";
-import { Switch } from "@/components/ui/switch";
 import { Plus } from "lucide-react";
 import AddSocialDropdownMenuItem from "./add_social_dropdown_menu_item";
 import RemoveSocialButton from "./remove_social_button";
@@ -42,6 +41,7 @@ import {
 } from "@/components/social_component/fetch_github_activity";
 import { Label } from "../ui/label";
 import { Separator } from "../ui/separator";
+import { SwitchPublic } from "./switch_public";
 
 export async function SocialComponent({
   user,
@@ -169,7 +169,7 @@ export async function SocialComponent({
                 )}
                 {edit && (
                   <div className="flex items-center gap-3">
-                    <Switch
+                    <SwitchPublic
                       id={`${social.platform}_${social.id}_public`}
                       defaultChecked={social.public}
                       name={`${social.platform}_${social.id}_public`}
