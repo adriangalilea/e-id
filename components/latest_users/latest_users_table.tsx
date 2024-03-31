@@ -11,9 +11,8 @@ import HumanTime from "@/components/human_date";
 import Link from "next/link";
 import Flag from "@/components/flag";
 import { getUsersWithUsername } from "@/db/actions";
-const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
 export async function LatestUsersTable() {
-  await sleep(2000);
   const users = await getUsersWithUsername();
   return (
     <Table>
