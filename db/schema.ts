@@ -4,31 +4,41 @@ import {
   integer,
   sqliteTable,
   primaryKey,
+  index,
 } from "drizzle-orm/sqlite-core";
 import type { AdapterAccount } from "@auth/core/adapters";
 
-export const users = sqliteTable("user", {
-  id: text("id").notNull().primaryKey(),
-  username: text("username").unique(),
-  name: text("name"),
-  email: text("email").notNull(),
-  emailVerified: integer("emailVerified", { mode: "timestamp_ms" }),
-  image: text("image"),
-  bio: text("bio"),
-  country_code: text("country_code").default("XX").notNull(),
-  created_at: text("created_at")
-    .default(sql`(CURRENT_TIMESTAMP)`)
-    .notNull(),
-  updated_at: text("updated_at")
-    .default(sql`(CURRENT_TIMESTAMP)`)
-    .notNull(),
-  allow_comments: integer("allow_comments", { mode: "boolean" })
-    .notNull()
-    .default(false),
-  theme: text("theme"),
-  languages: text("languages", { mode: "json" }),
-  birthDate: integer("birth_date", { mode: "timestamp" }),
-});
+export const users = sqliteTable(
+  "user",
+  {
+    id: text("id").notNull().primaryKey(),
+    username: text("username").unique(),
+    name: text("name"),
+    email: text("email").notNull(),
+    emailVerified: integer("emailVerified", { mode: "timestamp_ms" }),
+    image: text("image"),
+    bio: text("bio"),
+    country_code: text("country_code").default("XX").notNull(),
+    created_at: text("created_at")
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .notNull(),
+    updated_at: text("updated_at")
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .notNull(),
+    allow_comments: integer("allow_comments", { mode: "boolean" })
+      .notNull()
+      .default(false),
+    theme: text("theme"),
+    languages: text("languages", { mode: "json" }),
+    birthDate: integer("birth_date", { mode: "timestamp" }),
+  },
+  (table) => {
+    return {
+      usernameIdx: index("username_idx").on(table.username),
+      createdAtIdx: index("created_at_idx").on(table.created_at),
+    };
+  },
+);
 
 export const accounts = sqliteTable(
   "account",
