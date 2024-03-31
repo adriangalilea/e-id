@@ -6,7 +6,7 @@ import { HelpCircle, Home } from "lucide-react";
 export default function Footer({ children }: { children?: React.ReactNode }) {
   return (
     <footer
-      className="shadow-top flex w-full justify-between bg-zinc-500/10 text-zinc-500
+      className="shadow-top-light dark:shadow-top flex w-full justify-between bg-zinc-500/10 text-zinc-500
         backdrop-blur-2xl dark:border-white/15"
     >
       <div className="flex">{children}</div>
