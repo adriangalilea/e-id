@@ -1,15 +1,26 @@
-"use client";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { HelpCircle, Home } from "lucide-react";
 
-export default function Footer({ children }: { children?: React.ReactNode }) {
+import FooterUser from "./footer_user";
+import { Suspense } from "react";
+
+export default async function Footer() {
   return (
     <footer
       className="shadow-top-light dark:shadow-top flex w-full justify-between bg-zinc-500/10
         text-zinc-500 backdrop-blur-2xl dark:border-white/15"
     >
-      <div className="flex">{children}</div>
+      <Suspense
+        fallback={
+          <div className="flex size-10 items-center justify-center">
+            <img src="./ball-triangle.svg" className="size-6" />
+          </div>
+        }
+      >
+        <FooterUser />
+      </Suspense>
+
       <div className="flex gap-2">
         <ButtonFAQ />
         <ButtonHome />
