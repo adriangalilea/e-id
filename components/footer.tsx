@@ -6,8 +6,8 @@ import { HelpCircle, Home } from "lucide-react";
 export default function Footer({ children }: { children?: React.ReactNode }) {
   return (
     <footer
-      className="shadow-top-light dark:shadow-top flex w-full justify-between bg-zinc-500/10 text-zinc-500
-        backdrop-blur-2xl dark:border-white/15"
+      className="shadow-top-light dark:shadow-top flex w-full justify-between bg-zinc-500/10
+        text-zinc-500 backdrop-blur-2xl dark:border-white/15"
     >
       <div className="flex">{children}</div>
       <div className="flex gap-2">
@@ -20,7 +20,7 @@ export default function Footer({ children }: { children?: React.ReactNode }) {
 
 function ButtonHome() {
   return (
-    <Button asChild variant="ghost" className="!h-10 !w-10 !p-0">
+    <Button asChild variant="ghost" size="icon">
       <Link href="/">
         <Home strokeWidth={1} />
       </Link>
@@ -30,7 +30,7 @@ function ButtonHome() {
 
 function ButtonFAQ() {
   return (
-    <Button asChild variant="ghost" className="!h-10 !w-10 !p-0">
+    <Button asChild variant="ghost" size="icon">
       <Link href="/about">
         <HelpCircle strokeWidth={1} />
       </Link>
