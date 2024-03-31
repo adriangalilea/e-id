@@ -26,7 +26,7 @@ export async function getLatestUsers(): Promise<SelectUser[]> {
   return await db.select().from(users).orderBy(desc(users.id)).limit(6);
 }
 
-export async function getUsersWithUsername(): Promise<SelectUser[]> {
+export async function getLatestUsersWithUsername(): Promise<SelectUser[]> {
   return await db
     .select()
     .from(users)
