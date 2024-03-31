@@ -95,8 +95,8 @@ export default async function Page({
   const testimonials = await getTestimonials(user.id);
 
   return (
-    <div className="flex flex-1 flex-col justify-between gap-12 overflow-auto">
-      <div className="flex flex-col gap-12">
+    <div className="flex flex-1 flex-col justify-between gap-6 overflow-auto">
+      <div className="flex flex-col gap-6">
         <UserProfile user={user} />
         {session && session.user?.username === user.username && (
           <Button asChild variant="secondary" size="icon">
@@ -106,7 +106,7 @@ export default async function Page({
           </Button>
         )}
         {testimonials.length > 0 && (
-          <>
+          <div className="mb-6">
             {testimonials.map((testimonial) => (
               <div key={testimonial.commentId}>
                 <Testimonial
@@ -118,7 +118,7 @@ export default async function Page({
                 />
               </div>
             ))}
-          </>
+          </div>
         )}
       </div>
       {session && (
