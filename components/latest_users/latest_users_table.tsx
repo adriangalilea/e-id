@@ -10,10 +10,10 @@ import {
 import HumanTime from "@/components/human_date";
 import Link from "next/link";
 import Flag from "@/components/flag";
-import { getLatestUsersWithUsername } from "@/db/actions";
+import { getLatestUsersWithUsernameCached } from "@/db/actions";
 
 export async function LatestUsersTable() {
-  const users = await getLatestUsersWithUsername();
+  const users = await getLatestUsersWithUsernameCached();
   return (
     <Table>
       <TableCaption className="font-code text-left opacity-60">

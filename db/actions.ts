@@ -2,6 +2,8 @@
 
 import { z } from "zod";
 
+import { unstable_cache } from "next/cache";
+
 import { SQLiteSelectQueryBuilder } from "drizzle-orm/sqlite-core";
 import { eq, desc, isNotNull, sql, and, not } from "drizzle-orm";
 import { db } from "@/db";
@@ -22,10 +24,6 @@ export async function getUsers(): Promise<SelectUser[]> {
   return await db.select().from(users);
 }
 
-export async function getLatestUsers(): Promise<SelectUser[]> {
-  return await db.select().from(users).orderBy(desc(users.id)).limit(6);
-}
-
 export async function getLatestUsersWithUsername(): Promise<SelectUser[]> {
   return await db
     .select()
@@ -34,6 +32,11 @@ export async function getLatestUsersWithUsername(): Promise<SelectUser[]> {
     .orderBy(desc(users.created_at))
     .limit(6);
 }
+
+export const getLatestUsersWithUsernameCached = unstable_cache(
+  async () => getLatestUsersWithUsername(),
+  ["latest-users"],
+);
 
 export async function getUser(id: SelectUser["id"]): Promise<SelectUser> {
   const result = await db.select().from(users).where(eq(users.id, id)).limit(1);
