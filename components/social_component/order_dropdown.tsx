@@ -6,7 +6,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
 import { getSocials } from "@/db/actions";
 import OrderDropdownItem from "./order_dropdown_item";
 
