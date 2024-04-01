@@ -65,7 +65,7 @@ export async function GET(request: Request) {
           alignItems: "center",
           justifyContent: "center",
           background: "#FAFAFA",
-          color: "#4B5563",
+          color: "#09090b",
           width: "100%",
           height: "100%",
           padding: "20px",
@@ -82,7 +82,7 @@ export async function GET(request: Request) {
           style={{
             width: "60%",
             height: "2px",
-            backgroundColor: "#D1D5DB",
+            backgroundColor: "#d4d4d8",
             margin: "12px 0 24px 0",
           }}
         />
