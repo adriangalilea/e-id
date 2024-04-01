@@ -75,7 +75,7 @@ export default function UserProfile({ user }: { user: SelectUser }) {
         type="submit"
         variant="secondary"
         size="icon"
-        className="text-emerald-500 hover:bg-emerald-500/10"
+        className="self-end hover:bg-emerald-500/10 hover:text-emerald-500"
       >
         <Save strokeWidth={1} />
       </Button>

@@ -99,7 +99,7 @@ export default async function Page({
       <div className="flex flex-col gap-6 sm:gap-12">
         <UserProfile user={user} />
         {session && session.user?.username === user.username && (
-          <Button asChild variant="secondary" size="icon">
+          <Button asChild variant="secondary" size="icon" className="self-end">
             <Link href={`/${session.user.username}/edit`}>
               <Pen strokeWidth={1} className="opacity-60" />
             </Link>
