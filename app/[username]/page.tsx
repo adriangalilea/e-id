@@ -1,11 +1,7 @@
 import { getUsers, getUserByUsername, getSocials } from "@/db/actions";
 import CommentSection from "./comment_section";
 import UserProfile from "./user_profile";
-import { auth } from "@/auth";
-import { notFound, redirect } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
-import { Pen } from "lucide-react";
+import { notFound } from "next/navigation";
 
 import type { Metadata } from "next";
 import { SocialPlatform } from "@/db/schema";
@@ -82,32 +78,14 @@ export default async function Page({
 }: {
   params: { username: string };
 }) {
-  const session = await auth();
-
-  // TODO: perform this in middleware
-  // check if user session has username if not redirect to /null if not already there
-  if (session?.user && !session.user.username && params.username !== "null") {
-    redirect("/null");
-  }
-  const user = await getUserByUsername(params.username);
-
   return (
     <div className="flex flex-1 flex-col gap-6 overflow-auto sm:gap-12">
-      <div className="flex flex-col gap-6 sm:gap-12">
-        <UserProfile user={user} />
-        {session && session.user?.username === user.username && (
-          <Button asChild variant="secondary" size="icon" className="self-end">
-            <Link href={`/${session.user.username}/edit`}>
-              <Pen strokeWidth={1} className="opacity-60" />
-            </Link>
-          </Button>
-        )}
-      </div>
       <Suspense fallback={<div>Loading...</div>}>
-        <CommentSection
-          profileUserId={user.id}
-          visitorUserId={session?.user?.id}
-        />
+        <UserProfile username={params.username} />
+      </Suspense>
+
+      <Suspense fallback={<div>Loading...</div>}>
+        <CommentSection username={params.username} />
       </Suspense>
     </div>
   );

@@ -8,8 +8,8 @@ import { Suspense } from "react";
 export default async function Footer() {
   return (
     <footer
-      className="shadow-top-light dark:shadow-top flex w-full justify-between bg-zinc-500/10
-        text-zinc-500 backdrop-blur-2xl dark:border-white/15"
+      className="flex w-full justify-between bg-zinc-500/10 text-zinc-500 shadow-top-light
+        backdrop-blur-2xl dark:border-white/15 dark:shadow-top"
     >
       <Suspense
         fallback={
