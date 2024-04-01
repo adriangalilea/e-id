@@ -374,15 +374,40 @@ export async function addSocial(
 
 export async function removeSocial(
   userId: SelectUser["id"],
-  platformId: SelectSocial["id"],
+  socialId: SelectSocial["id"],
 ) {
   try {
     await db
       .delete(socials)
-      .where(eq(socials.id, platformId))
+      .where(eq(socials.id, socialId))
       .returning({ deletedId: socials.id });
     revalidatePath(`/${userId}/edit`);
     revalidatePath(`/${userId}`);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+export async function orderSocial(
+  socialId: SelectSocial["id"],
+  order: SelectSocial["order"],
+) {
+  console.log("orderSocial", socialId, order);
+  try {
+    const session = await auth();
+    if (!session?.user?.id) return;
+    const orderedSocial = await db
+      .update(socials)
+      .set({ order: order })
+      .where(
+        and(eq(socials.id, socialId), eq(socials.user_id, session?.user?.id)),
+      )
+      .returning()
+      .then((res) => res[0] ?? null);
+
+    console.log("orderedSocial", orderedSocial);
+    revalidatePath(`/${orderedSocial.user_id}/edit`);
+    revalidatePath(`/${orderedSocial.user_id}`);
   } catch (error) {
     console.error(error);
   }
