@@ -26,6 +26,21 @@ A constant pointer to your ever-changing web presence.
 
 ## todo
 
+- [ ] feat: edit cusotm order
+- [ ] feat: edit higlight
+- [ ] feat: how to add emoji domain to twitter
+- [ ] feat: instant changelog from github
+- [ ] feat: instead of /about do about.e-id.to
+- [ ] feat: preserve state when switching tabs using [zustand](https://github.com/pmndrs/zustand/blob/main/docs/guides/nextjs.md)
+  - [ ] [branch](https://github.com/adriangalilea/e-id/tree/edit-tabs-preserve-state)
+- [x] feat: list of forbidden handles
+  - [x] I don't need auth because it has higher priority than [username]
+  - [x] /null path to edit null username
+  - [ ] enforce non allowing such handles in user creation from auth
+  - [ ] enforce non allowing such handles in server actions
+  - [ ] enforce non allowing such handles in /null
+- [ ] feat: github, youtube, twitter, ... followers/sbus
+- [ ] uppercase and lowercase match on username (?)
 - [ ] feat: opengraph on custom website for social component
   - [ ] [fetch-opengraph node](https://github.com/purphoros/fetch-opengraph)
 - [ ] feat: curl
@@ -34,12 +49,6 @@ A constant pointer to your ever-changing web presence.
 - [ ] feat: /username/[social_media_name]
   - [ ] if exists: redirects to said social media and log.
   - [ ] if not exists: redirects to e-id profile and log user demand.
-- [x] feat: list of forbidden handles
-  - [x] I don't need auth because it has higher priority than [username]
-  - [x] /null path to edit null username
-  - [ ] enforce non allowing such handles in user creation from auth
-  - [ ] enforce non allowing such handles in server actions
-  - [ ] enforce non allowing such handles in /null
 - [ ] feat: custom auth login window
   - [ ] https://authjs.dev/guides/basics/pages#theming
   - [ ] https://github.com/ndom91/next-auth-example-sign-in-page
@@ -54,36 +63,6 @@ A constant pointer to your ever-changing web presence.
 - [ ] feat: premium claimable username
   - [ ] prevents squatting
   - [ ] allows speculation (?)
-- [ ] /edit 2.0
-  - [x] unify social profile editing and display
-  - [x] highlight comment -> testimonial
-  - [x] socials is the same visually as SocialComponent
-  - [ ] [branch](https://github.com/adriangalilea/e-id/tree/edit-tabs-preserve-state) preserve state when switching tabs using [zustand](https://github.com/pmndrs/zustand/blob/main/docs/guides/nextjs.md)
-  - [ ] custom order
-  - [ ] github
-    - [ ] followers
-    - [ ] activity
-      - [ ] toggle
-      - [x] implementation
-  - [.] youtube
-    - [ ] followers
-    - [ ] highlight
-      - [x] implementation
-      - [ ] input
-      - [ ] toggle
-      - [ ] activity(last video/pinned video)
-  - [ ] twitter
-    - [ ] followers
-    - [.] highlight
-      - [x] implemented
-      - [ ] input
-      - [ ] toggle
-      - [ ] activity(last tweet/pinned tweet)
-  - [ ] disallow comments
-  - [ ] country
-    - [ ] display flag at rest
-  - [ ] birthdate
-  - [ ] ensure name and username inputs are similar in size to regular profile
 - [ ] tracking every social media / blog rss
   - [ ] default being only the last element
   - [ ] aliveness score
@@ -95,6 +74,12 @@ A constant pointer to your ever-changing web presence.
   - [ ] cache github activity component
   - [ ] cache opengraph from custom website
 - [ ] style: comment input button disabled while not text
+- [ ] feat: dynamic highlight (last/last-pinned tweet, last/last-pinned video, ...)
+- [ ] feat: dynamic github, youtube, twitter, ... followers/sbus
+- [ ] feat: disallow comments option
+- [ ] style: ensure name and username inputs are similar in size to regular profile
+- [ ] style: country display flag at rest
+- [ ] feat: basic user info (birthdate/languages/skills)
 
 # done
 
@@ -127,6 +112,10 @@ A constant pointer to your ever-changing web presence.
   - [x] [space mono](https://fonts.google.com/specimen/Space+Mono) for stats, number, dates and system style
   - [x] inter for general text
   - [.] consider [cormorant](https://fonts.google.com/specimen/Cormorant) for quotes?
+- [x] /edit 2.0
+  - [x] unify social profile editing and display
+  - [x] highlight comment -> testimonial
+  - [x] socials is the same visually as SocialComponent
 
 # blocked
 
