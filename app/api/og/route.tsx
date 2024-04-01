@@ -21,7 +21,7 @@ export async function GET(request: Request) {
     email: fetch(new URL("./email.svg", import.meta.url)).then((res) =>
       res.text(),
     ),
-    twitter: fetch(new URL("./twitter_x.svg", import.meta.url)).then((res) =>
+    twitter: fetch(new URL("./twitter.svg", import.meta.url)).then((res) =>
       res.text(),
     ),
     telegram: fetch(new URL("./telegram.svg", import.meta.url)).then((res) =>
