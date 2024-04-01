@@ -169,7 +169,7 @@ export async function SocialComponent({
                 <div className="mt-3 flex items-center font-extralight sm:mt-6">
                   <Label
                     htmlFor={social.id}
-                    className="flex size-10 items-center justify-center bg-zinc-50/10"
+                    className="flex size-10 items-center justify-center bg-zinc-950/10 dark:bg-zinc-50/10"
                   >
                     {social.placeholder_pretext}
                   </Label>
@@ -179,7 +179,7 @@ export async function SocialComponent({
                     id={social.id}
                     name={`${social.platform}_${social.id}_value`}
                     defaultValue={social.value || ""}
-                    className="!m-0 border border-border !bg-transparent text-[16px]
+                    className="!m-0 border border-zinc-950/10 dark:border-zinc-50/10 !bg-transparent text-[16px]
                       focus-visible:border-zinc-500 focus-visible:ring-0
                       focus-visible:ring-transparent focus-visible:ring-offset-0 sm:font-normal"
                     placeholder={social.placeholder!}
@@ -202,7 +202,7 @@ export async function SocialComponent({
                     <div className="mt-3 flex items-center font-extralight">
                       <Label
                         htmlFor={`${social.platform}_${social.id}_highlight`}
-                        className="flex size-10 items-center justify-center bg-zinc-50/10"
+                        className="flex size-10 items-center justify-center bg-zinc-950/10 dark:bg-zinc-50/10"
                       >
                         <Star
                           strokeWidth="1"
@@ -220,7 +220,7 @@ export async function SocialComponent({
                             social.custom_data["highlight"]) ||
                           ""
                         }
-                        className="!m-0 border border-border !bg-transparent text-[16px]
+                        className="!m-0 border border-zinc-950/10 dark:border-zinc-50/10 !bg-transparent text-[16px]
                           focus-visible:border-zinc-500 focus-visible:ring-0
                           focus-visible:ring-transparent focus-visible:ring-offset-0 sm:font-normal"
                         placeholder="Optional highlight video ID"
@@ -244,7 +244,7 @@ export async function SocialComponent({
                     <div className="mt-3 flex items-center font-extralight">
                       <Label
                         htmlFor={`${social.platform}_${social.id}_highlight`}
-                        className="flex size-10 items-center justify-center bg-zinc-50/10"
+                        className="flex size-10 items-center justify-center bg-zinc-950/10 dark:bg-zinc-50/10"
                       >
                         <Star
                           strokeWidth="1"
@@ -262,7 +262,7 @@ export async function SocialComponent({
                             social.custom_data["highlight"]) ||
                           ""
                         }
-                        className="!m-0 border border-border !bg-transparent text-[16px]
+                        className="!m-0 border border-zinc-950/10 dark:border-zinc-50/10 !bg-transparent text-[16px]
                           focus-visible:border-zinc-500 focus-visible:ring-0
                           focus-visible:ring-transparent focus-visible:ring-offset-0 sm:font-normal"
                         placeholder="Optional highlight tweet ID"
