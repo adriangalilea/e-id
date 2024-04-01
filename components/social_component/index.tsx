@@ -33,6 +33,7 @@ import { Separator } from "../ui/separator";
 import { SwitchPublic } from "./switch_public";
 import AddSocialDropdownMenu from "./add_social_dropdown";
 import OrderDropdown from "./order_dropdown";
+import { Star } from "lucide-react";
 
 export async function SocialComponent({
   user,
@@ -178,7 +179,7 @@ export async function SocialComponent({
                     id={social.id}
                     name={`${social.platform}_${social.id}_value`}
                     defaultValue={social.value || ""}
-                    className="!m-0 w-fit border border-border !bg-transparent text-[16px]
+                    className="!m-0 border border-border !bg-transparent text-[16px]
                       focus-visible:border-zinc-500 focus-visible:ring-0
                       focus-visible:ring-transparent focus-visible:ring-offset-0 sm:font-normal"
                     placeholder={social.placeholder!}
@@ -198,21 +199,33 @@ export async function SocialComponent({
               {social.platform === "youtube" && (
                 <>
                   {edit && (
-                    <Input
-                      data-1p-ignore
-                      type="text"
-                      id={`${social.platform}_${social.id}_highlight`}
-                      name={`${social.platform}_${social.id}_highlight`}
-                      defaultValue={
-                        (social.custom_data &&
-                          social.custom_data["highlight"]) ||
-                        ""
-                      }
-                      className="!m-0 w-fit border border-border !bg-transparent text-[16px]
-                        focus-visible:border-zinc-500 focus-visible:ring-0
-                        focus-visible:ring-transparent focus-visible:ring-offset-0 sm:font-normal"
-                      placeholder="Highlight video ID"
-                    />
+                    <div className="mt-3 flex items-center font-extralight">
+                      <Label
+                        htmlFor={`${social.platform}_${social.id}_highlight`}
+                        className="flex size-10 items-center justify-center bg-zinc-50/10"
+                      >
+                        <Star
+                          strokeWidth="1"
+                          className="opacity-80"
+                          size="20"
+                        />
+                      </Label>
+                      <Input
+                        data-1p-ignore
+                        type="text"
+                        id={`${social.platform}_${social.id}_highlight`}
+                        name={`${social.platform}_${social.id}_highlight`}
+                        defaultValue={
+                          (social.custom_data &&
+                            social.custom_data["highlight"]) ||
+                          ""
+                        }
+                        className="!m-0 border border-border !bg-transparent text-[16px]
+                          focus-visible:border-zinc-500 focus-visible:ring-0
+                          focus-visible:ring-transparent focus-visible:ring-offset-0 sm:font-normal"
+                        placeholder="Optional highlight video ID"
+                      />
+                    </div>
                   )}
 
                   {social.custom_data && social.custom_data["highlight"] && (
@@ -228,21 +241,33 @@ export async function SocialComponent({
               {social.platform === "twitter" && (
                 <>
                   {edit && (
-                    <Input
-                      data-1p-ignore
-                      type="text"
-                      id={`${social.platform}_${social.id}_highlight`}
-                      name={`${social.platform}_${social.id}_highlight`}
-                      defaultValue={
-                        (social.custom_data &&
-                          social.custom_data["highlight"]) ||
-                        ""
-                      }
-                      className="!m-0 w-fit border border-border !bg-transparent text-[16px]
-                        focus-visible:border-zinc-500 focus-visible:ring-0
-                        focus-visible:ring-transparent focus-visible:ring-offset-0 sm:font-normal"
-                      placeholder="Highlight tweet ID"
-                    />
+                    <div className="mt-3 flex items-center font-extralight">
+                      <Label
+                        htmlFor={`${social.platform}_${social.id}_highlight`}
+                        className="flex size-10 items-center justify-center bg-zinc-50/10"
+                      >
+                        <Star
+                          strokeWidth="1"
+                          className="opacity-80"
+                          size="20"
+                        />
+                      </Label>
+                      <Input
+                        data-1p-ignore
+                        type="text"
+                        id={`${social.platform}_${social.id}_highlight`}
+                        name={`${social.platform}_${social.id}_highlight`}
+                        defaultValue={
+                          (social.custom_data &&
+                            social.custom_data["highlight"]) ||
+                          ""
+                        }
+                        className="!m-0 border border-border !bg-transparent text-[16px]
+                          focus-visible:border-zinc-500 focus-visible:ring-0
+                          focus-visible:ring-transparent focus-visible:ring-offset-0 sm:font-normal"
+                        placeholder="Optional highlight tweet ID"
+                      />
+                    </div>
                   )}
 
                   {social.custom_data && social.custom_data["highlight"] && (
