@@ -2,7 +2,6 @@ import {
   getUsers,
   getUserByUsername,
   getSocials,
-  getTestimonials,
 } from "@/db/actions";
 import CommentSection from "./comment_section";
 import UserProfile from "./user_profile";
@@ -14,7 +13,6 @@ import { Pen } from "lucide-react";
 
 import type { Metadata } from "next";
 import { SocialPlatform } from "@/db/schema";
-import { Testimonial } from "@/components/quote";
 import { Suspense } from "react";
 
 export async function generateMetadata({
