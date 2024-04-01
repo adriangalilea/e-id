@@ -26,6 +26,7 @@ A constant pointer to your ever-changing web presence.
 
 ## todo
 
+- [ ] feat: every social component integration should be a component that handles if it's editing or visualising, if visualising is where I'll add analytics
 - [ ] feat: edit cusotm order
 - [ ] feat: edit higlight
 - [ ] feat: how to add emoji domain to twitter
@@ -33,6 +34,8 @@ A constant pointer to your ever-changing web presence.
 - [ ] feat: instead of /about do about.e-id.to
 - [ ] feat: preserve state when switching tabs using [zustand](https://github.com/pmndrs/zustand/blob/main/docs/guides/nextjs.md)
   - [ ] [branch](https://github.com/adriangalilea/e-id/tree/edit-tabs-preserve-state)
+- [ ] feat: remove highlighted from comment section visually
+- [ ] feat: allow to unpinp higlight
 - [x] feat: list of forbidden handles
   - [x] I don't need auth because it has higher priority than [username]
   - [x] /null path to edit null username
@@ -53,7 +56,12 @@ A constant pointer to your ever-changing web presence.
   - [ ] https://authjs.dev/guides/basics/pages#theming
   - [ ] https://github.com/ndom91/next-auth-example-sign-in-page
   - [ ] https://github.com/shadcn-ui/ui/blob/5c50a32e8f02bd745d2524cd68de6b7cd8d0e8f8/apps/www/app/(app)/examples/authentication/page.tsx
-- [ ] feat: premium analytics (Tinybird)
+- [ ] feat: premium analytics
+  - [ ] Tinybird
+    - [ ] [dub](https://github.com/dubinc/dub/tree/main/packages/tinybird)
+    - [ ] [elena](https://youtu.be/koLTjbEco7Q)
+  - [ ] [Tremor](https://www.tremor.so/)
+    - [ ] [josh](https://youtu.be/MGjCIQh5Pkw)
 - [ ] feat: API
   - [ ] get
     - [ ] `userByID`
