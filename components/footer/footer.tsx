@@ -32,7 +32,7 @@ export default async function Footer() {
 function ButtonHome() {
   return (
     <Button asChild variant="ghost" size="icon">
-      <Link href="/">
+      <Link href="/" aria-label="home">
         <Home strokeWidth={1} />
       </Link>
     </Button>
@@ -42,7 +42,7 @@ function ButtonHome() {
 function ButtonFAQ() {
   return (
     <Button asChild variant="ghost" size="icon">
-      <Link href="/about">
+      <Link href="/about" aria-label="about">
         <HelpCircle strokeWidth={1} />
       </Link>
     </Button>

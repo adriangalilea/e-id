@@ -14,7 +14,12 @@ export function SignIn({
         await signIn(provider);
       }}
     >
-      <Button variant="ghost" className="!h-10 !w-10 !p-0" {...props}>
+      <Button
+        variant="ghost"
+        className="!h-10 !w-10 !p-0"
+        {...props}
+        aria-label="sign-in"
+      >
         <UserRound strokeWidth={1} />
       </Button>
     </form>
@@ -32,6 +37,7 @@ export function SignOut(props: React.ComponentPropsWithRef<typeof Button>) {
         variant="destructiveGhost"
         className="!h-10 !w-10 !p-0"
         {...props}
+        aria-label="sign-in"
       >
         <LogOut strokeWidth={1} />
       </Button>
