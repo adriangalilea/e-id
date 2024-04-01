@@ -26,14 +26,11 @@ A constant pointer to your ever-changing web presence.
 
 ## todo
 
-- [ ] feat: every social component integration should be a component that handles if it's editing or visualising, if visualising is where I'll add analytics
-- [ ] feat: /about how to add emoji domain to twitter
-- [ ] feat: instant changelog from github
-- [ ] feat: instead of /about do about.e-id.to
 - [ ] feat: preserve state when switching tabs using [zustand](https://github.com/pmndrs/zustand/blob/main/docs/guides/nextjs.md)
+- [ ] feat: /about how to add emoji domain to twitter
+- [ ] feat: every social component integration should be a component that handles if it's editing or visualising, if visualising is where I'll add analytics
+- [ ] feat: instead of /about do about.e-id.to
   - [ ] [branch](https://github.com/adriangalilea/e-id/tree/edit-tabs-preserve-state)
-- [ ] feat: remove highlighted from comment section visually
-- [ ] feat: allow to unpinp higlight
 - [x] feat: list of forbidden handles
   - [x] I don't need auth because it has higher priority than [username]
   - [x] /null path to edit null username
@@ -86,6 +83,9 @@ A constant pointer to your ever-changing web presence.
 - [ ] style: ensure name and username inputs are similar in size to regular profile
 - [ ] style: country display flag at rest
 - [ ] feat: basic user info (birthdate/languages/skills)
+- [ ] style: test (add metadata to all socials and divide in half to show a square button on the right and info on the left, username/followers/...)
+- [ ] style: add alt to highlights
+- [ ] feat: instant changelog from github
 
 # done
 
@@ -124,6 +124,8 @@ A constant pointer to your ever-changing web presence.
   - [x] socials is the same visually as SocialComponent
 - [x] feat: edit cusotm order
 - [x] feat: edit higlight
+- [ ] feat: remove highlighted from comment section visually
+- [ ] feat: allow to unpinp higlight
 
 # blocked
 
