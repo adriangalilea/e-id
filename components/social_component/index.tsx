@@ -6,18 +6,9 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Link from "next/link";
-import { SelectUser, socialPlatforms } from "@/db/schema";
-import { Button } from "@/components/ui/button";
+import { SelectUser } from "@/db/schema";
 import { getSocials } from "@/db/actions";
 import {
   getSocialDisplayText,
@@ -27,8 +18,6 @@ import {
   getSocialUrl,
 } from "@/lib/socials";
 import { Input } from "@/components/ui/input";
-import { Plus } from "lucide-react";
-import AddSocialDropdownMenuItem from "./add_social_dropdown_menu_item";
 import RemoveSocialButton from "./remove_social_button";
 import { YouTubeEmbed } from "@next/third-parties/google";
 import { Tweet } from "react-tweet";
@@ -42,6 +31,7 @@ import {
 import { Label } from "../ui/label";
 import { Separator } from "../ui/separator";
 import { SwitchPublic } from "./switch_public";
+import AddSocialDropdownMenu from "./add_social_dropdown";
 
 export async function SocialComponent({
   user,
@@ -109,35 +99,7 @@ export async function SocialComponent({
             {icon}
           </TabsTrigger>
         ))}
-        {edit && (
-          <DropdownMenu>
-            <DropdownMenuTrigger
-              asChild
-              className="focus-visible:outline-none focus-visible:!ring-0 focus-visible:!ring-transparent"
-            >
-              <Button
-                className="justify-center border-none text-indigo-500 !shadow-none hover:border-none
-                  hover:bg-indigo-500/10 hover:text-indigo-500 focus-visible:!ring-transparent"
-                variant="ghost"
-              >
-                <Plus />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56">
-              <DropdownMenuLabel className="text-indigo-500">
-                Add Account
-              </DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              {socialPlatforms.map((platform) => (
-                <AddSocialDropdownMenuItem
-                  key={platform}
-                  userId={user.id}
-                  platform={platform}
-                />
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        )}
+        {edit && <AddSocialDropdownMenu userId={user.id} />}
       </TabsList>
       {populatedSocials.map((social) => (
         <TabsContent key={social.id} value={social.id} className="mt-0">
