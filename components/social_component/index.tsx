@@ -32,6 +32,7 @@ import { Label } from "../ui/label";
 import { Separator } from "../ui/separator";
 import { SwitchPublic } from "./switch_public";
 import AddSocialDropdownMenu from "./add_social_dropdown";
+import OrderDropdown from "./order_dropdown";
 
 export async function SocialComponent({
   user,
@@ -132,6 +133,7 @@ export async function SocialComponent({
                 )}
                 {edit && (
                   <div className="flex items-center gap-3">
+                    <OrderDropdown userId={user.id} socialId={social.id} />
                     <SwitchPublic
                       id={`${social.platform}_${social.id}_public`}
                       defaultChecked={social.public}
