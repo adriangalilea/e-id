@@ -27,9 +27,7 @@ A constant pointer to your ever-changing web presence.
 ## todo
 
 - [ ] feat: every social component integration should be a component that handles if it's editing or visualising, if visualising is where I'll add analytics
-- [ ] feat: edit cusotm order
-- [ ] feat: edit higlight
-- [ ] feat: how to add emoji domain to twitter
+- [ ] feat: /about how to add emoji domain to twitter
 - [ ] feat: instant changelog from github
 - [ ] feat: instead of /about do about.e-id.to
 - [ ] feat: preserve state when switching tabs using [zustand](https://github.com/pmndrs/zustand/blob/main/docs/guides/nextjs.md)
@@ -124,6 +122,8 @@ A constant pointer to your ever-changing web presence.
   - [x] unify social profile editing and display
   - [x] highlight comment -> testimonial
   - [x] socials is the same visually as SocialComponent
+- [x] feat: edit cusotm order
+- [x] feat: edit higlight
 
 # blocked
 
