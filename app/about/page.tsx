@@ -26,7 +26,7 @@ export default function Faq() {
             Why is there an emoji on the URL?
           </AccordionTrigger>
           <AccordionContent>
-            Emoji URL's standout and are underutilized.
+            Emoji URL&apos;s standout and are underutilized.
             <img src="link_in_bio.webp" alt="Example from e-id.to/Lulx" />
             Twitter and instagram accept them as link in bio.
             <br />
