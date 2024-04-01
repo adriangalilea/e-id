@@ -159,10 +159,12 @@ export async function createComment(
 
 export async function createCommentFromForm(
   profileId: string,
-  commentatorId: string,
   formData: FormData,
 ) {
   const body = String(formData.get("body"));
+  const session = await auth();
+  const commentatorId = session?.user?.id;
+  if (!commentatorId) return;
   // TODO: should be done with zod
   if (!body) return;
   await createComment(profileId, commentatorId, body);

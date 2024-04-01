@@ -2,8 +2,19 @@ import Flag from "@/components/flag";
 import { SelectUser } from "@/db/schema";
 import { SocialComponent } from "@/components/social_component";
 import { Quote } from "@/components/quote";
+import { getUserByUsername } from "@/db/actions";
+import { auth } from "@/auth";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import { Pen } from "lucide-react";
 
-export default function UserProfile({ user }: { user: SelectUser }) {
+export default async function UserProfile({
+  username,
+}: {
+  username: SelectUser["username"];
+}) {
+  const user = await getUserByUsername(username);
+  const session = await auth();
   return (
     <main>
       <div>
@@ -22,9 +33,20 @@ export default function UserProfile({ user }: { user: SelectUser }) {
           </div>
         </div>
       </div>
-      <div className="mt-6 sm:mt-12 flex flex-col gap-6">
-        {user.bio && <div className="sm:mb-6"><Quote text={user.bio} /></div>}
+      <div className="mt-6 flex flex-col gap-6 sm:mt-12">
+        {user.bio && (
+          <div className="sm:mb-6">
+            <Quote text={user.bio} />
+          </div>
+        )}
         <SocialComponent user={user} />
+        {session && session.user?.username === user.username && (
+          <Button asChild variant="secondary" size="icon" className="self-end">
+            <Link href={`/${session.user.username}/edit`}>
+              <Pen strokeWidth={1} className="opacity-60" />
+            </Link>
+          </Button>
+        )}
       </div>
     </main>
   );

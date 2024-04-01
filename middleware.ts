@@ -1,10 +1,21 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { auth } from "./auth";
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
+  const pathname = request.nextUrl.pathname;
+
+  // check if user session has username if not redirect to /null if not already there
+  const session = await auth();
+  if (session?.user && !session.user.username && pathname !== "/null") {
+    return NextResponse.redirect(new URL("/null", request.url));
+  } else if (!session?.user && pathname === "/null") {
+    return NextResponse.redirect(new URL("/", request.url));
+  }
+
+  // if the request is localhost, return
   const hostHeaders = request.headers.get("host") ?? "";
   const localhost = "localhost:3000";
-  // if the request is localhost, do nothing
   if (hostHeaders === localhost) {
     return;
   }
@@ -27,7 +38,6 @@ export function middleware(request: NextRequest) {
   const emojiHttps = `https://${emojiDomain}`;
   const emojiHttpsPunycode = `https://${emojiDomainPunycode}`;
 
-  const pathname = request.nextUrl.pathname;
   const userAgent = request.headers.get("user-agent") ?? "";
 
   // check if the user agent is Safari and not Chrome
