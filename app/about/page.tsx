@@ -23,6 +23,38 @@ export default function Faq() {
         </AccordionItem>
         <AccordionItem value="item-2">
           <AccordionTrigger className="font-light">
+            Why is there an emoji on the URL?
+          </AccordionTrigger>
+          <AccordionContent>
+            Emoji URL's are underutilized and can be visually attractive,
+            specially for a link in bio, twitter and instagram accept them.
+            <img src="link_in_bio.webp" alt="Example from e-id.to/Lulx" />
+            This project works with 3 domains:
+            <ul>
+              <li>
+                <Link href="https://e-id.to">e-id.to</Link>
+              </li>
+              <li>
+                <Link href="https://eid.to">eid.to</Link>
+              </li>
+              <li>
+                <Link href="https://👤.to">👤.to</Link>
+              </li>
+            </ul>
+            They all work interchangeably.
+            <br />
+            <br />
+            if you have issues setting your emoji domain try using the punnycode
+            domain, like so:
+            <br />
+            <br />
+            <Link href="https://xn--mq8h.to/adriangalilea">
+              https://xn--mq8h.to/adriangalilea
+            </Link>
+          </AccordionContent>
+        </AccordionItem>
+        <AccordionItem value="item-3">
+          <AccordionTrigger className="font-light">
             Where is the code?
           </AccordionTrigger>
           <AccordionContent>
