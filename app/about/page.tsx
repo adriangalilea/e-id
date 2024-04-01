@@ -26,9 +26,11 @@ export default function Faq() {
             Why is there an emoji on the URL?
           </AccordionTrigger>
           <AccordionContent>
-            Emoji URL's are underutilized and can be visually attractive,
-            specially for a link in bio, twitter and instagram accept them.
+            Emoji URL's standout and are underutilized.
             <img src="link_in_bio.webp" alt="Example from e-id.to/Lulx" />
+            Twitter and instagram accept them as link in bio.
+            <br />
+            <br />
             This project works with 3 domains:
             <ul>
               <li>
@@ -44,7 +46,7 @@ export default function Faq() {
             They all work interchangeably.
             <br />
             <br />
-            if you have issues setting your emoji domain try using the punnycode
+            If you have issues setting your emoji domain try using the punnycode
             domain, like so:
             <br />
             <br />

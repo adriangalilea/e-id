@@ -27,7 +27,6 @@ A constant pointer to your ever-changing web presence.
 ## todo
 
 - [ ] feat: preserve state when switching tabs using [zustand](https://github.com/pmndrs/zustand/blob/main/docs/guides/nextjs.md)
-- [ ] feat: /about how to add emoji domain to twitter
 - [ ] feat: every social component integration should be a component that handles if it's editing or visualising, if visualising is where I'll add analytics
 - [ ] feat: instead of /about do about.e-id.to
   - [ ] [branch](https://github.com/adriangalilea/e-id/tree/edit-tabs-preserve-state)
@@ -126,6 +125,7 @@ A constant pointer to your ever-changing web presence.
 - [x] feat: edit higlight
 - [ ] feat: remove highlighted from comment section visually
 - [ ] feat: allow to unpinp higlight
+- [ ] feat: /about how to add emoji domain to twitter
 
 # blocked
 
