@@ -6,12 +6,12 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const name = searchParams.get("name");
   const socials = searchParams.get("socials");
-  if (!name || !socials) {
+  if (!name) {
     throw new Error("Invalid request");
   }
 
   // Split the socials string into an array
-  const socialsArray = socials.split(",");
+  const socialsArray = socials ? socials.split(",") : [];
 
   interface SocialIcons {
     [key: string]: Promise<string>;
