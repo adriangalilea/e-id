@@ -1,10 +1,8 @@
-import { SelectUser, SocialPlatform } from "@/db/schema";
+import { SelectUser } from "@/db/schema";
 
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
