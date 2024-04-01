@@ -15,6 +15,7 @@ import { Pen } from "lucide-react";
 import type { Metadata } from "next";
 import { SocialPlatform } from "@/db/schema";
 import { Testimonial } from "@/components/quote";
+import { Suspense } from "react";
 
 export async function generateMetadata({
   params,
@@ -92,10 +93,8 @@ export default async function Page({
   }
   const user = await getUserByUsername(params.username);
 
-  const testimonials = await getTestimonials(user.id);
-
   return (
-    <div className="flex flex-1 flex-col justify-between gap-6 overflow-auto">
+    <div className="flex flex-1 flex-col gap-6 overflow-auto sm:gap-12">
       <div className="flex flex-col gap-6 sm:gap-12">
         <UserProfile user={user} />
         {session && session.user?.username === user.username && (
@@ -105,28 +104,13 @@ export default async function Page({
             </Link>
           </Button>
         )}
-        {testimonials.length > 0 && (
-          <div className="mb-6 sm:mb-12">
-            {testimonials.map((testimonial) => (
-              <div key={testimonial.commentId}>
-                <Testimonial
-                  text={testimonial.body}
-                  name={testimonial.user.name!}
-                  image={testimonial.user.image!}
-                  date={testimonial.createdAt}
-                  username={testimonial.user.username!}
-                />
-              </div>
-            ))}
-          </div>
-        )}
       </div>
-      {session && (
+      <Suspense fallback={<div>Loading...</div>}>
         <CommentSection
           profileUserId={user.id}
           visitorUserId={session?.user?.id}
         />
-      )}
+      </Suspense>
     </div>
   );
 }

@@ -1,12 +1,14 @@
 import {
   fetchCommentsConditionally,
   createCommentFromForm,
+  getTestimonials,
 } from "@/db/actions";
 import Comment from "@/components/comment";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { SendHorizontal } from "lucide-react";
 import { signIn } from "@/auth";
+import { Testimonial } from "@/components/quote";
 // import { useState } from "react";
 
 export default async function CommentSection({
@@ -32,6 +34,8 @@ export default async function CommentSection({
     comments = await fetchCommentsConditionally(profileUserId, visitorUserId);
   }
 
+  const testimonials = await getTestimonials(profileUserId);
+
   const formAction =
     createCommentFromFormWithID ||
     (async () => {
@@ -41,25 +45,44 @@ export default async function CommentSection({
 
   return (
     <div className="relative">
-      <form action={formAction} className="sticky top-0 z-10">
-        <div className="flex items-center gap-2">
-          <Input
-            disabled={!visitorUserId}
-            type="text"
-            name="body"
-            className="bg-zinc-200/60 text-[16px] shadow-md backdrop-blur-md"
-            placeholder="I want everyone to know..."
-          />
-          <Button
-            disabled={!visitorUserId}
-            type="submit"
-            className="z-10 !h-10 !w-10 shrink-0 grow-0 bg-zinc-500/20 !p-0 shadow-md backdrop-blur-md"
-            variant="ghost"
-          >
-            <SendHorizontal strokeWidth="1" className="opacity-60" />
-          </Button>
+      {visitorUserId !== profileUserId && testimonials.length > 0 && (
+        <div className="mb-6 sm:mb-12">
+          {testimonials.map((testimonial) => (
+            <div key={testimonial.commentId}>
+              <Testimonial
+                text={testimonial.body}
+                name={testimonial.user.name!}
+                image={testimonial.user.image!}
+                date={testimonial.createdAt}
+                username={testimonial.user.username!}
+              />
+            </div>
+          ))}
         </div>
-      </form>
+      )}
+
+      {visitorUserId && visitorUserId !== profileUserId && (
+        <form action={formAction} className="sticky top-0 z-10">
+          <div className="flex items-center gap-2">
+            <Input
+              disabled={!visitorUserId}
+              type="text"
+              name="body"
+              className="bg-zinc-200/60 text-[16px] shadow-md backdrop-blur-md"
+              placeholder="I want everyone to know..."
+            />
+            <Button
+              disabled={!visitorUserId}
+              type="submit"
+              className="z-10 !h-10 !w-10 shrink-0 grow-0 bg-zinc-500/20 !p-0 shadow-md backdrop-blur-md"
+              variant="ghost"
+            >
+              <SendHorizontal strokeWidth="1" className="opacity-60" />
+            </Button>
+          </div>
+        </form>
+      )}
+
       <div className="my-2 flex flex-col gap-2">
         {comments &&
           comments.map((comment) => (
