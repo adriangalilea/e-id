@@ -13,6 +13,7 @@ import {
   socials,
 } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
+import { revalidateTag } from "next/cache";
 
 declare module "next-auth" {
   interface Profile extends Partial<SelectUser> {}
@@ -135,6 +136,8 @@ function customAdapter(): Adapter {
         console.error("Error updating user:", error);
       }
     }
+
+    revalidateTag("users");
 
     return userCreated;
   };
