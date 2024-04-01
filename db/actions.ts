@@ -44,13 +44,6 @@ export async function getUser(id: SelectUser["id"]): Promise<SelectUser> {
   return result[0];
 }
 
-export const getUserByUsernameCached = (username: SelectUser["username"]) =>
-  unstable_cache(
-    async () => getUserByUsername(username),
-    [`user-${username}`], // I don't see how this can be used
-    { revalidate: 24 * 60 * 60 },
-  );
-
 export async function getUserByUsername(
   username: SelectUser["username"],
 ): Promise<SelectUser> {
@@ -62,6 +55,14 @@ export async function getUserByUsername(
     .limit(1);
   return result[0];
 }
+
+export const getUserByUsernameCached = (username: SelectUser["username"]) => {
+  return unstable_cache(
+    () => getUserByUsername(username),
+    [`user-${username}`],
+    { revalidate: 24 * 60 * 60 },
+  )();
+};
 
 function applyDynamicFilter<T extends SQLiteSelectQueryBuilder>(
   qb: T,

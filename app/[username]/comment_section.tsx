@@ -2,7 +2,7 @@ import {
   fetchCommentsConditionally,
   createCommentFromForm,
   getTestimonials,
-  getUserByUsername,
+  getUserByUsernameCached,
 } from "@/db/actions";
 import Comment from "@/components/comment";
 import { Button } from "@/components/ui/button";
@@ -20,7 +20,7 @@ export default async function CommentSection({
 }) {
   const session = await auth();
   const visitorUserId = session?.user?.id;
-  const profileUser = await getUserByUsername(username);
+  const profileUser = await getUserByUsernameCached(username);
   const profileUserId = profileUser.id;
 
   // TODO: make the form into a client component
