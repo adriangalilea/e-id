@@ -25,8 +25,8 @@ export default async function OrderDropdown({
       >
         <Button
           className="justify-center border-none bg-zinc-950/5 !shadow-none !ring-transparent
-            transition-colors hover:border-none hover:bg-indigo-100 hover:bg-zinc-950/15
-            dark:bg-zinc-50/5 hover:dark:bg-zinc-50/15"
+            transition-colors hover:border-none hover:bg-zinc-950/15 dark:bg-zinc-50/5
+            hover:dark:bg-zinc-50/15"
           variant="ghost"
           size="icon"
         >
