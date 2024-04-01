@@ -1,4 +1,4 @@
-import { getUsers, getUserByUsername, getSocials } from "@/db/actions";
+import { getUsers, getSocials, getUserByUsernameCached } from "@/db/actions";
 import CommentSection from "./comment_section";
 import UserProfile from "./user_profile";
 import { notFound } from "next/navigation";
@@ -16,7 +16,7 @@ export async function generateMetadata({
   const username = params.username;
 
   // fetch data
-  const user = await getUserByUsername(username);
+  const user = await getUserByUsernameCached(username);
 
   if (!user) {
     notFound();

@@ -2,18 +2,22 @@ import Flag from "@/components/flag";
 import { SelectUser } from "@/db/schema";
 import { SocialComponent } from "@/components/social_component";
 import { Quote } from "@/components/quote";
-import { getUserByUsername } from "@/db/actions";
+import { getUserByUsernameCached } from "@/db/actions";
 import { auth } from "@/auth";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Pen } from "lucide-react";
+import { notFound } from "next/navigation";
 
 export default async function UserProfile({
   username,
 }: {
   username: SelectUser["username"];
 }) {
-  const user = await getUserByUsername(username);
+  const user = await getUserByUsernameCached(username);
+  if (!user) {
+    notFound();
+  }
   const session = await auth();
   return (
     <main>
