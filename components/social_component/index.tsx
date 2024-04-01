@@ -93,8 +93,9 @@ export async function SocialComponent({
             key={id}
             value={id}
             className="flex h-full justify-center !shadow-none data-[state=active]:bg-zinc-200
-              data-[state=inactive]:bg-zinc-50/60 dark:data-[state=active]:bg-zinc-800
-              dark:data-[state=inactive]:bg-zinc-950/60"
+              data-[state=inactive]:bg-zinc-50/60 hover:data-[state=inactive]:bg-zinc-50/20
+              dark:data-[state=active]:bg-zinc-800 dark:data-[state=inactive]:bg-zinc-950/60
+              hover:dark:data-[state=inactive]:bg-zinc-950/20"
           >
             {icon}
           </TabsTrigger>

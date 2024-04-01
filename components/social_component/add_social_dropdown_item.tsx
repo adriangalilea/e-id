@@ -14,7 +14,7 @@ export default function AddSocialDropdownMenuItem({
 }) {
   return (
     <DropdownMenuItem
-      className="flex gap-2"
+      className="focus:bg-indigo-50 flex gap-2 dark:focus:bg-indigo-950"
       onClick={async () => {
         await addSocial(userId, platform);
       }}
