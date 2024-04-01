@@ -26,18 +26,19 @@ A constant pointer to your ever-changing web presence.
 
 ## todo
 
-- [ ] feat: preserve state when switching tabs using [zustand](https://github.com/pmndrs/zustand/blob/main/docs/guides/nextjs.md)
-- [ ] feat: every social component integration should be a component that handles if it's editing or visualising, if visualising is where I'll add analytics
-- [ ] feat: instead of /about do about.e-id.to
-  - [ ] [branch](https://github.com/adriangalilea/e-id/tree/edit-tabs-preserve-state)
+- [ ] usernames matching for url [username] convert to lowercase
 - [x] feat: list of forbidden handles
   - [x] I don't need auth because it has higher priority than [username]
   - [x] /null path to edit null username
   - [ ] enforce non allowing such handles in user creation from auth
   - [ ] enforce non allowing such handles in server actions
   - [ ] enforce non allowing such handles in /null
+  - [ ] enforce not allowing different casing for the same url taken
+- [ ] feat: preserve state when switching tabs using [zustand](https://github.com/pmndrs/zustand/blob/main/docs/guides/nextjs.md)
+- [ ] feat: every social component integration should be a component that handles if it's editing or visualising, if visualising is where I'll add analytics
+- [ ] feat: instead of /about do about.e-id.to
+  - [ ] [branch](https://github.com/adriangalilea/e-id/tree/edit-tabs-preserve-state)
 - [ ] feat: github, youtube, twitter, ... followers/sbus
-- [ ] uppercase and lowercase match on username (?)
 - [ ] feat: opengraph on custom website for social component
   - [ ] [fetch-opengraph node](https://github.com/purphoros/fetch-opengraph)
 - [ ] feat: curl
