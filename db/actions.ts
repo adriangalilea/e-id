@@ -35,14 +35,21 @@ export async function getLatestUsersWithUsername(): Promise<SelectUser[]> {
 
 export const getLatestUsersWithUsernameCached = unstable_cache(
   async () => getLatestUsersWithUsername(),
-  ["latest-users"],
-  { revalidate: 30 * 60 },
+  ["users"],
+  { revalidate: 12 * 60 * 60 },
 );
 
 export async function getUser(id: SelectUser["id"]): Promise<SelectUser> {
   const result = await db.select().from(users).where(eq(users.id, id)).limit(1);
   return result[0];
 }
+
+export const getUserByUsernameCached = (username: SelectUser["username"]) =>
+  unstable_cache(
+    async () => getUserByUsername(username),
+    [`user-${username}`], // I don't see how this can be used
+    { revalidate: 24 * 60 * 60 },
+  );
 
 export async function getUserByUsername(
   username: SelectUser["username"],
