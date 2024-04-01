@@ -16,7 +16,7 @@ export async function LatestUsersTable() {
   const users = await getLatestUsersWithUsernameCached();
   return (
     <Table>
-      <TableCaption className="font-code text-left opacity-60">
+      <TableCaption className="font-code text-left opacity-90">
         latest sign-ups
       </TableCaption>
       <TableHeader>
