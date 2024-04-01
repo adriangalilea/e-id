@@ -186,7 +186,7 @@ export async function SocialComponent({
                 </div>
               )}
 
-              {social.platform === "github" && edit && (
+              {social.platform === "github" && (
                 <>
                   {social.value && githubActivityData && (
                     <div className="mt-3 sm:mt-6">
@@ -195,22 +195,26 @@ export async function SocialComponent({
                   )}
                 </>
               )}
-              {social.platform === "youtube" && edit && (
+              {social.platform === "youtube" && (
                 <>
-                  <Input
-                    data-1p-ignore
-                    type="text"
-                    id={`${social.platform}_${social.id}_highlight`}
-                    name={`${social.platform}_${social.id}_highlight`}
-                    defaultValue={
-                      (social.custom_data && social.custom_data["highlight"]) ||
-                      ""
-                    }
-                    className="!m-0 w-fit border border-border !bg-transparent text-[16px]
-                      focus-visible:border-zinc-500 focus-visible:ring-0
-                      focus-visible:ring-transparent focus-visible:ring-offset-0 sm:font-normal"
-                    placeholder="Highlight video ID"
-                  />
+                  {edit && (
+                    <Input
+                      data-1p-ignore
+                      type="text"
+                      id={`${social.platform}_${social.id}_highlight`}
+                      name={`${social.platform}_${social.id}_highlight`}
+                      defaultValue={
+                        (social.custom_data &&
+                          social.custom_data["highlight"]) ||
+                        ""
+                      }
+                      className="!m-0 w-fit border border-border !bg-transparent text-[16px]
+                        focus-visible:border-zinc-500 focus-visible:ring-0
+                        focus-visible:ring-transparent focus-visible:ring-offset-0 sm:font-normal"
+                      placeholder="Highlight video ID"
+                    />
+                  )}
+
                   {social.custom_data && social.custom_data["highlight"] && (
                     <div className="mt-3 sm:mt-6">
                       <YouTubeEmbed
@@ -221,22 +225,26 @@ export async function SocialComponent({
                   )}
                 </>
               )}
-              {social.platform === "twitter" && edit && (
+              {social.platform === "twitter" && (
                 <>
-                  <Input
-                    data-1p-ignore
-                    type="text"
-                    id={`${social.platform}_${social.id}_highlight`}
-                    name={`${social.platform}_${social.id}_highlight`}
-                    defaultValue={
-                      (social.custom_data && social.custom_data["highlight"]) ||
-                      ""
-                    }
-                    className="!m-0 w-fit border border-border !bg-transparent text-[16px]
-                      focus-visible:border-zinc-500 focus-visible:ring-0
-                      focus-visible:ring-transparent focus-visible:ring-offset-0 sm:font-normal"
-                    placeholder="Highlight tweet ID"
-                  />
+                  {edit && (
+                    <Input
+                      data-1p-ignore
+                      type="text"
+                      id={`${social.platform}_${social.id}_highlight`}
+                      name={`${social.platform}_${social.id}_highlight`}
+                      defaultValue={
+                        (social.custom_data &&
+                          social.custom_data["highlight"]) ||
+                        ""
+                      }
+                      className="!m-0 w-fit border border-border !bg-transparent text-[16px]
+                        focus-visible:border-zinc-500 focus-visible:ring-0
+                        focus-visible:ring-transparent focus-visible:ring-offset-0 sm:font-normal"
+                      placeholder="Highlight tweet ID"
+                    />
+                  )}
+
                   {social.custom_data && social.custom_data["highlight"] && (
                     <div className="mt-3 flex justify-center *:!m-0 *:!w-full sm:mt-6">
                       <Tweet id={social.custom_data["highlight"]} />
