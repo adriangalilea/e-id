@@ -84,23 +84,32 @@ export const verificationTokens = sqliteTable(
   }),
 );
 
-export const comments = sqliteTable("comment", {
-  id: text("id").notNull().primaryKey(),
-  profile_user_id: text("profile_user_id")
-    .notNull()
-    .references(() => users.id, { onDelete: "cascade" }),
-  commentator_id: text("commentator_id")
-    .notNull()
-    .references(() => users.id, { onDelete: "cascade" }),
-  created_at: text("created_at")
-    .default(sql`(CURRENT_TIMESTAMP)`)
-    .notNull(),
-  updated_at: text("updated_at")
-    .default(sql`(CURRENT_TIMESTAMP)`)
-    .notNull(),
-  body: text("body").notNull(),
-  pinned: integer("pinned", { mode: "boolean" }).notNull().default(false),
-});
+export const comments = sqliteTable(
+  "comment",
+  {
+    id: text("id").notNull().primaryKey(),
+    profile_user_id: text("profile_user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    commentator_id: text("commentator_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    created_at: text("created_at")
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .notNull(),
+    updated_at: text("updated_at")
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .notNull(),
+    body: text("body").notNull(),
+    pinned: integer("pinned", { mode: "boolean" }).notNull().default(false),
+  },
+  (table) => {
+    return {
+      profileUserIdIdx: index("profile_user_id_idx").on(table.profile_user_id),
+      commentatorIdIdx: index("commentator_id_idx").on(table.commentator_id),
+    };
+  },
+);
 
 export const socialPlatforms = [
   "email",
@@ -115,24 +124,34 @@ export const socialPlatforms = [
 
 export type SocialPlatform = (typeof socialPlatforms)[number];
 
-export const socials = sqliteTable("social", {
-  id: text("id").notNull().primaryKey(),
-  user_id: text("user_id").references(() => users.id, { onDelete: "cascade" }),
-  platform: text("platform", {
-    enum: socialPlatforms,
-  }).notNull(),
-  value: text("value"),
-  image: text("image"),
-  order: integer("order"),
-  context_message: text("context_message"),
-  public: integer("public", { mode: "boolean" }).notNull().default(false),
-  custom_data: text("custom_data", { mode: "json" }).$type<{
-    highlight?: string;
-    platform_user_id?: string;
-    channel_id?: string;
-    followers?: number;
-  }>(),
-});
+export const socials = sqliteTable(
+  "social",
+  {
+    id: text("id").notNull().primaryKey(),
+    user_id: text("user_id").references(() => users.id, {
+      onDelete: "cascade",
+    }),
+    platform: text("platform", {
+      enum: socialPlatforms,
+    }).notNull(),
+    value: text("value"),
+    image: text("image"),
+    order: integer("order"),
+    context_message: text("context_message"),
+    public: integer("public", { mode: "boolean" }).notNull().default(false),
+    custom_data: text("custom_data", { mode: "json" }).$type<{
+      highlight?: string;
+      platform_user_id?: string;
+      channel_id?: string;
+      followers?: number;
+    }>(),
+  },
+  (table) => {
+    return {
+      userIdIdx: index("user_id_idx").on(table.user_id),
+    };
+  },
+);
 
 // custom data can contain:
 // followers in [github, twitter, instagram, self, youtube]
