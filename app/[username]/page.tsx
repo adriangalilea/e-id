@@ -1,8 +1,4 @@
-import {
-  getUsers,
-  getUserByUsername,
-  getSocials,
-} from "@/db/actions";
+import { getUsers, getUserByUsername, getSocials } from "@/db/actions";
 import CommentSection from "./comment_section";
 import UserProfile from "./user_profile";
 import { auth } from "@/auth";
@@ -32,8 +28,12 @@ export async function generateMetadata({
 
   const allSocials = await getSocials(user.id);
   const uniqueSocialsWithValue = allSocials.reduce<SocialPlatform[]>(
-    (uniquePlatforms, { value, platform }) => {
-      if (value && !uniquePlatforms.includes(platform as SocialPlatform)) {
+    (uniquePlatforms, { value, platform, public: isPublic }) => {
+      if (
+        value &&
+        isPublic &&
+        !uniquePlatforms.includes(platform as SocialPlatform)
+      ) {
         uniquePlatforms.push(platform as SocialPlatform);
       }
       return uniquePlatforms;
