@@ -236,6 +236,7 @@ export async function updateUserAndSocials(
       value?: string;
       public?: boolean;
       contextmessage?: string;
+      highlight?: string;
     }
   >();
   // Aggregate formData into socialEntries
@@ -259,13 +260,15 @@ export async function updateUserAndSocials(
         entry.public = Boolean(value);
       } else if (type === "contextmessage") {
         entry.contextmessage = value.toString();
+      } else if (type === "highlight") {
+        entry.highlight = value.toString();
       }
     }
   }
 
   for (let [key, content] of socialEntries) {
     if (content.platform) {
-      const insertedSocial = await db
+      await db
         .insert(socials)
         .values([
           {
@@ -275,6 +278,9 @@ export async function updateUserAndSocials(
             public: content.public ?? false,
             context_message:
               content.contextmessage === "" ? null : content.contextmessage,
+            custom_data: content.highlight
+              ? { highlight: content.highlight }
+              : {},
           },
         ])
         .onConflictDoUpdate({
@@ -284,6 +290,9 @@ export async function updateUserAndSocials(
             public: content.public ?? false,
             context_message:
               content.contextmessage === "" ? null : content.contextmessage,
+            custom_data: content.highlight
+              ? { highlight: content.highlight }
+              : {},
           },
         })
         .returning()

@@ -164,7 +164,7 @@ export async function SocialComponent({
             </CardHeader>
 
             <CardContent className="flex flex-col gap-3 p-0">
-              {edit ? (
+              {edit && (
                 <div className="mt-3 flex items-center font-extralight sm:mt-6">
                   <Label
                     htmlFor={social.id}
@@ -184,32 +184,64 @@ export async function SocialComponent({
                     placeholder={social.placeholder!}
                   />
                 </div>
-              ) : (
+              )}
+
+              {social.platform === "github" && edit && (
                 <>
-                  {social.platform === "github" &&
-                    social.value &&
-                    githubActivityData && (
-                      <div className="mt-3 sm:mt-6">
-                        <GitHubActivity data={githubActivityData} />
-                      </div>
-                    )}
-                  {social.platform === "youtube" &&
-                    social.custom_data &&
-                    social.custom_data["highlight"] && (
-                      <div className="mt-3 sm:mt-6">
-                        <YouTubeEmbed
-                          videoid={social.custom_data["highlight"]}
-                          params="controls=0"
-                        />
-                      </div>
-                    )}
-                  {social.platform === "twitter" &&
-                    social.custom_data &&
-                    social.custom_data["highlight"] && (
-                      <div className="mt-3 flex justify-center *:!m-0 *:!w-full sm:mt-6">
-                        <Tweet id={social.custom_data["highlight"]} />
-                      </div>
-                    )}
+                  {social.value && githubActivityData && (
+                    <div className="mt-3 sm:mt-6">
+                      <GitHubActivity data={githubActivityData} />
+                    </div>
+                  )}
+                </>
+              )}
+              {social.platform === "youtube" && edit && (
+                <>
+                  <Input
+                    data-1p-ignore
+                    type="text"
+                    id={`${social.platform}_${social.id}_highlight`}
+                    name={`${social.platform}_${social.id}_highlight`}
+                    defaultValue={
+                      (social.custom_data && social.custom_data["highlight"]) ||
+                      ""
+                    }
+                    className="!m-0 w-fit border border-border !bg-transparent text-[16px]
+                      focus-visible:border-zinc-500 focus-visible:ring-0
+                      focus-visible:ring-transparent focus-visible:ring-offset-0 sm:font-normal"
+                    placeholder="Highlight video ID"
+                  />
+                  {social.custom_data && social.custom_data["highlight"] && (
+                    <div className="mt-3 sm:mt-6">
+                      <YouTubeEmbed
+                        videoid={social.custom_data["highlight"]}
+                        params="controls=0"
+                      />
+                    </div>
+                  )}
+                </>
+              )}
+              {social.platform === "twitter" && edit && (
+                <>
+                  <Input
+                    data-1p-ignore
+                    type="text"
+                    id={`${social.platform}_${social.id}_highlight`}
+                    name={`${social.platform}_${social.id}_highlight`}
+                    defaultValue={
+                      (social.custom_data && social.custom_data["highlight"]) ||
+                      ""
+                    }
+                    className="!m-0 w-fit border border-border !bg-transparent text-[16px]
+                      focus-visible:border-zinc-500 focus-visible:ring-0
+                      focus-visible:ring-transparent focus-visible:ring-offset-0 sm:font-normal"
+                    placeholder="Highlight tweet ID"
+                  />
+                  {social.custom_data && social.custom_data["highlight"] && (
+                    <div className="mt-3 flex justify-center *:!m-0 *:!w-full sm:mt-6">
+                      <Tweet id={social.custom_data["highlight"]} />
+                    </div>
+                  )}
                 </>
               )}
             </CardContent>
