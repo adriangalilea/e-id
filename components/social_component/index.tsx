@@ -179,9 +179,10 @@ export async function SocialComponent({
                     id={social.id}
                     name={`${social.platform}_${social.id}_value`}
                     defaultValue={social.value || ""}
-                    className="!m-0 border border-zinc-950/10 dark:border-zinc-50/10 !bg-transparent text-[16px]
+                    className="!m-0 border border-zinc-950/10 !bg-transparent text-[16px]
                       focus-visible:border-zinc-500 focus-visible:ring-0
-                      focus-visible:ring-transparent focus-visible:ring-offset-0 sm:font-normal"
+                      focus-visible:ring-transparent focus-visible:ring-offset-0 sm:font-normal
+                      dark:border-zinc-50/10"
                     placeholder={social.placeholder!}
                   />
                 </div>
@@ -220,9 +221,10 @@ export async function SocialComponent({
                             social.custom_data["highlight"]) ||
                           ""
                         }
-                        className="!m-0 border border-zinc-950/10 dark:border-zinc-50/10 !bg-transparent text-[16px]
+                        className="!m-0 border border-zinc-950/10 !bg-transparent text-[16px]
                           focus-visible:border-zinc-500 focus-visible:ring-0
-                          focus-visible:ring-transparent focus-visible:ring-offset-0 sm:font-normal"
+                          focus-visible:ring-transparent focus-visible:ring-offset-0 sm:font-normal
+                          dark:border-zinc-50/10"
                         placeholder="Optional highlight video ID"
                       />
                     </div>
@@ -262,9 +264,10 @@ export async function SocialComponent({
                             social.custom_data["highlight"]) ||
                           ""
                         }
-                        className="!m-0 border border-zinc-950/10 dark:border-zinc-50/10 !bg-transparent text-[16px]
+                        className="!m-0 border border-zinc-950/10 !bg-transparent text-[16px]
                           focus-visible:border-zinc-500 focus-visible:ring-0
-                          focus-visible:ring-transparent focus-visible:ring-offset-0 sm:font-normal"
+                          focus-visible:ring-transparent focus-visible:ring-offset-0 sm:font-normal
+                          dark:border-zinc-50/10"
                         placeholder="Optional highlight tweet ID"
                       />
                     </div>
