@@ -83,8 +83,12 @@ export async function SocialComponent({
     (social) => social.platform === "github",
   );
   if (githubSocial && githubSocial.value) {
-    const data = await fetchGithubActivity(githubSocial.value);
-    githubActivityData = flattenData(data);
+    try {
+      const data = await fetchGithubActivity(githubSocial.value);
+      githubActivityData = flattenData(data);
+    } catch (e) {
+      console.error(e);
+    }
   }
 
   return (

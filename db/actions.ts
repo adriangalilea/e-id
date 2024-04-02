@@ -5,7 +5,7 @@ import { z } from "zod";
 import { revalidateTag, unstable_cache } from "next/cache";
 
 import { SQLiteSelectQueryBuilder } from "drizzle-orm/sqlite-core";
-import { eq, desc, isNotNull, sql, and, not } from "drizzle-orm";
+import { eq, desc, isNotNull, and, not } from "drizzle-orm";
 import { db } from "@/db";
 
 import {
@@ -252,21 +252,33 @@ export const getValidUniqueSocialsCached = (userId: SelectUser["id"]) => {
 };
 
 export async function updateUserAndSocials(
-  profileId: string,
+  prevState: FormState,
   formData: FormData,
-) {
+): Promise<FormState> {
+  const session = await auth();
+  if (!session?.user || !session.user.id)
+    return { message: "Session invalid.", error: true };
+  const profileId = session.user.id;
   const name = String(formData.get("name"));
   const username = String(formData.get("username"));
   const bio = String(formData.get("bio"));
   const country_code = String(formData.get("country_code"));
 
-  // update the user data first
+  // update the user data first minus username for validation
   const updatedUser = await db
     .update(users)
-    .set({ name, username, bio, country_code })
+    .set({ name, bio, country_code })
     .where(eq(users.id, profileId))
     .returning()
     .then((res) => res[0] ?? null);
+  // update the username
+  let setUsernameOutput = { message: "", error: false };
+  if (username !== updatedUser.username) {
+    setUsernameOutput = await setUsernameFromForm(
+      { message: "", error: false },
+      formData,
+    );
+  }
 
   // update the socials
   const socialEntries = new Map<
@@ -341,12 +353,15 @@ export async function updateUserAndSocials(
   }
 
   revalidatePath(`/${updatedUser.username}`);
+  revalidatePath(`/${updatedUser.username}/edit`);
   revalidateTag(`user-socials-${updatedUser.username}`);
+  return setUsernameOutput;
 }
 
 const schema = z.object({
   username: z
     .string()
+    .trim()
     .min(1, { message: "Username cannot be empty." })
     .regex(/^[a-z0-9-_]+$/, {
       message:
@@ -356,7 +371,7 @@ const schema = z.object({
 
 export type FormState = {
   message: string;
-  error?: boolean;
+  error: boolean;
 };
 
 export async function setUsernameFromForm(
