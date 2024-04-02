@@ -22,7 +22,6 @@ export async function generateMetadata({
   // read route params
   const username = params.username;
 
-  console.log(url);
   // fetch data
   const user = await getUserByUsernameCached(username);
 
