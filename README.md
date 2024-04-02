@@ -41,6 +41,7 @@ A constant pointer to your ever-changing web presence.
 - [ ] feat: github, youtube, twitter, ... followers/sbus
 - [ ] feat: opengraph on custom website for social component
   - [ ] [fetch-opengraph node](https://github.com/purphoros/fetch-opengraph)
+  - [ ] https://metascraper.js.org/
 - [ ] feat: curl
   - [ ] /adriangalilea
   - [ ] /adriangalilea/x
