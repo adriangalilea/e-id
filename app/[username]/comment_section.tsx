@@ -79,7 +79,7 @@ export default async function CommentSection({
                 className="z-10 !h-10 !w-10 shrink-0 grow-0 bg-zinc-500/20 !p-0 shadow-md backdrop-blur-md"
                 variant="ghost"
               >
-                <SendHorizontal strokeWidth="1" className="opacity-60" />
+                <SendHorizontal strokeWidth="1" />
               </Button>
             </div>
           </form>

@@ -42,11 +42,11 @@ export default async function Comment({
               await pinCommentToggle(commentId);
             }}
           >
-            <Button variant="ghost" size="icon" className="bg-zinc-500/20">
+            <Button variant="outline" size="icon">
               {pinned ? (
-                <PinOff strokeWidth={1} className="opacity-60" />
+                <PinOff strokeWidth={1} />
               ) : (
-                <Pin strokeWidth={1} className="opacity-60" />
+                <Pin strokeWidth={1} />
               )}
             </Button>
           </form>

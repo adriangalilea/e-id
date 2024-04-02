@@ -12,7 +12,7 @@ const SwitchPublic = React.forwardRef<
   <SwitchPrimitives.Root
     {...props}
     className={cn(
-      "group relative inline-flex size-10 items-center justify-center border-2 border-transparent bg-zinc-950/5 transition-colors hover:bg-zinc-950/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 dark:bg-zinc-50/5 hover:dark:bg-zinc-50/15",
+      "group relative inline-flex size-10 items-center justify-center border border-border transition-colors hover:bg-zinc-950/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 hover:dark:bg-zinc-50/15",
       className,
     )}
     ref={ref}

@@ -29,11 +29,11 @@ export default function RemoveSocialButton({
       <AlertDialogTrigger asChild>
         <Button
           key={platformId}
-          className="dark:bg-zinc-50/5 bg-zinc-950/5"
+          className="border border-border hover:border-red-500/10"
           size="icon"
           variant="destructiveGhost"
         >
-          <X />
+          <X strokeWidth={1} />
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>

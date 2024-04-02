@@ -52,7 +52,7 @@ export default function CountryPicker({
           className="w-[200px] justify-between "
         >
           {selectedCountryLabel || "Select country..."}
-          <ChevronsUpDown className="ml-2 size-4 shrink-0 opacity-50" />
+          <ChevronsUpDown className="ml-2 size-4 shrink-0" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[200px] p-0">

@@ -11,9 +11,10 @@ export function SaveButton() {
     <Button
       disabled={pending}
       type="submit"
-      variant="secondary"
+      variant="outline"
       size="icon"
-      className="self-end hover:bg-emerald-500/10 hover:text-emerald-500"
+      className="self-end hover:bg-emerald-500/10 hover:text-emerald-500
+        hover:border-emerald-500/10"
     >
       <Save strokeWidth={1} />
     </Button>
