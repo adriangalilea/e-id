@@ -3,6 +3,7 @@ import type { NextRequest } from "next/server";
 import { auth } from "./auth";
 
 export async function middleware(request: NextRequest) {
+  // start a console timer
   console.time("middleware");
   const pathname = request.nextUrl.pathname;
 
@@ -71,10 +72,11 @@ export async function middleware(request: NextRequest) {
     targetDomainPunycodeWWW === hostHeaders
   ) {
     // console.log("targetUrl is the same as the current");
+    // finnish console timer
+    console.timeEnd("middleware");
     return;
   }
 
-  console.timeEnd("middleware");
   // console.log("targetDomain", targetDomain);
   // console.log("hostHeaders", hostHeaders);
   // console.log("targetUrl", targetUrl);
