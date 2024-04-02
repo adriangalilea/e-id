@@ -4,7 +4,6 @@ import { auth } from "./auth";
 
 export async function middleware(request: NextRequest) {
   // start a console timer
-  console.time("middleware");
   const pathname = request.nextUrl.pathname;
 
   // check if user session has username if not redirect to /null if not already there
@@ -73,7 +72,6 @@ export async function middleware(request: NextRequest) {
   ) {
     // console.log("targetUrl is the same as the current");
     // finnish console timer
-    console.timeEnd("middleware");
     return;
   }
 
