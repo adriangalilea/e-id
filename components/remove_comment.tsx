@@ -3,7 +3,7 @@
 import { SelectComment } from "@/db/schema";
 import { deleteComment } from "@/db/actions";
 import { Button } from "@/components/ui/button";
-import { X } from "lucide-react";
+import { Trash2 } from "lucide-react";
 
 import {
   AlertDialog,
@@ -25,8 +25,12 @@ export default function RemoveComment({
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <Button variant="destructiveGhost" size="icon" className="border border-border hover:border-red-500/10">
-          <X strokeWidth={1} />
+        <Button
+          variant="destructiveGhost"
+          size="icon"
+          className="border border-border hover:border-red-500/10"
+        >
+          <Trash2 strokeWidth={1} />
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
