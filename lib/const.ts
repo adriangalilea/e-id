@@ -1,1 +1,6 @@
-export const forbiddenUsernames: string[] = ["ninja", "null", ""] as const;
+export const forbiddenUsernames: string[] = [
+  "ninja",
+  "null",
+  "",
+  "about",
+] as const;
