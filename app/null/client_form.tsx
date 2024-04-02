@@ -1,7 +1,7 @@
 "use client";
 
 import { useFormState } from "react-dom";
-import { setUsername } from "@/db/actions";
+import { setUsernameFromForm } from "@/db/actions";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Ban, Check } from "lucide-react";
@@ -13,7 +13,7 @@ const initialState = {
 };
 
 export function ClientForm() {
-  const [state, formAction] = useFormState(setUsername, initialState);
+  const [state, formAction] = useFormState(setUsernameFromForm, initialState);
 
   return (
     <form action={formAction} className="flex flex-col justify-between gap-2">

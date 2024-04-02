@@ -359,12 +359,12 @@ export type FormState = {
   error?: boolean;
 };
 
-export async function setUsername(
+export async function setUsernameFromForm(
   prevState: FormState,
   formData: FormData,
 ): Promise<FormState> {
   try {
-    let username = String(formData.get("username"));
+    const username = String(formData.get("username"));
     const validatedFields = schema.safeParse({
       username: formData.get("username"),
     });
@@ -389,7 +389,10 @@ export async function setUsername(
 
     await db
       .update(users)
-      .set({ username })
+      .set({
+        username: username,
+        username_normalized: username?.toLowerCase(),
+      })
       .where(eq(users.id, userId))
       .returning({ updatedId: users.id });
 
@@ -397,6 +400,7 @@ export async function setUsername(
 
     return {
       message: "Username updated.",
+      error: false,
     };
   } catch (error) {
     return {
