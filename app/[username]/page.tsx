@@ -73,7 +73,7 @@ export default async function Page({
   params: { username: string };
 }) {
   return (
-    <div className="flex flex-1 flex-col gap-6 overflow-auto sm:gap-12">
+    <div className="flex flex-1 flex-col gap-6 sm:gap-12">
       <Suspense fallback={<div>Loading...</div>}>
         <UserProfile username={params.username} />
       </Suspense>

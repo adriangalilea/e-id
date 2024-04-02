@@ -110,7 +110,7 @@ export async function SocialComponent({
       </TabsList>
       {populatedSocials.map((social) => (
         <TabsContent key={social.id} value={social.id} className="mt-0">
-          <Card className="border-t-transparent bg-zinc-200 p-3 sm:p-6 dark:bg-zinc-800">
+          <Card className="border-t-transparent bg-zinc-200 p-3 sm:p-6 dark:bg-zinc-800 overflow-clip">
             <CardHeader className="flex flex-col gap-3 p-0 sm:gap-6">
               <CardTitle className="flex items-center justify-between font-light">
                 {social.platform}
@@ -119,18 +119,18 @@ export async function SocialComponent({
                     <Separator className="mx-3 shrink bg-zinc-300 opacity-10" />
                     <Link
                       href={social.url}
-                      className="prose prose-zinc dark:prose-invert group flex w-fit items-center bg-zinc-500
-                        pr-3 text-white transition-colors hover:text-zinc-950 sm:font-normal
-                        dark:bg-zinc-50/10 hover:dark:bg-zinc-300"
+                      className="max-w-40 sm:max-w-fit prose prose-zinc dark:prose-invert group flex w-fit
+                        items-center bg-zinc-500 pr-3 text-white transition-colors hover:text-zinc-950
+                        sm:font-normal dark:bg-zinc-50/10 hover:dark:bg-zinc-300"
                     >
                       <div
-                        className="flex size-10 items-center justify-center bg-zinc-700 text-zinc-50
+                        className="flex size-10 shrink-0 items-center justify-center bg-zinc-700 text-zinc-50
                           transition-colors dark:bg-zinc-400 dark:text-zinc-950
                           group-hover:dark:bg-zinc-300"
                       >
                         {social.placeholder_pretext}
                       </div>
-                      <span className="ml-2 font-light">
+                      <span className="pl-2 font-light overflow-hidden">
                         {social.displayText}
                       </span>
                     </Link>
@@ -248,10 +248,7 @@ export async function SocialComponent({
                         htmlFor={`${social.platform}_${social.id}_highlight`}
                         className="flex size-10 items-center justify-center bg-zinc-950/10 dark:bg-zinc-50/10"
                       >
-                        <Star
-                          strokeWidth="1"
-                          size="20"
-                        />
+                        <Star strokeWidth="1" size="20" />
                       </Label>
                       <Input
                         data-1p-ignore
