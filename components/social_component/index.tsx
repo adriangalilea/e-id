@@ -137,7 +137,7 @@ export async function SocialComponent({
                   </>
                 )}
                 {edit && (
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2">
                     <OrderDropdown userId={user.id} socialId={social.id} />
                     <SwitchPublic
                       id={`${social.platform}_${social.id}_public`}
