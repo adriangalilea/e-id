@@ -1,24 +1,31 @@
+"use client";
 import { Input } from "@/components/ui/input";
 import CountryPicker from "./country_picker";
 import { SelectUser } from "@/db/schema";
-import { Button } from "@/components/ui/button";
-import { Save } from "lucide-react";
 import { updateUserAndSocials } from "@/db/actions";
-import { SocialComponent } from "@/components/social_component";
 import { InputQuote } from "@/components/quote";
 import { Label } from "@/components/ui/label";
-import { getSocialPretextIcon } from "@/lib/socials";
+import { SaveButton } from "./save_button";
+import { AtSign, Ban } from "lucide-react";
+import { useFormState } from "react-dom";
+import { Alert, AlertTitle } from "@/components/ui/alert";
 
-export default function UserProfile({ user }: { user: SelectUser }) {
-  const updateUserWithUser = updateUserAndSocials.bind(null, user.id);
+const initialState = {
+  message: "",
+  error: false,
+};
 
-  const handle_pretext = getSocialPretextIcon("self");
+export default function UserProfile({
+  children,
+  user,
+}: {
+  children: React.ReactNode;
+  user: SelectUser;
+}) {
+  const [state, formAction] = useFormState(updateUserAndSocials, initialState);
 
   return (
-    <form
-      action={updateUserWithUser}
-      className="flex flex-1 flex-col gap-6 pt-3"
-    >
+    <form action={formAction} className="flex flex-1 flex-col gap-6 pt-3">
       <div className="flex flex-col">
         <div className="flex w-full items-center gap-3">
           <div className="flex flex-col justify-between gap-3 sm:grow sm:flex-row sm:items-end">
@@ -37,7 +44,7 @@ export default function UserProfile({ user }: { user: SelectUser }) {
                 htmlFor="username"
                 className="flex size-10 items-center justify-center bg-zinc-50/10"
               >
-                {handle_pretext}
+                <AtSign strokeWidth={1} className="opacity-80" size="20" />
               </Label>
               <Input
                 data-1p-ignore
@@ -61,24 +68,22 @@ export default function UserProfile({ user }: { user: SelectUser }) {
             </div>
           </div>
         </div>
+        {state.message && (
+          <Alert variant={state?.error ? "destructive" : "default"} className="mt-6">
+            <Ban className="size-4" />
+            <AlertTitle>{state?.message}</AlertTitle>
+          </Alert>
+        )}
         <div className="mt-6 flex w-full flex-col gap-6">
           <InputQuote
             text={user.bio ?? ""}
             name="bio"
             placeholder="Message to the world"
           />
-          <SocialComponent user={user} edit={true} />
+          {children}
         </div>
       </div>
-
-      <Button
-        type="submit"
-        variant="secondary"
-        size="icon"
-        className="self-end hover:bg-emerald-500/10 hover:text-emerald-500"
-      >
-        <Save strokeWidth={1} />
-      </Button>
+      <SaveButton />
     </form>
   );
 }
