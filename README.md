@@ -66,7 +66,6 @@ A constant pointer to your ever-changing web presence.
   - [ ] notify when friends make new places
 - [ ] feat: create a widget, similar to those that can be embedded in github.
 - [ ] feat: optimizations
-  - [ ] do not use session on [username]/page.tsx since it breaks the static site generation
   - [ ] cache github activity component
   - [ ] cache opengraph from custom website
 - [ ] style: comment input button disabled while not text
