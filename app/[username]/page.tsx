@@ -22,6 +22,7 @@ export async function generateMetadata({
   // read route params
   const username = params.username;
 
+  console.log(url);
   // fetch data
   const user = await getUserByUsernameCached(username);
 
@@ -31,7 +32,7 @@ export async function generateMetadata({
 
   const socials = await getValidUniqueSocialsCached(user.id);
 
-  const ogUrl = new URL(`${url}/api/og`);
+  const ogUrl = new URL(`${url}api/og`);
   ogUrl.searchParams.set("name", user.name || "");
   ogUrl.searchParams.set("socials", socials.join(","));
   // ogUrl.searchParams.set("image", user.image || "");
