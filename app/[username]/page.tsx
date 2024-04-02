@@ -9,6 +9,7 @@ import { notFound } from "next/navigation";
 
 import type { Metadata } from "next";
 import { Suspense } from "react";
+import { headers } from "next/headers";
 
 export async function generateMetadata({
   params,
@@ -16,7 +17,7 @@ export async function generateMetadata({
   params: { username: string };
 }): Promise<Metadata> {
   const url = process.env.VERCEL_URL
-    ? new URL(`https://${process.env.VERCEL_URL}`)
+    ? new URL(`https://${headers().get("host")}`)
     : new URL(`http://localhost:${process.env.PORT || 3000}`);
   // read route params
   const username = params.username;
