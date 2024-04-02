@@ -26,6 +26,8 @@ A constant pointer to your ever-changing web presence.
 
 ## todo
 
+- [ ] feat: display status on opengraph image optionally
+- [ ] feat: display testimonial on opengraph image optionally(?)
 - [ ] feat: preserve state when switching tabs using [zustand](https://github.com/pmndrs/zustand/blob/main/docs/guides/nextjs.md)
 - [ ] feat: every social component integration should be a component that handles if it's editing or visualising, if visualising is where I'll add analytics
 - [ ] feat: instead of /about do about.e-id.to
