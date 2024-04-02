@@ -51,7 +51,7 @@ export default function UserProfile({
                   state?.error && "bg-destructive",
                 )}
               >
-                <AtSign strokeWidth={1} className="opacity-80" size="20" />
+                <AtSign strokeWidth={1} size="20" />
               </Label>
               <Input
                 data-1p-ignore

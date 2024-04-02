@@ -21,13 +21,12 @@ export default async function OrderDropdown({
     <DropdownMenu>
       <DropdownMenuTrigger
         asChild
-        className="outline-none !ring-0 !ring-transparent"
+        className="!ring-0 !ring-transparent bg-transparent"
       >
         <Button
-          className="justify-center border-none bg-zinc-950/5 !shadow-none !ring-transparent
-            transition-colors hover:border-none hover:bg-zinc-950/15 dark:bg-zinc-50/5
+          className="justify-center border border-border transition-colors hover:bg-zinc-950/15
             hover:dark:bg-zinc-50/15"
-          variant="ghost"
+          variant="outline"
           size="icon"
         >
           {socials.find((social) => social.id === socialId)?.order || 1}

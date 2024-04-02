@@ -28,7 +28,7 @@ export default async function UserProfile({
         >
           <h1 className="!m-0 text-2xl font-light">{user.name}</h1>
           <div className="flex items-end justify-between sm:grow">
-            <p className="prose prose-zinc dark:prose-invert !m-0 text-xl font-extralight opacity-90">
+            <p className="prose prose-zinc dark:prose-invert !m-0 text-xl font-extralight">
               @{user.username}
             </p>
             <div className="flex content-between items-start gap-1.5">
@@ -45,11 +45,19 @@ export default async function UserProfile({
         )}
         <SocialComponent user={user} />
         {session && session.user?.username === user.username && (
+          <div className="flex items-center justify-end gap-2">
           <Button asChild variant="secondary" size="icon" className="self-end">
             <Link href={`/${session.user.username}/edit`}>
               <Pen strokeWidth={1} className="opacity-60" />
-            </Link>
-          </Button>
+            <Button asChild variant="outline">
+              <Link href={`/${session.user.username}/edit`} prefetch={false}>
+                <Pen strokeWidth={1} className="pr-2" />
+                <span className="prose prose-zinc dark:prose-invert font-light">
+                  edit
+                </span>
+              </Link>
+            </Button>
+          </div>
         )}
       </div>
     </main>

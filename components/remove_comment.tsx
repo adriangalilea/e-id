@@ -25,12 +25,8 @@ export default function RemoveComment({
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <Button
-          variant="destructiveGhost"
-          size="icon"
-          className="bg-zinc-500/20"
-        >
-          <X strokeWidth={1} className="opacity-60" />
+        <Button variant="destructiveGhost" size="icon" className="border border-border hover:border-red-500/10">
+          <X strokeWidth={1} />
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>

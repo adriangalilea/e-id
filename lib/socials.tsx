@@ -40,7 +40,7 @@ export function getSocialDisplayText(
   // }
   // return `@${id}`;
 }
-const iconProps = { strokeWidth: 1, className: "opacity-80" };
+const iconProps = { strokeWidth: 1 };
 
 export function getSocialIcon(platform: SocialPlatform): ReactElement {
   const iconMap: { [key in SocialPlatform]: ReactElement } = {

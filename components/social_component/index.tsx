@@ -119,8 +119,8 @@ export async function SocialComponent({
                     <Separator className="mx-3 shrink bg-zinc-300 opacity-10" />
                     <Link
                       href={social.url}
-                      className="group prose prose-zinc flex w-fit items-center bg-zinc-500 pr-3 text-white
-                        transition-colors dark:prose-invert hover:text-zinc-950 sm:font-normal
+                      className="prose prose-zinc dark:prose-invert group flex w-fit items-center bg-zinc-500
+                        pr-3 text-white transition-colors hover:text-zinc-950 sm:font-normal
                         dark:bg-zinc-50/10 hover:dark:bg-zinc-300"
                     >
                       <div
@@ -209,11 +209,7 @@ export async function SocialComponent({
                         htmlFor={`${social.platform}_${social.id}_highlight`}
                         className="flex size-10 items-center justify-center bg-zinc-950/10 dark:bg-zinc-50/10"
                       >
-                        <Star
-                          strokeWidth="1"
-                          className="opacity-80"
-                          size="20"
-                        />
+                        <Star strokeWidth="1" size="20" />
                       </Label>
                       <Input
                         data-1p-ignore
@@ -254,7 +250,6 @@ export async function SocialComponent({
                       >
                         <Star
                           strokeWidth="1"
-                          className="opacity-80"
                           size="20"
                         />
                       </Label>
