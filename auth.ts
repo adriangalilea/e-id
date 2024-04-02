@@ -14,6 +14,7 @@ import {
 } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
 import { revalidateTag } from "next/cache";
+import { setUsername } from "@/db/actions";
 
 declare module "next-auth" {
   interface Profile extends Partial<SelectUser> {}
@@ -39,38 +40,46 @@ function customAdapter(): Adapter {
     // Github returns
     // gh_id gh_username gh_image
 
-    console.log(data);
+    const { username, ...dataWithoutUsername } = data;
+    console.log(dataWithoutUsername);
     const userCreated = await db
       .insert(users)
       .values({
-        ...data,
+        ...dataWithoutUsername,
         id: crypto.randomUUID(),
       })
       .returning()
       .then((res) => res[0] ?? null);
 
+    try {
+      await setUsername(userCreated, username!);
+    } catch (error) {
+      console.error(
+        "Error updating user's username after user creation:",
+        error,
+      );
+    }
+
     if (!userCreated) {
       throw new Error("User Creation Failed");
     }
 
-    // @ts-ignore
-    if (data.gh_id) {
+    // @ts-expect-error ts-migrate(2532) FIXME: Object is possibly 'undefined'.
+    if (dataWithoutUsername.gh_id) {
       try {
-        const socialCreated = await db
-          .insert(socials)
-          .values({
-            id: crypto.randomUUID(),
-            user_id: userCreated.id,
-            platform: "github",
-            // @ts-ignore
-            value: data.gh_username,
-            // @ts-ignore
-            image: data.gh_image,
-            // @ts-ignore
-            custom_data: { platform_user_id: data.gh_id },
-          })
-          .returning()
-          .then((res) => res[0] ?? null);
+        await db.insert(socials).values({
+          id: crypto.randomUUID(),
+          user_id: userCreated.id,
+          platform: "github",
+          // @ts-expect-error ts-migrate(2532) FIXME: Object is possibly 'undefined'.
+          value: dataWithoutUsername.gh_username,
+          // @ts-expect-error ts-migrate(2532) FIXME: Object is possibly 'undefined'.
+          image: dataWithoutUsername.gh_image,
+          custom_data: {
+            // @ts-expect-error ts-migrate(2532) FIXME: Object is possibly 'undefined'.
+            platform_user_id: dataWithoutUsername.gh_id,
+          },
+        });
 
         // create his email social
         await db
@@ -79,7 +88,7 @@ function customAdapter(): Adapter {
             id: crypto.randomUUID(),
             user_id: userCreated.id,
             platform: "email",
-            value: data.email,
+            value: dataWithoutUsername.email,
           })
           .returning()
           .then((res) => res[0] ?? null);
@@ -87,24 +96,24 @@ function customAdapter(): Adapter {
         // we try to set his image
         await db
           .update(users)
-          // @ts-ignore
-          .set({ image: data.gh_image })
+          // @ts-expect-error ts-migrate(2532) FIXME: Object is possibly 'undefined'.
+          .set({ image: dataWithoutUsername.gh_image })
           .where(eq(users.id, userCreated.id));
 
         // last we try to claim his username given his gh_username
         // this may fail if username is not unique hence we do it last and isolated
         await db
           .update(users)
-          // @ts-ignore
-          .set({ username: data.gh_username })
+          // @ts-expect-error ts-migrate(2532) FIXME: Object is possibly 'undefined'.
+          .set({ username: dataWithoutUsername.gh_username })
           .where(eq(users.id, userCreated.id));
       } catch (error) {
         console.error("Error updating user:", error);
       }
-    } else if (data.name) {
+    } else if (dataWithoutUsername.name) {
       // we assume this is google
       // we propose an username given it's email
-      const username = data.email.split("@")[0];
+      const username = dataWithoutUsername.email.split("@")[0];
       try {
         await db
           .insert(socials)
@@ -112,9 +121,9 @@ function customAdapter(): Adapter {
             id: crypto.randomUUID(),
             user_id: userCreated.id,
             platform: "email",
-            value: data.email,
-            image: data.image,
-            custom_data: { platform_user_id: data.id },
+            value: dataWithoutUsername.email,
+            image: dataWithoutUsername.image,
+            custom_data: { platform_user_id: dataWithoutUsername.id },
           })
           .returning()
           .then((res) => res[0] ?? null);
@@ -122,15 +131,17 @@ function customAdapter(): Adapter {
         // set his image
         await db
           .update(users)
-          .set({ image: data.image })
+          .set({ image: dataWithoutUsername.image })
           .where(eq(users.id, userCreated.id));
 
         // last we try to claim his username given his gh_username
         // this may fail if username is not unique hence we do it last and isolated
         await db
           .update(users)
-          // @ts-ignore
-          .set({ username: username })
+          .set({
+            username: username,
+            username_normalized: username.toLowerCase(),
+          })
           .where(eq(users.id, userCreated.id));
       } catch (error) {
         console.error("Error updating user:", error);
