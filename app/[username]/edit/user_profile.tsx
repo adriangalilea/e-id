@@ -9,6 +9,7 @@ import { SaveButton } from "./save_button";
 import { AtSign, Ban } from "lucide-react";
 import { useFormState } from "react-dom";
 import { Alert, AlertTitle } from "@/components/ui/alert";
+import { cn } from "@/lib/utils";
 
 const initialState = {
   message: "",
@@ -42,7 +43,10 @@ export default function UserProfile({
             <div className="flex items-center font-extralight">
               <Label
                 htmlFor="username"
-                className="flex size-10 items-center justify-center bg-zinc-50/10"
+                className={cn(
+                  "flex size-10 items-center justify-center bg-zinc-50/10",
+                  state?.error && "bg-destructive",
+                )}
               >
                 <AtSign strokeWidth={1} className="opacity-80" size="20" />
               </Label>
@@ -52,9 +56,13 @@ export default function UserProfile({
                 id="username"
                 name="username"
                 defaultValue={user.username!}
-                className="!m-0 min-w-[140px] grow border border-border !bg-transparent text-[16px]
+                className={cn(
+                  `!m-0 min-w-[140px] grow border border-border !bg-transparent text-[16px]
                   focus-visible:border-zinc-500 focus-visible:ring-0
-                  focus-visible:ring-transparent focus-visible:ring-offset-0 sm:font-normal"
+                  focus-visible:ring-transparent focus-visible:ring-offset-0 sm:font-normal`,
+                  state?.error &&
+                    "border-destructive focus-visible:border-destructive/50",
+                )}
                 placeholder="username"
               />
             </div>
@@ -69,7 +77,10 @@ export default function UserProfile({
           </div>
         </div>
         {state.message && (
-          <Alert variant={state?.error ? "destructive" : "default"} className="mt-6">
+          <Alert
+            variant={state?.error ? "destructive" : "default"}
+            className="mt-6"
+          >
             <Ban className="size-4" />
             <AlertTitle>{state?.message}</AlertTitle>
           </Alert>
