@@ -2,7 +2,7 @@
 
 import { z } from "zod";
 
-import { unstable_cache } from "next/cache";
+import { revalidateTag, unstable_cache } from "next/cache";
 
 import { SQLiteSelectQueryBuilder } from "drizzle-orm/sqlite-core";
 import { eq, desc, isNotNull, sql, and, not } from "drizzle-orm";
@@ -337,6 +337,7 @@ export async function updateUserAndSocials(
   }
 
   revalidatePath(`/${updatedUser.username}`);
+  revalidateTag(`user-socials-${updatedUser.username}`);
 }
 
 const schema = z.object({
@@ -412,6 +413,7 @@ export async function addSocial(
       .returning({ insertedId: socials.id });
     revalidatePath(`/${userId}/edit`);
     revalidatePath(`/${userId}`);
+    revalidateTag(`user-socials-${userId}`);
   } catch (error) {
     console.error(error);
   }
@@ -428,6 +430,7 @@ export async function removeSocial(
       .returning({ deletedId: socials.id });
     revalidatePath(`/${userId}/edit`);
     revalidatePath(`/${userId}`);
+    revalidateTag(`user-socials-${userId}`);
   } catch (error) {
     console.error(error);
   }
