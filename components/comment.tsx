@@ -1,9 +1,7 @@
 import { SelectComment, SelectUser } from "@/db/schema";
-import { Button } from "./ui/button";
-import { Pin, PinOff } from "lucide-react";
-import { pinCommentToggle } from "@/db/actions";
 import { Testimonial } from "./quote";
 import RemoveComment from "./remove_comment";
+import PinComment from "./pin_comment";
 
 export default async function Comment({
   body,
@@ -34,18 +32,7 @@ export default async function Comment({
         image={profilePicture!}
       />
       <div className="flex flex-col gap-2">
-        {canPin && (
-          <form
-            action={async () => {
-              "use server";
-              await pinCommentToggle(commentId);
-            }}
-          >
-            <Button variant="outline" size="icon">
-              {pinned ? <PinOff strokeWidth={1} /> : <Pin strokeWidth={1} />}
-            </Button>
-          </form>
-        )}
+        <PinComment commentId={commentId} pinned={pinned} canPin={canPin} />
         <RemoveComment commentId={commentId} />
       </div>
     </div>

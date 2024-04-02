@@ -5,6 +5,12 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 import { getSocials } from "@/db/actions";
 import OrderDropdownItem from "./order_dropdown_item";
@@ -19,19 +25,28 @@ export default async function OrderDropdown({
   const socials = await getSocials(userId);
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger
-        asChild
-        className="!ring-0 !ring-transparent bg-transparent"
-      >
-        <Button
-          className="justify-center border border-border transition-colors hover:bg-zinc-950/15
-            hover:dark:bg-zinc-50/15"
-          variant="outline"
-          size="icon"
-        >
-          {socials.find((social) => social.id === socialId)?.order || 1}
-        </Button>
-      </DropdownMenuTrigger>
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <DropdownMenuTrigger
+              asChild
+              className="!ring-0 !ring-transparent bg-transparent"
+            >
+              <Button
+                className="justify-center border border-border transition-colors hover:bg-zinc-950/15
+                  hover:dark:bg-zinc-50/15"
+                variant="outline"
+                size="icon"
+              >
+                {socials.find((social) => social.id === socialId)?.order || 1}
+              </Button>
+            </DropdownMenuTrigger>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>priority</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
       <DropdownMenuContent
         align="end"
         sideOffset={0}
