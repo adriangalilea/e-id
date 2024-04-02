@@ -34,7 +34,6 @@ export default async function Comment({
         image={profilePicture!}
       />
       <div className="flex flex-col gap-2">
-        <RemoveComment commentId={commentId} />
         {canPin && (
           <form
             action={async () => {
@@ -43,14 +42,11 @@ export default async function Comment({
             }}
           >
             <Button variant="outline" size="icon">
-              {pinned ? (
-                <PinOff strokeWidth={1} />
-              ) : (
-                <Pin strokeWidth={1} />
-              )}
+              {pinned ? <PinOff strokeWidth={1} /> : <Pin strokeWidth={1} />}
             </Button>
           </form>
         )}
+        <RemoveComment commentId={commentId} />
       </div>
     </div>
   );

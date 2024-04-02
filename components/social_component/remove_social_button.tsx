@@ -3,7 +3,7 @@
 import { SelectSocial, SelectUser } from "@/db/schema";
 import { removeSocial } from "@/db/actions";
 import { Button } from "@/components/ui/button";
-import { X } from "lucide-react";
+import { Trash2 } from "lucide-react";
 
 import {
   AlertDialog,
@@ -33,7 +33,7 @@ export default function RemoveSocialButton({
           size="icon"
           variant="destructiveGhost"
         >
-          <X strokeWidth={1} />
+          <Trash2 strokeWidth={1} />
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
