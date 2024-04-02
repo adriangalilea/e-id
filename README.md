@@ -30,7 +30,7 @@ A constant pointer to your ever-changing web presence.
 - [ ] feat: every social component integration should be a component that handles if it's editing or visualising, if visualising is where I'll add analytics
 - [ ] feat: instead of /about do about.e-id.to
   - [ ] [branch](https://github.com/adriangalilea/e-id/tree/edit-tabs-preserve-state)
-- [ ] feat: github, youtube, twitter, ... followers/sbus
+- [ ] feat: github, youtube, twitter, ... followers/subs
 - [ ] feat: opengraph on custom website for social component
   - [ ] [fetch-opengraph node](https://github.com/purphoros/fetch-opengraph)
   - [ ] https://metascraper.js.org/
