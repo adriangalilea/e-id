@@ -26,13 +26,6 @@ A constant pointer to your ever-changing web presence.
 
 ## todo
 
-- [x] feat: list of forbidden handles
-  - [x] I don't need auth because it has higher priority than [username]
-  - [x] /null path to edit null username
-  - [ ] enforce non allowing such handles in user creation from auth
-  - [ ] enforce non allowing such handles in server actions
-  - [ ] enforce non allowing such handles in /null
-  - [ ] enforce not allowing different casing for the same url taken
 - [ ] feat: preserve state when switching tabs using [zustand](https://github.com/pmndrs/zustand/blob/main/docs/guides/nextjs.md)
 - [ ] feat: every social component integration should be a component that handles if it's editing or visualising, if visualising is where I'll add analytics
 - [ ] feat: instead of /about do about.e-id.to
@@ -128,6 +121,13 @@ A constant pointer to your ever-changing web presence.
 - [x] feat: allow to unpinp higlight
 - [x] feat: /about how to add emoji domain to twitter
 - [x] usernames matching for url [username] convert to lowercase
+- [x] feat: list of forbidden handles
+  - [x] I don't need auth because it has higher priority than [username]
+  - [x] /null path to edit null username
+  - [x] enforce non allowing such handles in user creation from auth
+  - [x] enforce non allowing such handles in server actions
+  - [x] enforce non allowing such handles in /null
+  - [x] enforce not allowing different casing for the same url taken
 
 # blocked
 
