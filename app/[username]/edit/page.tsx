@@ -16,9 +16,12 @@ export default async function Page({
 
   if (session?.user?.username) {
     return (
-      <UserProfile user={user}>
-        <SocialComponent user={user} edit={true} />
-      </UserProfile>
+      <>
+        <UserProfile user={user}>
+          <SocialComponent user={user} edit={true} />
+        </UserProfile>
+        <div className="flex-1" />
+      </>
     );
   }
   redirect(`/${params.username}`);

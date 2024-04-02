@@ -26,7 +26,10 @@ export default function UserProfile({
   const [state, formAction] = useFormState(updateUserAndSocials, initialState);
 
   return (
-    <form action={formAction} className="flex flex-1 flex-col gap-6 pt-3">
+    <form
+      action={formAction}
+      className="flex flex-1 flex-col gap-6 pt-3 bg-zinc-500/5 border border-zinc-500/40 p-3"
+    >
       <div className="flex flex-col">
         <div className="flex w-full items-center gap-3">
           <div className="flex flex-col justify-between gap-3 sm:grow sm:flex-row sm:items-end">
