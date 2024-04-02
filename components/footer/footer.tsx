@@ -4,6 +4,7 @@ import { HelpCircle, Home } from "lucide-react";
 
 import FooterUser from "./footer_user";
 import { Suspense } from "react";
+import Image from "next/image";
 
 export default async function Footer() {
   return (
@@ -14,7 +15,11 @@ export default async function Footer() {
       <Suspense
         fallback={
           <div className="flex size-10 items-center justify-center">
-            <img src="./ball-triangle.svg" className="size-6" />
+            <Image
+              src="./ball-triangle.svg"
+              className="size-6"
+              alt="loading animation"
+            />
           </div>
         }
       >
@@ -32,7 +37,7 @@ export default async function Footer() {
 function ButtonHome() {
   return (
     <Button asChild variant="ghost" size="icon">
-      <Link href="/" aria-label="home">
+      <Link href="/" aria-label="home" prefetch={false}>
         <Home strokeWidth={1} />
       </Link>
     </Button>
@@ -42,7 +47,7 @@ function ButtonHome() {
 function ButtonFAQ() {
   return (
     <Button asChild variant="ghost" size="icon">
-      <Link href="/about" aria-label="about">
+      <Link href="/about" aria-label="about" prefetch={false}>
         <HelpCircle strokeWidth={1} />
       </Link>
     </Button>
