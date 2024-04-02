@@ -12,7 +12,8 @@ export const users = sqliteTable(
   "user",
   {
     id: text("id").notNull().primaryKey(),
-    username: text("username").unique(),
+    username: text("username"),
+    username_normalized: text("username_normalized").unique(),
     name: text("name"),
     email: text("email").notNull(),
     emailVerified: integer("emailVerified", { mode: "timestamp_ms" }),
