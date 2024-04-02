@@ -10,6 +10,7 @@ import { ToastAction } from "@/components/ui/toast";
 import { useToast } from "@/components/ui/use-toast";
 import { Link as LinkIcon } from "lucide-react";
 import { ClipboardCopy } from "lucide-react";
+import Link from "next/link";
 
 export default function ShareButton({ username }: { username: string }) {
   const { toast } = useToast();
@@ -50,8 +51,13 @@ export default function ShareButton({ username }: { username: string }) {
               title: "Copied to clipboard!",
               description: "The emoji URL is ready to be shared",
               action: (
-                <ToastAction altText="Why is there an emoji on the URL?">
-                  Emoji URL?
+                <ToastAction
+                  altText="Why is there an emoji on the URL?"
+                  className="w-fit"
+                >
+                  <Link href={"/about"} className=" w-full">
+                    Emoji URL?
+                  </Link>
                 </ToastAction>
               ),
             });
@@ -74,7 +80,11 @@ export default function ShareButton({ username }: { username: string }) {
               title: "Copied to clipboard!",
               description: "The punycode URL is ready to be shared.",
               action: (
-                <ToastAction altText="What is this?">What is this?</ToastAction>
+                <ToastAction altText="What is this?" className="w-fit">
+                  <Link href={"/about"} className=" w-full">
+                    What is this?
+                  </Link>
+                </ToastAction>
               ),
             });
           }}
