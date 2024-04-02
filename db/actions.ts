@@ -410,6 +410,25 @@ export async function setUsernameFromForm(
   }
 }
 
+export async function setUsername(
+  user: SelectUser,
+  username: SelectUser["username"],
+) {
+  const validatedFields = schema.safeParse({
+    username: username,
+  });
+  if (!validatedFields.success) {
+    throw new Error(validatedFields.error.errors[0].message);
+  }
+  await db
+    .update(users)
+    .set({
+      username: username,
+      username_normalized: username?.toLowerCase(),
+    })
+    .where(eq(users.id, user?.id));
+}
+
 export async function addSocial(
   userId: SelectUser["id"],
   platform: SocialPlatform,
