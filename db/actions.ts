@@ -221,6 +221,32 @@ export async function getSocials(
   return await db.select().from(socials).where(eq(socials.user_id, userId));
 }
 
+export const getValidUniqueSocialsCached = (userId: SelectUser["id"]) => {
+  return unstable_cache(
+    async () => {
+      const allSocials = await getSocials(userId);
+      const uniqueSocialsWithValue = allSocials.reduce<SocialPlatform[]>(
+        (uniquePlatforms, { value, platform, public: isPublic }) => {
+          if (
+            value &&
+            isPublic &&
+            !uniquePlatforms.includes(platform as SocialPlatform)
+          ) {
+            uniquePlatforms.push(platform as SocialPlatform);
+          }
+          return uniquePlatforms;
+        },
+        [],
+      );
+      return uniqueSocialsWithValue;
+    },
+    [`user-socials-${userId}`],
+    {
+      revalidate: 24 * 60 * 60,
+    },
+  )();
+};
+
 export async function updateUserAndSocials(
   profileId: string,
   formData: FormData,
