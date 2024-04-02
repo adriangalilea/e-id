@@ -23,15 +23,28 @@ export default function Faq() {
         </AccordionItem>
         <AccordionItem value="item-2">
           <AccordionTrigger className="font-light">
-            Why is there an emoji on the URL?
+            How can I create my e-ID?
           </AccordionTrigger>
           <AccordionContent>
-            Emoji URL&apos;s standout and are underutilized.
+            You can create your e-ID by visiting{" "}
+            <Link href={"/auth/signin"}>Create</Link>
+          </AccordionContent>
+        </AccordionItem>
+        <AccordionItem value="item-3">
+          <AccordionTrigger className="font-light">
+            An emoji in the URL?
+          </AccordionTrigger>
+          <AccordionContent>
+            <Link href="https://en.wikipedia.org/wiki/Emoji_domain">
+              Emojis domains exist!
+            </Link>
+            <br />
+            <br />
             <img src="link_in_bio.webp" alt="Example from e-id.to/Lulx" />
-            Twitter and instagram accept them as link in bio.
+            They standout as link in bio, Twitter and instagram accept them.
             <br />
             <br />
-            This project works with 3 domains:
+            e-ID works with 3 domains:
             <ul>
               <li>
                 <Link href="https://e-id.to">e-id.to</Link>
@@ -55,7 +68,7 @@ export default function Faq() {
             </Link>
           </AccordionContent>
         </AccordionItem>
-        <AccordionItem value="item-3">
+        <AccordionItem value="item-4">
           <AccordionTrigger className="font-light">
             Where is the code?
           </AccordionTrigger>
