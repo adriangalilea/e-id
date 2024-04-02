@@ -1,6 +1,6 @@
 "use client";
 
-import ActivityCalendar  from "./index";
+import ActivityCalendar from "./index";
 import { ThemeInput } from "./types";
 
 const explicitTheme: ThemeInput = {
@@ -26,11 +26,7 @@ type flattenedData = {
   level: number;
 }[];
 
-export default function GitHubActivity({
-  data,
-}: {
-  data: flattenedData;
-}) {
+export default function GitHubActivity({ data }: { data: flattenedData }) {
   return (
     <div
       className="relative flex justify-end overflow-auto border bg-zinc-300/80 py-0.5 pr-1

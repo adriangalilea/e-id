@@ -23,12 +23,12 @@ export default async function UserProfile({
     <main>
       <div>
         <div
-          className="prose prose-zinc flex flex-col justify-between gap-1.5 pt-3 dark:prose-invert
+          className="prose prose-zinc dark:prose-invert flex flex-col justify-between gap-1.5 pt-3
             sm:flex-row sm:items-end sm:gap-3"
         >
           <h1 className="!m-0 text-2xl font-light">{user.name}</h1>
           <div className="flex items-end justify-between sm:grow">
-            <p className="prose prose-zinc !m-0 text-xl font-extralight opacity-90 dark:prose-invert">
+            <p className="prose prose-zinc dark:prose-invert !m-0 text-xl font-extralight opacity-90">
               @{user.username}
             </p>
             <div className="flex content-between items-start gap-1.5">
