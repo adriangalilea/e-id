@@ -1,10 +1,13 @@
-import { getUsers, getSocials, getUserByUsernameCached } from "@/db/actions";
+import {
+  getUsers,
+  getUserByUsernameCached,
+  getValidUniqueSocialsCached,
+} from "@/db/actions";
 import CommentSection from "./comment_section";
 import UserProfile from "./user_profile";
 import { notFound } from "next/navigation";
 
 import type { Metadata } from "next";
-import { SocialPlatform } from "@/db/schema";
 import { Suspense } from "react";
 
 export async function generateMetadata({
@@ -12,6 +15,9 @@ export async function generateMetadata({
 }: {
   params: { username: string };
 }): Promise<Metadata> {
+  const url = process.env.VERCEL_URL
+    ? new URL(`https://${process.env.VERCEL_URL}`)
+    : new URL(`http://localhost:${process.env.PORT || 3000}`);
   // read route params
   const username = params.username;
 
@@ -22,30 +28,17 @@ export async function generateMetadata({
     notFound();
   }
 
-  const allSocials = await getSocials(user.id);
-  const uniqueSocialsWithValue = allSocials.reduce<SocialPlatform[]>(
-    (uniquePlatforms, { value, platform, public: isPublic }) => {
-      if (
-        value &&
-        isPublic &&
-        !uniquePlatforms.includes(platform as SocialPlatform)
-      ) {
-        uniquePlatforms.push(platform as SocialPlatform);
-      }
-      return uniquePlatforms;
-    },
-    [],
-  );
+  const socials = await getValidUniqueSocialsCached(user.id);
 
-  const ogUrl = new URL(`${process.env.URL}/api/og`);
+  const ogUrl = new URL(`${url}/api/og`);
   ogUrl.searchParams.set("name", user.name || "");
-  ogUrl.searchParams.set("socials", uniqueSocialsWithValue.join(","));
+  ogUrl.searchParams.set("socials", socials.join(","));
   // ogUrl.searchParams.set("image", user.image || "");
 
   console.log(ogUrl.toString());
 
   return {
-    metadataBase: new URL(`${process.env.URL}`),
+    metadataBase: url,
     title: user.name,
     description: `@${user.username} - Digital Identity`,
     openGraph: {
