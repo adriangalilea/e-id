@@ -19,6 +19,7 @@ import {
 } from "@/db/schema";
 import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
+import { forbiddenUsernames } from "@/lib/const";
 
 export async function getUsers(): Promise<SelectUser[]> {
   return await db.select().from(users);
@@ -366,6 +367,9 @@ const schema = z.object({
     .regex(/^[a-z0-9-_]+$/, {
       message:
         "Username must only contain lowercase letters, numbers, '-' and '_'.",
+    })
+    .refine((username: string) => !forbiddenUsernames.includes(username), {
+      message: "Username is forbidden.",
     }),
 });
 
@@ -387,7 +391,7 @@ export async function setUsernameFromForm(
     if (!validatedFields.success) {
       return {
         message:
-          "Username must only contain lowercase letters, numbers, '-' and '_'.",
+          validatedFields.error.errors[0].message ?? "Invalid username.",
         error: true,
       };
     }
