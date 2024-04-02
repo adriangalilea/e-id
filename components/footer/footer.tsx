@@ -18,6 +18,8 @@ export default async function Footer() {
             <Image
               src="./ball-triangle.svg"
               className="size-6"
+              width={24}
+              height={24}
               alt="loading animation"
             />
           </div>
