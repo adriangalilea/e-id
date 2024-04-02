@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Pen } from "lucide-react";
 import { notFound } from "next/navigation";
+import ShareButton from "./share_button";
 
 export default async function UserProfile({
   username,
@@ -46,9 +47,7 @@ export default async function UserProfile({
         <SocialComponent user={user} />
         {session && session.user?.username === user.username && (
           <div className="flex items-center justify-end gap-2">
-          <Button asChild variant="secondary" size="icon" className="self-end">
-            <Link href={`/${session.user.username}/edit`}>
-              <Pen strokeWidth={1} className="opacity-60" />
+            <ShareButton username={user.username!} />
             <Button asChild variant="outline">
               <Link href={`/${session.user.username}/edit`} prefetch={false}>
                 <Pen strokeWidth={1} className="pr-2" />
