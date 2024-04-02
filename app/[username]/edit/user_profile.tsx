@@ -28,8 +28,7 @@ export default function UserProfile({
   return (
     <form
       action={formAction}
-      className="flex flex-1 flex-col mb-6 gap-6 sm:border sm:border-zinc-500/40 sm:bg-zinc-500/5
-        sm:p-3"
+      className="flex flex-1 flex-col mb-6 gap-6"
     >
       <div className="flex flex-col">
         <div className="flex w-full items-center gap-3">
