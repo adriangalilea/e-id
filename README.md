@@ -26,7 +26,6 @@ A constant pointer to your ever-changing web presence.
 
 ## todo
 
-- [ ] usernames matching for url [username] convert to lowercase
 - [x] feat: list of forbidden handles
   - [x] I don't need auth because it has higher priority than [username]
   - [x] /null path to edit null username
@@ -125,9 +124,10 @@ A constant pointer to your ever-changing web presence.
   - [x] socials is the same visually as SocialComponent
 - [x] feat: edit cusotm order
 - [x] feat: edit higlight
-- [ ] feat: remove highlighted from comment section visually
-- [ ] feat: allow to unpinp higlight
-- [ ] feat: /about how to add emoji domain to twitter
+- [x] feat: remove highlighted from comment section visually
+- [x] feat: allow to unpinp higlight
+- [x] feat: /about how to add emoji domain to twitter
+- [x] usernames matching for url [username] convert to lowercase
 
 # blocked
 
