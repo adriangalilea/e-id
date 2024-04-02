@@ -1,4 +1,4 @@
-import { getUserByUsernameCached } from "@/db/actions";
+import { getUserByUsernameNormalizedCached } from "@/db/actions";
 import UserProfile from "./user_profile";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
@@ -9,7 +9,7 @@ export default async function Page({
   params: { username: string };
 }) {
   const session = await auth();
-  const user = await getUserByUsernameCached(params.username);
+  const user = await getUserByUsernameNormalizedCached(params.username);
 
   if (!user) redirect("/");
 

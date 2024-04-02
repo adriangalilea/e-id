@@ -45,21 +45,25 @@ export async function getUser(id: SelectUser["id"]): Promise<SelectUser> {
 }
 
 export async function getUserByUsername(
-  username: SelectUser["username"],
+  username_normalized: SelectUser["username_normalized"],
 ): Promise<SelectUser> {
-  if (!username) throw new Error("username is required");
+  if (!username_normalized) throw new Error("username is required");
   const result = await db
     .select()
     .from(users)
-    .where(eq(users.username, username))
+    .where(eq(users.username_normalized, username_normalized))
     .limit(1);
   return result[0];
 }
 
-export const getUserByUsernameCached = (username: SelectUser["username"]) => {
+export const getUserByUsernameNormalizedCached = (
+  username: SelectUser["username"],
+) => {
+  const username_normalized = username?.toLowerCase();
+  console.log("username_normalized", username_normalized);
   return unstable_cache(
-    () => getUserByUsername(username),
-    [`user-${username}`],
+    () => getUserByUsername(username_normalized!),
+    [`user-${username_normalized}`],
     { revalidate: 24 * 60 * 60 },
   )();
 };

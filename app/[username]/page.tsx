@@ -1,6 +1,6 @@
 import {
   getUsers,
-  getUserByUsernameCached,
+  getUserByUsernameNormalizedCached,
   getValidUniqueSocialsCached,
 } from "@/db/actions";
 import CommentSection from "./comment_section";
@@ -23,7 +23,7 @@ export async function generateMetadata({
   const username = params.username;
 
   // fetch data
-  const user = await getUserByUsernameCached(username);
+  const user = await getUserByUsernameNormalizedCached(username);
 
   if (!user) {
     notFound();
