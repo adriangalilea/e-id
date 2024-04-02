@@ -2,7 +2,7 @@ import Flag from "@/components/flag";
 import { SelectUser } from "@/db/schema";
 import { SocialComponent } from "@/components/social_component";
 import { Quote } from "@/components/quote";
-import { getUserByUsernameCached } from "@/db/actions";
+import { getUserByUsernameNormalizedCached } from "@/db/actions";
 import { auth } from "@/auth";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -14,7 +14,7 @@ export default async function UserProfile({
 }: {
   username: SelectUser["username"];
 }) {
-  const user = await getUserByUsernameCached(username);
+  const user = await getUserByUsernameNormalizedCached(username);
   if (!user) {
     notFound();
   }
