@@ -27,7 +27,7 @@ export default function AddSocialDropdownMenu({
             dark:hover:bg-indigo-950 dark:hover:text-indigo-300"
           variant="ghost"
         >
-          <Plus />
+          <Plus strokeWidth={1} className="grow shrink-0" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" sideOffset={0} className="min-w-36">

@@ -29,8 +29,8 @@ type flattenedData = {
 export default function GitHubActivity({ data }: { data: flattenedData }) {
   return (
     <div
-      className="relative flex justify-end overflow-auto border bg-zinc-300/80 py-0.5 pr-1
-        dark:bg-zinc-700/80"
+      className="relative flex justify-end border bg-zinc-300/80 py-0.5 pr-1 dark:bg-zinc-700/80
+        overflow-clip"
     >
       <div className="min-w-max">
         <ActivityCalendar

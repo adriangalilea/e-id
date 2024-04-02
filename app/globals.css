@@ -76,8 +76,8 @@
   }
 }
 
-html {
-  scrollbar-gutter: stable;
+root {
+  scrollbar-gutter: stable both-edges;
 }
 
 body[style] {
