@@ -24,10 +24,7 @@ export default async function FooterUser() {
             variant="ghost"
             className="relative !h-10 !w-10 !p-0 hover:bg-orange-500/10"
           >
-            <Link
-              href={`/${session.user?.username}`}
-              aria-label="fix profile null alert"
-            >
+            <Link href={`/null`} aria-label="fix profile null alert">
               <TriangleAlert strokeWidth={1.5} className="text-orange-500" />
             </Link>
           </Button>
