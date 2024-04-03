@@ -1,5 +1,4 @@
 import Flag from "@/components/flag";
-import { SelectUser } from "@/db/schema";
 import { SocialComponent } from "@/components/social_component";
 import { Quote } from "@/components/quote";
 import { getUserByUsernameNormalizedCached } from "@/db/actions";
@@ -10,11 +9,7 @@ import { Pen } from "lucide-react";
 import { notFound } from "next/navigation";
 import ShareButton from "./share_button";
 
-export default async function UserProfile({
-  username,
-}: {
-  username: string;
-}) {
+export default async function UserProfile({ username }: { username: string }) {
   const user = await getUserByUsernameNormalizedCached(username);
   if (!user) {
     notFound();
