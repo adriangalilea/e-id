@@ -13,7 +13,7 @@ import {
   socials,
 } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
-import { revalidateTag } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { setUsername } from "@/db/actions";
 
 declare module "next-auth" {
@@ -129,6 +129,7 @@ function customAdapter(): Adapter {
       }
     }
 
+    revalidatePath("/");
     revalidateTag("users");
 
     return userCreated;
