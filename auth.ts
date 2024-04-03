@@ -51,15 +51,6 @@ function customAdapter(): Adapter {
       .returning()
       .then((res) => res[0] ?? null);
 
-    try {
-      await setUsername(userCreated, username!);
-    } catch (error) {
-      console.error(
-        "Error updating user's username after user creation:",
-        error,
-      );
-    }
-
     if (!userCreated) {
       throw new Error("User Creation Failed");
     }
@@ -102,11 +93,7 @@ function customAdapter(): Adapter {
 
         // last we try to claim his username given his gh_username
         // this may fail if username is not unique hence we do it last and isolated
-        await db
-          .update(users)
-          // @ts-expect-error ts-migrate(2532) FIXME: Object is possibly 'undefined'.
-          .set({ username: dataWithoutUsername.gh_username })
-          .where(eq(users.id, userCreated.id));
+        await setUsername(userCreated, username!);
       } catch (error) {
         console.error("Error updating user:", error);
       }
@@ -136,13 +123,7 @@ function customAdapter(): Adapter {
 
         // last we try to claim his username given his gh_username
         // this may fail if username is not unique hence we do it last and isolated
-        await db
-          .update(users)
-          .set({
-            username: username,
-            username_normalized: username.toLowerCase(),
-          })
-          .where(eq(users.id, userCreated.id));
+        await setUsername(userCreated, username!);
       } catch (error) {
         console.error("Error updating user:", error);
       }
