@@ -8,7 +8,7 @@ export async function middleware(request: NextRequest) {
 
   // check if user session has username if not redirect to /null if not already there
   const session = await auth();
-  if (session?.user && !session.user.username && pathname !== "/null") {
+  if ((session?.user && !session.user.username && !session.user.username_normalized) && pathname !== "/null") {
     return NextResponse.redirect(new URL("/null", request.url));
   } else if (!session?.user && pathname === "/null") {
     return NextResponse.redirect(new URL("/", request.url));
