@@ -13,7 +13,7 @@ import ShareButton from "./share_button";
 export default async function UserProfile({
   username,
 }: {
-  username: SelectUser["username"];
+  username: string;
 }) {
   const user = await getUserByUsernameNormalizedCached(username);
   if (!user) {

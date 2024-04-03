@@ -10,17 +10,20 @@ import { Input } from "@/components/ui/input";
 import { SendHorizontal } from "lucide-react";
 import { auth } from "@/auth";
 import { Testimonial } from "@/components/quote";
-import { SelectUser } from "@/db/schema";
+import { notFound } from "next/navigation";
 // import { useState } from "react";
 
 export default async function CommentSection({
   username,
 }: {
-  username: SelectUser["username"];
+  username: string;
 }) {
   const session = await auth();
   const visitorUserId = session?.user?.id;
   const profileUser = await getUserByUsernameNormalizedCached(username);
+  if (!profileUser) {
+    return notFound();
+  }
   const profileUserId = profileUser.id;
 
   // TODO: make the form into a client component

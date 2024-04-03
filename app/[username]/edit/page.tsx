@@ -1,7 +1,7 @@
 import { getUserByUsernameNormalizedCached } from "@/db/actions";
 import UserProfile from "./user_profile";
 import { auth } from "@/auth";
-import { redirect } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { SocialComponent } from "@/components/social_component";
 
 export default async function Page({
@@ -12,7 +12,7 @@ export default async function Page({
   const session = await auth();
   const user = await getUserByUsernameNormalizedCached(params.username);
 
-  if (!user) redirect("/");
+  if (!user) notFound();
 
   if (session?.user?.username) {
     return (

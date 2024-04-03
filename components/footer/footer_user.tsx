@@ -10,7 +10,7 @@ export default async function FooterUser() {
   return (
     <div className="flex">
       {session ? (
-        session.user?.username ? (
+        session.user?.username && session.user?.username_normalized ? (
           <div className="flex gap-2">
             <UserButton
               username={session.user.username}

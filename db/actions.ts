@@ -47,27 +47,57 @@ export async function getUser(id: SelectUser["id"]): Promise<SelectUser> {
 
 export async function getUserByUsername(
   username_normalized: SelectUser["username_normalized"],
-): Promise<SelectUser> {
-  if (!username_normalized) throw new Error("username is required");
-  const result = await db
-    .select()
-    .from(users)
-    .where(eq(users.username_normalized, username_normalized))
-    .limit(1);
-  return result[0];
+): Promise<SelectUser | null> {
+  // Change undefined to null
+  try {
+    if (!username_normalized) throw new Error("username is required");
+    const result = await db
+      .select()
+      .from(users)
+      .where(eq(users.username_normalized, username_normalized))
+      .limit(1);
+    return result[0] || null;
+  } catch (error) {
+    console.error(error);
+    throw new Error("User not found");
+  }
 }
 
-export const getUserByUsernameNormalizedCached = (
-  username: SelectUser["username"],
-) => {
-  const username_normalized = username?.toLowerCase();
-  console.log("username_normalized", username_normalized);
-  return unstable_cache(
-    () => getUserByUsername(username_normalized!),
+export async function getUserByUsernameNormalizedCached(
+  username: string,
+): Promise<SelectUser | null> {
+  if (!username) throw new Error("Username cannot be empty");
+  const username_normalized = username.toLowerCase();
+  const userCached = await unstable_cache(
+    () => getUserByUsername(username_normalized),
     [`user-${username_normalized}`],
     { revalidate: 24 * 60 * 60 },
   )();
-};
+  if (!userCached) {
+    revalidateTag(`user-${username_normalized}`);
+    console.error("User not found");
+  }
+  return userCached;
+}
+
+// export const getUserByUsernameNormalizedCached = (
+//   username: SelectUser["username"],
+// ) => {
+//   const username_normalized = username?.toLowerCase();
+//   console.log("username_normalized", username_normalized);
+//   const userCached = unstable_cache(
+//     () => getUserByUsername(username_normalized!),
+//     [`user-${username_normalized}`],
+//     { revalidate: 24 * 60 * 60 },
+//   )();
+//   // console.log("userCached", userCached);
+//   if (!userCached) {
+//     revalidateTag(`user-${username_normalized}`);
+//     console.error("User not found");
+//     throw new Error("User not found");
+//   }
+//   return userCached;
+// };
 
 function applyDynamicFilter<T extends SQLiteSelectQueryBuilder>(
   qb: T,

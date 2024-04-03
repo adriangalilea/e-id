@@ -21,10 +21,12 @@ export async function generateMetadata({
     : new URL(`http://localhost:${process.env.PORT || 3000}`);
   // read route params
   const username = params.username;
+  if (!username) {
+    notFound();
+  }
 
   // fetch data
   const user = await getUserByUsernameNormalizedCached(username);
-
   if (!user) {
     notFound();
   }
@@ -62,9 +64,11 @@ export async function generateMetadata({
 export async function generateStaticParams() {
   const users = await getUsers();
 
-  return users.map((user) => ({
-    username: user.username,
-  }));
+  return users
+    .filter((user) => user.username !== null)
+    .map((user) => ({
+      username: user.username,
+    }));
 }
 
 export default async function Page({
