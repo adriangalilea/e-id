@@ -363,7 +363,7 @@ const schema = z.object({
   username: z
     .string()
     .trim()
-    .min(1, { message: "Username cannot be empty." })
+    .min(5, { message: "Username must be at least 5 characters." })
     .regex(/^[a-z0-9-_]+$/, {
       message:
         "Username must only contain lowercase letters, numbers, '-' and '_'.",
@@ -390,8 +390,7 @@ export async function setUsernameFromForm(
 
     if (!validatedFields.success) {
       return {
-        message:
-          validatedFields.error.errors[0].message ?? "Invalid username.",
+        message: validatedFields.error.errors[0].message ?? "Invalid username.",
         error: true,
       };
     }
