@@ -28,22 +28,19 @@ export async function LatestUsersTable() {
       </TableHeader>
       <TableBody>
         {users.map((user) => (
-          <TableRow key={user.id}>
-            <TableCell>
-              <Flag country={user.country_code} />
-            </TableCell>
-            <TableCell className="prose prose-zinc text-sm dark:prose-invert">
-              <Link
-                href={`/${user.username}`}
-                className="no-underline hover:underline"
-              >
+          <Link key={user.id} href={`/${user.username}`} legacyBehavior={true}>
+            <TableRow className="cursor-pointer">
+              <TableCell>
+                <Flag country={user.country_code} />
+              </TableCell>
+              <TableCell className="prose prose-zinc dark:prose-invert text-sm">
                 {user.name}
-              </Link>
-            </TableCell>
-            <TableCell className="prose prose-zinc text-sm dark:prose-invert">
-              <HumanTime date={user.created_at} />
-            </TableCell>
-          </TableRow>
+              </TableCell>
+              <TableCell className="prose prose-zinc dark:prose-invert text-sm">
+                <HumanTime date={user.created_at} />
+              </TableCell>
+            </TableRow>
+          </Link>
         ))}
       </TableBody>
     </Table>
