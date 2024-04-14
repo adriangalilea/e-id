@@ -86,5 +86,6 @@ export async function middleware(request: NextRequest) {
 
 // Optionally, don't invoke Middleware on some paths
 export const config = {
-  matcher: ["/((?!.+\\.[\\w]+$|_next).*)", "/", "/(api|auth|trpc)(.*)"],
+  // matcher: ["/((?!.+\\.[\\w]+$|_next).*)", "/", "/(api|auth|trpc)(.*)"],
+  matcher: ["/((?!auth|api|_next/static|_next/image|favicon.ico).*)"],
 };
