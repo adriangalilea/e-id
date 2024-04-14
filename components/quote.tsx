@@ -2,6 +2,7 @@ import { cn } from "@/lib/utils";
 import Link from "next/link";
 import HumanTime from "./human_date";
 import CustomAvatar from "./custom_avatar";
+import { Textarea } from "./ui/textarea";
 
 const borderStyle = "border-l-2 border-zinc-500";
 
@@ -65,8 +66,7 @@ export function InputQuote({
 }) {
   return (
     <div className={borderStyle}>
-      <input
-        type="text"
+      <Textarea
         placeholder={placeholder}
         name={name}
         defaultValue={text ?? ""}

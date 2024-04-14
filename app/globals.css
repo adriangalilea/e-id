@@ -83,3 +83,9 @@ root {
 body[style] {
   margin: 0 auto !important;
 }
+
+textarea,
+select,
+input {
+  field-sizing: content;
+}

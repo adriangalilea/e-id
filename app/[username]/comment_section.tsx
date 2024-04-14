@@ -6,11 +6,11 @@ import {
 } from "@/db/actions";
 import Comment from "@/components/comment";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { SendHorizontal } from "lucide-react";
 import { auth } from "@/auth";
 import { Testimonial } from "@/components/quote";
 import { notFound } from "next/navigation";
+import { Textarea } from "@/components/ui/textarea";
 // import { useState } from "react";
 
 export default async function CommentSection({
@@ -69,11 +69,10 @@ export default async function CommentSection({
             className="sticky top-0 z-10"
           >
             <div className="flex items-center gap-2">
-              <Input
+              <Textarea
                 disabled={!visitorUserId}
-                type="text"
                 name="body"
-                className="bg-zinc-200/60 text-[16px] shadow-md backdrop-blur-md"
+                className="border-border border bg-zinc-200/10 text-[16px] shadow-md backdrop-blur-md"
                 placeholder="I want everyone to know..."
               />
               <Button
