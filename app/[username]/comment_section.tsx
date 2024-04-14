@@ -1,16 +1,13 @@
 import {
   fetchCommentsConditionally,
-  createCommentFromForm,
   getTestimonials,
   getUserByUsernameNormalizedCached,
 } from "@/db/actions";
 import Comment from "@/components/comment";
-import { Button } from "@/components/ui/button";
-import { SendHorizontal } from "lucide-react";
 import { auth } from "@/auth";
 import { Testimonial } from "@/components/quote";
 import { notFound } from "next/navigation";
-import { Textarea } from "@/components/ui/textarea";
+import CommentForm from "./comment_form";
 // import { useState } from "react";
 
 export default async function CommentSection({
@@ -28,14 +25,7 @@ export default async function CommentSection({
 
   // TODO: make the form into a client component
   // const [commenntText, setCommentText] = useState("");
-  let createCommentFromFormWithID = null;
   let comments = null;
-  if (visitorUserId && profileUserId) {
-    createCommentFromFormWithID = createCommentFromForm.bind(
-      null,
-      profileUserId,
-    );
-  }
 
   if (visitorUserId) {
     comments = await fetchCommentsConditionally(profileUserId, visitorUserId);
@@ -61,31 +51,9 @@ export default async function CommentSection({
         </div>
       )}
 
-      {createCommentFromFormWithID &&
-        visitorUserId &&
-        visitorUserId !== profileUserId && (
-          <form
-            action={createCommentFromFormWithID}
-            className="sticky top-0 z-10"
-          >
-            <div className="flex items-center gap-2">
-              <Textarea
-                disabled={!visitorUserId}
-                name="body"
-                className="border-border border bg-zinc-200/10 text-[16px] shadow-md backdrop-blur-md"
-                placeholder="I want everyone to know..."
-              />
-              <Button
-                disabled={!visitorUserId}
-                type="submit"
-                className="z-10 !h-10 !w-10 shrink-0 grow-0 bg-zinc-500/20 !p-0 shadow-md backdrop-blur-md"
-                variant="ghost"
-              >
-                <SendHorizontal strokeWidth="1" />
-              </Button>
-            </div>
-          </form>
-        )}
+      {visitorUserId && visitorUserId !== profileUserId && (
+        <CommentForm profileUserId={profileUserId} />
+      )}
 
       <div className="my-2 flex flex-col gap-2">
         {comments &&
