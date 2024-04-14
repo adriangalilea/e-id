@@ -201,16 +201,32 @@ export async function createComment(
 }
 
 export async function createCommentFromForm(
-  profileId: string,
+  prevState: { resetKey: string; error: string | null },
   formData: FormData,
+  profileId: string,
 ) {
   const body = String(formData.get("body"));
   const session = await auth();
   const commentatorId = session?.user?.id;
-  if (!commentatorId) return;
-  // TODO: should be done with zod
-  if (!body) return;
+  if (!commentatorId) {
+    return {
+      ...prevState,
+      error:
+        "There was an error, try again later or report it to adriangalilea@gmail.com",
+    };
+  }
+
+  if (!body) {
+    return {
+      ...prevState,
+      error: "Comment can't be empty",
+    };
+  }
   await createComment(profileId, commentatorId, body);
+  return {
+    resetKey: Date.now().toString(),
+    error: null,
+  };
 }
 
 export async function patchComment(
