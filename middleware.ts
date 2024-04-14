@@ -20,8 +20,7 @@ export async function middleware(request: NextRequest) {
 
   // if the request is localhost, return
   const hostHeaders = request.headers.get("host") ?? "";
-  const localhost = "localhost:3000";
-  if (hostHeaders === localhost) {
+  if (hostHeaders.startsWith("localhost")) {
     return;
   }
 
