@@ -12,6 +12,7 @@ import ShareButton from "./share_button";
 export default async function UserProfile({ username }: { username: string }) {
   const user = await getUserByUsernameNormalizedCached(username);
   if (!user) {
+    console.log("UserProfile: User not found", username);
     notFound();
   }
   const session = await auth();

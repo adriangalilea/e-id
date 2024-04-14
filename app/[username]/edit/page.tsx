@@ -12,7 +12,10 @@ export default async function Page({
   const session = await auth();
   const user = await getUserByUsernameNormalizedCached(params.username);
 
-  if (!user) notFound();
+  if (!user) {
+    console.log("User not found inside of page");
+    notFound();
+  }
 
   if (session?.user?.username) {
     return (

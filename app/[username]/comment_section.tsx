@@ -19,7 +19,8 @@ export default async function CommentSection({
   const visitorUserId = session?.user?.id;
   const profileUser = await getUserByUsernameNormalizedCached(username);
   if (!profileUser) {
-    return notFound();
+    console.log("Could not find user with username:", username);
+    notFound();
   }
   const profileUserId = profileUser.id;
 
