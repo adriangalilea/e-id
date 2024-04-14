@@ -22,12 +22,14 @@ export async function generateMetadata({
   // read route params
   const username = params.username;
   if (!username) {
+    console.log("GenerateMetadata: No username found");
     notFound();
   }
 
   // fetch data
   const user = await getUserByUsernameNormalizedCached(username);
   if (!user) {
+    console.log("GenerateMetadata: User not found");
     notFound();
   }
 
