@@ -1,37 +1,46 @@
-"use client";
-
+import { signIn, signOut } from "@/auth";
 import { Button } from "./ui/button";
 import { LogOut, UserRound } from "lucide-react";
-
-import { signIn, signOut } from "next-auth/react";
 
 export function SignIn({
   provider,
   ...props
 }: { provider?: string } & React.ComponentPropsWithRef<typeof Button>) {
   return (
-    <Button
-      aria-label="sign-in"
-      variant="ghost"
-      size="icon"
-      {...props}
-      onClick={() => signIn(provider)}
+    <form
+      className="w-full sm:w-fit"
+      action={async () => {
+        "use server";
+        await signIn(provider);
+      }}
     >
-      <UserRound strokeWidth={1} />
-    </Button>
+      <Button
+        variant="ghost"
+        className="!h-10 !w-10 !p-0"
+        {...props}
+        aria-label="sign-in"
+      >
+        <UserRound strokeWidth={1} />
+      </Button>
+    </form>
   );
 }
-
 export function SignOut(props: React.ComponentPropsWithRef<typeof Button>) {
   return (
-    <Button
-      variant="destructiveGhost"
-      size="icon"
-      {...props}
-      aria-label="sign-in"
-      onClick={() => signOut()}
+    <form
+      action={async () => {
+        "use server";
+        await signOut();
+      }}
     >
-      <LogOut strokeWidth={1} />
-    </Button>
+      <Button
+        variant="destructiveGhost"
+        className="!h-10 !w-10 !p-0"
+        {...props}
+        aria-label="sign-in"
+      >
+        <LogOut strokeWidth={1} />
+      </Button>
+    </form>
   );
 }
