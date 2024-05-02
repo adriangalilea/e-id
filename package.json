@@ -6,7 +6,11 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "purge": "rm -rf node_modules package-lock.json && npm cache clean --force",
+    "purge:all": "npm run purge && rm -rf .next build",
+    "reinstall": "npm run purge && npm install",
+    "reinstall:all": "npm run purge:all && npm install"
   },
   "dependencies": {
     "@auth/drizzle-adapter": "^1.0.1",
