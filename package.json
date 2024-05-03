@@ -7,6 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "format": "prettier --write .",
+    "validate": "npm run lint && npm run lint:js && npm run format",
     "purge": "rm -rf node_modules package-lock.json && npm cache clean --force",
     "purge:all": "npm run purge && rm -rf .next build",
     "reinstall": "npm run purge && npm install",
