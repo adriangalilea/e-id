@@ -45,7 +45,10 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${inter.variable} ${spaceMono.variable} overflow-auto`}>
+    <html
+      lang="en"
+      className={`${inter.variable} ${spaceMono.variable} overflow-auto`}
+    >
       <body
         className="font-inter mx-auto flex h-dvh max-h-full w-full max-w-2xl flex-col
           justify-between px-6 antialiased"

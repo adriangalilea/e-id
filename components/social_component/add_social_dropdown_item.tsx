@@ -19,7 +19,7 @@ export default function AddSocialDropdownMenuItem({
         await addSocial(userId, platform);
       }}
     >
-      {getSocialIcon(platform)} <span >{platform}</span>
+      {getSocialIcon(platform)} <span>{platform}</span>
     </DropdownMenuItem>
   );
 }
