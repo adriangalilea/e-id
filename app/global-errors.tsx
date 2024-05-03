@@ -1,10 +1,6 @@
 "use client";
 
-export default function GlobalError({
-  reset,
-}: {
-  reset: () => void;
-}) {
+export default function GlobalError({ reset }: { reset: () => void }) {
   return (
     <html>
       <body>
