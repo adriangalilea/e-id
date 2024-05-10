@@ -30,7 +30,7 @@ function customAdapter(): Adapter {
 
     // Google returns this format
     // {
-    //   id: '279f3a0b-5aa1-4eab-b72a-f0ff4c4b67c2',
+    //   id: 'redacted-redacted',
     //   name: 'Adrian Galilea Delgado',
     //   email: 'adriangalilea@gmail.com',
     //   image: 'https://lh3.googleusercontent.com/a/ACg8ocKYnnkCAxRw6qspAIG425xBn9AiGvXW_El-vSVDv15tAic=s96-c',
