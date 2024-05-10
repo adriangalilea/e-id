@@ -484,11 +484,13 @@ export async function setUsername(
   if (!validatedFields.success) {
     throw new Error(validatedFields.error.errors[0].message);
   }
+  const validUsername = validatedFields.data.username;
+
   await db
     .update(users)
     .set({
-      username: username,
-      username_normalized: username?.toLowerCase(),
+      username: validUsername,
+      username_normalized: validUsername.toLowerCase(),
     })
     .where(eq(users.id, user?.id));
 }
