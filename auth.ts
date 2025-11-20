@@ -203,7 +203,7 @@ export const auth = betterAuth({
         }
 
         revalidatePath("/");
-        revalidateTag("users", "max");
+        revalidateTag("users-v3");
       } catch (error) {
         console.error("Error in post-OAuth hook:", error);
         // Don't throw - let the sign-in succeed even if social creation fails

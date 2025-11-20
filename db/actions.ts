@@ -494,15 +494,20 @@ export async function setUsernameFromForm(
       };
     }
 
-    await db
-      .update(users)
-      .set({
-        username: username,
-        username_normalized: username?.toLowerCase(),
-      })
+    const user = await db
+      .select()
+      .from(users)
       .where(eq(users.id, userId))
-      .returning({ updatedId: users.id });
+      .then((res) => res[0]);
 
+    if (!user) {
+      return {
+        message: "User not found.",
+        error: true,
+      };
+    }
+
+    await setUsername(user, username);
     revalidatePath("/null");
 
     return {
@@ -536,6 +541,12 @@ export async function setUsername(
       username_normalized: validUsername.toLowerCase(),
     })
     .where(eq(users.id, user?.id));
+
+  const normalizedUsername = validUsername.toLowerCase();
+  revalidatePath(`/${normalizedUsername}`);
+  revalidatePath(`/${normalizedUsername}/edit`);
+  revalidatePath(`/${validUsername}`);
+  revalidatePath(`/${validUsername}/edit`);
 }
 
 export async function addSocial(
