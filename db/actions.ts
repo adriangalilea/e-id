@@ -20,6 +20,7 @@ import {
 import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 import { forbiddenUsernames } from "@/lib/const";
+import { headers } from "next/headers";
 
 export async function getUsers(): Promise<SelectUser[]> {
   return await db.select().from(users);
@@ -206,7 +207,9 @@ export async function createCommentFromForm(
   profileId: string,
 ) {
   const body = String(formData.get("body"));
-  const session = await auth();
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
   const commentatorId = session?.user?.id;
   if (!commentatorId) {
     return {
@@ -243,7 +246,9 @@ export async function patchComment(
 
 export async function deleteComment(id: SelectComment["id"]): Promise<void> {
   // TODO: check if the user is the owner of the comment or  the profile
-  const session = await auth();
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
   if (!session?.user) return;
 
   const deleted_comment = await db
@@ -255,7 +260,9 @@ export async function deleteComment(id: SelectComment["id"]): Promise<void> {
 
 export async function pinCommentToggle(id: SelectComment["id"]) {
   // TODO: check if the user is the owner of the profile
-  const session = await auth();
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
   if (!session?.user) return;
 
   const pinnedComment = await db
@@ -302,7 +309,9 @@ export async function updateUserAndSocials(
   prevState: FormState,
   formData: FormData,
 ): Promise<FormState> {
-  const session = await auth();
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
   if (!session?.user || !session.user.id)
     return { message: "Session invalid.", error: true };
   const profileId = session.user.id;
@@ -441,7 +450,9 @@ export async function setUsernameFromForm(
       };
     }
 
-    const session = await auth();
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
     const userId = session?.user?.id;
 
     if (!userId) {
@@ -535,7 +546,9 @@ export async function orderSocial(
 ) {
   console.log("orderSocial", socialId, order);
   try {
-    const session = await auth();
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
     if (!session?.user?.id) return;
     const orderedSocial = await db
       .update(socials)

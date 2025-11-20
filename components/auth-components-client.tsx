@@ -2,8 +2,7 @@
 
 import { Button } from "./ui/button";
 import { LogOut, UserRound } from "lucide-react";
-
-import { signIn, signOut } from "next-auth/react";
+import { signIn, signOut } from "@/lib/auth-client";
 
 export function SignIn({
   provider,
@@ -15,7 +14,11 @@ export function SignIn({
       variant="ghost"
       size="icon"
       {...props}
-      onClick={() => signIn(provider)}
+      onClick={() =>
+        signIn.social({
+          provider: (provider || "github") as "github" | "google",
+        })
+      }
     >
       <UserRound strokeWidth={1} />
     </Button>
@@ -28,7 +31,7 @@ export function SignOut(props: React.ComponentPropsWithRef<typeof Button>) {
       variant="destructiveGhost"
       size="icon"
       {...props}
-      aria-label="sign-in"
+      aria-label="sign-out"
       onClick={() => signOut()}
     >
       <LogOut strokeWidth={1} />

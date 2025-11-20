@@ -6,26 +6,28 @@ import {
   primaryKey,
   index,
 } from "drizzle-orm/sqlite-core";
-import type { AdapterAccount } from "@auth/core/adapters";
 
+// USER TABLE - better-auth core + custom fields
 export const users = sqliteTable(
   "user",
   {
+    // better-auth core fields
     id: text("id").notNull().primaryKey(),
-    username: text("username"),
-    username_normalized: text("username_normalized").unique(),
     name: text("name"),
     email: text("email").notNull(),
-    emailVerified: integer("emailVerified", { mode: "timestamp_ms" }),
+    emailVerified: integer("emailVerified", { mode: "boolean" }),
     image: text("image"),
+    createdAt: integer("createdAt", { mode: "timestamp" })
+      .default(sql`(unixepoch())`)
+      .notNull(),
+    updatedAt: integer("updatedAt", { mode: "timestamp" })
+      .default(sql`(unixepoch())`)
+      .notNull(),
+    // custom fields
+    username: text("username"),
+    username_normalized: text("username_normalized").unique(),
     bio: text("bio"),
     country_code: text("country_code").default("XX").notNull(),
-    created_at: text("created_at")
-      .default(sql`(CURRENT_TIMESTAMP)`)
-      .notNull(),
-    updated_at: text("updated_at")
-      .default(sql`(CURRENT_TIMESTAMP)`)
-      .notNull(),
     allow_comments: integer("allow_comments", { mode: "boolean" })
       .notNull()
       .default(false),
@@ -36,54 +38,69 @@ export const users = sqliteTable(
   (table) => {
     return {
       usernameIdx: index("username_idx").on(table.username),
-      createdAtIdx: index("created_at_idx").on(table.created_at),
+      createdAtIdx: index("created_at_idx").on(table.createdAt),
     };
   },
 );
 
-export const accounts = sqliteTable(
-  "account",
-  {
-    userId: text("userId")
-      .notNull()
-      .references(() => users.id, { onDelete: "cascade" }),
-    type: text("type").$type<AdapterAccount["type"]>().notNull(),
-    provider: text("provider").notNull(),
-    providerAccountId: text("providerAccountId").notNull(),
-    refresh_token: text("refresh_token"),
-    access_token: text("access_token"),
-    expires_at: integer("expires_at"),
-    token_type: text("token_type"),
-    scope: text("scope"),
-    id_token: text("id_token"),
-    session_state: text("session_state"),
-  },
-  (account) => ({
-    compoundKey: primaryKey({
-      columns: [account.provider, account.providerAccountId],
-    }),
-  }),
-);
-
+// SESSION TABLE - better-auth exact schema
 export const sessions = sqliteTable("session", {
-  sessionToken: text("sessionToken").notNull().primaryKey(),
+  id: text("id").notNull().primaryKey(),
+  token: text("token").notNull().unique(),
+  expiresAt: integer("expiresAt", { mode: "timestamp" }).notNull(),
   userId: text("userId")
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),
-  expires: integer("expires", { mode: "timestamp_ms" }).notNull(),
+  ipAddress: text("ipAddress"),
+  userAgent: text("userAgent"),
+  createdAt: integer("createdAt", { mode: "timestamp" })
+    .default(sql`(unixepoch())`)
+    .notNull(),
+  updatedAt: integer("updatedAt", { mode: "timestamp" })
+    .default(sql`(unixepoch())`)
+    .notNull(),
 });
 
-export const verificationTokens = sqliteTable(
-  "verificationToken",
-  {
-    identifier: text("identifier").notNull(),
-    token: text("token").notNull(),
-    expires: integer("expires", { mode: "timestamp_ms" }).notNull(),
-  },
-  (vt) => ({
-    compoundKey: primaryKey({ columns: [vt.identifier, vt.token] }),
+// ACCOUNT TABLE - better-auth exact schema
+export const accounts = sqliteTable("account", {
+  id: text("id").notNull().primaryKey(),
+  userId: text("userId")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  accountId: text("accountId").notNull(),
+  providerId: text("providerId").notNull(),
+  accessToken: text("accessToken"),
+  refreshToken: text("refreshToken"),
+  accessTokenExpiresAt: integer("accessTokenExpiresAt", { mode: "timestamp" }),
+  refreshTokenExpiresAt: integer("refreshTokenExpiresAt", {
+    mode: "timestamp",
   }),
-);
+  scope: text("scope"),
+  idToken: text("idToken"),
+  password: text("password"),
+  createdAt: integer("createdAt", { mode: "timestamp" })
+    .default(sql`(unixepoch())`)
+    .notNull(),
+  updatedAt: integer("updatedAt", { mode: "timestamp" })
+    .default(sql`(unixepoch())`)
+    .notNull(),
+});
+
+// VERIFICATION TABLE - better-auth exact schema
+export const verification = sqliteTable("verification", {
+  id: text("id").notNull().primaryKey(),
+  identifier: text("identifier").notNull(),
+  value: text("value").notNull(),
+  expiresAt: integer("expiresAt", { mode: "timestamp" }).notNull(),
+  createdAt: integer("createdAt", { mode: "timestamp" })
+    .default(sql`(unixepoch())`)
+    .notNull(),
+  updatedAt: integer("updatedAt", { mode: "timestamp" })
+    .default(sql`(unixepoch())`)
+    .notNull(),
+});
+
+// CUSTOM TABLES (not part of better-auth)
 
 export const comments = sqliteTable(
   "comment",
@@ -154,14 +171,7 @@ export const socials = sqliteTable(
   },
 );
 
-// custom data can contain:
-// followers in [github, twitter, instagram, self, youtube]
-// highlight in [twitter, youtube, self]
-// channel_id in [youtube]
-// platform_user_id in [github, google] created on auth from provider
-
-// this is likely not a good idea long term but for now it's fine and makes less db calls
-
+// Type exports
 export type InsertUser = typeof users.$inferInsert;
 export type SelectUser = typeof users.$inferSelect;
 

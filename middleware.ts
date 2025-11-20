@@ -13,7 +13,10 @@ export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
   // check if user session has username if not redirect to /null if not already there
-  const session = await auth();
+  const session = await auth.api.getSession({
+    headers: request.headers,
+  });
+
   if (
     session?.user &&
     (!session.user.username || !session.user.username_normalized) &&
