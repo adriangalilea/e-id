@@ -20,7 +20,13 @@ export const auth = betterAuth({
   }),
 
   baseURL: process.env.BETTER_AUTH_URL || "http://localhost:3000",
-  trustedOrigins: ["https://e-id.to"],
+  trustedOrigins: [
+    "https://e-id.to",
+    "https://xn--e-0da.to", // emoji domain punycode
+    "https://👤.to", // emoji domain
+    "http://localhost:3000",
+    "*.vercel.app", // all vercel preview deployments
+  ],
   secret: process.env.BETTER_AUTH_SECRET!,
 
   plugins: [nextCookies()],
