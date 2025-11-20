@@ -5,7 +5,7 @@ import { z } from "zod";
 import { updateTag, unstable_cache } from "next/cache";
 
 import { SQLiteSelectQueryBuilder } from "drizzle-orm/sqlite-core";
-import { eq, desc, isNotNull, and, not } from "drizzle-orm";
+import { eq, desc, isNotNull, and, not, ne } from "drizzle-orm";
 import { db } from "@/db";
 
 import {
@@ -27,12 +27,13 @@ export async function getUsers(): Promise<SelectUser[]> {
 }
 
 export async function getLatestUsersWithUsername(): Promise<SelectUser[]> {
+  // Fetch more than 20 to allow for filtering
   const result = await db
     .select()
     .from(users)
     .where(isNotNull(users.username))
     .orderBy(desc(users.createdAt))
-    .limit(6);
+    .limit(50);
 
   console.log("[getLatestUsersWithUsername]", {
     count: result.length,
@@ -43,13 +44,28 @@ export async function getLatestUsersWithUsername(): Promise<SelectUser[]> {
     } : null,
   });
 
-  return result;
+  // If we have less than or equal to 20, return all
+  if (result.length <= 20) {
+    return result;
+  }
+
+  // We have more than 20, prioritize users with flags
+  const withFlags = result.filter((u) => u.country_code !== "XX");
+  const withoutFlags = result.filter((u) => u.country_code === "XX");
+
+  // Take all users with flags first, then fill remaining spots with users without flags
+  const filtered = [
+    ...withFlags,
+    ...withoutFlags.slice(0, Math.max(0, 20 - withFlags.length))
+  ];
+
+  return filtered.slice(0, 20);
 }
 
 export const getLatestUsersWithUsernameCached = unstable_cache(
   async () => getLatestUsersWithUsername(),
   ["users-v3"],
-  { revalidate: 12 * 60 * 60 },
+  { revalidate: 30 * 60 },
 );
 
 export async function getUser(id: SelectUser["id"]): Promise<SelectUser> {

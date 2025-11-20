@@ -27,8 +27,11 @@ export async function LatestUsersTable() {
         </TableRow>
       </TableHeader>
       <TableBody>
-        {users.map((user) => (
-          <TableRow key={user.id} className="cursor-pointer">
+        {users.map((user, index) => (
+          <TableRow
+            key={user.id}
+            className={`cursor-pointer ${index >= 6 ? "hidden lg:table-row" : ""}`}
+          >
             <TableCell className="p-0">
               <Link href={`/${user.username}`} className="block no-underline px-4 py-2">
                 <Flag country={user.country_code} />
