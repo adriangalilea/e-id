@@ -3,13 +3,16 @@ import UserProfile from "./user_profile";
 import { auth } from "@/auth";
 import { notFound, redirect } from "next/navigation";
 import { SocialComponent } from "@/components/social_component";
+import { headers } from "next/headers";
 
 export default async function Page({
   params,
 }: {
   params: { username: string };
 }) {
-  const session = await auth();
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
   const user = await getUserByUsernameNormalizedCached(params.username);
 
   if (!user) {

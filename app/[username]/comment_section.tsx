@@ -8,6 +8,7 @@ import { auth } from "@/auth";
 import { Testimonial } from "@/components/quote";
 import { notFound } from "next/navigation";
 import CommentForm from "./comment_form";
+import { headers } from "next/headers";
 // import { useState } from "react";
 
 export default async function CommentSection({
@@ -15,7 +16,9 @@ export default async function CommentSection({
 }: {
   username: string;
 }) {
-  const session = await auth();
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
   const visitorUserId = session?.user?.id;
   const profileUser = await getUserByUsernameNormalizedCached(username);
   if (!profileUser) {

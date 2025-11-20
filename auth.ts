@@ -1,322 +1,205 @@
-import NextAuth from "next-auth";
-import GitHub from "next-auth/providers/github";
-import Google from "next-auth/providers/google";
-import { DrizzleAdapter } from "@auth/drizzle-adapter";
+import { betterAuth } from "better-auth";
+import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import { nextCookies } from "better-auth/next-js";
 import { db } from "./db";
-import { type AdapterUser, Adapter } from "@auth/core/adapters";
-import {
-  users,
-  accounts,
-  verificationTokens,
-  sessions,
-  SelectUser,
-  socials,
-} from "@/db/schema";
-import { eq, and } from "drizzle-orm";
-import { revalidatePath, revalidateTag } from "next/cache";
+import { users, accounts, sessions, verification, socials } from "@/db/schema";
+import { createAuthMiddleware } from "better-auth/api";
 import { setUsername } from "@/db/actions";
+import { revalidatePath, revalidateTag } from "next/cache";
+import { eq } from "drizzle-orm";
 
-declare module "next-auth" {
-  interface Profile extends Partial<SelectUser> {}
-  interface User extends Partial<SelectUser> {}
-}
+export const auth = betterAuth({
+  database: drizzleAdapter(db, {
+    provider: "sqlite",
+    schema: {
+      user: users,
+      account: accounts,
+      session: sessions,
+      verification: verification,
+    },
+  }),
 
-function customAdapter(): Adapter {
-  const adapter = DrizzleAdapter(db);
+  secret: process.env.BETTER_AUTH_SECRET!,
 
-  // Overwrite createUser method on adapter
-  adapter.createUser = async (data): Promise<AdapterUser> => {
-    // TODO: create a non allowed usernames - ninja
+  plugins: [nextCookies()],
 
-    // Google returns this format
-    // {
-    //   id: 'redacted-redacted',
-    //   name: 'Adrian Galilea Delgado',
-    //   email: 'adriangalilea@gmail.com',
-    //   image: 'https://lh3.googleusercontent.com/a/ACg8ocKYnnkCAxRw6qspAIG425xBn9AiGvXW_El-vSVDv15tAic=s96-c',
-    //   emailVerified: null
-    // }
+  socialProviders: {
+    github: {
+      clientId: process.env.GITHUB_CLIENT_ID!,
+      clientSecret: process.env.GITHUB_CLIENT_SECRET!,
+    },
+    google: {
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+    },
+  },
 
-    // Github returns
-    // gh_id gh_username gh_image
-
-    const { username, ...dataWithoutUsername } = data;
-    console.log(dataWithoutUsername);
-    const userCreated = await db
-      .insert(users)
-      .values({
-        ...dataWithoutUsername,
-        id: crypto.randomUUID(),
-      })
-      .returning()
-      .then((res) => res[0] ?? null);
-
-    if (!userCreated) {
-      throw new Error("User Creation Failed");
-    }
-
-    // @ts-expect-error ts-migrate(2532) FIXME: Object is possibly 'undefined'.
-    if (dataWithoutUsername.gh_id) {
-      try {
-        await db.insert(socials).values({
-          id: crypto.randomUUID(),
-          user_id: userCreated.id,
-          platform: "github",
-          // @ts-expect-error ts-migrate(2532) FIXME: Object is possibly 'undefined'.
-          value: dataWithoutUsername.gh_username,
-          // @ts-expect-error ts-migrate(2532) FIXME: Object is possibly 'undefined'.
-          image: dataWithoutUsername.gh_image,
-          custom_data: {
-            // @ts-expect-error ts-migrate(2532) FIXME: Object is possibly 'undefined'.
-            platform_user_id: dataWithoutUsername.gh_id,
-          },
-        });
-
-        // create his email social
-        await db
-          .insert(socials)
-          .values({
-            id: crypto.randomUUID(),
-            user_id: userCreated.id,
-            platform: "email",
-            value: dataWithoutUsername.email,
-          })
-          .returning()
-          .then((res) => res[0] ?? null);
-
-        // we try to set his image
-        await db
-          .update(users)
-          // @ts-expect-error ts-migrate(2532) FIXME: Object is possibly 'undefined'.
-          .set({ image: dataWithoutUsername.gh_image })
-          .where(eq(users.id, userCreated.id));
-
-        // last we try to claim his username given his gh_username
-        // this may fail if username is not unique hence we do it last and isolated
-        await setUsername(userCreated, username!);
-      } catch (error) {
-        console.error("Error updating user:", error);
-      }
-    } else if (dataWithoutUsername.name) {
-      // we assume this is google
-      // we propose an username given it's email
-      const username = dataWithoutUsername.email.split("@")[0];
-      try {
-        await db
-          .insert(socials)
-          .values({
-            id: crypto.randomUUID(),
-            user_id: userCreated.id,
-            platform: "email",
-            value: dataWithoutUsername.email,
-            image: dataWithoutUsername.image,
-            custom_data: { platform_user_id: dataWithoutUsername.id },
-          })
-          .returning()
-          .then((res) => res[0] ?? null);
-
-        // set his image
-        await db
-          .update(users)
-          .set({ image: dataWithoutUsername.image })
-          .where(eq(users.id, userCreated.id));
-
-        // last we try to claim his username given his gh_username
-        // this may fail if username is not unique hence we do it last and isolated
-        await setUsername(userCreated, username!);
-      } catch (error) {
-        console.error("Error updating user:", error);
-      }
-    }
-
-    revalidatePath("/");
-    revalidateTag("users");
-
-    return userCreated;
-  };
-
-  adapter.linkAccount = async (rawAccount): Promise<any> => {
-    console.log(rawAccount);
-    const updatedAccount = await db
-      .insert(accounts)
-      .values(rawAccount)
-      .returning()
-      .get();
-
-    const account: any = {
-      ...updatedAccount,
-      type: updatedAccount.type,
-      access_token: updatedAccount.access_token ?? undefined,
-      token_type: updatedAccount.token_type ?? undefined,
-      id_token: updatedAccount.id_token ?? undefined,
-      refresh_token: updatedAccount.refresh_token ?? undefined,
-      scope: updatedAccount.scope ?? undefined,
-      expires_at: updatedAccount.expires_at ?? undefined,
-      session_state: updatedAccount.session_state ?? undefined,
-    };
-
-    return account;
-  };
-  // the rest of the methods need to be copy-pasted, else the custom session data will not appear
-  adapter.getUser = async (data) => {
-    const result = await db
-      .select()
-      .from(users)
-      .where(eq(users.id, data))
-      .get();
-    return result ?? null;
-  };
-  adapter.getUserByEmail = async (data) => {
-    const result = await db
-      .select()
-      .from(users)
-      .where(eq(users.email, data))
-      .get();
-    return result ?? null;
-  };
-  adapter.createSession = (data) => {
-    return db.insert(sessions).values(data).returning().get();
-  };
-  adapter.getSessionAndUser = async (data) => {
-    const result = await db
-      .select({ session: sessions, user: users })
-      .from(sessions)
-      .where(eq(sessions.sessionToken, data))
-      .innerJoin(users, eq(users.id, sessions.userId))
-      .get();
-    return result ?? null;
-  };
-
-  adapter.updateUser = async (data) => {
-    console.log(data);
-    if (!data.id) {
-      throw new Error("No user id.");
-    }
-
-    const result = await db
-      .update(users)
-      .set(data)
-      .where(eq(users.id, data.id))
-      .returning()
-      .get();
-    return result ?? null;
-  };
-
-  adapter.updateSession = async (data) => {
-    const result = await db
-      .update(sessions)
-      .set(data)
-      .where(eq(sessions.sessionToken, data.sessionToken))
-      .returning()
-      .get();
-    return result ?? null;
-  };
-
-  adapter.getUserByAccount = async (account) => {
-    const results = await db
-      .select()
-      .from(accounts)
-      .leftJoin(users, eq(users.id, accounts.userId))
-      .where(
-        and(
-          eq(accounts.provider, account.provider),
-          eq(accounts.providerAccountId, account.providerAccountId),
-        ),
-      )
-      .get();
-
-    if (!results) {
-      return null;
-    }
-    return Promise.resolve(results).then((results) => results.user);
-  };
-
-  adapter.deleteSession = async (sessionToken) => {
-    const result = await db
-      .delete(sessions)
-      .where(eq(sessions.sessionToken, sessionToken))
-      .returning()
-      .get();
-    return result ?? null;
-  };
-
-  adapter.createVerificationToken = async (token) => {
-    const result = await db
-      .insert(verificationTokens)
-      .values(token)
-      .returning()
-      .get();
-    return result ?? null;
-  };
-
-  adapter.useVerificationToken = async (token) => {
-    try {
-      const result = await db
-        .delete(verificationTokens)
-        .where(
-          and(
-            eq(verificationTokens.identifier, token.identifier),
-            eq(verificationTokens.token, token.token),
-          ),
-        )
-        .returning()
-        .get();
-      return result ?? null;
-    } catch (err) {
-      throw new Error("No verification token found.");
-    }
-  };
-
-  adapter.deleteUser = async (id) => {
-    const result = await db
-      .delete(users)
-      .where(eq(users.id, id))
-      .returning()
-      .get();
-    return result ?? null;
-  };
-
-  adapter.unlinkAccount = async (account) => {
-    await db
-      .delete(accounts)
-      .where(
-        and(
-          eq(accounts.providerAccountId, account.providerAccountId),
-          eq(accounts.provider, account.provider),
-        ),
-      )
-      .run();
-  };
-
-  return {
-    ...adapter,
-  };
-}
-
-export const {
-  handlers: { GET, POST },
-  auth,
-  signIn,
-  signOut,
-} = NextAuth({
-  basePath: "/auth",
-  adapter: customAdapter(),
-  providers: [
-    Google({
-      allowDangerousEmailAccountLinking: true,
-    }),
-    GitHub({
-      allowDangerousEmailAccountLinking: true,
-      profile(profile) {
-        return {
-          id: profile.id.toString(),
-          gh_id: profile.id.toString(),
-          name: profile.name ?? profile.login,
-          email: profile.email,
-          gh_image: profile.avatar_url,
-          gh_username: profile.login,
-        };
+  user: {
+    additionalFields: {
+      username: {
+        type: "string",
+        required: false,
       },
+      username_normalized: {
+        type: "string",
+        required: false,
+      },
+      bio: {
+        type: "string",
+        required: false,
+      },
+      country_code: {
+        type: "string",
+        required: true,
+        defaultValue: "XX",
+      },
+      allow_comments: {
+        type: "boolean",
+        required: true,
+        defaultValue: false,
+      },
+      theme: {
+        type: "string",
+        required: false,
+      },
+      languages: {
+        type: "string",
+        required: false,
+      },
+      birthDate: {
+        type: "number",
+        required: false,
+      },
+    },
+  },
+
+  hooks: {
+    after: createAuthMiddleware(async (ctx) => {
+      // Only run after OAuth sign-in/sign-up
+      if (!ctx.path.startsWith("/sign-in/social")) {
+        return;
+      }
+
+      const newSession = ctx.context.newSession;
+      if (!newSession) {
+        return;
+      }
+
+      const userId = newSession.user.id;
+      const userEmail = newSession.user.email;
+
+      // Get the account to determine provider
+      const userAccounts = await db
+        .select()
+        .from(accounts)
+        .where(eq(accounts.userId, userId));
+
+      if (!userAccounts || userAccounts.length === 0) {
+        return;
+      }
+
+      const account = userAccounts[0];
+      const providerId = account.providerId;
+
+      try {
+        if (providerId === "github") {
+          // For GitHub, we need to fetch the profile to get username
+          // The account.accountId is the GitHub user ID
+          const githubId = account.accountId;
+
+          // Fetch GitHub profile using the access token
+          const response = await fetch("https://api.github.com/user", {
+            headers: {
+              Authorization: `Bearer ${account.accessToken}`,
+              Accept: "application/vnd.github.v3+json",
+            },
+          });
+
+          if (response.ok) {
+            const profile = await response.json();
+            const githubUsername = profile.login;
+            const githubAvatarUrl = profile.avatar_url;
+
+            // Create GitHub social entry
+            await db.insert(socials).values({
+              id: crypto.randomUUID(),
+              user_id: userId,
+              platform: "github",
+              value: githubUsername,
+              image: githubAvatarUrl,
+              custom_data: {
+                platform_user_id: githubId,
+              },
+            });
+
+            // Create email social entry
+            await db.insert(socials).values({
+              id: crypto.randomUUID(),
+              user_id: userId,
+              platform: "email",
+              value: userEmail,
+            });
+
+            // Set user image
+            await db
+              .update(users)
+              .set({ image: githubAvatarUrl })
+              .where(eq(users.id, userId));
+
+            // Try to claim username
+            const user = await db
+              .select()
+              .from(users)
+              .where(eq(users.id, userId))
+              .then((res) => res[0]);
+
+            if (user) {
+              await setUsername(user, githubUsername);
+            }
+          }
+        } else if (providerId === "google") {
+          // For Google
+          const googleId = account.accountId;
+          const proposedUsername = userEmail.split("@")[0];
+
+          // Create email social entry with Google data
+          await db.insert(socials).values({
+            id: crypto.randomUUID(),
+            user_id: userId,
+            platform: "email",
+            value: userEmail,
+            image: newSession.user.image || undefined,
+            custom_data: {
+              platform_user_id: googleId,
+            },
+          });
+
+          // Set user image if available
+          if (newSession.user.image) {
+            await db
+              .update(users)
+              .set({ image: newSession.user.image })
+              .where(eq(users.id, userId));
+          }
+
+          // Try to claim username
+          const user = await db
+            .select()
+            .from(users)
+            .where(eq(users.id, userId))
+            .then((res) => res[0]);
+
+          if (user) {
+            await setUsername(user, proposedUsername);
+          }
+        }
+
+        revalidatePath("/");
+        revalidateTag("users");
+      } catch (error) {
+        console.error("Error in post-OAuth hook:", error);
+        // Don't throw - let the sign-in succeed even if social creation fails
+      }
     }),
-  ],
+  },
 });

@@ -8,6 +8,7 @@ import Link from "next/link";
 import { Pen } from "lucide-react";
 import { notFound } from "next/navigation";
 import ShareButton from "./share_button";
+import { headers } from "next/headers";
 
 export default async function UserProfile({ username }: { username: string }) {
   const user = await getUserByUsernameNormalizedCached(username);
@@ -15,7 +16,9 @@ export default async function UserProfile({ username }: { username: string }) {
     console.log("UserProfile: User not found", username);
     notFound();
   }
-  const session = await auth();
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
   return (
     <main>
       <div>

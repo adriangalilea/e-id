@@ -1,12 +1,15 @@
 import { auth } from "@/auth";
 import UserButton from "../user-button";
-import { SignIn, SignOut } from "../auth-components";
+import { SignIn, SignOut } from "../auth-components-client";
 import { Button } from "@/components/ui/button";
 import { TriangleAlert } from "lucide-react";
 import Link from "next/link";
+import { headers } from "next/headers";
 
 export default async function FooterUser() {
-  const session = await auth();
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
   return (
     <div className="flex">
       {session ? (

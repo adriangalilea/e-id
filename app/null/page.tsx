@@ -6,9 +6,12 @@ import { TriangleAlert } from "lucide-react";
 import { ClientForm } from "./client_form";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
+import { headers } from "next/headers";
 
 export default async function Page() {
-  const session = await auth();
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
   if (!session || !session.user || !session.user.id) redirect("/");
   if (session.user.username && session.user.username_normalized) {
     revalidatePath(`/${session.user.username_normalized}`);
