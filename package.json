@@ -17,7 +17,7 @@
   "dependencies": {
     "@auth/drizzle-adapter": "^1.0.1",
     "@hookform/resolvers": "^3.3.4",
-    "@libsql/client": "^0.6.0",
+    "@libsql/client": "^0.15.15",
     "@mantine/hooks": "^7.8.1",
     "@next/third-parties": "^14.2.3",
     "@radix-ui/react-accordion": "^1.1.2",
