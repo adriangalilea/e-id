@@ -85,9 +85,14 @@ export async function SocialComponent({
   if (githubSocial && githubSocial.value) {
     try {
       const data = await fetchGithubActivity(githubSocial.value);
-      githubActivityData = flattenData(data);
+      const flattened = flattenData(data);
+      // Only assign if we got valid data
+      if (flattened && flattened.length > 0) {
+        githubActivityData = flattened;
+      }
     } catch (e) {
-      console.error(e);
+      console.error("Error fetching GitHub activity:", e);
+      // githubActivityData remains empty array
     }
   }
 
@@ -194,7 +199,7 @@ export async function SocialComponent({
 
               {social.platform === "github" && (
                 <>
-                  {social.value && githubActivityData && (
+                  {social.value && githubActivityData.length > 0 && (
                     <div className="mt-3 sm:mt-6">
                       <GitHubActivity data={githubActivityData} />
                     </div>
