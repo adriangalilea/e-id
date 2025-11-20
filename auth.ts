@@ -20,6 +20,7 @@ export const auth = betterAuth({
   }),
 
   baseURL: process.env.BETTER_AUTH_URL || "http://localhost:3000",
+  trustedOrigins: ["https://e-id.to"],
   secret: process.env.BETTER_AUTH_SECRET!,
 
   plugins: [nextCookies()],
