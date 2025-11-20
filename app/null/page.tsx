@@ -5,7 +5,6 @@ import { auth } from "@/auth";
 import { TriangleAlert } from "lucide-react";
 import { ClientForm } from "./client_form";
 import { redirect } from "next/navigation";
-import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 
 export default async function Page() {
@@ -14,10 +13,6 @@ export default async function Page() {
   });
   if (!session || !session.user || !session.user.id) redirect("/");
   if (session.user.username && session.user.username_normalized) {
-    revalidatePath(`/${session.user.username_normalized}`);
-    revalidatePath(`/${session.user.username_normalized}/edit`);
-    revalidatePath(`/${session.user.username}`);
-    revalidatePath(`/${session.user.username}/edit`);
     redirect(`/${session.user.username}`);
   }
 
