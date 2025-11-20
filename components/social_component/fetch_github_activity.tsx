@@ -28,9 +28,8 @@ function isValidGithubResponse(data: unknown): data is GithubOutput {
   }
 
   // Validate data structure exists
-  return !!(
-    response.data?.user?.contributionsCollection?.contributionCalendar?.weeks
-  );
+  return !!response.data?.user?.contributionsCollection?.contributionCalendar
+    ?.weeks;
 }
 
 export const flattenData = (
@@ -47,7 +46,8 @@ export const flattenData = (
   }
 
   try {
-    const weeks = data.data?.user?.contributionsCollection?.contributionCalendar?.weeks;
+    const weeks =
+      data.data?.user?.contributionsCollection?.contributionCalendar?.weeks;
 
     if (!weeks || !Array.isArray(weeks)) {
       return [];

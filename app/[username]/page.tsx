@@ -10,15 +10,15 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { headers } from "next/headers";
+import { getBaseUrlFromHeaders } from "@/lib/url";
+import { PROD_URL } from "@/lib/const";
 
 export async function generateMetadata({
   params,
 }: {
   params: { username: string };
 }): Promise<Metadata> {
-  const url = process.env.VERCEL_URL
-    ? new URL(`https://${headers().get("host")}`)
-    : new URL(`http://localhost:${process.env.PORT || 3000}`);
+  const url = new URL(getBaseUrlFromHeaders(headers()));
   // read route params
   const username = params.username;
   if (!username) {
@@ -50,7 +50,7 @@ export async function generateMetadata({
       title: user.name || "",
       description: `@${user.username} - Digital Identity`,
       type: "profile",
-      url: `https://e-id.to/${user.username}`,
+      url: `${PROD_URL}/${user.username}`,
       images: [
         {
           url: ogUrl.toString(),

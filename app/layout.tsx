@@ -5,6 +5,7 @@ import Footer from "@/components/footer/footer";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Toaster } from "@/components/ui/toaster";
+import { getBaseUrl } from "@/lib/url";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -29,13 +30,13 @@ export const metadata: Metadata = {
   keywords: ["digital", "identity", "profile", "web", "link aggregator"],
   creator: "Adrian Galilea",
   publisher: "Adrian Galilea",
-  metadataBase: new URL(`${process.env.URL}`),
+  metadataBase: new URL(getBaseUrl()),
   robots: "index, follow",
   alternates: {
-    canonical: `${process.env.URL}`,
+    canonical: getBaseUrl(),
   },
   icons: {
-    icon: `${process.env.URL}/favicon.ico`,
+    icon: `${getBaseUrl()}/favicon.ico`,
   },
 };
 

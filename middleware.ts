@@ -1,6 +1,12 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { auth } from "./auth";
+import {
+  MAIN_DOMAIN,
+  SHORT_DOMAIN,
+  EMOJI_DOMAIN,
+  EMOJI_DOMAIN_PUNYCODE,
+} from "./lib/const";
 
 export async function middleware(request: NextRequest) {
   // start a console timer
@@ -24,23 +30,17 @@ export async function middleware(request: NextRequest) {
     return;
   }
 
-  // list of domains
-  const shortDomain = "eid.to";
-  const mainDomain = "e-id.to";
-  const emojiDomain = "👤.to";
-  const emojiDomainPunycode = "xn--mq8h.to";
-
   // list of domains with www
-  const shortDomainWWW = `www.${shortDomain}`;
-  const mainDomainWWW = `www.${mainDomain}`;
-  const emojiDomainWWW = `www.${emojiDomain}`;
-  const emojiDomainPunycodeWWW = `www.${emojiDomainPunycode}`;
+  const shortDomainWWW = `www.${SHORT_DOMAIN}`;
+  const mainDomainWWW = `www.${MAIN_DOMAIN}`;
+  const emojiDomainWWW = `www.${EMOJI_DOMAIN}`;
+  const emojiDomainPunycodeWWW = `www.${EMOJI_DOMAIN_PUNYCODE}`;
 
   // list https url's
-  const shortHttps = `https://${shortDomain}`;
-  const mainHttps = `https://${mainDomain}`;
-  const emojiHttps = `https://${emojiDomain}`;
-  const emojiHttpsPunycode = `https://${emojiDomainPunycode}`;
+  const shortHttps = `https://${SHORT_DOMAIN}`;
+  const mainHttps = `https://${MAIN_DOMAIN}`;
+  const emojiHttps = `https://${EMOJI_DOMAIN}`;
+  const emojiHttpsPunycode = `https://${EMOJI_DOMAIN_PUNYCODE}`;
 
   const userAgent = request.headers.get("user-agent") ?? "";
 
@@ -53,11 +53,11 @@ export async function middleware(request: NextRequest) {
     !/CriOS/i.test(userAgent);
 
   const targetUrl = useEmojiDomain ? emojiHttps : mainHttps;
-  const targetDomain = useEmojiDomain ? emojiDomain : mainDomain;
+  const targetDomain = useEmojiDomain ? EMOJI_DOMAIN : MAIN_DOMAIN;
   const targetDomainWWW = useEmojiDomain ? emojiDomainWWW : mainDomainWWW;
   const targetDomainPunycode = useEmojiDomain
-    ? emojiDomainPunycode
-    : mainDomain;
+    ? EMOJI_DOMAIN_PUNYCODE
+    : MAIN_DOMAIN;
   const targetDomainPunycodeWWW = useEmojiDomain
     ? emojiDomainPunycodeWWW
     : mainDomainWWW;
