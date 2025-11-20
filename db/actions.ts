@@ -2,7 +2,7 @@
 
 import { z } from "zod";
 
-import { revalidateTag, unstable_cache } from "next/cache";
+import { updateTag, unstable_cache } from "next/cache";
 
 import { SQLiteSelectQueryBuilder } from "drizzle-orm/sqlite-core";
 import { eq, desc, isNotNull, and, not } from "drizzle-orm";
@@ -31,7 +31,7 @@ export async function getLatestUsersWithUsername(): Promise<SelectUser[]> {
     .select()
     .from(users)
     .where(isNotNull(users.username))
-    .orderBy(desc(users.created_at))
+    .orderBy(desc(users.createdAt))
     .limit(6);
 }
 
@@ -75,7 +75,7 @@ export async function getUserByUsernameNormalizedCached(
     { revalidate: 24 * 60 * 60 },
   )();
   if (!userCached) {
-    revalidateTag(`user-${username_normalized}`);
+    updateTag(`user-${username_normalized}`);
     console.error("User not found");
   }
   return userCached;
@@ -93,7 +93,7 @@ export async function getUserByUsernameNormalizedCached(
 //   )();
 //   // console.log("userCached", userCached);
 //   if (!userCached) {
-//     revalidateTag(`user-${username_normalized}`);
+//     updateTag(`user-${username_normalized}`);
 //     console.error("User not found");
 //     throw new Error("User not found");
 //   }
@@ -144,7 +144,7 @@ export async function fetchCommentsConditionally(
   return result.map((row) => ({
     commentId: row.commentId,
     body: row.commentBody,
-    createdAt: row.commentCreatedAt,
+    createdAt: new Date(row.commentCreatedAt),
     pinned: row.commentPinned,
     user: {
       name: row.commentatorName,
@@ -178,7 +178,7 @@ export async function getTestimonials(profileUserId: SelectUser["id"]) {
   return result.map((row) => ({
     commentId: row.commentId,
     body: row.commentBody,
-    createdAt: row.commentCreatedAt,
+    createdAt: new Date(row.commentCreatedAt),
     user: {
       name: row.commentatorName,
       image: row.commentatorImage,
@@ -279,7 +279,7 @@ export async function getSocials(
   return await db.select().from(socials).where(eq(socials.user_id, userId));
 }
 
-export const getValidUniqueSocialsCached = (userId: SelectUser["id"]) => {
+export const getValidUniqueSocialsCached = async (userId: SelectUser["id"]) => {
   return unstable_cache(
     async () => {
       const allSocials = await getSocials(userId);
@@ -410,7 +410,7 @@ export async function updateUserAndSocials(
 
   revalidatePath(`/${updatedUser.username}`);
   revalidatePath(`/${updatedUser.username}/edit`);
-  revalidateTag(`user-socials-${updatedUser.username}`);
+  updateTag(`user-socials-${updatedUser.username}`);
   return setUsernameOutput;
 }
 
@@ -445,7 +445,7 @@ export async function setUsernameFromForm(
 
     if (!validatedFields.success) {
       return {
-        message: validatedFields.error.errors[0].message ?? "Invalid username.",
+        message: validatedFields.error.issues[0].message ?? "Invalid username.",
         error: true,
       };
     }
@@ -493,7 +493,7 @@ export async function setUsername(
     username: username,
   });
   if (!validatedFields.success) {
-    throw new Error(validatedFields.error.errors[0].message);
+    throw new Error(validatedFields.error.issues[0].message);
   }
   const validUsername = validatedFields.data.username;
 
@@ -517,7 +517,7 @@ export async function addSocial(
       .returning({ insertedId: socials.id });
     revalidatePath(`/${userId}/edit`);
     revalidatePath(`/${userId}`);
-    revalidateTag(`user-socials-${userId}`);
+    updateTag(`user-socials-${userId}`);
   } catch (error) {
     console.error(error);
   }
@@ -534,7 +534,7 @@ export async function removeSocial(
       .returning({ deletedId: socials.id });
     revalidatePath(`/${userId}/edit`);
     revalidatePath(`/${userId}`);
-    revalidateTag(`user-socials-${userId}`);
+    updateTag(`user-socials-${userId}`);
   } catch (error) {
     console.error(error);
   }

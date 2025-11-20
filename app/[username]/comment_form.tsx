@@ -1,9 +1,9 @@
 "use client";
+import { useActionState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { SendHorizontal } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
-import { useFormState } from "react-dom";
 import { createCommentFromForm } from "@/db/actions";
 
 export default function CommentForm({
@@ -16,7 +16,7 @@ export default function CommentForm({
     formData: FormData,
   ) => createCommentFromForm(prevState, formData, profileUserId);
 
-  const [state, formAction] = useFormState(actionFunction, {
+  const [state, formAction] = useActionState(actionFunction, {
     error: null,
     resetKey: Date.now().toString(),
   });

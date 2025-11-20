@@ -1,6 +1,6 @@
 "use client";
+import { useActionState } from "react";
 
-import { useFormState } from "react-dom";
 import { setUsernameFromForm } from "@/db/actions";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -13,7 +13,7 @@ const initialState = {
 };
 
 export function ClientForm() {
-  const [state, formAction] = useFormState(setUsernameFromForm, initialState);
+  const [state, formAction] = useActionState(setUsernameFromForm, initialState);
 
   return (
     <form action={formAction} className="flex flex-col justify-between gap-2">

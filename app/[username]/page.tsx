@@ -13,12 +13,13 @@ import { headers } from "next/headers";
 import { getBaseUrlFromHeaders } from "@/lib/url";
 import { PROD_URL } from "@/lib/const";
 
-export async function generateMetadata({
-  params,
-}: {
-  params: { username: string };
-}): Promise<Metadata> {
-  const url = new URL(getBaseUrlFromHeaders(headers()));
+export async function generateMetadata(
+  props: {
+    params: Promise<{ username: string }>;
+  }
+): Promise<Metadata> {
+  const params = await props.params;
+  const url = new URL(getBaseUrlFromHeaders(await headers()));
   // read route params
   const username = params.username;
   if (!username) {
@@ -73,11 +74,12 @@ export async function generateStaticParams() {
     }));
 }
 
-export default async function Page({
-  params,
-}: {
-  params: { username: string };
-}) {
+export default async function Page(
+  props: {
+    params: Promise<{ username: string }>;
+  }
+) {
+  const params = await props.params;
   return (
     <div className="flex flex-1 flex-col gap-6 sm:gap-12">
       <Suspense fallback={<div>Loading...</div>}>

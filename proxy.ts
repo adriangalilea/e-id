@@ -8,7 +8,7 @@ import {
   EMOJI_DOMAIN_PUNYCODE,
 } from "./lib/const";
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   // start a console timer
   const pathname = request.nextUrl.pathname;
 

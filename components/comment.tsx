@@ -3,6 +3,8 @@ import { Testimonial } from "./quote";
 import RemoveComment from "./remove_comment";
 import PinComment from "./pin_comment";
 
+import type { JSX } from "react";
+
 export default async function Comment({
   body,
   date,
@@ -14,7 +16,7 @@ export default async function Comment({
   canPin,
 }: {
   body: SelectUser["bio"];
-  date: SelectUser["created_at"];
+  date: Date;
   name: SelectUser["name"];
   profilePicture: SelectUser["image"];
   username: SelectUser["username"];

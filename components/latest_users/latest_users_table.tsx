@@ -37,7 +37,7 @@ export async function LatestUsersTable() {
                 {user.name}
               </TableCell>
               <TableCell className="prose prose-zinc dark:prose-invert text-sm">
-                <HumanTime date={user.created_at} />
+                <HumanTime date={user.createdAt} />
               </TableCell>
             </TableRow>
           </Link>

@@ -109,7 +109,7 @@ export interface Props {
    * the element with a tooltip component. Use `React.cloneElement` to pass
    * additional props to the element if necessary.
    */
-  renderBlock?: (block: BlockElement, activity: Activity) => ReactElement;
+  renderBlock?: (block: BlockElement, activity: Activity) => ReactElement<any>;
   /**
    * Toggle to show weekday labels left to the calendar.
    */

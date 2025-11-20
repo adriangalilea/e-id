@@ -5,11 +5,12 @@ import { notFound, redirect } from "next/navigation";
 import { SocialComponent } from "@/components/social_component";
 import { headers } from "next/headers";
 
-export default async function Page({
-  params,
-}: {
-  params: { username: string };
-}) {
+export default async function Page(
+  props: {
+    params: Promise<{ username: string }>;
+  }
+) {
+  const params = await props.params;
   const session = await auth.api.getSession({
     headers: await headers(),
   });
