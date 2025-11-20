@@ -27,12 +27,23 @@ export async function getUsers(): Promise<SelectUser[]> {
 }
 
 export async function getLatestUsersWithUsername(): Promise<SelectUser[]> {
-  return await db
+  const result = await db
     .select()
     .from(users)
     .where(isNotNull(users.username))
     .orderBy(desc(users.createdAt))
     .limit(6);
+
+  console.log("[getLatestUsersWithUsername]", {
+    count: result.length,
+    sample: result[0] ? {
+      createdAt: result[0].createdAt,
+      createdAtType: typeof result[0].createdAt,
+      isDate: result[0].createdAt instanceof Date,
+    } : null,
+  });
+
+  return result;
 }
 
 export const getLatestUsersWithUsernameCached = unstable_cache(
