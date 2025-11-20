@@ -1,4 +1,5 @@
 "use client";
+import { useActionState } from "react";
 import { Input } from "@/components/ui/input";
 import CountryPicker from "./country_picker";
 import { SelectUser } from "@/db/schema";
@@ -7,7 +8,6 @@ import { InputQuote } from "@/components/quote";
 import { Label } from "@/components/ui/label";
 import { SaveButton } from "./save_button";
 import { AtSign, Ban } from "lucide-react";
-import { useFormState } from "react-dom";
 import { Alert, AlertTitle } from "@/components/ui/alert";
 import { cn } from "@/lib/utils";
 
@@ -23,7 +23,7 @@ export default function UserProfile({
   children: React.ReactNode;
   user: SelectUser;
 }) {
-  const [state, formAction] = useFormState(updateUserAndSocials, initialState);
+  const [state, formAction] = useActionState(updateUserAndSocials, initialState);
 
   return (
     <form action={formAction} className="flex flex-1 flex-col mb-6 gap-6">

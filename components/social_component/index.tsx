@@ -35,6 +35,8 @@ import AddSocialDropdownMenu from "./add_social_dropdown";
 import OrderDropdown from "./order_dropdown";
 import { Star } from "lucide-react";
 
+import type { JSX } from "react";
+
 export async function SocialComponent({
   user,
   edit,

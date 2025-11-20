@@ -17,7 +17,7 @@ export default function HumanTime({
   pretext = "",
   dateOnly = false,
 }: {
-  date: string;
+  date: Date;
   pretext?: string;
   dateOnly?: boolean;
 }) {

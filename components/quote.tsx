@@ -30,7 +30,7 @@ export function Testimonial({
   name: string;
   username: string;
   image: string;
-  date: string;
+  date: Date;
 }) {
   return (
     <blockquote className={cn(style, borderStyle, "group")}>
