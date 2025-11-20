@@ -48,7 +48,7 @@ export async function getLatestUsersWithUsername(): Promise<SelectUser[]> {
 
 export const getLatestUsersWithUsernameCached = unstable_cache(
   async () => getLatestUsersWithUsername(),
-  ["users"],
+  ["users-v3"],
   { revalidate: 12 * 60 * 60 },
 );
 
