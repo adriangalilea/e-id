@@ -140,7 +140,7 @@ export async function fetchCommentsConditionally(
 
   const result = await query.all();
 
-  return result.map((row) => ({
+  const mapped = result.map((row) => ({
     commentId: row.commentId,
     body: row.commentBody,
     createdAt: row.commentCreatedAt,
@@ -151,6 +151,17 @@ export async function fetchCommentsConditionally(
       username: row.commentatorUsername,
     },
   }));
+
+  console.log("[fetchCommentsConditionally]", {
+    count: mapped.length,
+    sample: mapped[0] ? {
+      createdAt: mapped[0].createdAt,
+      createdAtType: typeof mapped[0].createdAt,
+      isDate: mapped[0].createdAt instanceof Date,
+    } : null,
+  });
+
+  return mapped;
 }
 
 export async function getTestimonials(profileUserId: SelectUser["id"]) {
@@ -174,7 +185,7 @@ export async function getTestimonials(profileUserId: SelectUser["id"]) {
     )
     .all();
 
-  return result.map((row) => ({
+  const mapped = result.map((row) => ({
     commentId: row.commentId,
     body: row.commentBody,
     createdAt: row.commentCreatedAt,
@@ -184,6 +195,17 @@ export async function getTestimonials(profileUserId: SelectUser["id"]) {
       username: row.commentatorUsername,
     },
   }));
+
+  console.log("[getTestimonials]", {
+    count: mapped.length,
+    sample: mapped[0] ? {
+      createdAt: mapped[0].createdAt,
+      createdAtType: typeof mapped[0].createdAt,
+      isDate: mapped[0].createdAt instanceof Date,
+    } : null,
+  });
+
+  return mapped;
 }
 
 export async function createComment(
