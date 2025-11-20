@@ -75,7 +75,6 @@ export async function getUserByUsernameNormalizedCached(
     { revalidate: 24 * 60 * 60 },
   )();
   if (!userCached) {
-    updateTag(`user-${username_normalized}`);
     console.error("User not found");
   }
   return userCached;
@@ -144,7 +143,7 @@ export async function fetchCommentsConditionally(
   return result.map((row) => ({
     commentId: row.commentId,
     body: row.commentBody,
-    createdAt: new Date(row.commentCreatedAt),
+    createdAt: row.commentCreatedAt,
     pinned: row.commentPinned,
     user: {
       name: row.commentatorName,
@@ -178,7 +177,7 @@ export async function getTestimonials(profileUserId: SelectUser["id"]) {
   return result.map((row) => ({
     commentId: row.commentId,
     body: row.commentBody,
-    createdAt: new Date(row.commentCreatedAt),
+    createdAt: row.commentCreatedAt,
     user: {
       name: row.commentatorName,
       image: row.commentatorImage,
