@@ -112,11 +112,11 @@ export const comments = sqliteTable(
     commentator_id: text("commentator_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
-    created_at: text("created_at")
-      .default(sql`(CURRENT_TIMESTAMP)`)
+    created_at: integer("created_at", { mode: "timestamp" })
+      .default(sql`(unixepoch())`)
       .notNull(),
-    updated_at: text("updated_at")
-      .default(sql`(CURRENT_TIMESTAMP)`)
+    updated_at: integer("updated_at", { mode: "timestamp" })
+      .default(sql`(unixepoch())`)
       .notNull(),
     body: text("body").notNull(),
     pinned: integer("pinned", { mode: "boolean" }).notNull().default(false),
