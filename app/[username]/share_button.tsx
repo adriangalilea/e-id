@@ -11,6 +11,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { Link as LinkIcon } from "lucide-react";
 import { ClipboardCopy } from "lucide-react";
 import Link from "next/link";
+import { PROD_URL, EMOJI_DOMAIN, EMOJI_DOMAIN_PUNYCODE } from "@/lib/const";
 
 export default function ShareButton({ username }: { username: string }) {
   const { toast } = useToast();
@@ -29,7 +30,7 @@ export default function ShareButton({ username }: { username: string }) {
           variant="ghost"
           className="w-full flex"
           onClick={async () => {
-            await navigator.clipboard.writeText(`https://e-id.to/${username}`);
+            await navigator.clipboard.writeText(`${PROD_URL}/${username}`);
             toast({
               variant: "success",
               title: "Copied to clipboard!",
@@ -45,7 +46,9 @@ export default function ShareButton({ username }: { username: string }) {
           variant="ghost"
           className="w-full flex"
           onClick={async () => {
-            await navigator.clipboard.writeText(`https://👤.to/${username}`);
+            await navigator.clipboard.writeText(
+              `https://${EMOJI_DOMAIN}/${username}`,
+            );
             toast({
               variant: "success",
               title: "Copied to clipboard!",
@@ -73,7 +76,7 @@ export default function ShareButton({ username }: { username: string }) {
           className="w-full flex"
           onClick={async () => {
             await navigator.clipboard.writeText(
-              `https://xn--mq8h.to/${username}`,
+              `https://${EMOJI_DOMAIN_PUNYCODE}/${username}`,
             );
             toast({
               variant: "success",
