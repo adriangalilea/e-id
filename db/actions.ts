@@ -35,15 +35,6 @@ export async function getLatestUsersWithUsername(): Promise<SelectUser[]> {
     .orderBy(desc(users.createdAt))
     .limit(50);
 
-  console.log("[getLatestUsersWithUsername]", {
-    count: result.length,
-    sample: result[0] ? {
-      createdAt: result[0].createdAt,
-      createdAtType: typeof result[0].createdAt,
-      isDate: result[0].createdAt instanceof Date,
-    } : null,
-  });
-
   // If we have less than or equal to 20, return all
   if (result.length <= 20) {
     return result;
