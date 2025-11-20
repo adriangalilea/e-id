@@ -32,7 +32,15 @@ export function SignOut(props: React.ComponentPropsWithRef<typeof Button>) {
       size="icon"
       {...props}
       aria-label="sign-out"
-      onClick={() => signOut()}
+      onClick={async () => {
+        await signOut({
+          fetchOptions: {
+            onSuccess: () => {
+              window.location.href = "/";
+            },
+          },
+        });
+      }}
     >
       <LogOut strokeWidth={1} />
     </Button>
