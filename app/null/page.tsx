@@ -1,13 +1,12 @@
-export const dynamic = "force-dynamic";
-
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { auth } from "@/auth";
 import { TriangleAlert } from "lucide-react";
 import { ClientForm } from "./client_form";
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
+import { Suspense } from "react";
 
-export default async function Page() {
+async function NullPageContent() {
   const session = await auth.api.getSession({
     headers: await headers(),
   });
@@ -31,5 +30,13 @@ export default async function Page() {
       </Alert>
       <ClientForm />
     </div>
+  );
+}
+
+export default async function Page() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <NullPageContent />
+    </Suspense>
   );
 }
