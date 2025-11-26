@@ -18,7 +18,7 @@ const SwitchPublic = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <TooltipProvider>
     <Tooltip>
-      <TooltipTrigger className="flex items-center">
+      <TooltipTrigger asChild>
         <SwitchPrimitives.Root
           {...props}
           className={cn(
