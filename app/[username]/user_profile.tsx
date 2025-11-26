@@ -1,54 +1,127 @@
 import Flag from "@/components/flag";
 import { SocialComponent } from "@/components/social_component";
-import { Quote } from "@/components/quote";
-import { getUserByUsernameNormalizedCached } from "@/db/actions";
-import { auth } from "@/auth";
+import { Quote, InputQuote } from "@/components/quote";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import Link from "next/link";
-import { Pen } from "lucide-react";
-import { notFound } from "next/navigation";
+import { AtSign, Pen } from "lucide-react";
 import ShareButton from "./share_button";
-import { headers } from "next/headers";
+import CountryPicker from "@/components/country_picker";
+import { SaveButton } from "@/components/save_button";
+import { DiscardButton } from "@/components/discard_button";
+import { SelectUser } from "@/db/schema";
+import { EditForm } from "./edit_form";
 
-export default async function UserProfile({ username }: { username: string }) {
-  const user = await getUserByUsernameNormalizedCached(username);
-  if (!user) {
-    console.log("UserProfile: User not found", username);
-    notFound();
-  }
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
+function ProfileHeader({
+  user,
+  edit,
+}: {
+  user: SelectUser;
+  edit?: boolean;
+}) {
   return (
-    <main>
-      <div>
-        <div
-          className="prose prose-zinc dark:prose-invert flex flex-col justify-between gap-1.5 pt-3
-            sm:flex-row sm:items-end sm:gap-3"
-        >
+    <div>
+      <div
+        className="prose prose-zinc dark:prose-invert flex flex-col justify-between gap-1.5 pt-3
+          sm:flex-row sm:items-end sm:gap-3"
+      >
+        {edit ? (
+          <Input
+            data-1p-ignore
+            type="text"
+            name="name"
+            defaultValue={user.name!}
+            className="!m-0 !bg-transparent text-2xl font-normal focus-visible:border-zinc-500
+              focus-visible:ring-0 focus-visible:ring-transparent focus-visible:ring-offset-0
+              sm:font-normal"
+            placeholder="Name"
+          />
+        ) : (
           <h1 className="!m-0 text-2xl font-light">{user.name}</h1>
-          <div className="flex items-end justify-between sm:grow">
+        )}
+        <div className="flex items-end justify-between sm:grow">
+          {edit ? (
+            <div className="flex items-center font-extralight">
+              <Label
+                htmlFor="username"
+                className="flex size-10 items-center justify-center bg-zinc-50/10"
+              >
+                <AtSign strokeWidth={1} size="20" />
+              </Label>
+              <Input
+                data-1p-ignore
+                type="text"
+                id="username"
+                name="username"
+                defaultValue={user.username!}
+                className="!m-0 min-w-[140px] grow border border-border !bg-transparent text-[16px]
+                  focus-visible:border-zinc-500 focus-visible:ring-0
+                  focus-visible:ring-transparent focus-visible:ring-offset-0 sm:font-normal"
+                placeholder="username"
+              />
+            </div>
+          ) : (
             <p className="prose prose-zinc dark:prose-invert !m-0 text-xl font-extralight">
               @{user.username}
             </p>
-            <div className="flex content-between items-start gap-1.5">
+          )}
+          <div className="flex content-between items-start gap-1.5">
+            {edit ? (
+              <>
+                <input
+                  type="hidden"
+                  name="country_code"
+                  defaultValue={user.country_code}
+                />
+                <CountryPicker savedCountry={user.country_code} />
+              </>
+            ) : (
               <Flag country={user.country_code} />
-            </div>
+            )}
           </div>
         </div>
       </div>
-      <div className="mt-6 flex flex-col gap-6 sm:mt-12">
-        {user.bio && (
+    </div>
+  );
+}
+
+function ProfileContent({
+  user,
+  edit,
+  isOwner,
+}: {
+  user: SelectUser;
+  edit?: boolean;
+  isOwner?: boolean;
+}) {
+  return (
+    <div className="mt-6 flex flex-col gap-6 sm:mt-12">
+      {edit ? (
+        <InputQuote
+          text={user.bio ?? ""}
+          name="bio"
+          placeholder="Message to the world"
+        />
+      ) : (
+        user.bio && (
           <div className="sm:mb-6">
             <Quote text={user.bio} />
           </div>
-        )}
-        <SocialComponent user={user} />
-        {session && session.user?.username === user.username && (
+        )
+      )}
+      <SocialComponent user={user} edit={edit} />
+      {edit ? (
+        <div className="flex items-center justify-end gap-2">
+          <DiscardButton username={user.username!} />
+          <SaveButton />
+        </div>
+      ) : (
+        isOwner && (
           <div className="flex items-center justify-end gap-2">
             <ShareButton username={user.username!} />
             <Button asChild variant="outline">
-              <Link href={`/${session.user.username}/edit`} prefetch={false}>
+              <Link href={`/${user.username}?edit`} prefetch={false}>
                 <Pen strokeWidth={1} className="pr-2" />
                 <span className="prose prose-zinc dark:prose-invert font-light">
                   edit
@@ -56,8 +129,31 @@ export default async function UserProfile({ username }: { username: string }) {
               </Link>
             </Button>
           </div>
-        )}
-      </div>
+        )
+      )}
+    </div>
+  );
+}
+
+export default async function UserProfile({
+  user,
+  edit,
+  isOwner,
+}: {
+  user: SelectUser;
+  edit?: boolean;
+  isOwner?: boolean;
+}) {
+  const content = (
+    <main>
+      <ProfileHeader user={user} edit={edit} />
+      <ProfileContent user={user} edit={edit} isOwner={isOwner} />
     </main>
   );
+
+  if (edit) {
+    return <EditForm>{content}</EditForm>;
+  }
+
+  return content;
 }

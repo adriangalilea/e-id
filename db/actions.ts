@@ -20,6 +20,7 @@ import {
 import { auth } from "@/auth";
 import { forbiddenUsernames } from "@/lib/const";
 import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 
 export async function getUsers(): Promise<SelectUser[]> {
   return await db.select().from(users);
@@ -442,8 +443,13 @@ export async function updateUserAndSocials(
   updateTag("users");
   updateTag(`user-${updatedUser.id}`);
   revalidatePath(`/${updatedUser.username}`);
-  revalidatePath(`/${updatedUser.username}/edit`);
-  return setUsernameOutput;
+
+  if (setUsernameOutput.error) {
+    return setUsernameOutput;
+  }
+
+  const finalUsername = username !== updatedUser.username ? username : updatedUser.username;
+  redirect(`/${finalUsername}`);
 }
 
 const schema = z.object({
@@ -545,7 +551,6 @@ export async function setUsername(
   updateTag("users");
   updateTag(`user-${user.id}`);
   revalidatePath(`/${validUsername}`);
-  revalidatePath(`/${validUsername}/edit`);
 }
 
 export async function addSocial(
@@ -560,7 +565,6 @@ export async function addSocial(
     const user = await getUser(userId);
     updateTag(`user-${userId}`);
     revalidatePath(`/${user.username}`);
-    revalidatePath(`/${user.username}/edit`);
   } catch (error) {
     console.error(error);
   }
@@ -578,7 +582,6 @@ export async function removeSocial(
     const user = await getUser(userId);
     updateTag(`user-${userId}`);
     revalidatePath(`/${user.username}`);
-    revalidatePath(`/${user.username}/edit`);
   } catch (error) {
     console.error(error);
   }
@@ -606,7 +609,6 @@ export async function orderSocial(
     const user = await getUser(orderedSocial.user_id);
     updateTag(`user-${orderedSocial.user_id}`);
     revalidatePath(`/${user.username}`);
-    revalidatePath(`/${user.username}/edit`);
   } catch (error) {
     console.error(error);
   }
