@@ -1,3 +1,5 @@
+import { cacheTag, cacheLife } from "next/cache";
+
 type GithubOutput = {
   data?: {
     user?: {
@@ -87,6 +89,10 @@ export const flattenData = (
 export async function fetchGithubActivity(
   username: string,
 ): Promise<GithubOutput> {
+  "use cache";
+  cacheLife("days");
+  cacheTag(`github-${username}`);
+
   // Validate inputs
   if (!username || typeof username !== "string" || username.trim() === "") {
     console.warn("Invalid GitHub username provided");
@@ -104,7 +110,6 @@ export async function fetchGithubActivity(
 
   try {
     const response = await fetch(`https://api.github.com/graphql`, {
-      next: { revalidate: 60 * 60 * 24 }, // Cache for 24 hours
       method: "POST",
       headers: {
         "Content-Type": "application/json",

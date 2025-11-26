@@ -2,7 +2,7 @@
 
 import { z } from "zod";
 
-import { updateTag, unstable_cache } from "next/cache";
+import { updateTag, cacheTag, cacheLife, revalidatePath } from "next/cache";
 
 import { SQLiteSelectQueryBuilder } from "drizzle-orm/sqlite-core";
 import { eq, desc, isNotNull, and, not, ne } from "drizzle-orm";
@@ -17,7 +17,6 @@ import {
   SelectSocial,
   SocialPlatform,
 } from "@/db/schema";
-import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 import { forbiddenUsernames } from "@/lib/const";
 import { headers } from "next/headers";
@@ -53,11 +52,12 @@ export async function getLatestUsersWithUsername(): Promise<SelectUser[]> {
   return filtered.slice(0, 20);
 }
 
-export const getLatestUsersWithUsernameCached = unstable_cache(
-  async () => getLatestUsersWithUsername(),
-  ["users-v3"],
-  { revalidate: 30 * 60 },
-);
+export async function getLatestUsersWithUsernameCached(): Promise<SelectUser[]> {
+  "use cache";
+  cacheLife("minutes");
+  cacheTag("users");
+  return getLatestUsersWithUsername();
+}
 
 export async function getUser(id: SelectUser["id"]): Promise<SelectUser> {
   const result = await db.select().from(users).where(eq(users.id, id)).limit(1);
@@ -85,37 +85,20 @@ export async function getUserByUsername(
 export async function getUserByUsernameNormalizedCached(
   username: string,
 ): Promise<SelectUser | null> {
+  "use cache";
+  cacheLife("hours");
+
   if (!username) throw new Error("Username cannot be empty");
   const username_normalized = username.toLowerCase();
-  const userCached = await unstable_cache(
-    () => getUserByUsername(username_normalized),
-    [`user-${username_normalized}`],
-    { revalidate: 24 * 60 * 60 },
-  )();
-  if (!userCached) {
+  cacheTag("users", `user-${username_normalized}`);
+
+  const user = await getUserByUsername(username_normalized);
+  if (!user) {
     console.error("User not found");
   }
-  return userCached;
+  return user;
 }
 
-// export const getUserByUsernameNormalizedCached = (
-//   username: SelectUser["username"],
-// ) => {
-//   const username_normalized = username?.toLowerCase();
-//   console.log("username_normalized", username_normalized);
-//   const userCached = unstable_cache(
-//     () => getUserByUsername(username_normalized!),
-//     [`user-${username_normalized}`],
-//     { revalidate: 24 * 60 * 60 },
-//   )();
-//   // console.log("userCached", userCached);
-//   if (!userCached) {
-//     updateTag(`user-${username_normalized}`);
-//     console.error("User not found");
-//     throw new Error("User not found");
-//   }
-//   return userCached;
-// };
 
 function applyDynamicFilter<T extends SQLiteSelectQueryBuilder>(
   qb: T,
@@ -237,6 +220,7 @@ export async function createComment(
     .returning({ insertedId: comments.id });
 
   const user_profile = await getUser(profile_user_id);
+  updateTag(`user-${user_profile.id}`);
   revalidatePath(`/${user_profile.username}`);
 }
 
@@ -280,7 +264,9 @@ export async function patchComment(
     .set({ body })
     .where(eq(comments.id, id))
     .returning();
-  revalidatePath(`/${patched_comment[0].profile_user_id}`);
+  const user_profile = await getUser(patched_comment[0].profile_user_id);
+  updateTag(`user-${user_profile.id}`);
+  revalidatePath(`/${user_profile.username}`);
 }
 
 export async function deleteComment(id: SelectComment["id"]): Promise<void> {
@@ -294,7 +280,9 @@ export async function deleteComment(id: SelectComment["id"]): Promise<void> {
     .delete(comments)
     .where(eq(comments.id, id))
     .returning();
-  revalidatePath(`/${deleted_comment[0].profile_user_id}`);
+  const user_profile = await getUser(deleted_comment[0].profile_user_id);
+  updateTag(`user-${user_profile.id}`);
+  revalidatePath(`/${user_profile.username}`);
 }
 
 export async function pinCommentToggle(id: SelectComment["id"]) {
@@ -309,40 +297,44 @@ export async function pinCommentToggle(id: SelectComment["id"]) {
     .set({ pinned: not(comments.pinned) })
     .where(eq(comments.id, id))
     .returning();
-  revalidatePath(`/${pinnedComment[0].profile_user_id}`);
+  const user_profile = await getUser(pinnedComment[0].profile_user_id);
+  updateTag(`user-${user_profile.id}`);
+  revalidatePath(`/${user_profile.username}`);
 }
 
 export async function getSocials(
   userId: SelectUser["id"],
 ): Promise<SelectSocial[]> {
+  "use cache";
+  cacheLife("hours");
+  cacheTag(`user-${userId}`);
+
   return await db.select().from(socials).where(eq(socials.user_id, userId));
 }
 
-export const getValidUniqueSocialsCached = async (userId: SelectUser["id"]) => {
-  return unstable_cache(
-    async () => {
-      const allSocials = await getSocials(userId);
-      const uniqueSocialsWithValue = allSocials.reduce<SocialPlatform[]>(
-        (uniquePlatforms, { value, platform, public: isPublic }) => {
-          if (
-            value &&
-            isPublic &&
-            !uniquePlatforms.includes(platform as SocialPlatform)
-          ) {
-            uniquePlatforms.push(platform as SocialPlatform);
-          }
-          return uniquePlatforms;
-        },
-        [],
-      );
-      return uniqueSocialsWithValue;
+export async function getValidUniqueSocialsCached(
+  userId: SelectUser["id"],
+): Promise<SocialPlatform[]> {
+  "use cache";
+  cacheLife("hours");
+  cacheTag(`user-${userId}`);
+
+  const allSocials = await getSocials(userId);
+  const uniqueSocialsWithValue = allSocials.reduce<SocialPlatform[]>(
+    (uniquePlatforms, { value, platform, public: isPublic }) => {
+      if (
+        value &&
+        isPublic &&
+        !uniquePlatforms.includes(platform as SocialPlatform)
+      ) {
+        uniquePlatforms.push(platform as SocialPlatform);
+      }
+      return uniquePlatforms;
     },
-    [`user-socials-${userId}`],
-    {
-      revalidate: 24 * 60 * 60,
-    },
-  )();
-};
+    [],
+  );
+  return uniqueSocialsWithValue;
+}
 
 export async function updateUserAndSocials(
   prevState: FormState,
@@ -447,9 +439,10 @@ export async function updateUserAndSocials(
     }
   }
 
+  updateTag("users");
+  updateTag(`user-${updatedUser.id}`);
   revalidatePath(`/${updatedUser.username}`);
   revalidatePath(`/${updatedUser.username}/edit`);
-  updateTag(`user-socials-${updatedUser.username}`);
   return setUsernameOutput;
 }
 
@@ -549,9 +542,8 @@ export async function setUsername(
     })
     .where(eq(users.id, user?.id));
 
-  const normalizedUsername = validUsername.toLowerCase();
-  revalidatePath(`/${normalizedUsername}`);
-  revalidatePath(`/${normalizedUsername}/edit`);
+  updateTag("users");
+  updateTag(`user-${user.id}`);
   revalidatePath(`/${validUsername}`);
   revalidatePath(`/${validUsername}/edit`);
 }
@@ -565,9 +557,10 @@ export async function addSocial(
       .insert(socials)
       .values({ id: crypto.randomUUID(), user_id: userId, platform })
       .returning({ insertedId: socials.id });
-    revalidatePath(`/${userId}/edit`);
-    revalidatePath(`/${userId}`);
-    updateTag(`user-socials-${userId}`);
+    const user = await getUser(userId);
+    updateTag(`user-${userId}`);
+    revalidatePath(`/${user.username}`);
+    revalidatePath(`/${user.username}/edit`);
   } catch (error) {
     console.error(error);
   }
@@ -582,9 +575,10 @@ export async function removeSocial(
       .delete(socials)
       .where(eq(socials.id, socialId))
       .returning({ deletedId: socials.id });
-    revalidatePath(`/${userId}/edit`);
-    revalidatePath(`/${userId}`);
-    updateTag(`user-socials-${userId}`);
+    const user = await getUser(userId);
+    updateTag(`user-${userId}`);
+    revalidatePath(`/${user.username}`);
+    revalidatePath(`/${user.username}/edit`);
   } catch (error) {
     console.error(error);
   }
@@ -594,7 +588,6 @@ export async function orderSocial(
   socialId: SelectSocial["id"],
   order: SelectSocial["order"],
 ) {
-  console.log("orderSocial", socialId, order);
   try {
     const session = await auth.api.getSession({
       headers: await headers(),
@@ -609,9 +602,11 @@ export async function orderSocial(
       .returning()
       .then((res) => res[0] ?? null);
 
-    console.log("orderedSocial", orderedSocial);
-    revalidatePath(`/${orderedSocial.user_id}/edit`);
-    revalidatePath(`/${orderedSocial.user_id}`);
+    if (!orderedSocial || !orderedSocial.user_id) return;
+    const user = await getUser(orderedSocial.user_id);
+    updateTag(`user-${orderedSocial.user_id}`);
+    revalidatePath(`/${user.username}`);
+    revalidatePath(`/${user.username}/edit`);
   } catch (error) {
     console.error(error);
   }

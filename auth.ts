@@ -5,7 +5,7 @@ import { db } from "./db";
 import { users, accounts, sessions, verification, socials } from "@/db/schema";
 import { createAuthMiddleware } from "better-auth/api";
 import { setUsername } from "@/db/actions";
-import { revalidatePath, revalidateTag } from "next/cache";
+import { updateTag, revalidatePath } from "next/cache";
 import { eq } from "drizzle-orm";
 
 export const auth = betterAuth({
@@ -202,8 +202,8 @@ export const auth = betterAuth({
           }
         }
 
+        updateTag("users");
         revalidatePath("/");
-        revalidateTag("users-v3", "max");
       } catch (error) {
         console.error("Error in post-OAuth hook:", error);
         // Don't throw - let the sign-in succeed even if social creation fails
