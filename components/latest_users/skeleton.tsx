@@ -24,7 +24,7 @@ export const LoadingSkeleton = () => (
         {[...Array(6)].map((_, index) => (
           <tr key={index} className="border-b transition-colors">
             <td className="p-4 pr-0 align-middle">
-              <SVGSkeleton className="!m-0 h-6 w-6" />{" "}
+              <SVGSkeleton className="m-0! h-6 w-6" />{" "}
               {/* Adjusted for flag size */}
             </td>
             <td className="p-4 pr-0 align-middle">

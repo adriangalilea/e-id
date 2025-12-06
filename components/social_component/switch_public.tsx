@@ -23,9 +23,9 @@ const SwitchPublic = React.forwardRef<
           {...props}
           className={cn(
             `group relative inline-flex size-10 items-center justify-center border
-            border-border transition-colors hover:bg-zinc-950/15 focus-visible:outline-none
+            border-border transition-colors hover:bg-zinc-950/15 focus-visible:outline-hidden
             focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2
-            hover:dark:bg-zinc-50/15`,
+            dark:hover:bg-zinc-50/15`,
             className,
           )}
           ref={ref}

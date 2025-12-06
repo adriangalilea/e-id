@@ -102,18 +102,18 @@ export async function SocialComponent({
 
   return (
     <Tabs defaultValue={populatedSocials[0]?.id} className="mt-0 w-full">
-      <TabsList className="grid auto-cols-fr grid-flow-col !p-0">
+      <TabsList className="grid auto-cols-fr grid-flow-col p-0!">
         {populatedSocials.map(({ id, icon }) => (
           <TabsTrigger
             key={id}
             value={id}
-            className="flex h-full justify-center !shadow-none
+            className="flex h-full justify-center shadow-none!
               data-[state=active]:bg-zinc-200
               data-[state=inactive]:bg-zinc-50/60
               hover:data-[state=inactive]:bg-zinc-50/20
               dark:data-[state=active]:bg-zinc-800
               dark:data-[state=inactive]:bg-zinc-950/60
-              hover:dark:data-[state=inactive]:bg-zinc-950/20"
+              dark:hover:data-[state=inactive]:bg-zinc-950/20"
           >
             {icon}
           </TabsTrigger>
@@ -140,13 +140,13 @@ export async function SocialComponent({
                         dark:prose-invert group flex w-fit items-center
                         bg-zinc-500 pr-3 text-white transition-colors
                         hover:text-zinc-950 sm:font-normal dark:bg-zinc-50/10
-                        hover:dark:bg-zinc-300"
+                        dark:hover:bg-zinc-300"
                     >
                       <div
                         className="flex size-10 shrink-0 items-center
                           justify-center bg-zinc-700 text-zinc-50
                           transition-colors dark:bg-zinc-400 dark:text-zinc-950
-                          group-hover:dark:bg-zinc-300"
+                          dark:group-hover:bg-zinc-300"
                       >
                         {social.placeholder_pretext}
                       </div>
@@ -204,7 +204,7 @@ export async function SocialComponent({
                     id={social.id}
                     name={`${social.platform}_${social.id}_value`}
                     defaultValue={social.value || ""}
-                    className="!m-0 border border-zinc-950/10 !bg-transparent
+                    className="m-0! border border-zinc-950/10 bg-transparent!
                       text-[16px] focus-visible:border-zinc-500
                       focus-visible:ring-0 focus-visible:ring-transparent
                       focus-visible:ring-offset-0 sm:font-normal
@@ -244,8 +244,8 @@ export async function SocialComponent({
                             social.custom_data["highlight"]) ||
                           ""
                         }
-                        className="!m-0 border border-zinc-950/10
-                          !bg-transparent text-[16px]
+                        className="m-0! border border-zinc-950/10
+                          bg-transparent! text-[16px]
                           focus-visible:border-zinc-500 focus-visible:ring-0
                           focus-visible:ring-transparent
                           focus-visible:ring-offset-0 sm:font-normal
@@ -286,8 +286,8 @@ export async function SocialComponent({
                             social.custom_data["highlight"]) ||
                           ""
                         }
-                        className="!m-0 border border-zinc-950/10
-                          !bg-transparent text-[16px]
+                        className="m-0! border border-zinc-950/10
+                          bg-transparent! text-[16px]
                           focus-visible:border-zinc-500 focus-visible:ring-0
                           focus-visible:ring-transparent
                           focus-visible:ring-offset-0 sm:font-normal
@@ -299,7 +299,7 @@ export async function SocialComponent({
 
                   {social.custom_data && social.custom_data["highlight"] && (
                     <div
-                      className="mt-3 flex justify-center *:!m-0 *:!w-full
+                      className="mt-3 flex justify-center *:m-0! *:w-full!
                         sm:mt-6"
                     >
                       <Tweet id={social.custom_data["highlight"]} />

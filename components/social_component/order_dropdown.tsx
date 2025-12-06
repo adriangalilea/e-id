@@ -30,11 +30,11 @@ export default async function OrderDropdown({
           <TooltipTrigger asChild>
             <DropdownMenuTrigger
               asChild
-              className="!ring-0 !ring-transparent bg-transparent"
+              className="ring-0! ring-transparent! bg-transparent"
             >
               <Button
                 className="justify-center border border-border transition-colors hover:bg-zinc-950/15
-                  hover:dark:bg-zinc-50/15"
+                  dark:hover:bg-zinc-50/15"
                 variant="outline"
                 size="icon"
               >
@@ -50,7 +50,7 @@ export default async function OrderDropdown({
       <DropdownMenuContent
         align="end"
         sideOffset={0}
-        className="!w-10 min-w-10"
+        className="w-10! min-w-10"
       >
         {socials.map((social, index) => (
           <OrderDropdownItem

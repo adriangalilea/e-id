@@ -44,7 +44,7 @@ export default function GitHubActivity({ data }: { data: flattenedData }) {
           hideTotalCount
         />
         <div
-          className="absolute inset-0 w-24 backdrop-blur-sm"
+          className="absolute inset-0 w-24 backdrop-blur-xs"
           style={{
             maskImage: "linear-gradient(to left, transparent, white)",
           }}
