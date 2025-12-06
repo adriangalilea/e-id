@@ -85,7 +85,7 @@ function ProfileHeader({ user, edit }: { user: SelectUser; edit?: boolean }) {
 
 function ProfileContent({ user, edit }: { user: SelectUser; edit?: boolean }) {
   return (
-    <div className="mt-6 flex flex-col gap-6 sm:mt-12">
+    <div className="mt-3 flex flex-col gap-3 sm:mt-4 sm:gap-4">
       {edit ? (
         <InputQuote
           text={user.bio ?? ""}
@@ -93,11 +93,7 @@ function ProfileContent({ user, edit }: { user: SelectUser; edit?: boolean }) {
           placeholder="Message to the world"
         />
       ) : (
-        user.bio && (
-          <div className="sm:mb-6">
-            <Quote text={user.bio} />
-          </div>
-        )
+        user.bio && <Quote text={user.bio} />
       )}
       <SocialComponent user={user} edit={edit} />
       {edit && (

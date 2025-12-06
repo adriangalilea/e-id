@@ -126,7 +126,7 @@ export async function SocialComponent({
             className="border-t-transparent bg-zinc-200 p-3 sm:p-6
               dark:bg-zinc-800 overflow-clip"
           >
-            <CardHeader className="flex flex-col gap-3 p-0 sm:gap-6">
+            <CardHeader className="flex flex-col gap-2 p-0 sm:gap-3">
               <CardTitle
                 className="flex items-center justify-between font-light"
               >
@@ -188,9 +188,9 @@ export async function SocialComponent({
               )}
             </CardHeader>
 
-            <CardContent className="flex flex-col gap-3 p-0">
+            <CardContent className="flex flex-col gap-2 p-0">
               {edit && (
-                <div className="mt-3 flex items-center font-extralight sm:mt-6">
+                <div className="mt-2 flex items-center font-extralight sm:mt-3">
                   <Label
                     htmlFor={social.id}
                     className="flex size-10 items-center justify-center
@@ -217,7 +217,7 @@ export async function SocialComponent({
               {social.platform === "github" && (
                 <>
                   {social.value && githubActivityData.length > 0 && (
-                    <div className="mt-3 sm:mt-6">
+                    <div className="mt-2 sm:mt-3">
                       <GitHubActivity data={githubActivityData} />
                     </div>
                   )}
@@ -226,7 +226,7 @@ export async function SocialComponent({
               {social.platform === "youtube" && (
                 <>
                   {edit && (
-                    <div className="mt-3 flex items-center font-extralight">
+                    <div className="mt-2 flex items-center font-extralight">
                       <Label
                         htmlFor={`${social.platform}_${social.id}_highlight`}
                         className="flex size-10 items-center justify-center
@@ -256,7 +256,7 @@ export async function SocialComponent({
                   )}
 
                   {social.custom_data && social.custom_data["highlight"] && (
-                    <div className="mt-3 sm:mt-6">
+                    <div className="mt-2 sm:mt-3">
                       <YouTubeEmbed
                         videoid={social.custom_data["highlight"]}
                         params="controls=0"
@@ -268,7 +268,7 @@ export async function SocialComponent({
               {social.platform === "twitter" && (
                 <>
                   {edit && (
-                    <div className="mt-3 flex items-center font-extralight">
+                    <div className="mt-2 flex items-center font-extralight">
                       <Label
                         htmlFor={`${social.platform}_${social.id}_highlight`}
                         className="flex size-10 items-center justify-center
@@ -299,8 +299,8 @@ export async function SocialComponent({
 
                   {social.custom_data && social.custom_data["highlight"] && (
                     <div
-                      className="mt-3 flex justify-center *:m-0! *:w-full!
-                        sm:mt-6"
+                      className="mt-2 flex justify-center *:m-0! *:w-full!
+                        sm:mt-3"
                     >
                       <Tweet id={social.custom_data["highlight"]} />
                     </div>

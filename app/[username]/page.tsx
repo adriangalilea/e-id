@@ -163,7 +163,7 @@ export default async function Page(props: {
   const params = await props.params;
 
   return (
-    <div className="flex flex-1 flex-col gap-6 sm:gap-12">
+    <div className="flex flex-1 flex-col gap-4 sm:gap-6">
       <Suspense fallback={<ProfileSkeleton />}>
         <PageContent
           username={params.username}
@@ -189,7 +189,7 @@ function ProfileSkeleton() {
           </div>
         </div>
       </div>
-      <div className="mt-6 flex flex-col gap-6 sm:mt-12">
+      <div className="mt-3 flex flex-col gap-3 sm:mt-4 sm:gap-4">
         <div className="h-20 bg-zinc-200 dark:bg-zinc-800 rounded" />
         <div className="h-48 bg-zinc-200 dark:bg-zinc-800 rounded" />
       </div>

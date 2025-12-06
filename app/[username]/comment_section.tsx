@@ -17,7 +17,7 @@ async function TestimonialsContent({ userId }: { userId: string }) {
   }
 
   return (
-    <div className="animate-fade-in">
+    <div className="flex flex-col gap-2 animate-fade-in">
       {testimonials.map((testimonial) => (
         <div key={testimonial.commentId}>
           <Testimonial
