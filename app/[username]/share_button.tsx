@@ -19,7 +19,7 @@ export default function ShareButton({ username }: { username: string }) {
     <Popover>
       <PopoverTrigger asChild>
         <Button variant="outline">
-          <LinkIcon strokeWidth={1} className="pr-2" />
+          <LinkIcon strokeWidth={1} />
           <span className="prose prose-zinc dark:prose-invert font-light">
             share
           </span>
@@ -37,8 +37,11 @@ export default function ShareButton({ username }: { username: string }) {
             });
           }}
         >
-          <ClipboardCopy strokeWidth={1} className="pr-2" />
-          <span className="prose prose-zinc dark:prose-invert font-light text-left grow">
+          <ClipboardCopy strokeWidth={1} />
+          <span
+            className="prose prose-zinc dark:prose-invert font-light text-left
+              grow"
+          >
             e-id.to
           </span>
         </Button>
@@ -58,7 +61,7 @@ export default function ShareButton({ username }: { username: string }) {
                   altText="Why is there an emoji on the URL?"
                   className="w-fit"
                 >
-                  <Link href={"/about"} className=" w-full">
+                  <Link href={"/about"} className="w-full">
                     Emoji URL?
                   </Link>
                 </ToastAction>
@@ -66,8 +69,11 @@ export default function ShareButton({ username }: { username: string }) {
             });
           }}
         >
-          <ClipboardCopy strokeWidth={1} className="pr-2" />
-          <span className="prose prose-zinc dark:prose-invert font-light text-left grow">
+          <ClipboardCopy strokeWidth={1} />
+          <span
+            className="prose prose-zinc dark:prose-invert font-light text-left
+              grow"
+          >
             👤.to
           </span>
         </Button>
@@ -84,7 +90,7 @@ export default function ShareButton({ username }: { username: string }) {
               description: "The punycode URL is ready to be shared.",
               action: (
                 <ToastAction altText="What is this?" className="w-fit">
-                  <Link href={"/about"} className=" w-full">
+                  <Link href={"/about"} className="w-full">
                     What is this?
                   </Link>
                 </ToastAction>
@@ -92,8 +98,11 @@ export default function ShareButton({ username }: { username: string }) {
             });
           }}
         >
-          <ClipboardCopy strokeWidth={1} className="pr-2" />
-          <span className="prose prose-zinc dark:prose-invert font-light text-left grow">
+          <ClipboardCopy strokeWidth={1} />
+          <span
+            className="prose prose-zinc dark:prose-invert font-light text-left
+              grow"
+          >
             twitter/instagram bio
           </span>
         </Button>

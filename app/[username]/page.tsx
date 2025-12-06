@@ -82,7 +82,7 @@ async function OwnerActions({ username }: { username: string }) {
       <ShareButton username={username} />
       <Button asChild variant="outline">
         <Link href={`/${username}?edit`} prefetch={false}>
-          <Pen strokeWidth={1} className="pr-2" />
+          <Pen strokeWidth={1} />
           <span className="prose prose-zinc dark:prose-invert font-light">
             edit
           </span>
