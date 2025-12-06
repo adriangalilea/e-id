@@ -10,7 +10,7 @@ import {
 } from "@/components/social_component/fetch_github_activity";
 import { TestimonialsSection, CommentInteraction } from "./comment_section";
 import UserProfile from "./user_profile";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 
 import type { Metadata } from "next";
 import { Suspense } from "react";
@@ -73,6 +73,7 @@ export async function generateStaticParams() {
     }));
 }
 
+// Dynamic - requires headers() for auth check
 async function OwnerActions({ username }: { username: string }) {
   const session = await auth.api.getSession({
     headers: await headers(),
@@ -86,7 +87,7 @@ async function OwnerActions({ username }: { username: string }) {
     <div className="flex items-center justify-end gap-2 animate-fade-in">
       <ShareButton username={username} />
       <Button asChild variant="outline">
-        <Link href={`/${username}?edit`} prefetch={false}>
+        <Link href={`/${username}/edit`} prefetch={false}>
           <Pen strokeWidth={1} />
           <span className="prose prose-zinc dark:prose-invert font-light">
             edit
@@ -97,42 +98,15 @@ async function OwnerActions({ username }: { username: string }) {
   );
 }
 
-async function EditModeGuard({
-  username,
-  user,
-}: {
-  username: string;
-  user: Awaited<ReturnType<typeof getUserByUsernameNormalizedCached>>;
-}) {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-
-  const isOwner = session?.user?.username === user?.username;
-
-  if (!isOwner) {
-    redirect(`/${username}`);
-  }
-
-  return <UserProfile user={user!} edit={true} />;
-}
-
-async function PageContent({
-  username,
-  searchParams,
-}: {
-  username: string;
-  searchParams: Promise<{ edit?: string }>;
-}) {
-  const resolvedSearchParams = await searchParams;
-  const isEditMode = resolvedSearchParams.edit !== undefined;
+// Static - cached profile content
+async function StaticProfile({ username }: { username: string }) {
+  "use cache";
 
   const user = await getUserByUsernameNormalizedCached(username);
   if (!user) {
     notFound();
   }
 
-  // Pre-fetch GitHub data at page level so it's included in static prerender
   const socials = await getSocialsCached(user.id);
   const githubSocial = socials.find((s) => s.platform === "github" && s.value);
   let githubData: { date: string; count: number; level: number }[] = [];
@@ -141,20 +115,16 @@ async function PageContent({
     githubData = flattenData(raw);
   }
 
-  if (isEditMode) {
-    return (
-      <Suspense fallback={<ProfileSkeleton />}>
-        <EditModeGuard username={username} user={user} />
-      </Suspense>
-    );
-  }
+  return <UserProfile user={user} githubData={githubData} />;
+}
+
+// Dynamic sections wrapper
+async function DynamicSections({ username }: { username: string }) {
+  const user = await getUserByUsernameNormalizedCached(username);
+  if (!user) return null;
 
   return (
     <>
-      <Suspense fallback={<ProfileSkeleton />}>
-        <UserProfile user={user} githubData={githubData} />
-      </Suspense>
-
       <Suspense fallback={null}>
         <OwnerActions username={user.username!} />
       </Suspense>
@@ -172,17 +142,17 @@ async function PageContent({
 
 export default async function Page(props: {
   params: Promise<{ username: string }>;
-  searchParams: Promise<{ edit?: string }>;
 }) {
   const params = await props.params;
 
   return (
     <div className="flex flex-1 flex-col gap-4 sm:gap-6">
-      <Suspense fallback={<ProfileSkeleton />}>
-        <PageContent
-          username={params.username}
-          searchParams={props.searchParams}
-        />
+      {/* Static profile - cached with "use cache" */}
+      <StaticProfile username={params.username} />
+
+      {/* Dynamic sections - each in own Suspense */}
+      <Suspense fallback={null}>
+        <DynamicSections username={params.username} />
       </Suspense>
     </div>
   );
