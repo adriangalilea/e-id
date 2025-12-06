@@ -118,7 +118,7 @@ export default async function UserProfile({
   edit?: boolean;
 }) {
   const content = (
-    <main>
+    <main className="animate-fade-in">
       <ProfileHeader user={user} edit={edit} />
       <ProfileContent user={user} edit={edit} />
     </main>
