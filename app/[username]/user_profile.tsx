@@ -1,30 +1,21 @@
 import Flag from "@/components/flag";
 import { SocialComponent } from "@/components/social_component";
 import { Quote, InputQuote } from "@/components/quote";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import Link from "next/link";
-import { AtSign, Pen } from "lucide-react";
-import ShareButton from "./share_button";
+import { AtSign } from "lucide-react";
 import CountryPicker from "@/components/country_picker";
 import { SaveButton } from "@/components/save_button";
 import { DiscardButton } from "@/components/discard_button";
 import { SelectUser } from "@/db/schema";
 import { EditForm } from "./edit_form";
 
-function ProfileHeader({
-  user,
-  edit,
-}: {
-  user: SelectUser;
-  edit?: boolean;
-}) {
+function ProfileHeader({ user, edit }: { user: SelectUser; edit?: boolean }) {
   return (
     <div>
       <div
-        className="prose prose-zinc dark:prose-invert flex flex-col justify-between gap-1.5 pt-3
-          sm:flex-row sm:items-end sm:gap-3"
+        className="prose prose-zinc dark:prose-invert flex flex-col
+          justify-between gap-1.5 pt-3 sm:flex-row sm:items-end sm:gap-3"
       >
         {edit ? (
           <Input
@@ -32,8 +23,9 @@ function ProfileHeader({
             type="text"
             name="name"
             defaultValue={user.name!}
-            className="!m-0 !bg-transparent text-2xl font-normal focus-visible:border-zinc-500
-              focus-visible:ring-0 focus-visible:ring-transparent focus-visible:ring-offset-0
+            className="!m-0 !bg-transparent text-2xl font-normal
+              focus-visible:border-zinc-500 focus-visible:ring-0
+              focus-visible:ring-transparent focus-visible:ring-offset-0
               sm:font-normal"
             placeholder="Name"
           />
@@ -45,7 +37,8 @@ function ProfileHeader({
             <div className="flex items-center font-extralight">
               <Label
                 htmlFor="username"
-                className="flex size-10 items-center justify-center bg-zinc-50/10"
+                className="flex size-10 items-center justify-center
+                  bg-zinc-50/10"
               >
                 <AtSign strokeWidth={1} size="20" />
               </Label>
@@ -55,14 +48,18 @@ function ProfileHeader({
                 id="username"
                 name="username"
                 defaultValue={user.username!}
-                className="!m-0 min-w-[140px] grow border border-border !bg-transparent text-[16px]
-                  focus-visible:border-zinc-500 focus-visible:ring-0
-                  focus-visible:ring-transparent focus-visible:ring-offset-0 sm:font-normal"
+                className="!m-0 min-w-[140px] grow border border-border
+                  !bg-transparent text-[16px] focus-visible:border-zinc-500
+                  focus-visible:ring-0 focus-visible:ring-transparent
+                  focus-visible:ring-offset-0 sm:font-normal"
                 placeholder="username"
               />
             </div>
           ) : (
-            <p className="prose prose-zinc dark:prose-invert !m-0 text-xl font-extralight">
+            <p
+              className="prose prose-zinc dark:prose-invert !m-0 text-xl
+                font-extralight"
+            >
               @{user.username}
             </p>
           )}
@@ -86,15 +83,7 @@ function ProfileHeader({
   );
 }
 
-function ProfileContent({
-  user,
-  edit,
-  isOwner,
-}: {
-  user: SelectUser;
-  edit?: boolean;
-  isOwner?: boolean;
-}) {
+function ProfileContent({ user, edit }: { user: SelectUser; edit?: boolean }) {
   return (
     <div className="mt-6 flex flex-col gap-6 sm:mt-12">
       {edit ? (
@@ -111,25 +100,11 @@ function ProfileContent({
         )
       )}
       <SocialComponent user={user} edit={edit} />
-      {edit ? (
+      {edit && (
         <div className="flex items-center justify-end gap-2">
           <DiscardButton username={user.username!} />
           <SaveButton />
         </div>
-      ) : (
-        isOwner && (
-          <div className="flex items-center justify-end gap-2">
-            <ShareButton username={user.username!} />
-            <Button asChild variant="outline">
-              <Link href={`/${user.username}?edit`} prefetch={false}>
-                <Pen strokeWidth={1} className="pr-2" />
-                <span className="prose prose-zinc dark:prose-invert font-light">
-                  edit
-                </span>
-              </Link>
-            </Button>
-          </div>
-        )
       )}
     </div>
   );
@@ -138,16 +113,14 @@ function ProfileContent({
 export default async function UserProfile({
   user,
   edit,
-  isOwner,
 }: {
   user: SelectUser;
   edit?: boolean;
-  isOwner?: boolean;
 }) {
   const content = (
     <main>
       <ProfileHeader user={user} edit={edit} />
-      <ProfileContent user={user} edit={edit} isOwner={isOwner} />
+      <ProfileContent user={user} edit={edit} />
     </main>
   );
 

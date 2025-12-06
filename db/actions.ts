@@ -47,13 +47,15 @@ export async function getLatestUsersWithUsername(): Promise<SelectUser[]> {
   // Take all users with flags first, then fill remaining spots with users without flags
   const filtered = [
     ...withFlags,
-    ...withoutFlags.slice(0, Math.max(0, 20 - withFlags.length))
+    ...withoutFlags.slice(0, Math.max(0, 20 - withFlags.length)),
   ];
 
   return filtered.slice(0, 20);
 }
 
-export async function getLatestUsersWithUsernameCached(): Promise<SelectUser[]> {
+export async function getLatestUsersWithUsernameCached(): Promise<
+  SelectUser[]
+> {
   "use cache";
   cacheLife("minutes");
   cacheTag("users");
@@ -99,7 +101,6 @@ export async function getUserByUsernameNormalizedCached(
   }
   return user;
 }
-
 
 function applyDynamicFilter<T extends SQLiteSelectQueryBuilder>(
   qb: T,
@@ -156,11 +157,13 @@ export async function fetchCommentsConditionally(
 
   console.log("[fetchCommentsConditionally]", {
     count: mapped.length,
-    sample: mapped[0] ? {
-      createdAt: mapped[0].createdAt,
-      createdAtType: typeof mapped[0].createdAt,
-      isDate: mapped[0].createdAt instanceof Date,
-    } : null,
+    sample: mapped[0]
+      ? {
+          createdAt: mapped[0].createdAt,
+          createdAtType: typeof mapped[0].createdAt,
+          isDate: mapped[0].createdAt instanceof Date,
+        }
+      : null,
   });
 
   return mapped;
@@ -200,14 +203,23 @@ export async function getTestimonials(profileUserId: SelectUser["id"]) {
 
   console.log("[getTestimonials]", {
     count: mapped.length,
-    sample: mapped[0] ? {
-      createdAt: mapped[0].createdAt,
-      createdAtType: typeof mapped[0].createdAt,
-      isDate: mapped[0].createdAt instanceof Date,
-    } : null,
+    sample: mapped[0]
+      ? {
+          createdAt: mapped[0].createdAt,
+          createdAtType: typeof mapped[0].createdAt,
+          isDate: mapped[0].createdAt instanceof Date,
+        }
+      : null,
   });
 
   return mapped;
+}
+
+export async function getTestimonialsCached(profileUserId: SelectUser["id"]) {
+  "use cache";
+  cacheLife("hours");
+  cacheTag(`user-${profileUserId}`);
+  return getTestimonials(profileUserId);
 }
 
 export async function createComment(
@@ -306,11 +318,16 @@ export async function pinCommentToggle(id: SelectComment["id"]) {
 export async function getSocials(
   userId: SelectUser["id"],
 ): Promise<SelectSocial[]> {
+  return await db.select().from(socials).where(eq(socials.user_id, userId));
+}
+
+export async function getSocialsCached(
+  userId: SelectUser["id"],
+): Promise<SelectSocial[]> {
   "use cache";
   cacheLife("hours");
   cacheTag(`user-${userId}`);
-
-  return await db.select().from(socials).where(eq(socials.user_id, userId));
+  return getSocials(userId);
 }
 
 export async function getValidUniqueSocialsCached(
@@ -448,7 +465,8 @@ export async function updateUserAndSocials(
     return setUsernameOutput;
   }
 
-  const finalUsername = username !== updatedUser.username ? username : updatedUser.username;
+  const finalUsername =
+    username !== updatedUser.username ? username : updatedUser.username;
   redirect(`/${finalUsername}`);
 }
 
