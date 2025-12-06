@@ -17,7 +17,7 @@ async function TestimonialsContent({ userId }: { userId: string }) {
   }
 
   return (
-    <div className="mb-6 sm:mb-12">
+    <div className="animate-fade-in">
       {testimonials.map((testimonial) => (
         <div key={testimonial.commentId}>
           <Testimonial
@@ -71,7 +71,7 @@ export async function CommentInteraction({
     }
 
     return (
-      <div className="relative">
+      <div className="relative animate-fade-in">
         <div className="my-2 flex flex-col gap-2">
           {comments.map((comment) => (
             <div key={comment.commentId}>
@@ -93,7 +93,7 @@ export async function CommentInteraction({
   }
 
   return (
-    <div className="relative">
+    <div className="relative animate-fade-in">
       <CommentForm profileUserId={profileUserId} />
 
       <div className="my-2 flex flex-col gap-2">

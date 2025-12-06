@@ -74,11 +74,11 @@ async function OwnerActions({ username }: { username: string }) {
   });
 
   if (session?.user?.username !== username) {
-    return <div className="h-10" />;
+    return null;
   }
 
   return (
-    <div className="flex items-center justify-end gap-2 h-10">
+    <div className="flex items-center justify-end gap-2 animate-fade-in">
       <ShareButton username={username} />
       <Button asChild variant="outline">
         <Link href={`/${username}?edit`} prefetch={false}>
@@ -138,27 +138,19 @@ async function PageContent({
   return (
     <>
       <Suspense fallback={<ProfileSkeleton />}>
-        <div className="animate-fade-in">
-          <UserProfile user={user} />
-        </div>
+        <UserProfile user={user} />
       </Suspense>
 
       <Suspense fallback={null}>
-        <div className="animate-fade-in">
-          <TestimonialsSection userId={user.id} />
-        </div>
-      </Suspense>
-
-      <Suspense fallback={<div className="h-10" />}>
-        <div className="animate-fade-in">
-          <OwnerActions username={user.username!} />
-        </div>
+        <OwnerActions username={user.username!} />
       </Suspense>
 
       <Suspense fallback={null}>
-        <div className="animate-fade-in">
-          <CommentInteraction profileUserId={user.id} />
-        </div>
+        <TestimonialsSection userId={user.id} />
+      </Suspense>
+
+      <Suspense fallback={null}>
+        <CommentInteraction profileUserId={user.id} />
       </Suspense>
     </>
   );
