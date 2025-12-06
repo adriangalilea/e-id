@@ -9,7 +9,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Link from "next/link";
 import { SelectUser } from "@/db/schema";
-import { getSocials } from "@/db/actions";
+import { getSocials, getSocialsCached } from "@/db/actions";
 import {
   getSocialDisplayText,
   getSocialIcon,
@@ -44,7 +44,9 @@ export async function SocialComponent({
   user: SelectUser;
   edit?: boolean;
 }): Promise<JSX.Element> {
-  let validSocials = await getSocials(user.id);
+  let validSocials = edit
+    ? await getSocials(user.id)
+    : await getSocialsCached(user.id);
 
   if (!edit) {
     // filter out non public ones and those with null or empty social.value
@@ -105,9 +107,12 @@ export async function SocialComponent({
           <TabsTrigger
             key={id}
             value={id}
-            className="flex h-full justify-center !shadow-none data-[state=active]:bg-zinc-200
-              data-[state=inactive]:bg-zinc-50/60 hover:data-[state=inactive]:bg-zinc-50/20
-              dark:data-[state=active]:bg-zinc-800 dark:data-[state=inactive]:bg-zinc-950/60
+            className="flex h-full justify-center !shadow-none
+              data-[state=active]:bg-zinc-200
+              data-[state=inactive]:bg-zinc-50/60
+              hover:data-[state=inactive]:bg-zinc-50/20
+              dark:data-[state=active]:bg-zinc-800
+              dark:data-[state=inactive]:bg-zinc-950/60
               hover:dark:data-[state=inactive]:bg-zinc-950/20"
           >
             {icon}
@@ -117,21 +122,29 @@ export async function SocialComponent({
       </TabsList>
       {populatedSocials.map((social) => (
         <TabsContent key={social.id} value={social.id} className="mt-0">
-          <Card className="border-t-transparent bg-zinc-200 p-3 sm:p-6 dark:bg-zinc-800 overflow-clip">
+          <Card
+            className="border-t-transparent bg-zinc-200 p-3 sm:p-6
+              dark:bg-zinc-800 overflow-clip"
+          >
             <CardHeader className="flex flex-col gap-3 p-0 sm:gap-6">
-              <CardTitle className="flex items-center justify-between font-light">
+              <CardTitle
+                className="flex items-center justify-between font-light"
+              >
                 {social.platform}
                 {!edit && (
                   <>
                     <Separator className="mx-3 shrink bg-zinc-300 opacity-10" />
                     <Link
                       href={social.url}
-                      className="max-w-40 sm:max-w-fit prose prose-zinc dark:prose-invert group flex w-fit
-                        items-center bg-zinc-500 pr-3 text-white transition-colors hover:text-zinc-950
-                        sm:font-normal dark:bg-zinc-50/10 hover:dark:bg-zinc-300"
+                      className="max-w-40 sm:max-w-fit prose prose-zinc
+                        dark:prose-invert group flex w-fit items-center
+                        bg-zinc-500 pr-3 text-white transition-colors
+                        hover:text-zinc-950 sm:font-normal dark:bg-zinc-50/10
+                        hover:dark:bg-zinc-300"
                     >
                       <div
-                        className="flex size-10 shrink-0 items-center justify-center bg-zinc-700 text-zinc-50
+                        className="flex size-10 shrink-0 items-center
+                          justify-center bg-zinc-700 text-zinc-50
                           transition-colors dark:bg-zinc-400 dark:text-zinc-950
                           group-hover:dark:bg-zinc-300"
                       >
@@ -180,7 +193,8 @@ export async function SocialComponent({
                 <div className="mt-3 flex items-center font-extralight sm:mt-6">
                   <Label
                     htmlFor={social.id}
-                    className="flex size-10 items-center justify-center bg-zinc-950/10 dark:bg-zinc-50/10"
+                    className="flex size-10 items-center justify-center
+                      bg-zinc-950/10 dark:bg-zinc-50/10"
                   >
                     {social.placeholder_pretext}
                   </Label>
@@ -190,9 +204,10 @@ export async function SocialComponent({
                     id={social.id}
                     name={`${social.platform}_${social.id}_value`}
                     defaultValue={social.value || ""}
-                    className="!m-0 border border-zinc-950/10 !bg-transparent text-[16px]
-                      focus-visible:border-zinc-500 focus-visible:ring-0
-                      focus-visible:ring-transparent focus-visible:ring-offset-0 sm:font-normal
+                    className="!m-0 border border-zinc-950/10 !bg-transparent
+                      text-[16px] focus-visible:border-zinc-500
+                      focus-visible:ring-0 focus-visible:ring-transparent
+                      focus-visible:ring-offset-0 sm:font-normal
                       dark:border-zinc-50/10"
                     placeholder={social.placeholder!}
                   />
@@ -214,7 +229,8 @@ export async function SocialComponent({
                     <div className="mt-3 flex items-center font-extralight">
                       <Label
                         htmlFor={`${social.platform}_${social.id}_highlight`}
-                        className="flex size-10 items-center justify-center bg-zinc-950/10 dark:bg-zinc-50/10"
+                        className="flex size-10 items-center justify-center
+                          bg-zinc-950/10 dark:bg-zinc-50/10"
                       >
                         <Star strokeWidth="1" size="20" />
                       </Label>
@@ -228,9 +244,11 @@ export async function SocialComponent({
                             social.custom_data["highlight"]) ||
                           ""
                         }
-                        className="!m-0 border border-zinc-950/10 !bg-transparent text-[16px]
+                        className="!m-0 border border-zinc-950/10
+                          !bg-transparent text-[16px]
                           focus-visible:border-zinc-500 focus-visible:ring-0
-                          focus-visible:ring-transparent focus-visible:ring-offset-0 sm:font-normal
+                          focus-visible:ring-transparent
+                          focus-visible:ring-offset-0 sm:font-normal
                           dark:border-zinc-50/10"
                         placeholder="Optional highlight video ID"
                       />
@@ -253,7 +271,8 @@ export async function SocialComponent({
                     <div className="mt-3 flex items-center font-extralight">
                       <Label
                         htmlFor={`${social.platform}_${social.id}_highlight`}
-                        className="flex size-10 items-center justify-center bg-zinc-950/10 dark:bg-zinc-50/10"
+                        className="flex size-10 items-center justify-center
+                          bg-zinc-950/10 dark:bg-zinc-50/10"
                       >
                         <Star strokeWidth="1" size="20" />
                       </Label>
@@ -267,9 +286,11 @@ export async function SocialComponent({
                             social.custom_data["highlight"]) ||
                           ""
                         }
-                        className="!m-0 border border-zinc-950/10 !bg-transparent text-[16px]
+                        className="!m-0 border border-zinc-950/10
+                          !bg-transparent text-[16px]
                           focus-visible:border-zinc-500 focus-visible:ring-0
-                          focus-visible:ring-transparent focus-visible:ring-offset-0 sm:font-normal
+                          focus-visible:ring-transparent
+                          focus-visible:ring-offset-0 sm:font-normal
                           dark:border-zinc-50/10"
                         placeholder="Optional highlight tweet ID"
                       />
@@ -277,7 +298,10 @@ export async function SocialComponent({
                   )}
 
                   {social.custom_data && social.custom_data["highlight"] && (
-                    <div className="mt-3 flex justify-center *:!m-0 *:!w-full sm:mt-6">
+                    <div
+                      className="mt-3 flex justify-center *:!m-0 *:!w-full
+                        sm:mt-6"
+                    >
                       <Tweet id={social.custom_data["highlight"]} />
                     </div>
                   )}

@@ -3,22 +3,24 @@ import {
   getUserByUsernameNormalizedCached,
   getValidUniqueSocialsCached,
 } from "@/db/actions";
-import CommentSection from "./comment_section";
+import { TestimonialsSection, CommentInteraction } from "./comment_section";
 import UserProfile from "./user_profile";
 import { notFound, redirect } from "next/navigation";
 
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { headers } from "next/headers";
-import { getBaseUrlFromHeaders } from "@/lib/url";
 import { PROD_URL } from "@/lib/const";
 import { auth } from "@/auth";
+import ShareButton from "./share_button";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import { Pen } from "lucide-react";
 
 export async function generateMetadata(props: {
   params: Promise<{ username: string }>;
 }): Promise<Metadata> {
   const params = await props.params;
-  const url = new URL(getBaseUrlFromHeaders(await headers()));
   const username = params.username;
   if (!username) {
     notFound();
@@ -31,12 +33,12 @@ export async function generateMetadata(props: {
 
   const socials = await getValidUniqueSocialsCached(user.id);
 
-  const ogUrl = new URL(`${url}api/og`);
+  const ogUrl = new URL(`${PROD_URL}/api/og`);
   ogUrl.searchParams.set("name", user.name || "");
   ogUrl.searchParams.set("socials", socials.join(","));
 
   return {
-    metadataBase: url,
+    metadataBase: new URL(PROD_URL),
     title: user.name,
     description: `@${user.username} - Digital Identity`,
     openGraph: {
@@ -66,55 +68,92 @@ export async function generateStaticParams() {
     }));
 }
 
-async function UserProfileWithAuth({
+async function OwnerActions({ username }: { username: string }) {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  if (session?.user?.username !== username) {
+    return <div className="h-10" />;
+  }
+
+  return (
+    <div className="flex items-center justify-end gap-2 h-10">
+      <ShareButton username={username} />
+      <Button asChild variant="outline">
+        <Link href={`/${username}?edit`} prefetch={false}>
+          <Pen strokeWidth={1} className="pr-2" />
+          <span className="prose prose-zinc dark:prose-invert font-light">
+            edit
+          </span>
+        </Link>
+      </Button>
+    </div>
+  );
+}
+
+async function EditModeGuard({
+  username,
+  user,
+}: {
+  username: string;
+  user: Awaited<ReturnType<typeof getUserByUsernameNormalizedCached>>;
+}) {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  const isOwner = session?.user?.username === user?.username;
+
+  if (!isOwner) {
+    redirect(`/${username}`);
+  }
+
+  return <UserProfile user={user!} edit={true} />;
+}
+
+async function PageContent({
   username,
   searchParams,
 }: {
   username: string;
   searchParams: Promise<{ edit?: string }>;
 }) {
+  const resolvedSearchParams = await searchParams;
+  const isEditMode = resolvedSearchParams.edit !== undefined;
+
   const user = await getUserByUsernameNormalizedCached(username);
   if (!user) {
     notFound();
   }
 
-  const resolvedSearchParams = await searchParams;
-  const isEditMode = resolvedSearchParams.edit !== undefined;
-
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-
-  const isOwner = session?.user?.username === user.username;
-
-  if (isEditMode && !isOwner) {
-    redirect(`/${username}`);
+  if (isEditMode) {
+    return (
+      <Suspense fallback={<ProfileSkeleton />}>
+        <EditModeGuard username={username} user={user} />
+      </Suspense>
+    );
   }
 
   return (
-    <UserProfile
-      user={user}
-      edit={isEditMode && isOwner}
-      isOwner={isOwner}
-    />
+    <>
+      <Suspense fallback={<ProfileSkeleton />}>
+        <UserProfile user={user} />
+      </Suspense>
+
+      <Suspense fallback={null}>
+        <TestimonialsSection userId={user.id} />
+      </Suspense>
+
+      <Suspense fallback={<div className="h-10" />}>
+        <OwnerActions username={user.username!} />
+      </Suspense>
+
+      <Suspense fallback={null}>
+        <CommentInteraction profileUserId={user.id} />
+      </Suspense>
+    </>
   );
-}
-
-async function CommentSectionWithParams({
-  username,
-  searchParams,
-}: {
-  username: string;
-  searchParams: Promise<{ edit?: string }>;
-}) {
-  const resolvedSearchParams = await searchParams;
-  const isEditMode = resolvedSearchParams.edit !== undefined;
-
-  if (isEditMode) {
-    return null;
-  }
-
-  return <CommentSection username={username} />;
 }
 
 export default async function Page(props: {
@@ -126,14 +165,7 @@ export default async function Page(props: {
   return (
     <div className="flex flex-1 flex-col gap-6 sm:gap-12">
       <Suspense fallback={<ProfileSkeleton />}>
-        <UserProfileWithAuth
-          username={params.username}
-          searchParams={props.searchParams}
-        />
-      </Suspense>
-
-      <Suspense fallback={<div className="animate-pulse h-20" />}>
-        <CommentSectionWithParams
+        <PageContent
           username={params.username}
           searchParams={props.searchParams}
         />
@@ -146,7 +178,10 @@ function ProfileSkeleton() {
   return (
     <main className="animate-pulse">
       <div>
-        <div className="flex flex-col justify-between gap-1.5 pt-3 sm:flex-row sm:items-end sm:gap-3">
+        <div
+          className="flex flex-col justify-between gap-1.5 pt-3 sm:flex-row
+            sm:items-end sm:gap-3"
+        >
           <div className="h-8 w-48 bg-zinc-200 dark:bg-zinc-800 rounded" />
           <div className="flex items-end justify-between sm:grow">
             <div className="h-6 w-32 bg-zinc-200 dark:bg-zinc-800 rounded" />
