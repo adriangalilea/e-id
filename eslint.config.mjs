@@ -1,7 +1,6 @@
 import { defineConfig } from "eslint/config";
 import next from "eslint-config-next";
 import nextCoreWebVitals from "eslint-config-next/core-web-vitals";
-import tailwindcss from "eslint-plugin-tailwindcss";
 import tsParser from "@typescript-eslint/parser";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -20,14 +19,9 @@ export default defineConfig([{
     extends: [
         ...next,
         ...nextCoreWebVitals,
-        ...compat.extends("plugin:tailwindcss/recommended"),
         ...compat.extends("plugin:@typescript-eslint/recommended"),
         ...compat.extends("prettier")
     ],
-
-    plugins: {
-        tailwindcss,
-    },
 
     rules: {
         "@typescript-eslint/no-explicit-any": "off",

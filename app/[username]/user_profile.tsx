@@ -23,14 +23,14 @@ function ProfileHeader({ user, edit }: { user: SelectUser; edit?: boolean }) {
             type="text"
             name="name"
             defaultValue={user.name!}
-            className="!m-0 !bg-transparent text-2xl font-normal
+            className="m-0! bg-transparent! text-2xl font-normal
               focus-visible:border-zinc-500 focus-visible:ring-0
               focus-visible:ring-transparent focus-visible:ring-offset-0
               sm:font-normal"
             placeholder="Name"
           />
         ) : (
-          <h1 className="!m-0 text-2xl font-light">{user.name}</h1>
+          <h1 className="m-0! text-2xl font-light">{user.name}</h1>
         )}
         <div className="flex items-end justify-between sm:grow">
           {edit ? (
@@ -48,8 +48,8 @@ function ProfileHeader({ user, edit }: { user: SelectUser; edit?: boolean }) {
                 id="username"
                 name="username"
                 defaultValue={user.username!}
-                className="!m-0 min-w-[140px] grow border border-border
-                  !bg-transparent text-[16px] focus-visible:border-zinc-500
+                className="m-0! min-w-[140px] grow border border-border
+                  bg-transparent! text-[16px] focus-visible:border-zinc-500
                   focus-visible:ring-0 focus-visible:ring-transparent
                   focus-visible:ring-offset-0 sm:font-normal"
                 placeholder="username"
@@ -57,7 +57,7 @@ function ProfileHeader({ user, edit }: { user: SelectUser; edit?: boolean }) {
             </div>
           ) : (
             <p
-              className="prose prose-zinc dark:prose-invert !m-0 text-xl
+              className="prose prose-zinc dark:prose-invert m-0! text-xl
                 font-extralight"
             >
               @{user.username}

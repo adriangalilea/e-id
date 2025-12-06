@@ -138,19 +138,27 @@ async function PageContent({
   return (
     <>
       <Suspense fallback={<ProfileSkeleton />}>
-        <UserProfile user={user} />
+        <div className="animate-fade-in">
+          <UserProfile user={user} />
+        </div>
       </Suspense>
 
       <Suspense fallback={null}>
-        <TestimonialsSection userId={user.id} />
+        <div className="animate-fade-in">
+          <TestimonialsSection userId={user.id} />
+        </div>
       </Suspense>
 
       <Suspense fallback={<div className="h-10" />}>
-        <OwnerActions username={user.username!} />
+        <div className="animate-fade-in">
+          <OwnerActions username={user.username!} />
+        </div>
       </Suspense>
 
       <Suspense fallback={null}>
-        <CommentInteraction profileUserId={user.id} />
+        <div className="animate-fade-in">
+          <CommentInteraction profileUserId={user.id} />
+        </div>
       </Suspense>
     </>
   );

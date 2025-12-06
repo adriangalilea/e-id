@@ -14,10 +14,10 @@ export default async function UserButton({
     <div className="flex items-center justify-around">
       <Button
         variant="ghost"
-        className="w-full !p-0 transition-opacity ease-out hover:opacity-80"
+        className="w-full p-0! transition-opacity ease-out hover:opacity-80"
         asChild
       >
-        <Link href={`/${username}`} className="!p-0">
+        <Link href={`/${username}`} className="p-0!">
           <CustomAvatar username={username!} image={image!} />
         </Link>
       </Button>

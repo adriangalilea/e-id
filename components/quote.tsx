@@ -73,7 +73,7 @@ export function InputQuote({
         className={cn(
           style,
           `border border-input text-[16px] text-zinc-950 placeholder:text-muted-foreground
-          focus-visible:border-zinc-500 focus-visible:outline-none focus-visible:ring-0
+          focus-visible:border-zinc-500 focus-visible:outline-hidden focus-visible:ring-0
           focus-visible:ring-transparent disabled:cursor-not-allowed disabled:opacity-50
           dark:text-zinc-50`,
         )}

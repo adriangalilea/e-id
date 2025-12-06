@@ -8,11 +8,11 @@ export default function CustomAvatar({
   image: string;
 }) {
   return (
-    <Avatar className="!size-10 ">
+    <Avatar className="size-10! ">
       <AvatarImage
         src={image || ""}
         alt={username + " avatar"}
-        className="!m-0"
+        className="m-0!"
       />
       <AvatarFallback>
         {username ? username.trim().slice(0, 2).toUpperCase() : "ID"}
