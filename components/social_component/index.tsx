@@ -37,12 +37,16 @@ import { Star } from "lucide-react";
 
 import type { JSX } from "react";
 
+type GithubData = { date: string; count: number; level: number }[];
+
 export async function SocialComponent({
   user,
   edit,
+  githubData,
 }: {
   user: SelectUser;
   edit?: boolean;
+  githubData?: GithubData;
 }): Promise<JSX.Element> {
   let validSocials = edit
     ? await getSocials(user.id)
@@ -77,26 +81,23 @@ export async function SocialComponent({
       };
     });
 
-  // fetch and flatten github data if user has github account
-  let githubActivityData: {
-    date: string;
-    count: number;
-    level: number;
-  }[] = [];
-  const githubSocial = populatedSocials.find(
-    (social) => social.platform === "github",
-  );
-  if (githubSocial && githubSocial.value) {
-    try {
-      const data = await fetchGithubActivity(githubSocial.value);
-      const flattened = flattenData(data);
-      // Only assign if we got valid data
-      if (flattened && flattened.length > 0) {
-        githubActivityData = flattened;
+  // Use pre-fetched github data from page level (for view mode)
+  // or fetch it here for edit mode
+  let githubActivityData: GithubData = githubData ?? [];
+  if (edit && !githubData) {
+    const githubSocial = populatedSocials.find(
+      (social) => social.platform === "github",
+    );
+    if (githubSocial && githubSocial.value) {
+      try {
+        const data = await fetchGithubActivity(githubSocial.value);
+        const flattened = flattenData(data);
+        if (flattened && flattened.length > 0) {
+          githubActivityData = flattened;
+        }
+      } catch (e) {
+        console.error("Error fetching GitHub activity:", e);
       }
-    } catch (e) {
-      console.error("Error fetching GitHub activity:", e);
-      // githubActivityData remains empty array
     }
   }
 

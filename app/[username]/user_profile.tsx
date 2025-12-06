@@ -83,7 +83,17 @@ function ProfileHeader({ user, edit }: { user: SelectUser; edit?: boolean }) {
   );
 }
 
-function ProfileContent({ user, edit }: { user: SelectUser; edit?: boolean }) {
+type GithubData = { date: string; count: number; level: number }[];
+
+function ProfileContent({
+  user,
+  edit,
+  githubData,
+}: {
+  user: SelectUser;
+  edit?: boolean;
+  githubData?: GithubData;
+}) {
   return (
     <div className="mt-3 flex flex-col gap-3 sm:mt-4 sm:gap-4">
       {edit ? (
@@ -95,7 +105,7 @@ function ProfileContent({ user, edit }: { user: SelectUser; edit?: boolean }) {
       ) : (
         user.bio && <Quote text={user.bio} />
       )}
-      <SocialComponent user={user} edit={edit} />
+      <SocialComponent user={user} edit={edit} githubData={githubData} />
       {edit && (
         <div className="flex items-center justify-end gap-2">
           <DiscardButton username={user.username!} />
@@ -109,14 +119,16 @@ function ProfileContent({ user, edit }: { user: SelectUser; edit?: boolean }) {
 export default async function UserProfile({
   user,
   edit,
+  githubData,
 }: {
   user: SelectUser;
   edit?: boolean;
+  githubData?: GithubData;
 }) {
   const content = (
     <main className="animate-fade-in">
       <ProfileHeader user={user} edit={edit} />
-      <ProfileContent user={user} edit={edit} />
+      <ProfileContent user={user} edit={edit} githubData={githubData} />
     </main>
   );
 

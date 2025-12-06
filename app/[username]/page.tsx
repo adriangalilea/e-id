@@ -2,7 +2,12 @@ import {
   getUsers,
   getUserByUsernameNormalizedCached,
   getValidUniqueSocialsCached,
+  getSocialsCached,
 } from "@/db/actions";
+import {
+  fetchGithubActivity,
+  flattenData,
+} from "@/components/social_component/fetch_github_activity";
 import { TestimonialsSection, CommentInteraction } from "./comment_section";
 import UserProfile from "./user_profile";
 import { notFound, redirect } from "next/navigation";
@@ -127,6 +132,15 @@ async function PageContent({
     notFound();
   }
 
+  // Pre-fetch GitHub data at page level so it's included in static prerender
+  const socials = await getSocialsCached(user.id);
+  const githubSocial = socials.find((s) => s.platform === "github" && s.value);
+  let githubData: { date: string; count: number; level: number }[] = [];
+  if (githubSocial?.value) {
+    const raw = await fetchGithubActivity(githubSocial.value);
+    githubData = flattenData(raw);
+  }
+
   if (isEditMode) {
     return (
       <Suspense fallback={<ProfileSkeleton />}>
@@ -138,7 +152,7 @@ async function PageContent({
   return (
     <>
       <Suspense fallback={<ProfileSkeleton />}>
-        <UserProfile user={user} />
+        <UserProfile user={user} githubData={githubData} />
       </Suspense>
 
       <Suspense fallback={null}>
