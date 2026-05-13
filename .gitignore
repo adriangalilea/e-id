@@ -41,3 +41,6 @@ next-env.d.ts
 
 # database backups
 backup*.sql
+
+# pnpm 11 regenerates this for build-script approvals; we use package.json's pnpm.onlyBuiltDependencies instead
+pnpm-workspace.yaml
