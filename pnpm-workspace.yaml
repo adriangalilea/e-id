@@ -1,0 +1,5 @@
+allowBuilds:
+  '@vercel/speed-insights': true
+  esbuild: true
+  sharp: true
+  unrs-resolver: true
