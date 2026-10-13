@@ -1,10 +1,9 @@
-import { BrandMark, EmojiDomain, MARK_PATH } from "@/components/brand";
-import { getSocialIcon } from "@/lib/socials";
-import type { SelectSocial } from "@/db/schema";
+import { BrandMark, MARK_PATH } from "@/components/brand";
+import { CopyAddress } from "@/components/copy-address";
 import { CountryFlag } from "@/components/country";
-import { Copy } from "@/components/ui/copy";
 import { Glass } from "@/components/ui/material-glass";
-import { EMOJI_DOMAIN } from "@/lib/const";
+import type { SelectSocial } from "@/db/schema";
+import { getSocialIcon } from "@/lib/socials";
 import { cn } from "@/lib/utils";
 
 /** Who a card is for. A profile's own fields, or the home's sample for "you". */
@@ -14,9 +13,12 @@ export type Holder = {
   image: string | null;
   country: string;
   bio: string | null;
-  /** The platforms of their public places, the card's flair. */
-  places?: SocialPlatform[];
+  /** Their public places, the card's flair. */
+  places?: Place[];
 };
+
+/** A place a person is: the platform, and the address that opens it. */
+export type Place = { platform: SocialPlatform; url: string };
 
 type SocialPlatform = SelectSocial["platform"];
 
@@ -211,20 +213,29 @@ function Hologram({ print }: { print: HoloPrint }) {
 }
 
 /** Where the person is, on the card itself: their places' marks in a row, as an ID
- *  carries its holder's entitlements. */
-function Flair({ places }: { places: SocialPlatform[] }) {
+ *  carries its holder's entitlements, each one the way there. With the address,
+ *  the card's only touchable parts are what it shows. `rel="me"`: the same person
+ *  on both ends, which IndieWeb readers check. */
+function Flair({ places }: { places: Place[] }) {
   if (places.length === 0) return null;
   return (
-    <span
-      aria-label={`on ${places.join(", ")}`}
-      className="flex items-center gap-[1.8cqw] text-foreground/55 [&_svg]:size-[3.2cqw] [&_svg]:stroke-[1.5]"
+    <nav
+      aria-label="places"
+      className="-mx-[0.8cqw] flex items-center text-foreground/50 [&_svg]:size-[3.2cqw] [&_svg]:stroke-[1.5]"
     >
-      {places.map((platform) => (
-        <span key={platform} className="contents">
+      {places.map(({ platform, url }) => (
+        <a
+          key={url}
+          href={url}
+          rel="me noopener"
+          target="_blank"
+          aria-label={platform}
+          className="rounded-[0.8cqw] p-[0.8cqw] transition-colors hover:bg-white/[0.06] hover:text-foreground"
+        >
           {getSocialIcon(platform)}
-        </span>
+        </a>
       ))}
-    </span>
+    </nav>
   );
 }
 
@@ -282,13 +293,7 @@ export function IdCard({
             <Name className="line-clamp-2 text-[7cqw] leading-[1.02] font-medium tracking-[-0.03em] text-balance">
               {holder.name || `@${holder.username}`}
             </Name>
-            <span className="flex min-w-0 items-center gap-[1cqw] font-mono text-[3cqw] text-foreground/50">
-              <EmojiDomain path={`/${holder.username}`} className="truncate" />
-              <Copy
-                value={`https://${EMOJI_DOMAIN}/${holder.username}`}
-                className="size-[7cqw] shrink-0 rounded-full [&_svg]:size-[3.4cqw]"
-              />
-            </span>
+            <CopyAddress username={holder.username} />
             <Flair places={holder.places ?? []} />
           </div>
         </div>

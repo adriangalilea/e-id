@@ -1,6 +1,7 @@
 import { SocialComponent } from "@/components/social_component";
 import { InputQuote } from "@/components/quote";
-import { IdCard } from "@/components/id-card";
+import { IdCard, type Place } from "@/components/id-card";
+import { placeOf } from "@/lib/data";
 import { Tilt } from "@/components/landing/tilt";
 import { MaterialProvider } from "@/components/ui/material";
 import { cn } from "@/lib/utils";
@@ -43,7 +44,7 @@ function Identity({
   actions,
 }: {
   user: Profile;
-  places: SelectSocial["platform"][];
+  places: Place[];
   actions?: React.ReactNode;
 }) {
   return (
@@ -94,7 +95,7 @@ function Side({
   vouches,
 }: {
   user: Profile;
-  places: SelectSocial["platform"][];
+  places: Place[];
   actions?: React.ReactNode;
   vouches?: React.ReactNode;
 }) {
@@ -183,7 +184,7 @@ export default function UserProfile({
       <div className="grid animate-fade-in gap-10 [grid-template-areas:'id'_'places'_'vouch'] lg:grid-cols-[minmax(0,38.2fr)_minmax(0,61.8fr)] lg:[grid-template-areas:'side_places']">
         <Side
           user={user}
-          places={socials.map((social) => social.platform)}
+          places={socials.map(placeOf)}
           actions={actions}
           vouches={vouches}
         />

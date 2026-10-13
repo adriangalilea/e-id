@@ -4,6 +4,7 @@ import { and, asc, desc, eq, isNotNull, ne, sql } from "drizzle-orm";
 import { cacheLife, cacheTag } from "next/cache";
 import { db } from "@/db";
 import { comments, socials, users, type SelectSocial } from "@/db/schema";
+import { getSocialUrl } from "@/lib/socials";
 import { USERS_TAG, profileTag, usernameTag } from "@/lib/tags";
 
 // The reads public pages are prerendered from. Each is cached for good ("max")
@@ -165,6 +166,20 @@ export async function getLatestUsers(): Promise<ListedUser[]> {
   return [...withFlag, ...withoutFlag].slice(0, LATEST_USERS);
 }
 
+/** A public social as the card shows it: its platform and the address that opens
+ *  it. Public socials have a value (getPublicSocials keeps only those). */
+export function placeOf(social: SelectSocial): {
+  platform: SelectSocial["platform"];
+  url: string;
+} {
+  if (!social.value)
+    throw new Error(`social ${social.id} is shown on a card with no value`);
+  return {
+    platform: social.platform,
+    url: getSocialUrl(social.platform, social.value),
+  };
+}
+
 /** How many real cards the home's hero fans out. */
 const SHOWCASE = 3;
 
@@ -181,8 +196,9 @@ export async function getShowcase(): Promise<
     image: string;
     country_code: string;
     bio: string | null;
-    /** The platforms of their public places, in their order: the card's flair. */
-    places: SelectSocial["platform"][];
+    /** Their public places, in their order, each with the address that opens it:
+     *  the card's flair. */
+    places: { platform: SelectSocial["platform"]; url: string }[];
   }[]
 > {
   "use cache";
@@ -219,7 +235,7 @@ export async function getShowcase(): Promise<
         throw new Error(
           `showcase row for @${username} lacks what it was chosen for`,
         );
-      const places = (await getPublicSocials(id)).map((s) => s.platform);
+      const places = (await getPublicSocials(id)).map(placeOf);
       return { ...row, name, username, image, places };
     }),
   );
