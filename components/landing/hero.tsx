@@ -42,6 +42,7 @@ function Stack({ people }: { people: Holder[] }) {
           key={holder.username}
           holder={holder}
           heading="p"
+          holo="laminate"
           className={cn(
             "absolute inset-0 transition-[rotate,translate] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none",
             BEHIND[i],

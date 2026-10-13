@@ -55,6 +55,9 @@
      the screen each side); the pill is 5.42em wide, given 5.7 so the cards'
      spread never reaches it. One column below 64rem: from the screen. */
   --hero-title: clamp(3rem, 5.6vw, 5.25rem);
+  /* The bar's wordmark (components/footer) and the size the hero's address
+     closes to in it: large enough that its logo reads as a logo. */
+  --wordmark: 1.25rem;
   @media (min-width: 64rem) {
     --hero-title: min(
       5.25rem,
@@ -379,16 +382,18 @@
     left: var(--content-left);
     top: 10.5rem;
   }
+  /* Ends with the pill's line centred in the bar: the pill at the wordmark's
+     size is about 1.55rem tall (1.2 cap + 0.4em at 1.25rem), measured below. */
   to {
-    left: 1.25rem;
-    top: calc(var(--bar-h) / 2 - 0.55rem);
+    left: 1rem;
+    top: calc(var(--bar-h) / 2 - 0.775rem);
   }
 }
 
 /* No `from`: the title starts at the size the page gives it (`--hero-title`). */
 @keyframes hero-title {
   to {
-    font-size: 1.0625rem;
+    font-size: var(--wordmark);
     letter-spacing: -0.02em;
   }
 }
@@ -675,16 +680,60 @@
    ribbon, cut by the edge, read as off centre), then the band. */
 [data-cta]::after {
   z-index: -1;
-  mask-image: var(--band), var(--holo-guilloche);
+  mask-image: var(--band), var(--holo-guilloche), var(--under-disc);
   mask-size:
     100% 100%,
-    auto 100%;
+    auto 100%,
+    100% 100%;
+  /* The ribbon is anchored at the pill's left edge (not its centre), so the
+     disc's blurred copy (`disc-print`) lines up with it knowing only the inset. */
   mask-position:
     0 0,
-    center;
-  mask-repeat: no-repeat, repeat-x;
-  mask-composite: intersect, add;
+    0 center,
+    0 0;
+  mask-repeat: no-repeat, repeat-x, no-repeat;
+  mask-composite: intersect, intersect, add;
   mix-blend-mode: plus-lighter;
+  /* Under the pill's disc (its geometry, `--inset` and `--disc`, from
+     components/landing/make-yours) the print is cut out: there the disc shows
+     its own copy of it, blurred, as frosted glass would. A backdrop blur cannot
+     do this: nested in the pill's own, it sees nothing behind it. */
+  --under-disc: radial-gradient(
+    circle at calc(var(--inset, 0px) - 1px + var(--disc, 0px) / 2) 50%,
+    transparent calc(var(--disc, 0px) / 2),
+    black calc(var(--disc, 0px) / 2 + 1px)
+  );
+}
+/* The disc's frosted view of the print: the same foil, the same ribbon from the
+   same origin (the pill's padding box, one inset up and left of the disc),
+   blurred, clipped to the disc. Two boxes, because CSS filters an element before
+   it masks it: the ribbon is masked on the inner one, and the outer one blurs
+   the result (one box blurred, then re-masked, came back sharp). */
+[data-slot="disc-print"] {
+  position: absolute;
+  left: calc(1px - var(--inset));
+  top: calc(1px - var(--inset));
+  width: 30em;
+  height: calc(var(--disc) + 2 * var(--inset) - 2px);
+  pointer-events: none;
+  filter: blur(2px);
+  mix-blend-mode: plus-lighter;
+  opacity: 0;
+  transition: opacity 200ms ease-out;
+}
+[data-slot="disc-print"] > span {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(115deg, var(--foil));
+  background-size: 300% 100%;
+  background-position: calc(var(--px, 0.5) * 100%) 0;
+  mask-image: var(--holo-guilloche);
+  mask-size: auto 100%;
+  mask-position: 0 center;
+  mask-repeat: repeat-x;
+}
+[data-cta][data-print]:hover [data-slot="disc-print"] {
+  opacity: 1;
 }
 /* At rest the ring is faintly there, where the page's light falls on it, so the
    pill reads as foil-edged before a hand finds it; under the hand it comes up. */

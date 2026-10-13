@@ -66,15 +66,26 @@ function Logo({ logo }: { logo: PillLogo }) {
   return (
     <span
       className={cn(
-        "grid size-(--disc) place-items-center rounded-full",
-        // Opaque, a step of light off the pill: the print runs behind it,
-        // never through the mark.
+        "relative isolate grid size-(--disc) place-items-center overflow-hidden rounded-full",
+        // Frosted glass, drawn: a backdrop blur cannot see through the pill's
+        // own (a blur nested in a blur sees nothing behind it), so the disc
+        // holds a blurred copy of the pill's print (`disc-print`, globals.css)
+        // over a step of light lit at its top.
         logo === "solid"
           ? "bg-foreground text-background"
-          : "bg-[oklch(0.27_0_0)] text-foreground/85 shadow-[inset_0_1px_0_rgb(255_255_255/0.08)]",
+          : "bg-[linear-gradient(to_bottom,rgb(255_255_255/0.13),rgb(255_255_255/0.06))] text-foreground/90 shadow-[inset_0_1px_0_rgb(255_255_255/0.16),inset_0_0_0_1px_rgb(255_255_255/0.05)]",
       )}
     >
-      <svg viewBox="0 0 24 24" aria-hidden className="size-[62%] fill-current">
+      {logo === "disc" && (
+        <span aria-hidden data-slot="disc-print">
+          <span />
+        </span>
+      )}
+      <svg
+        viewBox="0 0 24 24"
+        aria-hidden
+        className="relative size-[62%] fill-current"
+      >
         <path d={MARK_PATH} />
       </svg>
     </span>
@@ -92,12 +103,11 @@ function Words({ path, logo }: { path: string; logo: PillLogo }) {
           {EMOJI}
         </span>
       </span>
-      <span
-        data-slot="hero-you"
-        className="ml-(--gap) inline-flex items-center [text-box:trim-both_cap_alphabetic]"
-      >
-        <span className="whitespace-nowrap">
-          {TLD}
+      {/* ".to" stays (it is the bar's wordmark once the hero closes into it);
+          only the path is the part that goes (`hero-you`). */}
+      <span className="ml-(--gap) inline-flex items-center whitespace-nowrap [text-box:trim-both_cap_alphabetic]">
+        {TLD}
+        <span data-slot="hero-you" className="inline-block">
           {path}
         </span>
       </span>

@@ -25,7 +25,9 @@ export default function Footer() {
         <Link
           href="/"
           aria-label="home"
-          className="text-[17px] font-medium tracking-[-0.02em] transition-opacity hover:opacity-80"
+          // The wordmark's size is the bar's one (`--wordmark`, globals.css),
+          // which the home's hero closes into.
+          className="text-(length:--wordmark) font-medium tracking-[-0.02em] transition-opacity hover:opacity-80"
         >
           <EmojiDomain logo />
         </Link>
