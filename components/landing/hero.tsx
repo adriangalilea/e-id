@@ -6,7 +6,7 @@ import { Glass } from "@/components/ui/material-glass";
 import { getShowcase } from "@/lib/data";
 import { HOLO_PRINTS } from "@/lib/holo";
 import { cn } from "@/lib/utils";
-import { FillCard, RealAddress } from "./fill-card";
+import { FrontCard, RealAddress } from "./fill-card";
 import { MakeYours } from "./make-yours";
 import { HoloLean, HoloLight } from "@/components/ui/holo";
 import { HeroShimmer, SubjectLight } from "@/components/light";
@@ -50,7 +50,7 @@ function Stack({ people }: { people: Holder[] }) {
       {/* Turned toward the reader beside the words, leaning to the hand; on one
           column, where it stands alone, straight. */}
       <HoloLean pose="turned" className="relative max-lg:[transform:none]">
-        <FillCard />
+        <FrontCard />
       </HoloLean>
     </HoloLight>
   );

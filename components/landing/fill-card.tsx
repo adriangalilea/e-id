@@ -2,10 +2,11 @@
 
 import { Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { Suspense, use, useEffect, useRef, useState } from "react";
 import { EmojiDomain } from "@/components/brand";
 import { CountryFlag } from "@/components/country";
-import { IdCard, NAME } from "@/components/id-card";
+import { type Holder, IdCard, NAME, type Place } from "@/components/id-card";
+import type { Card } from "@/lib/card";
 import { useChip } from "@/components/session/use-chip";
 import { useToast } from "@/components/ui/use-toast";
 import { claimDraft } from "@/db/actions";
@@ -127,9 +128,12 @@ function Claim() {
 }
 
 /** That the address is a real one, under the hero's pill, quiet: the emoji
- *  domain with the handle being written, and the same as a browser sends it. */
+ *  domain with the visitor's handle (theirs signed in, else the one being
+ *  written), and the same as a browser sends it. */
 export function RealAddress() {
-  const path = `/${useDraft().handle || "you"}`;
+  const chip = useChip();
+  const draft = useDraft();
+  const path = `/${chip?.u || draft.handle || "you"}`;
   return (
     // Breaking between its parts, never inside one, when a long handle leaves the
     // whole no room on one line.
@@ -146,88 +150,158 @@ export function RealAddress() {
   );
 }
 
+/** The card on top of the home's stack: the visitor's own. Signed in with a
+ *  username, the card they have (`OwnCard`); otherwise the blank one to fill in
+ *  (`FillCard`). The page is the same for everyone, so which is known only in the
+ *  browser (`useChip`), and until then it is the blank one. */
+export function FrontCard() {
+  const chip = useChip();
+  return (
+    <>
+      <Claim />
+      {chip?.u ? (
+        <Suspense
+          fallback={
+            <IdCard
+              heading="p"
+              holo="laminate"
+              className={FRONT}
+              holder={{
+                name: null,
+                username: chip.u,
+                image: chip.i,
+                country: "XX",
+                bio: null,
+              }}
+            />
+          }
+        >
+          <OwnCard username={chip.u} />
+        </Suspense>
+      ) : (
+        <FillCard />
+      )}
+    </>
+  );
+}
+
+/** Lying on the others, it hides them as a real card would. */
+const FRONT = "[--id-card-thickness:1]";
+
+/** Each person's card read once per page (`/<username>/card.json`), kept so a
+ *  render suspends on the same promise. */
+const cards = new Map<string, Promise<Holder>>();
+
+function cardHolder(username: string): Promise<Holder> {
+  let holder = cards.get(username);
+  if (!holder) {
+    holder = fetch(`/${username}/card.json`)
+      .then((response) => {
+        if (!response.ok)
+          throw new Error(`card of ${username}: HTTP ${response.status}`);
+        return response.json() as Promise<Card>;
+      })
+      .then((card) => ({
+        name: card.name,
+        username: card.handle,
+        image: card.photo,
+        country: card.country ?? "XX",
+        bio: card.bio,
+        places: card.places as Place[],
+      }));
+    cards.set(username, holder);
+  }
+  return holder;
+}
+
+function OwnCard({ username }: { username: string }) {
+  return (
+    <IdCard
+      heading="p"
+      holo="laminate"
+      className={FRONT}
+      holder={use(cardHolder(username))}
+    />
+  );
+}
+
 /** THE HOME'S BLANK CARD: an e-id with nothing written on it yet, filled in where
  *  it lies, as a real one is: the name on the name's line, the handle after the
  *  address, the country picked on its flag, the places pressed onto it. Nothing
  *  explains it; every field shows faint what goes there. What is written is the
  *  visitor's draft (lib/draft), which the pill's sign-in carries on. */
-export function FillCard() {
+function FillCard() {
   const draft = useDraft();
   return (
-    <>
-      <Claim />
-      <IdCard
-        heading="p"
-        holo="laminate"
-        className="[--id-card-thickness:1]"
-        holder={{
-          name: draft.name,
-          username: draft.handle || "you",
-          image: null,
-          country: draft.country,
-          bio: null,
-        }}
-        slots={{
-          name: (
+    <IdCard
+      heading="p"
+      holo="laminate"
+      className={FRONT}
+      holder={{
+        name: draft.name,
+        username: draft.handle || "you",
+        image: null,
+        country: draft.country,
+        bio: null,
+      }}
+      slots={{
+        name: (
+          <input
+            aria-label="your name"
+            placeholder="your name"
+            autoComplete="name"
+            spellCheck={false}
+            value={draft.name}
+            onChange={(e) => writeDraft({ name: e.target.value })}
+            className={cn(NAME, FIELD, "w-full")}
+          />
+        ),
+        // The address as the card writes it, the handle typed after its slash;
+        // as wide as what is typed (a monospace field is that many characters).
+        address: (
+          <label className="flex min-w-0 items-center self-start font-mono text-[3cqw] text-foreground/50">
+            <EmojiDomain path="/" className="shrink-0" />
             <input
-              aria-label="your name"
-              placeholder="your name"
-              autoComplete="name"
+              aria-label="your username"
+              placeholder="you"
+              autoComplete="username"
+              autoCapitalize="none"
               spellCheck={false}
-              value={draft.name}
-              onChange={(e) => writeDraft({ name: e.target.value })}
-              className={cn(NAME, FIELD, "w-full")}
+              size={Math.max(draft.handle.length, 3)}
+              value={draft.handle}
+              onChange={(e) => writeDraft({ handle: toHandle(e.target.value) })}
+              // Faint until it is long enough to be a username (lib/username).
+              className={cn(
+                FIELD,
+                draft.handle.length < 5
+                  ? "text-foreground/40"
+                  : "text-foreground/85",
+              )}
             />
-          ),
-          // The address as the card writes it, the handle typed after its slash;
-          // as wide as what is typed (a monospace field is that many characters).
-          address: (
-            <label className="flex min-w-0 items-center self-start font-mono text-[3cqw] text-foreground/50">
-              <EmojiDomain path="/" className="shrink-0" />
-              <input
-                aria-label="your username"
-                placeholder="you"
-                autoComplete="username"
-                autoCapitalize="none"
-                spellCheck={false}
-                size={Math.max(draft.handle.length, 3)}
-                value={draft.handle}
-                onChange={(e) =>
-                  writeDraft({ handle: toHandle(e.target.value) })
-                }
-                // Faint until it is long enough to be a username (lib/username).
-                className={cn(
-                  FIELD,
-                  draft.handle.length < 5
-                    ? "text-foreground/40"
-                    : "text-foreground/85",
-                )}
-              />
-            </label>
-          ),
-          // The country's own picker, unseen, over the flag: pressing the flag opens
-          // the list the browser gives every select.
-          country: (
-            <label className="relative flex items-center gap-[1.5cqw] font-mono">
-              {draft.country === "XX" ? "" : draft.country}
-              <CountryFlag country={draft.country} className="text-[4cqw]" />
-              <select
-                aria-label="your country"
-                value={draft.country}
-                onChange={(e) => writeDraft({ country: e.target.value })}
-                className="absolute inset-0 cursor-pointer opacity-0"
-              >
-                {countryList.map(({ value, label }) => (
-                  <option key={value} value={value}>
-                    {value === "XX" ? "none" : label}
-                  </option>
-                ))}
-              </select>
-            </label>
-          ),
-          flair: <Places places={draft.places} />,
-        }}
-      />
-    </>
+          </label>
+        ),
+        // The country's own picker, unseen, over the flag: pressing the flag opens
+        // the list the browser gives every select.
+        country: (
+          <label className="relative flex items-center gap-[1.5cqw] font-mono">
+            {draft.country === "XX" ? "" : draft.country}
+            <CountryFlag country={draft.country} className="text-[4cqw]" />
+            <select
+              aria-label="your country"
+              value={draft.country}
+              onChange={(e) => writeDraft({ country: e.target.value })}
+              className="absolute inset-0 cursor-pointer opacity-0"
+            >
+              {countryList.map(({ value, label }) => (
+                <option key={value} value={value}>
+                  {value === "XX" ? "none" : label}
+                </option>
+              ))}
+            </select>
+          </label>
+        ),
+        flair: <Places places={draft.places} />,
+      }}
+    />
   );
 }
