@@ -16,14 +16,12 @@ export default function AddSocialDropdownMenu() {
         className="outline-hidden ring-0! ring-transparent!"
       >
         <Button
-          className="justify-center border-none bg-zinc-50/60 shadow-none! ring-transparent!
-            hover:border-none hover:bg-indigo-100 hover:text-indigo-700 dark:bg-zinc-950/60
-            dark:hover:bg-indigo-950 dark:hover:text-indigo-300"
+          className="h-full w-full text-foreground/60 hover:text-foreground"
           variant="ghost"
           size="lg"
           aria-label="add a social"
         >
-          <Plus strokeWidth={1} className="grow shrink-0" />
+          <Plus strokeWidth={1} className="size-5" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" sideOffset={0} className="min-w-36">

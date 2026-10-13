@@ -21,9 +21,7 @@ export function OwnerActions({ username }: { username: string }) {
         render={<Link href={`/${username}/edit`} prefetch={false} />}
       >
         <Pen strokeWidth={1} />
-        <span className="prose prose-zinc dark:prose-invert font-light">
-          edit
-        </span>
+        edit
       </Button>
     </div>
   );

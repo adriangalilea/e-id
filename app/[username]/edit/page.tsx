@@ -1,6 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 import { getAllSocials, getProfile } from "@/lib/data";
-import { getContributions } from "@/lib/github";
+import { getSocialFacts } from "@/lib/social-facts";
 import { getSession } from "@/lib/session";
 import { Column } from "@/components/frame";
 import UserProfile from "../user_profile";
@@ -16,19 +16,11 @@ export default async function EditPage(props: {
   if (session?.user.id !== user.id) redirect(`/${user.username}`);
 
   const socials = await getAllSocials(user.id);
-  const github = socials.find(
-    (social) => social.platform === "github" && social.value,
-  );
-  const githubData = github?.value ? await getContributions(github.value) : [];
+  const facts = await getSocialFacts(socials);
 
   return (
     <Column>
-      <UserProfile
-        user={user}
-        socials={socials}
-        githubData={githubData}
-        edit={true}
-      />
+      <UserProfile user={user} socials={socials} facts={facts} edit={true} />
     </Column>
   );
 }

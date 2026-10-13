@@ -15,7 +15,7 @@ export function Column({
   return (
     <div
       className={cn(
-        "mx-auto flex w-full max-w-2xl flex-1 flex-col py-8 sm:py-16",
+        "mx-auto flex w-full max-w-3xl flex-1 flex-col py-8 sm:py-16",
         GUTTER,
         className,
       )}

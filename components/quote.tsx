@@ -4,21 +4,31 @@ import { RelativeTime } from "./ui/relative-time";
 import CustomAvatar from "./custom_avatar";
 import { Textarea } from "./ui/textarea";
 
-const borderStyle = "border-l-2 border-zinc-500";
+/** Somebody's words: a rule down their left, the words beside it. */
+const RULE = "border-l-2 border-foreground/70 pl-5";
 
-const style =
-  "w-full prose prose-zinc bg-zinc-950/5 p-3 font-light dark:prose-invert dark:bg-zinc-50/5";
+const SIZE = {
+  /** A profile's own message, the first thing read after the name. */
+  lead: "text-xl leading-snug sm:text-2xl",
+  /** A social's context line, inside its tab. */
+  body: "text-[15px] leading-relaxed text-foreground/75",
+};
 
-const textStyle = "text-pretty italic";
-
-export function Quote({ text }: { text: string }) {
+export function Quote({
+  text,
+  size = "body",
+}: {
+  text: string;
+  size?: keyof typeof SIZE;
+}) {
   return (
-    <blockquote className={cn(style, borderStyle)}>
-      <p className={textStyle}>{text}</p>
+    <blockquote className={cn(RULE, SIZE[size], "font-light text-pretty")}>
+      <p>{text}</p>
     </blockquote>
   );
 }
 
+/** A comment the profile's owner pinned: the words, then who wrote them and when. */
 export function Testimonial({
   text,
   name,
@@ -33,28 +43,31 @@ export function Testimonial({
   date: Date;
 }) {
   return (
-    <blockquote className={cn(style, borderStyle, "group")}>
-      <p className={textStyle}>{text}</p>
-      <footer className="flex items-end justify-between">
+    <figure className="flex w-full flex-col gap-5 border border-border bg-card p-5 sm:p-6">
+      <blockquote className="text-[17px] leading-relaxed font-light text-pretty text-foreground/85">
+        <p>{text}</p>
+      </blockquote>
+      <figcaption className="flex items-center justify-between gap-4">
         <Link
           href={`/${username}`}
-          className="flex items-center gap-4 bg-zinc-500/10 no-underline transition-colors
-            hover:bg-zinc-500/20"
+          className="group flex min-w-0 items-center gap-3"
         >
-          <CustomAvatar image={image} username={username!} />
-          <span
-            className="prose prose-zinc mr-4 whitespace-nowrap font-light dark:prose-invert
-              hover:opacity-100"
-          >
-            {name}
+          <CustomAvatar image={image} username={username} />
+          <span className="flex min-w-0 flex-col">
+            <span className="truncate text-[15px] group-hover:underline">
+              {name}
+            </span>
+            <span className="truncate font-mono text-[11px] text-foreground/45">
+              @{username}
+            </span>
           </span>
         </Link>
         <RelativeTime
           at={date.getTime()}
-          className="font-mono px-1 py-0.5 text-xs font-normal opacity-50 hover:bg-zinc-500/20"
+          className="shrink-0 font-mono text-[11px] text-foreground/45"
         />
-      </footer>
-    </blockquote>
+      </figcaption>
+    </figure>
   );
 }
 
@@ -68,18 +81,15 @@ export function InputQuote({
   placeholder: string;
 }) {
   return (
-    <div className={borderStyle}>
+    <div className="border-l-2 border-foreground/70">
       <Textarea
         placeholder={placeholder}
         name={name}
         defaultValue={text ?? ""}
-        className={cn(
-          style,
-          `border border-input text-[16px] text-zinc-950 placeholder:text-muted-foreground
-          focus-visible:border-zinc-500 focus-visible:outline-hidden focus-visible:ring-0
-          focus-visible:ring-transparent disabled:cursor-not-allowed disabled:opacity-50
-          dark:text-zinc-50`,
-        )}
+        className="w-full border border-l-0 border-border bg-card p-3 text-[16px] font-light
+          placeholder:text-muted-foreground focus-visible:border-foreground/40
+          focus-visible:ring-0 focus-visible:ring-transparent focus-visible:outline-hidden
+          disabled:cursor-not-allowed disabled:opacity-50"
       />
     </div>
   );

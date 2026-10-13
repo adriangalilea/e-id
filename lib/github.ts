@@ -1,89 +1,40 @@
 import "server-only";
 
 import { cacheLife, cacheTag } from "next/cache";
+import { fetchGithub, type GithubProfile } from "@/lib/github-data";
 import { githubTag } from "@/lib/tags";
 
-export type ContributionDay = { date: string; count: number; level: number };
-
-type CalendarResponse = {
-  data?: {
-    user: {
-      contributionsCollection: {
-        contributionCalendar: {
-          weeks: {
-            contributionDays: { contributionCount: number; date: string }[];
-          }[];
-        };
-      };
-    } | null;
-  };
-  errors?: { message: string }[];
-};
-
-const QUERY = `query ($login: String!) {
-  user(login: $login) {
-    contributionsCollection {
-      contributionCalendar {
-        weeks { contributionDays { contributionCount date } }
-      }
-    }
-  }
-}`;
-
-function levelOf(count: number) {
-  if (count === 0) return 0;
-  if (count > 10) return 3;
-  if (count > 5) return 2;
-  return 1;
-}
-
-/** A GitHub login's contribution calendar, the one read on a profile that GitHub
- *  owns: it changes daily whatever e-id does, so it is the one cache here on a
- *  timer, regenerated at most once a day per profile and only when the profile is
- *  visited. An empty calendar when GitHub cannot answer (no token on this
- *  machine, a login that does not exist, a rate limit): the profile still renders. */
-export async function getContributions(
+/** A GitHub login's profile and contribution calendar, as the registry's `github`
+ *  item draws it. GitHub owns it and it changes daily whatever e-id does, so it is
+ *  the one read here on a timer: kept a day, regenerated on a visit after that.
+ *
+ *  When GitHub cannot answer (no token, a revoked one, a login that is gone) the
+ *  profile renders without it, and that answer is kept minutes, not a day: a
+ *  failure cached like a success is how every profile lost its calendar for good
+ *  behind an expired token, the cause logged once a build and never again. */
+export async function getGithubProfile(
   login: string,
-): Promise<ContributionDay[]> {
+): Promise<GithubProfile | null> {
   "use cache";
-  cacheLife("days");
   cacheTag(githubTag(login));
 
   const token = process.env.API_GITHUB_TOKEN;
   if (!token) {
-    console.warn("API_GITHUB_TOKEN is not set: no GitHub calendar");
-    return [];
+    console.error(`GitHub calendar for ${login}: API_GITHUB_TOKEN is not set`);
+    cacheLife("minutes");
+    return null;
   }
-
-  const response = await fetch("https://api.github.com/graphql", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify({ query: QUERY, variables: { login: login.trim() } }),
-  });
-  if (!response.ok) {
-    console.error(
-      `GitHub calendar for ${login}: HTTP ${response.status} ${response.statusText}`,
-    );
-    return [];
+  try {
+    const facts = await fetchGithub(`https://github.com/${login.trim()}`, token);
+    if (facts.kind !== "profile")
+      throw new Error(`github.com/${login} is a ${facts.kind}, not a profile`);
+    cacheLife("days");
+    return facts;
+  } catch (error) {
+    // HTTP 401 here is API_GITHUB_TOKEN revoked or expired: a new classic token
+    // with read:user, in the environment the build and the server read.
+    console.error(`GitHub calendar for ${login}:`, error);
+    cacheLife("minutes");
+    return null;
   }
-
-  const body: CalendarResponse = await response.json();
-  if (body.errors?.length) {
-    console.error(`GitHub calendar for ${login}:`, body.errors);
-    return [];
-  }
-  const weeks =
-    body.data?.user?.contributionsCollection.contributionCalendar.weeks;
-  if (!weeks) return [];
-
-  return weeks
-    .flatMap((week) => week.contributionDays)
-    .map(({ contributionCount, date }) => ({
-      date: date.split("T")[0],
-      count: contributionCount,
-      level: levelOf(contributionCount),
-    }));
 }

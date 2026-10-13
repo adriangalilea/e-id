@@ -7,7 +7,7 @@ import {
   getTestimonials,
   getUsernames,
 } from "@/lib/data";
-import { getContributions } from "@/lib/github";
+import { getSocialFacts } from "@/lib/social-facts";
 import { EMOJI_DOMAIN, PROD_URL } from "@/lib/const";
 import { MakeYourOwn } from "@/components/landing/make-yours";
 import { inlineJson, profileJsonLd, profileUrl } from "@/lib/profile-ld";
@@ -84,22 +84,21 @@ export default async function Page(props: {
     getPublicSocials(user.id),
     getTestimonials(user.id),
   ]);
-  const github = socials.find((social) => social.platform === "github");
-  const githubData = github?.value ? await getContributions(github.value) : [];
+  const facts = await getSocialFacts(socials);
 
   return (
-    <Column className="gap-4 sm:gap-6">
+    <Column className="gap-10 sm:gap-12">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
           __html: inlineJson(profileJsonLd(user, socials)),
         }}
       />
-      <UserProfile user={user} socials={socials} githubData={githubData} />
+      <UserProfile user={user} socials={socials} facts={facts} />
       <OwnerActions username={user.username} />
       {testimonials.length > 0 && (
         <HiddenFromOwner username={user.username}>
-          <div className="flex flex-col gap-2 animate-fade-in">
+          <div className="flex animate-fade-in flex-col gap-3">
             {testimonials.map((testimonial) => (
               <Testimonial
                 key={testimonial.commentId}
