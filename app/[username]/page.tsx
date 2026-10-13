@@ -9,6 +9,7 @@ import {
 } from "@/lib/data";
 import { getContributions } from "@/lib/github";
 import { PROD_URL } from "@/lib/const";
+import { inlineJson, profileJsonLd, profileUrl } from "@/lib/profile-ld";
 import { CommentInteraction, HiddenFromOwner } from "./comment_section";
 import { OwnerActions } from "./owner_actions";
 import UserProfile from "./user_profile";
@@ -40,15 +41,15 @@ export async function generateMetadata(props: {
   ogUrl.searchParams.set("socials", platforms.join(","));
 
   return {
-    metadataBase: new URL(PROD_URL),
     title: user.name,
     description: `@${user.username} - Digital Identity`,
-    alternates: { canonical: `${PROD_URL}/${user.username}` },
+    alternates: { canonical: profileUrl(user.username) },
     openGraph: {
       title: user.name || "",
       description: `@${user.username} - Digital Identity`,
       type: "profile",
-      url: `${PROD_URL}/${user.username}`,
+      username: user.username,
+      url: profileUrl(user.username),
       images: [
         {
           url: ogUrl.toString(),
@@ -77,6 +78,12 @@ export default async function Page(props: {
 
   return (
     <div className="flex flex-1 flex-col gap-4 sm:gap-6">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: inlineJson(profileJsonLd(user, socials)),
+        }}
+      />
       <UserProfile user={user} socials={socials} githubData={githubData} />
       <OwnerActions username={user.username} />
       {testimonials.length > 0 && (

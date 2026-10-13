@@ -5,7 +5,7 @@ import Footer from "@/components/footer/footer";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Toaster } from "@/components/ui/toaster";
-import { getBaseUrl } from "@/lib/url";
+import { PROD_URL } from "@/lib/const";
 import { SitePageSensor } from "@/components/page-sensor";
 import { visitsEnabled } from "@/lib/visit-store";
 
@@ -32,14 +32,10 @@ export const metadata: Metadata = {
   keywords: ["digital", "identity", "profile", "web", "link aggregator"],
   creator: "Adrian Galilea",
   publisher: "Adrian Galilea",
-  metadataBase: new URL(getBaseUrl()),
+  // e-id.to is the canonical host of every page: it is where crawlers and every
+  // browser but Safari land (next.config). 👤.to is the brand people share.
+  metadataBase: new URL(PROD_URL),
   robots: "index, follow",
-  alternates: {
-    canonical: getBaseUrl(),
-  },
-  icons: {
-    icon: `${getBaseUrl()}/favicon.ico`,
-  },
 };
 
 export default async function RootLayout({

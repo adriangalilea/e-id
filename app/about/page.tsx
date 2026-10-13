@@ -5,7 +5,10 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 
+import type { Metadata } from "next";
 import Link from "next/link";
+
+export const metadata: Metadata = { alternates: { canonical: "/about" } };
 
 export default function Faq() {
   return (

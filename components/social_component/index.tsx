@@ -96,6 +96,10 @@ export function SocialComponent({
                     <Separator className="mx-3 shrink bg-zinc-300 opacity-10" />
                     <Link
                       href={social.url}
+                      // rel="me": this page and that profile are the same
+                      // person, which Mastodon and other IndieWeb readers check
+                      // to mark the link verified.
+                      rel="me"
                       className="max-w-40 sm:max-w-fit prose prose-zinc
                         dark:prose-invert group flex w-fit items-center
                         bg-zinc-500 pr-3 text-white transition-colors
