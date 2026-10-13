@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { HelpCircle } from "lucide-react";
 import { EmojiDomain } from "@/components/brand";
+import { QuestionMark } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { Glass } from "@/components/ui/material-glass";
 
@@ -48,7 +48,7 @@ export function NavActions() {
         size="icon-lg"
         render={<Link href="/about" aria-label="about" prefetch={false} />}
       >
-        <HelpCircle strokeWidth={1.5} />
+        <QuestionMark strokeWidth={1.5} />
       </Button>
       <FooterUser />
     </div>
