@@ -175,7 +175,9 @@
 @media (min-width: 48rem) {
   @supports (animation-timeline: scroll()) {
     body:has([data-slot="hero"]) {
-      --hero-h: 40rem;
+      /* What it holds and a little air: the words from 8rem, two lines of the
+         title (2 × 0.95 × 6rem), the 3rem gap, the 3.5rem button. */
+      --hero-h: 28rem;
       --bar-h: 3.25rem;
       --bar-top: 1rem;
       /* The bar's sides: the content column's edges, 72rem wide, or 2rem in. */

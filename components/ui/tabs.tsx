@@ -474,7 +474,7 @@ export function TabsPanel({
         // while its exit runs, `ending`).
         const active = !state.hidden && state.transitionStatus !== "ending"
         return (
-          <div {...attrs}>
+          <PanelFace attrs={attrs} active={active}>
             <PanelActive.Provider value={active}>
               {mount === "seen" ? (
                 <Seen active={active}>{children}</Seen>
@@ -482,11 +482,90 @@ export function TabsPanel({
                 children
               )}
             </PanelActive.Provider>
-          </div>
+          </PanelFace>
         )
       }}
     />
   )
+}
+
+/** A panel's arrival: when it becomes the one shown (never on the page's first
+ *  paint, where it simply is), it comes up from nothing and settles 4 px, over
+ *  200 ms on the indicator's curve, so the content answers the same gesture the
+ *  lift does instead of cutting in under it. Short on purpose: it confirms the
+ *  switch, it does not perform it. Played with the Web Animations API on the
+ *  panel's own element, so it needs no stylesheet and leaves no style behind; none
+ *  under reduced motion. The panel that leaves is hidden at once: two panels
+ *  cross-fading in one place would read as both. */
+const ARRIVE: Keyframe[] = [
+  { opacity: 0, transform: "translateY(4px)" },
+  { opacity: 1, transform: "none" },
+]
+const ARRIVE_TIMING: KeyframeAnimationOptions = {
+  duration: 200,
+  easing: "cubic-bezier(0.22, 1, 0.36, 1)",
+}
+
+function PanelFace({
+  attrs,
+  active,
+  children,
+}: {
+  attrs: React.ComponentProps<"div">
+  active: boolean
+  children: React.ReactNode
+}) {
+  const { ref, ...rest } = attrs
+  const own = React.useRef<HTMLDivElement | null>(null)
+  const was = React.useRef(active)
+  const both = React.useCallback(
+    (node: HTMLDivElement | null) => {
+      own.current = node
+      if (typeof ref === "function") ref(node)
+      else if (ref) ref.current = node
+    },
+    [ref],
+  )
+  React.useLayoutEffect(() => {
+    const arrived = active && !was.current
+    was.current = active
+    const node = own.current
+    if (!arrived || !node) return
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return
+    node.animate(ARRIVE, ARRIVE_TIMING)
+  }, [active])
+  return (
+    <div ref={both} {...rest}>
+      {children}
+    </div>
+  )
+}
+
+/** The box's body follows its panel's height rather than jumping to it: a switch
+ *  between a short panel and a tall one resized the box in one frame and moved
+ *  everything under it (Adrian, 2026-10-13: "layout shifting with tabs too
+ *  harsh"). The panels' own height is read (a ResizeObserver on what holds them,
+ *  so a panel that grows by itself, a calendar arriving, glides too) and the body
+ *  is given it as a length, eased on the indicator's curve (`GLIDE`) so the box
+ *  and the lift move as one. The glide turns on after the first reading: the page
+ *  opens at its height, never growing from nothing. */
+function useBodyHeight(on: boolean) {
+  const [inner, setInner] = React.useState<HTMLDivElement | null>(null)
+  const [height, setHeight] = React.useState<number | null>(null)
+  const [moving, setMoving] = React.useState(false)
+  React.useLayoutEffect(() => {
+    if (!on || !inner) return
+    const read = () => setHeight(inner.getBoundingClientRect().height)
+    read()
+    const frame = requestAnimationFrame(() => setMoving(true))
+    const sizes = new ResizeObserver(read)
+    sizes.observe(inner)
+    return () => {
+      cancelAnimationFrame(frame)
+      sizes.disconnect()
+    }
+  }, [on, inner])
+  return { setInner, height, moving }
 }
 
 /** The box's title: a heading OUTSIDE the box, above it, where a page's sections are
@@ -678,6 +757,10 @@ export function TabsBox({
       "TabsBox: `top` pins the head to the page, `maxHeight` makes the box its own scroller and `height` gives it a height its panels fill; give one",
     )
   const filled = height !== undefined
+  // The body glides to its panel's height when the box grows with what it holds;
+  // a filled box has its height, and a capped one scrolls instead of growing.
+  const glides = !filled && maxHeight === undefined
+  const body = useBodyHeight(glides)
   const m = useMaterial(material)
   const titleId = React.useId()
   const scroller = React.useRef<HTMLDivElement>(null)
@@ -783,12 +866,25 @@ export function TabsBox({
         // In glass what it holds lies on the back layer, a sibling and no
         // ancestor, so it is told it stands on glass, as GlassPane's content is.
         className={cn(
-          filled ? FILLED_BODY : "p-5",
+          filled && FILLED_BODY,
+          glides && "overflow-clip",
+          glides && body.moving && ["transition-[height]", GLIDE],
           glass ? "[--glass-body:1]" : partsFrame && PLAIN_BODY_EDGE,
         )}
+        style={
+          glides && body.height !== null
+            ? { height: `${body.height}px` }
+            : undefined
+        }
       >
-        {/* The box is the frame: what draws a box of its own draws none here. */}
-        <InFrame>{children}</InFrame>
+        {filled ? (
+          // The box is the frame: what draws a box of its own draws none here.
+          <InFrame>{children}</InFrame>
+        ) : (
+          <div ref={body.setInner} data-slot="tabs-box-panels" className="p-5">
+            <InFrame>{children}</InFrame>
+          </div>
+        )}
       </div>
     </div>
   )
