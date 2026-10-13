@@ -432,6 +432,9 @@
   100% {
     border-color: transparent;
     background-color: transparent;
+    background-image: none;
+    backdrop-filter: none;
+    box-shadow: none;
     padding-left: 0;
     padding-right: 0;
   }
@@ -611,20 +614,33 @@
    Only the coming and going is timed, and quickly. The pill is the hero's
    address itself, so on a wide screen it closes into the bar with it
    (`hero-pill`). */
+/* Its body is glass with presence: it frosts what is behind it (the beam, the
+   grain), is lit a little lighter at its top than its foot, catches a highlight
+   along its top edge, and stands off the page on a soft shadow. */
 [data-cta] {
   position: relative;
   isolation: isolate;
   overflow: hidden;
   border: 1px solid rgb(255 255 255 / 0.16);
-  background: rgb(255 255 255 / 0.06);
+  background-color: rgb(255 255 255 / 0.05);
+  background-image: linear-gradient(
+    to bottom,
+    rgb(255 255 255 / 0.06),
+    rgb(255 255 255 / 0)
+  );
+  backdrop-filter: blur(18px) saturate(1.4);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.1),
+    0 18px 40px -18px rgb(0 0 0 / 0.9),
+    0 2px 6px -2px rgb(0 0 0 / 0.6);
   color: var(--foreground);
   transition:
     border-color 200ms ease-out,
     background-color 200ms ease-out;
 }
 [data-cta]:hover {
-  border-color: rgb(255 255 255 / 0.32);
-  background: rgb(255 255 255 / 0.09);
+  border-color: rgb(255 255 255 / 0.28);
+  background-color: rgb(255 255 255 / 0.08);
 }
 /* Both layers are the foil under a mask: the band at the hand, intersected with
    what is lit there (the ring; the print). */
