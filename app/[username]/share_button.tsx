@@ -26,25 +26,8 @@ export default function ShareButton({ username }: { username: string }) {
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-min flex flex-col p-0">
-        <Button
-          variant="ghost"
-          className="w-full flex"
-          onClick={async () => {
-            await navigator.clipboard.writeText(`${PROD_URL}/${username}`);
-            toast({
-              variant: "success",
-              title: "Copied to clipboard!",
-            });
-          }}
-        >
-          <ClipboardCopy strokeWidth={1} />
-          <span
-            className="prose prose-zinc dark:prose-invert font-light text-left
-              grow"
-          >
-            e-id.to
-          </span>
-        </Button>
+        {/* The brand first: 👤.to opens everywhere (next.config sends every
+            browser but Safari on to e-id.to). */}
         <Button
           variant="ghost"
           className="w-full flex"
@@ -75,6 +58,25 @@ export default function ShareButton({ username }: { username: string }) {
               grow"
           >
             👤.to
+          </span>
+        </Button>
+        <Button
+          variant="ghost"
+          className="w-full flex"
+          onClick={async () => {
+            await navigator.clipboard.writeText(`${PROD_URL}/${username}`);
+            toast({
+              variant: "success",
+              title: "Copied to clipboard!",
+            });
+          }}
+        >
+          <ClipboardCopy strokeWidth={1} />
+          <span
+            className="prose prose-zinc dark:prose-invert font-light text-left
+              grow"
+          >
+            e-id.to
           </span>
         </Button>
         <Button
