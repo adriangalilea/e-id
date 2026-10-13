@@ -17,6 +17,9 @@ export function SignIn({
       onClick={() =>
         signIn.social({
           provider: (provider || "github") as "github" | "google",
+          // Back to the page signed in from: signing in to comment on a profile
+          // lands on that profile.
+          callbackURL: window.location.pathname,
         })
       }
     >

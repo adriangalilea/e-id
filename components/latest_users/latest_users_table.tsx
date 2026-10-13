@@ -9,11 +9,11 @@ import {
 } from "@/components/ui/table";
 import { RelativeTime } from "@/components/ui/relative-time";
 import Flag from "@/components/flag";
-import { getLatestUsersWithUsernameCached } from "@/db/actions";
+import { getLatestUsers } from "@/lib/data";
 import Link from "next/link";
 
 export async function LatestUsersTable() {
-  const users = await getLatestUsersWithUsernameCached();
+  const users = await getLatestUsers();
   return (
     <Table>
       <TableCaption className="font-code text-left">

@@ -8,8 +8,8 @@ import {
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Link from "next/link";
-import { SelectUser } from "@/db/schema";
-import { getSocials, getSocialsCached } from "@/db/actions";
+import type { SelectSocial } from "@/db/schema";
+import type { ContributionDay } from "@/lib/github";
 import {
   getSocialDisplayText,
   getSocialIcon,
@@ -24,10 +24,6 @@ import { Tweet } from "react-tweet";
 import { InputQuote, Quote } from "../quote";
 
 import GitHubActivity from "@/components/github/custom";
-import {
-  fetchGithubActivity,
-  flattenData,
-} from "@/components/social_component/fetch_github_activity";
 import { Label } from "../ui/label";
 import { Separator } from "../ui/separator";
 import { SwitchPublic } from "./switch_public";
@@ -35,71 +31,34 @@ import AddSocialDropdownMenu from "./add_social_dropdown";
 import OrderDropdown from "./order_dropdown";
 import { Star } from "lucide-react";
 
-import type { JSX } from "react";
-
-type GithubData = { date: string; count: number; level: number }[];
-
-export async function SocialComponent({
-  user,
+/** A profile's socials as tabs. `socials` arrive filtered and ordered by the
+ *  caller (lib/data): the public ones on the profile, all of them on the edit
+ *  form. */
+export function SocialComponent({
+  socials,
   edit,
   githubData,
 }: {
-  user: SelectUser;
+  socials: SelectSocial[];
   edit?: boolean;
-  githubData?: GithubData;
-}): Promise<JSX.Element> {
-  let validSocials = edit
-    ? await getSocials(user.id)
-    : await getSocialsCached(user.id);
+  githubData: ContributionDay[];
+}) {
+  if (!edit && socials.length === 0) return null;
 
-  if (!edit) {
-    // filter out non public ones and those with null or empty social.value
-    validSocials = validSocials.filter(
-      (social) => social.public === true && social.value,
-    );
-
-    if (validSocials.length === 0) return <></>;
-  }
-
-  const populatedSocials = validSocials
-    .sort((a, b) => {
-      const orderA = a.order === null ? Infinity : a.order;
-      const orderB = b.order === null ? Infinity : b.order;
-      return (orderA ?? 0) - (orderB ?? 0);
-    })
-    .map(({ platform, value, image, ...rest }) => {
-      return {
-        url: getSocialUrl(platform, value!),
-        icon: getSocialIcon(platform),
-        displayText: getSocialDisplayText(platform, value!),
-        platform,
-        value,
-        image,
-        placeholder: getSocialPlaceholder(platform),
-        placeholder_pretext: getSocialPretextIcon(platform),
-        ...rest,
-      };
-    });
-
-  // Use pre-fetched github data from page level (for view mode)
-  // or fetch it here for edit mode
-  let githubActivityData: GithubData = githubData ?? [];
-  if (edit && !githubData) {
-    const githubSocial = populatedSocials.find(
-      (social) => social.platform === "github",
-    );
-    if (githubSocial && githubSocial.value) {
-      try {
-        const data = await fetchGithubActivity(githubSocial.value);
-        const flattened = flattenData(data);
-        if (flattened && flattened.length > 0) {
-          githubActivityData = flattened;
-        }
-      } catch (e) {
-        console.error("Error fetching GitHub activity:", e);
-      }
-    }
-  }
+  const populatedSocials = socials.map(
+    ({ platform, value, image, ...rest }) => ({
+      url: getSocialUrl(platform, value ?? ""),
+      icon: getSocialIcon(platform),
+      displayText: getSocialDisplayText(platform, value ?? ""),
+      platform,
+      value,
+      image,
+      placeholder: getSocialPlaceholder(platform),
+      placeholder_pretext: getSocialPretextIcon(platform),
+      ...rest,
+    }),
+  );
+  const githubActivityData = githubData;
 
   return (
     <Tabs defaultValue={populatedSocials[0]?.id} className="mt-0 w-full">
@@ -119,7 +78,7 @@ export async function SocialComponent({
             {icon}
           </TabsTrigger>
         ))}
-        {edit && <AddSocialDropdownMenu userId={user.id} />}
+        {edit && <AddSocialDropdownMenu />}
       </TabsList>
       {populatedSocials.map((social) => (
         <TabsContent key={social.id} value={social.id} className="mt-0">
@@ -159,16 +118,17 @@ export async function SocialComponent({
                 )}
                 {edit && (
                   <div className="flex items-center gap-2">
-                    <OrderDropdown userId={user.id} socialId={social.id} />
+                    <OrderDropdown
+                      socialId={social.id}
+                      position={populatedSocials.indexOf(social) + 1}
+                      count={populatedSocials.length}
+                    />
                     <SwitchPublic
                       id={`${social.platform}_${social.id}_public`}
                       defaultChecked={social.public}
                       name={`${social.platform}_${social.id}_public`}
                     />
-                    <RemoveSocialButton
-                      userId={user.id}
-                      platformId={social.id}
-                    />
+                    <RemoveSocialButton platformId={social.id} />
                   </div>
                 )}
               </CardTitle>

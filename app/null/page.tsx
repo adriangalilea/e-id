@@ -1,22 +1,30 @@
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { auth } from "@/auth";
 import { TriangleAlert } from "lucide-react";
 import { ClientForm } from "./client_form";
 import { redirect } from "next/navigation";
-import { headers } from "next/headers";
 import { Suspense } from "react";
+import { getSession } from "@/lib/session";
+import { ChipSync } from "@/components/session/chip-sync";
+import { chipOf } from "@/lib/chip";
 
+// Where a signed-in user without a username is sent (components/session/
+// session-chip) to choose one. Signed out, it says so and corrects the display
+// cookie, which is what sent the browser here.
 async function NullPageContent() {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-  if (!session || !session.user || !session.user.id) redirect("/");
-  if (session.user.username && session.user.username_normalized) {
-    redirect(`/${session.user.username}`);
+  const session = await getSession();
+  if (!session) {
+    return (
+      <>
+        <ChipSync chip={null} />
+        <p className="prose prose-zinc dark:prose-invert">You are signed out.</p>
+      </>
+    );
   }
+  if (session.user.username) redirect(`/${session.user.username}`);
 
   return (
     <div className="flex flex-col justify-between gap-4">
+      <ChipSync chip={chipOf(session.user)} />
       <Alert variant="warning">
         <TriangleAlert className="size-4" />
         <AlertTitle>{"You don't have a username!"}</AlertTitle>

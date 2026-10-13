@@ -1,25 +1,28 @@
 "use client";
-import { useActionState } from "react";
+import { useActionState, useEffect } from "react";
 
 import { Button } from "@/components/ui/button";
 import { SendHorizontal } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
-import { createCommentFromForm } from "@/db/actions";
+import { createComment, type CommentFormState } from "@/db/actions";
+
+const initialState: CommentFormState = { error: null, resetKey: "" };
 
 export default function CommentForm({
   profileUserId,
+  onPosted,
 }: {
   profileUserId: string;
+  onPosted: () => void;
 }) {
-  const actionFunction = (
-    prevState: { resetKey: string; error: string | null },
-    formData: FormData,
-  ) => createCommentFromForm(prevState, formData, profileUserId);
+  const [state, formAction] = useActionState(
+    createComment.bind(null, profileUserId),
+    initialState,
+  );
 
-  const [state, formAction] = useActionState(actionFunction, {
-    error: null,
-    resetKey: Date.now().toString(),
-  });
+  useEffect(() => {
+    if (state.resetKey) onPosted();
+  }, [state.resetKey, onPosted]);
 
   return (
     <form

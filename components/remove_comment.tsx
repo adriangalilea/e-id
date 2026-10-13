@@ -24,8 +24,10 @@ import {
 } from "@/components/ui/tooltip";
 export default function RemoveComment({
   commentId,
+  onChange,
 }: {
   commentId: SelectComment["id"];
+  onChange: () => void;
 }) {
   return (
     <AlertDialog>
@@ -64,6 +66,7 @@ export default function RemoveComment({
             <AlertDialogAction
               onClick={async () => {
                 await deleteComment(commentId);
+                onChange();
               }}
             >
               Delete

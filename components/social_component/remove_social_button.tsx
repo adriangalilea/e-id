@@ -1,6 +1,6 @@
 "use client";
 
-import { SelectSocial, SelectUser } from "@/db/schema";
+import { SelectSocial } from "@/db/schema";
 import { removeSocial } from "@/db/actions";
 import { Button } from "@/components/ui/button";
 import { Trash2 } from "lucide-react";
@@ -23,10 +23,8 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 export default function RemoveSocialButton({
-  userId,
   platformId,
 }: {
-  userId: SelectUser["id"];
   platformId: SelectSocial["id"];
 }) {
   return (
@@ -66,7 +64,7 @@ export default function RemoveSocialButton({
           >
             <AlertDialogAction
               onClick={async () => {
-                await removeSocial(userId, platformId);
+                await removeSocial(platformId);
               }}
             >
               Delete

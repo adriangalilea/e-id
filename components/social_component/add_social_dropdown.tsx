@@ -1,5 +1,3 @@
-import { SelectUser } from "@/db/schema";
-
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,11 +8,7 @@ import { Plus } from "lucide-react";
 import { socialPlatforms } from "@/db/schema";
 import AddSocialDropdownMenuItem from "./add_social_dropdown_item";
 
-export default function AddSocialDropdownMenu({
-  userId,
-}: {
-  userId: SelectUser["id"];
-}) {
+export default function AddSocialDropdownMenu() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
@@ -32,11 +26,7 @@ export default function AddSocialDropdownMenu({
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" sideOffset={0} className="min-w-36">
         {socialPlatforms.map((platform) => (
-          <AddSocialDropdownMenuItem
-            key={platform}
-            userId={userId}
-            platform={platform}
-          />
+          <AddSocialDropdownMenuItem key={platform} platform={platform} />
         ))}
       </DropdownMenuContent>
     </DropdownMenu>

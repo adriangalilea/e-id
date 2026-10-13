@@ -1,3 +1,5 @@
+"use client";
+
 import {
   Tooltip,
   TooltipContent,
@@ -12,39 +14,31 @@ import { SelectComment } from "@/db/schema";
 export default function PinComment({
   commentId,
   pinned,
-  canPin,
+  onChange,
 }: {
   commentId: SelectComment["id"];
   pinned: boolean;
-  canPin: boolean;
+  onChange: () => void;
 }) {
   return (
-    <>
-      {canPin && (
-        <form
-          action={async () => {
-            "use server";
-            await pinCommentToggle(commentId);
-          }}
-        >
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button variant="outline" size="icon">
-                  {pinned ? (
-                    <PinOff strokeWidth={1} />
-                  ) : (
-                    <Pin strokeWidth={1} />
-                  )}
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="left">
-                <p>pin</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        </form>
-      )}
-    </>
+    <form
+      action={async () => {
+        await pinCommentToggle(commentId);
+        onChange();
+      }}
+    >
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button variant="outline" size="icon">
+              {pinned ? <PinOff strokeWidth={1} /> : <Pin strokeWidth={1} />}
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent side="left">
+            <p>{pinned ? "unpin" : "pin"}</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    </form>
   );
 }

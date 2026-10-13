@@ -3,30 +3,14 @@ import { Button } from "@/components/ui/button";
 import { HelpCircle, Home } from "lucide-react";
 
 import FooterUser from "./footer_user";
-import { Suspense } from "react";
-import Image from "next/image";
 
-export default async function Footer() {
+export default function Footer() {
   return (
     <footer
       className="shadow-top-light dark:shadow-top flex w-full justify-between bg-zinc-500/10
         text-zinc-500 backdrop-blur-2xl dark:border-white/15"
     >
-      <Suspense
-        fallback={
-          <div className="flex size-10 items-center justify-center">
-            <Image
-              src="./ball-triangle.svg"
-              className="size-6"
-              width={24}
-              height={24}
-              alt="loading animation"
-            />
-          </div>
-        }
-      >
-        <FooterUser />
-      </Suspense>
+      <FooterUser />
 
       <div className="flex gap-2">
         <ButtonFAQ />

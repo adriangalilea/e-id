@@ -1,135 +1,72 @@
-import {
-  fetchCommentsConditionally,
-  getTestimonialsCached,
-  getUserByUsernameNormalizedCached,
-} from "@/db/actions";
+"use client";
+
+import { useCallback, useEffect, useState } from "react";
 import Comment from "@/components/comment";
-import { auth } from "@/auth";
-import { Testimonial } from "@/components/quote";
+import { useChip, writeChip } from "@/components/session/use-chip";
+import { type CommentThread, loadComments } from "@/db/actions";
 import CommentForm from "./comment_form";
-import { headers } from "next/headers";
 
-async function TestimonialsContent({ userId }: { userId: string }) {
-  const testimonials = await getTestimonialsCached(userId);
-
-  if (testimonials.length === 0) {
-    return null;
-  }
-
-  return (
-    <div className="flex flex-col gap-2 animate-fade-in">
-      {testimonials.map((testimonial) => (
-        <div key={testimonial.commentId}>
-          <Testimonial
-            text={testimonial.body}
-            name={testimonial.user.name!}
-            image={testimonial.user.image!}
-            date={testimonial.createdAt}
-            username={testimonial.user.username!}
-          />
-        </div>
-      ))}
-    </div>
-  );
-}
-
-export async function TestimonialsSection({ userId }: { userId: string }) {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-
-  if (session?.user?.id === userId) {
-    return null;
-  }
-
-  return <TestimonialsContent userId={userId} />;
-}
-
-export async function CommentInteraction({
+/** The signed-in part of a profile's comments, on a page that is otherwise
+ *  static: nothing for a visitor the display cookie says is signed out (no
+ *  request at all), else the thread loaded from the server, which also corrects
+ *  the cookie from the real session. */
+export function CommentInteraction({
   profileUserId,
 }: {
   profileUserId: string;
 }) {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-  const visitorUserId = session?.user?.id;
+  const chip = useChip();
+  const [thread, setThread] = useState<CommentThread | null>(null);
+  const [version, setVersion] = useState(0);
+  const reload = useCallback(() => setVersion((v) => v + 1), []);
 
-  if (!visitorUserId) {
-    return null;
-  }
+  const signedIn = Boolean(chip);
+  useEffect(() => {
+    if (!signedIn) return;
+    let current = true;
+    loadComments(profileUserId).then((loaded) => {
+      if (!current) return;
+      writeChip(loaded?.viewer ?? null);
+      setThread(loaded);
+    });
+    return () => {
+      current = false;
+    };
+  }, [signedIn, profileUserId, version]);
 
-  const isOwner = visitorUserId === profileUserId;
-  const comments = await fetchCommentsConditionally(
-    profileUserId,
-    visitorUserId,
-  );
+  if (!chip || !thread) return null;
 
-  if (isOwner) {
-    if (comments.length === 0) {
-      return null;
-    }
-
-    return (
-      <div className="relative animate-fade-in">
-        <div className="my-2 flex flex-col gap-2">
-          {comments.map((comment) => (
-            <div key={comment.commentId}>
-              <Comment
-                profilePicture={comment.user.image}
-                name={comment.user.name}
-                username={comment.user.username}
-                date={comment.createdAt}
-                body={comment.body}
-                commentId={comment.commentId}
-                pinned={comment.pinned}
-                canPin={true}
-              />
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  }
+  if (thread.isOwner && thread.comments.length === 0) return null;
 
   return (
     <div className="relative animate-fade-in">
-      <CommentForm profileUserId={profileUserId} />
-
+      {!thread.isOwner && (
+        <CommentForm profileUserId={profileUserId} onPosted={reload} />
+      )}
       <div className="my-2 flex flex-col gap-2">
-        {comments.map((comment) => (
-          <div key={comment.commentId}>
-            <Comment
-              profilePicture={comment.user.image}
-              name={comment.user.name}
-              username={comment.user.username}
-              date={comment.createdAt}
-              body={comment.body}
-              commentId={comment.commentId}
-              pinned={comment.pinned}
-              canPin={false}
-            />
-          </div>
+        {thread.comments.map((comment) => (
+          <Comment
+            key={comment.commentId}
+            comment={comment}
+            canPin={thread.isOwner}
+            onChange={reload}
+          />
         ))}
       </div>
     </div>
   );
 }
 
-export default async function CommentSection({
+/** The pinned testimonials are part of the static page; the profile's owner sees
+ *  them in their own comment list instead, with the pin beside each. */
+export function HiddenFromOwner({
   username,
+  children,
 }: {
   username: string;
+  children: React.ReactNode;
 }) {
-  const profileUser = await getUserByUsernameNormalizedCached(username);
-  if (!profileUser) {
-    return null;
-  }
-
-  return (
-    <>
-      <TestimonialsSection userId={profileUser.id} />
-      <CommentInteraction profileUserId={profileUser.id} />
-    </>
-  );
+  const chip = useChip();
+  if (chip?.u?.toLowerCase() === username.toLowerCase()) return null;
+  return children;
 }

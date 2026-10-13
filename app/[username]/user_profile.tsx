@@ -7,10 +7,12 @@ import { AtSign } from "lucide-react";
 import CountryPicker from "@/components/country_picker";
 import { SaveButton } from "@/components/save_button";
 import { DiscardButton } from "@/components/discard_button";
-import { SelectUser } from "@/db/schema";
+import type { SelectSocial } from "@/db/schema";
+import type { Profile } from "@/lib/data";
+import type { ContributionDay } from "@/lib/github";
 import { EditForm } from "./edit_form";
 
-function ProfileHeader({ user, edit }: { user: SelectUser; edit?: boolean }) {
+function ProfileHeader({ user, edit }: { user: Profile; edit?: boolean }) {
   return (
     <div>
       <div
@@ -22,7 +24,7 @@ function ProfileHeader({ user, edit }: { user: SelectUser; edit?: boolean }) {
             data-1p-ignore
             type="text"
             name="name"
-            defaultValue={user.name!}
+            defaultValue={user.name ?? ""}
             className="m-0! bg-transparent! text-2xl font-normal
               focus-visible:border-zinc-500 focus-visible:ring-0
               focus-visible:ring-transparent focus-visible:ring-offset-0
@@ -47,7 +49,7 @@ function ProfileHeader({ user, edit }: { user: SelectUser; edit?: boolean }) {
                 type="text"
                 id="username"
                 name="username"
-                defaultValue={user.username!}
+                defaultValue={user.username}
                 className="m-0! min-w-[140px] grow border border-border
                   bg-transparent! text-[16px] focus-visible:border-zinc-500
                   focus-visible:ring-0 focus-visible:ring-transparent
@@ -83,17 +85,14 @@ function ProfileHeader({ user, edit }: { user: SelectUser; edit?: boolean }) {
   );
 }
 
-type GithubData = { date: string; count: number; level: number }[];
-
-function ProfileContent({
-  user,
-  edit,
-  githubData,
-}: {
-  user: SelectUser;
+type ProfileProps = {
+  user: Profile;
+  socials: SelectSocial[];
+  githubData: ContributionDay[];
   edit?: boolean;
-  githubData?: GithubData;
-}) {
+};
+
+function ProfileContent({ user, socials, githubData, edit }: ProfileProps) {
   return (
     <div className="mt-3 flex flex-col gap-3 sm:mt-4 sm:gap-4">
       {edit ? (
@@ -105,10 +104,10 @@ function ProfileContent({
       ) : (
         user.bio && <Quote text={user.bio} />
       )}
-      <SocialComponent user={user} edit={edit} githubData={githubData} />
+      <SocialComponent socials={socials} edit={edit} githubData={githubData} />
       {edit && (
         <div className="flex items-center justify-end gap-2">
-          <DiscardButton username={user.username!} />
+          <DiscardButton username={user.username} />
           <SaveButton />
         </div>
       )}
@@ -116,23 +115,15 @@ function ProfileContent({
   );
 }
 
-export default async function UserProfile({
-  user,
-  edit,
-  githubData,
-}: {
-  user: SelectUser;
-  edit?: boolean;
-  githubData?: GithubData;
-}) {
+export default function UserProfile(props: ProfileProps) {
   const content = (
     <main className="animate-fade-in">
-      <ProfileHeader user={user} edit={edit} />
-      <ProfileContent user={user} edit={edit} githubData={githubData} />
+      <ProfileHeader user={props.user} edit={props.edit} />
+      <ProfileContent {...props} />
     </main>
   );
 
-  if (edit) {
+  if (props.edit) {
     return <EditForm>{content}</EditForm>;
   }
 

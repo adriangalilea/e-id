@@ -1,4 +1,4 @@
-import { SelectSocial, SelectUser } from "@/db/schema";
+import { SelectSocial } from "@/db/schema";
 
 import {
   DropdownMenu,
@@ -12,17 +12,18 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
-import { getSocials } from "@/db/actions";
 import OrderDropdownItem from "./order_dropdown_item";
 
-export default async function OrderDropdown({
-  userId,
+/** A social's place among its owner's socials, and the places it can move to. */
+export default function OrderDropdown({
   socialId,
+  position,
+  count,
 }: {
-  userId: SelectUser["id"];
   socialId: SelectSocial["id"];
+  position: number;
+  count: number;
 }) {
-  const socials = await getSocials(userId);
   return (
     <DropdownMenu>
       <TooltipProvider>
@@ -38,7 +39,7 @@ export default async function OrderDropdown({
                 variant="outline"
                 size="icon"
               >
-                {socials.find((social) => social.id === socialId)?.order || 1}
+                {position}
               </Button>
             </DropdownMenuTrigger>
           </TooltipTrigger>
@@ -52,9 +53,9 @@ export default async function OrderDropdown({
         sideOffset={0}
         className="w-10! min-w-10"
       >
-        {socials.map((social, index) => (
+        {Array.from({ length: count }, (_, index) => (
           <OrderDropdownItem
-            key={social.id}
+            key={index}
             socialId={socialId}
             number={index + 1}
           />

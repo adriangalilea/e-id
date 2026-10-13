@@ -1,41 +1,37 @@
-import { SelectComment, SelectUser } from "@/db/schema";
+"use client";
+
+import type { ThreadComment } from "@/db/actions";
 import { Testimonial } from "./quote";
 import RemoveComment from "./remove_comment";
 import PinComment from "./pin_comment";
 
-import type { JSX } from "react";
-
-export default async function Comment({
-  body,
-  date,
-  name,
-  profilePicture,
-  username,
-  commentId,
-  pinned,
+export default function Comment({
+  comment,
   canPin,
+  onChange,
 }: {
-  body: SelectUser["bio"];
-  date: Date;
-  name: SelectUser["name"];
-  profilePicture: SelectUser["image"];
-  username: SelectUser["username"];
-  commentId: SelectComment["id"];
-  pinned: SelectComment["pinned"];
+  comment: ThreadComment;
   canPin: boolean;
-}): Promise<JSX.Element> {
+  onChange: () => void;
+}) {
   return (
     <div className="flex items-start gap-2">
       <Testimonial
-        text={body!}
-        name={name!}
-        username={username!}
-        date={date}
-        image={profilePicture!}
+        text={comment.body}
+        name={comment.user.name ?? ""}
+        username={comment.user.username ?? ""}
+        date={comment.createdAt}
+        image={comment.user.image ?? ""}
       />
       <div className="flex flex-col gap-2">
-        <PinComment commentId={commentId} pinned={pinned} canPin={canPin} />
-        <RemoveComment commentId={commentId} />
+        {canPin && (
+          <PinComment
+            commentId={comment.commentId}
+            pinned={comment.pinned}
+            onChange={onChange}
+          />
+        )}
+        <RemoveComment commentId={comment.commentId} onChange={onChange} />
       </div>
     </div>
   );

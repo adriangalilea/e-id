@@ -1,51 +1,49 @@
-import {
-  getUsers,
-  getUserByUsernameNormalizedCached,
-  getValidUniqueSocialsCached,
-  getSocialsCached,
-} from "@/db/actions";
-import {
-  fetchGithubActivity,
-  flattenData,
-} from "@/components/social_component/fetch_github_activity";
-import { TestimonialsSection, CommentInteraction } from "./comment_section";
-import UserProfile from "./user_profile";
-import { notFound } from "next/navigation";
-
 import type { Metadata } from "next";
-import { Suspense } from "react";
-import { headers } from "next/headers";
+import { notFound } from "next/navigation";
+import { Testimonial } from "@/components/quote";
+import {
+  getProfile,
+  getPublicSocials,
+  getTestimonials,
+  getUsernames,
+} from "@/lib/data";
+import { getContributions } from "@/lib/github";
 import { PROD_URL } from "@/lib/const";
-import { auth } from "@/auth";
-import ShareButton from "./share_button";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
-import { Pen } from "lucide-react";
+import { CommentInteraction, HiddenFromOwner } from "./comment_section";
+import { OwnerActions } from "./owner_actions";
+import UserProfile from "./user_profile";
+
+// A profile is a static page: prerendered for every username at build, rendered
+// once on its first visit for a username that came later, and rendered again
+// only when a write expires one of its tags (lib/tags). Everything that depends
+// on who is looking is a client island that reads the display cookie (lib/chip),
+// so a visit runs no server function.
+
+export async function generateStaticParams() {
+  const usernames = await getUsernames();
+  if (usernames.length === 0)
+    throw new Error("no usernames to prerender: is DB_URL the right database?");
+  return usernames.map((username) => ({ username }));
+}
 
 export async function generateMetadata(props: {
   params: Promise<{ username: string }>;
 }): Promise<Metadata> {
-  const params = await props.params;
-  const username = params.username;
-  if (!username) {
-    notFound();
-  }
+  const { username } = await props.params;
+  const user = await getProfile(username);
+  if (!user) notFound();
 
-  const user = await getUserByUsernameNormalizedCached(username);
-  if (!user) {
-    notFound();
-  }
-
-  const socials = await getValidUniqueSocialsCached(user.id);
-
+  const socials = await getPublicSocials(user.id);
+  const platforms = [...new Set(socials.map((social) => social.platform))];
   const ogUrl = new URL(`${PROD_URL}/api/og`);
   ogUrl.searchParams.set("name", user.name || "");
-  ogUrl.searchParams.set("socials", socials.join(","));
+  ogUrl.searchParams.set("socials", platforms.join(","));
 
   return {
     metadataBase: new URL(PROD_URL),
     title: user.name,
     description: `@${user.username} - Digital Identity`,
+    alternates: { canonical: `${PROD_URL}/${user.username}` },
     openGraph: {
       title: user.name || "",
       description: `@${user.username} - Digital Identity`,
@@ -63,120 +61,41 @@ export async function generateMetadata(props: {
   };
 }
 
-export async function generateStaticParams() {
-  const users = await getUsers();
-
-  return users
-    .filter((user) => user.username !== null)
-    .map((user) => ({
-      username: user.username,
-    }));
-}
-
-// Dynamic - requires headers() for auth check
-async function OwnerActions({ username }: { username: string }) {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-
-  if (session?.user?.username !== username) {
-    return null;
-  }
-
-  return (
-    <div className="flex items-center justify-end gap-2 animate-fade-in">
-      <ShareButton username={username} />
-      <Button asChild variant="outline">
-        <Link href={`/${username}/edit`} prefetch={false}>
-          <Pen strokeWidth={1} />
-          <span className="prose prose-zinc dark:prose-invert font-light">
-            edit
-          </span>
-        </Link>
-      </Button>
-    </div>
-  );
-}
-
-// Static - cached profile content
-async function StaticProfile({ username }: { username: string }) {
-  "use cache";
-
-  const user = await getUserByUsernameNormalizedCached(username);
-  if (!user) {
-    notFound();
-  }
-
-  const socials = await getSocialsCached(user.id);
-  const githubSocial = socials.find((s) => s.platform === "github" && s.value);
-  let githubData: { date: string; count: number; level: number }[] = [];
-  if (githubSocial?.value) {
-    const raw = await fetchGithubActivity(githubSocial.value);
-    githubData = flattenData(raw);
-  }
-
-  return <UserProfile user={user} githubData={githubData} />;
-}
-
-// Dynamic sections wrapper
-async function DynamicSections({ username }: { username: string }) {
-  const user = await getUserByUsernameNormalizedCached(username);
-  if (!user) return null;
-
-  return (
-    <>
-      <Suspense fallback={null}>
-        <OwnerActions username={user.username!} />
-      </Suspense>
-
-      <Suspense fallback={null}>
-        <TestimonialsSection userId={user.id} />
-      </Suspense>
-
-      <Suspense fallback={null}>
-        <CommentInteraction profileUserId={user.id} />
-      </Suspense>
-    </>
-  );
-}
-
 export default async function Page(props: {
   params: Promise<{ username: string }>;
 }) {
-  const params = await props.params;
+  const { username } = await props.params;
+  const user = await getProfile(username);
+  if (!user) notFound();
+
+  const [socials, testimonials] = await Promise.all([
+    getPublicSocials(user.id),
+    getTestimonials(user.id),
+  ]);
+  const github = socials.find((social) => social.platform === "github");
+  const githubData = github?.value ? await getContributions(github.value) : [];
 
   return (
     <div className="flex flex-1 flex-col gap-4 sm:gap-6">
-      {/* Static profile - cached with "use cache" */}
-      <StaticProfile username={params.username} />
-
-      {/* Dynamic sections - each in own Suspense */}
-      <Suspense fallback={null}>
-        <DynamicSections username={params.username} />
-      </Suspense>
-    </div>
-  );
-}
-
-function ProfileSkeleton() {
-  return (
-    <main className="animate-pulse">
-      <div>
-        <div
-          className="flex flex-col justify-between gap-1.5 pt-3 sm:flex-row
-            sm:items-end sm:gap-3"
-        >
-          <div className="h-8 w-48 bg-zinc-200 dark:bg-zinc-800 rounded" />
-          <div className="flex items-end justify-between sm:grow">
-            <div className="h-6 w-32 bg-zinc-200 dark:bg-zinc-800 rounded" />
-            <div className="h-6 w-10 bg-zinc-200 dark:bg-zinc-800 rounded" />
+      <UserProfile user={user} socials={socials} githubData={githubData} />
+      <OwnerActions username={user.username} />
+      {testimonials.length > 0 && (
+        <HiddenFromOwner username={user.username}>
+          <div className="flex flex-col gap-2 animate-fade-in">
+            {testimonials.map((testimonial) => (
+              <Testimonial
+                key={testimonial.commentId}
+                text={testimonial.body}
+                name={testimonial.user.name ?? ""}
+                image={testimonial.user.image ?? ""}
+                date={testimonial.createdAt}
+                username={testimonial.user.username ?? ""}
+              />
+            ))}
           </div>
-        </div>
-      </div>
-      <div className="mt-3 flex flex-col gap-3 sm:mt-4 sm:gap-4">
-        <div className="h-20 bg-zinc-200 dark:bg-zinc-800 rounded" />
-        <div className="h-48 bg-zinc-200 dark:bg-zinc-800 rounded" />
-      </div>
-    </main>
+        </HiddenFromOwner>
+      )}
+      <CommentInteraction profileUserId={user.id} />
+    </div>
   );
 }

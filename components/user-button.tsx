@@ -1,14 +1,13 @@
-import { SelectUser } from "@/db/schema";
 import { Button } from "./ui/button";
 import Link from "next/link";
 import CustomAvatar from "./custom_avatar";
 
-export default async function UserButton({
+export default function UserButton({
   username,
   image,
 }: {
-  username: SelectUser["username"];
-  image: SelectUser["image"];
+  username: string;
+  image: string | null;
 }) {
   return (
     <div className="flex items-center justify-around">
@@ -18,7 +17,7 @@ export default async function UserButton({
         asChild
       >
         <Link href={`/${username}`} className="p-0!">
-          <CustomAvatar username={username!} image={image!} />
+          <CustomAvatar username={username} image={image ?? ""} />
         </Link>
       </Button>
     </div>
