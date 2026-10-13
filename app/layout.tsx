@@ -24,12 +24,13 @@ const spaceMono = Space_Mono({
 
 export const metadata: Metadata = {
   title: {
-    template: "%s e-ID",
-    default: "e-ID",
+    template: "%s · e-id",
+    default: "your page at 👤.to/you",
   },
-  description: "Digital identity",
+  description:
+    "one link for every place you are online. sign in with github and your page fills itself.",
   authors: [{ name: "Adrian Galilea" }],
-  keywords: ["digital", "identity", "profile", "web", "link aggregator"],
+  keywords: ["link in bio", "emoji domain", "developer profile", "github", "profile"],
   creator: "Adrian Galilea",
   publisher: "Adrian Galilea",
   // e-id.to is the canonical host of every page: it is where crawlers and every

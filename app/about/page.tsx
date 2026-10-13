@@ -8,7 +8,10 @@ import {
 import type { Metadata } from "next";
 import Link from "next/link";
 
-export const metadata: Metadata = { alternates: { canonical: "/about" } };
+export const metadata: Metadata = {
+  title: "faq",
+  alternates: { canonical: "/about" },
+};
 
 export default function Faq() {
   return (
@@ -29,8 +32,9 @@ export default function Faq() {
             How can I create my e-ID?
           </AccordionTrigger>
           <AccordionContent>
-            You can create your e-ID by visiting{" "}
-            <Link href={"/auth/signin"}>Create</Link>
+            Sign in with GitHub from the <Link href="/">home page</Link>. Your
+            page fills itself with your name, avatar, links and contribution
+            graph, and you can edit it after.
           </AccordionContent>
         </AccordionItem>
         <AccordionItem value="item-3">

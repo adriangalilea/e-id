@@ -8,7 +8,8 @@ import {
   getUsernames,
 } from "@/lib/data";
 import { getContributions } from "@/lib/github";
-import { PROD_URL } from "@/lib/const";
+import { EMOJI_DOMAIN, PROD_URL } from "@/lib/const";
+import { MakeYourOwn } from "@/components/landing/make-yours";
 import { inlineJson, profileJsonLd, profileUrl } from "@/lib/profile-ld";
 import { CommentInteraction, HiddenFromOwner } from "./comment_section";
 import { OwnerActions } from "./owner_actions";
@@ -40,13 +41,22 @@ export async function generateMetadata(props: {
   ogUrl.searchParams.set("name", user.name || "");
   ogUrl.searchParams.set("socials", platforms.join(","));
 
+  const title = user.name
+    ? `${user.name} (@${user.username})`
+    : `@${user.username}`;
+  const description =
+    user.bio ||
+    (platforms.length > 0
+      ? `@${user.username} on ${EMOJI_DOMAIN}: ${platforms.join(", ")}`
+      : `@${user.username} on ${EMOJI_DOMAIN}`);
+
   return {
-    title: user.name,
-    description: `@${user.username} - Digital Identity`,
+    title: { absolute: title },
+    description,
     alternates: { canonical: profileUrl(user.username) },
     openGraph: {
-      title: user.name || "",
-      description: `@${user.username} - Digital Identity`,
+      title,
+      description,
       type: "profile",
       username: user.username,
       url: profileUrl(user.username),
@@ -55,7 +65,7 @@ export async function generateMetadata(props: {
           url: ogUrl.toString(),
           width: 1200,
           height: 630,
-          alt: `@${user.name} - Digital Identity`,
+          alt: `${title} on ${EMOJI_DOMAIN}`,
         },
       ],
     },
@@ -103,6 +113,7 @@ export default async function Page(props: {
         </HiddenFromOwner>
       )}
       <CommentInteraction profileUserId={user.id} />
+      <MakeYourOwn />
     </div>
   );
 }
