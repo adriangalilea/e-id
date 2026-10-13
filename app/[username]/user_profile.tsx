@@ -1,6 +1,9 @@
 import { SocialComponent } from "@/components/social_component";
 import { InputQuote } from "@/components/quote";
 import { IdCard } from "@/components/id-card";
+import { SURFACE } from "@/components/surface";
+import { MaterialProvider } from "@/components/ui/material";
+import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AtSign } from "lucide-react";
@@ -32,21 +35,7 @@ function Face({ user }: { user: Profile }) {
   );
 }
 
-/** The handle, large and faint behind the card: what the glass card stands in front
- *  of and frosts, so it reads as glass and not as a grey panel. It ends just past
- *  the card and runs off the screen's left edge, never under what is read. */
-function Backdrop({ username }: { username: string }) {
-  return (
-    <div
-      aria-hidden
-      className="pointer-events-none absolute top-1/2 right-[-2rem] -z-10 w-screen -translate-y-1/2 overflow-hidden text-right text-[clamp(6rem,13vw,12rem)] leading-none font-medium tracking-[-0.06em] whitespace-nowrap text-white/[0.055] select-none"
-    >
-      {username}
-    </div>
-  );
-}
-
-/** Who this is: their e-id card, in the light, then what they say of themselves. */
+/** Who this is: their e-id card, then what they say of themselves. */
 function Identity({
   user,
   actions,
@@ -55,26 +44,59 @@ function Identity({
   actions?: React.ReactNode;
 }) {
   return (
-    <header className="flex flex-col gap-6 [grid-area:id]">
-      <div className="relative isolate">
-        <Backdrop username={user.username} />
-        <IdCard
-          holder={{
-            name: user.name,
-            username: user.username,
-            image: user.image,
-            country: user.country_code,
-            bio: user.bio,
-          }}
-        />
-      </div>
+    <header className="flex flex-col gap-5 max-lg:[grid-area:id]">
+      <IdCard
+        holder={{
+          name: user.name,
+          username: user.username,
+          image: user.image,
+          country: user.country_code,
+          bio: user.bio,
+        }}
+      />
       {user.bio && (
-        <p className="text-[17px] leading-relaxed font-light text-pretty text-foreground/80">
+        <p className="px-1 text-[17px] leading-relaxed font-light text-pretty text-foreground/80">
           {user.bio}
         </p>
       )}
       {actions}
     </header>
+  );
+}
+
+/** The person's side of a wide screen: ONE pane of glass, held still under the
+ *  bar, as tall as the screen less the page's room for the bar (5rem, layout) and
+ *  its foot (3rem), the card its only card. What others say of them
+ *  scrolls inside it (fading at its foot, no bar: a short capped scroller), so the
+ *  pane never moves with the page and never runs past the screen. Inside the pane
+ *  the vouches are on the plain material, entries of the pane rather than more
+ *  panes. On a phone the pane is no box (`display: contents`): its two parts take
+ *  their own places in the page's grid, the card at the head, the vouches last. */
+function Side({
+  user,
+  actions,
+  vouches,
+}: {
+  user: Profile;
+  actions?: React.ReactNode;
+  vouches?: React.ReactNode;
+}) {
+  return (
+    <aside
+      className={cn(
+        SURFACE,
+        // `contents` drops the box but keeps its pseudo-elements, which are the
+        // glass's rim: hidden with it.
+        "max-lg:contents max-lg:before:hidden max-lg:after:hidden lg:sticky lg:top-20 lg:flex lg:h-[calc(100dvh-8rem)] lg:min-h-0 lg:flex-col lg:gap-8 lg:self-start lg:p-5 lg:[grid-area:side]",
+      )}
+    >
+      <Identity user={user} actions={actions} />
+      <MaterialProvider material="plain">
+        <div className="flex min-h-0 flex-col gap-3 text-sm max-lg:[grid-area:vouch] lg:-mx-2 lg:flex-1 lg:overflow-y-auto lg:px-2 lg:pb-8 lg:[mask-image:linear-gradient(to_bottom,black_calc(100%-2rem),transparent)] lg:[scrollbar-width:none]">
+          {vouches}
+        </div>
+      </MaterialProvider>
+    </aside>
   );
 }
 
@@ -131,11 +153,10 @@ type ProfileProps = {
   children?: React.ReactNode;
 };
 
-/** A profile in two columns, each with one job. WHO on the left: the card, what the
- *  person says of themselves, then what others say of them. WHERE on the right:
- *  their places, from the first line, so what they made is on the first screen.
- *  On a phone: the card, the places, then the vouches (grid areas, so the order is
- *  the reading order on each). The edit form keeps its own two columns. */
+/** A profile as a split view in the golden ratio, two different things. WHO, the
+ *  smaller part (38.2%): one pane held still (`Side`). WHERE, the larger (61.8%):
+ *  the person's places, the page that scrolls. On a phone: the card, the places,
+ *  then the vouches (grid areas). The edit form keeps its own two columns. */
 export default function UserProfile({
   user,
   socials,
@@ -147,15 +168,12 @@ export default function UserProfile({
 }: ProfileProps) {
   if (!edit)
     return (
-      <div className="grid animate-fade-in gap-12 [grid-template-areas:'id'_'places'_'vouch'] lg:grid-cols-[minmax(0,26rem)_minmax(0,1fr)] lg:grid-rows-[auto_1fr] lg:gap-x-16 lg:[grid-template-areas:'id_places'_'vouch_places']">
-        <Identity user={user} actions={actions} />
+      <div className="grid animate-fade-in gap-10 [grid-template-areas:'id'_'places'_'vouch'] lg:grid-cols-[minmax(0,38.2fr)_minmax(0,61.8fr)] lg:[grid-template-areas:'side_places']">
+        <Side user={user} actions={actions} vouches={vouches} />
         <main className="flex min-w-0 flex-col gap-16 [grid-area:places]">
           <SocialComponent socials={socials} presence={presence} />
           {children}
         </main>
-        <aside className="flex min-w-0 flex-col gap-4 text-sm [grid-area:vouch]">
-          {vouches}
-        </aside>
       </div>
     );
 

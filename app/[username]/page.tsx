@@ -87,7 +87,10 @@ export default async function Page(props: {
   const presence = await getPresence(socials);
 
   return (
-    <Wide>
+    // On a wide screen the person's pane starts right under the bar and runs to
+    // the screen's foot (user_profile, `Side`): no padding of the page's own, or
+    // the page outgrows the screen and the held pane slides under the bar.
+    <Wide className="lg:py-0">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
