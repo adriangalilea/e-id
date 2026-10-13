@@ -35,8 +35,15 @@ function Portrait({ holder }: { holder: Holder }) {
   );
 }
 
-/** The ghost image an ID prints beside its portrait: the same face, small, grey and
- *  faint, the card's mark that it is this person's. */
+/** The ghost image an ID prints beside its portrait: the same face again, as a
+ *  security print rather than a photo. Real ones are line-screened (printed or
+ *  laser-engraved in fine lines) and fade into the card with no frame, and that is
+ *  what keeps this from reading as a second picture: grey, seen through a screen of
+ *  horizontal lines (one pixel of line, two of gap), dissolving to nothing at its
+ *  edges, the two masks intersected. */
+const GHOST_MASK =
+  "[mask-image:radial-gradient(closest-side,black_35%,transparent),repeating-linear-gradient(to_bottom,black_0_1px,transparent_1px_3px)] [mask-composite:intersect]";
+
 function Ghost({ holder }: { holder: Holder }) {
   if (!holder.image) return null;
   return (
@@ -45,7 +52,10 @@ function Ghost({ holder }: { holder: Holder }) {
       src={holder.image}
       alt=""
       aria-hidden
-      className="absolute top-[14cqw] right-[6cqw] aspect-square w-[13cqw] rounded-[0.8cqw] object-cover opacity-[0.14] mix-blend-luminosity grayscale"
+      className={cn(
+        "pointer-events-none absolute top-[6cqw] right-[2cqw] aspect-square w-[34cqw] object-cover opacity-30 contrast-125 grayscale",
+        GHOST_MASK,
+      )}
     />
   );
 }
