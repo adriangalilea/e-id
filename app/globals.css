@@ -604,14 +604,18 @@
   mask-clip: border-box, content-box, border-box;
   mask-composite: intersect, exclude, add;
 }
-/* The print: the guilloché tile, then the band. */
+/* The print: one ribbon of guilloché along the pill's middle line, repeated only
+   across (a second ribbon, cut by the edge, read as off centre), then the band. */
 [data-cta]::after {
   z-index: -1;
   mask-image: var(--band), var(--holo-guilloche);
   mask-size:
     100% 100%,
     160px 40px;
-  mask-repeat: no-repeat, repeat;
+  mask-position:
+    0 0,
+    center;
+  mask-repeat: no-repeat, repeat-x;
   mask-composite: intersect, add;
   mix-blend-mode: plus-lighter;
 }
