@@ -8,6 +8,7 @@ import { HOLO_PRINTS } from "@/lib/holo";
 import { cn } from "@/lib/utils";
 import { MakeYours } from "./make-yours";
 import { HoloLean, HoloLight } from "@/components/ui/holo";
+import { HeroShimmer, SubjectLight } from "@/components/light";
 
 /** The card the landing hands its reader when there is nobody yet to show: theirs,
  *  not made yet. */
@@ -37,6 +38,7 @@ function Stack({ people }: { people: Holder[] }) {
     // The page's centre of attention: as wide as its side of the split allows, less
     // the room the cards behind take when they spread (15% either way).
     <HoloLight className="relative mx-auto w-full max-w-[34rem]">
+      <SubjectLight />
       {behind.map((holder, i) => (
         <IdCard
           key={holder.username}
@@ -98,6 +100,7 @@ export async function Hero() {
           shape="surface"
           className="pointer-events-none absolute! inset-0 -z-10 hidden [--glass-radius:calc(var(--bar-h)/2)]"
         />
+        <HeroShimmer />
         <div
           data-slot="hero-grid"
           className={cn(

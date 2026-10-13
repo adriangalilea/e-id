@@ -47,7 +47,9 @@ export interface Glow {
 
 export interface AmbientLightProps {
   glows: Glow[]
-  /** The colour under the light (default: the page's background). */
+  /** The colour under the light (default: the page's background), or "none" for
+   *  the light alone over whatever lies under it (behind a page's subject, in
+   *  the middle of the page, where a ground would cover what is round it). */
   ground?: string
   className?: string
 }
@@ -88,7 +90,11 @@ function paint(canvas: HTMLCanvasElement, { glows, ground }: Light) {
   canvas.width = w
   canvas.height = h
   canvas.dataset.painted = `${canvas.clientWidth}x${canvas.clientHeight}`
-  const base = rgb(ground)
+  // No ground: the light alone, as a colour and how much of it there is (its
+  // alpha), the alpha dithered as the colour would be, so it falls without rings
+  // over whatever it lies on.
+  const bare = ground === "none"
+  const base = bare ? ([0, 0, 0] as const) : rgb(ground)
   const lights = glows.map((g) => ({
     ...g,
     rgb: rgb(g.color),
@@ -101,9 +107,11 @@ function paint(canvas: HTMLCanvasElement, { glows, ground }: Light) {
   const px = image.data
   for (let y = 0; y < h; y++) {
     for (let x = 0; x < w; x++) {
-      let r = base[0]
-      let g = base[1]
-      let b = base[2]
+      let r: number = base[0]
+      let g: number = base[1]
+      let b: number = base[2]
+      // How much light there is, with no ground: each glow laid over the others.
+      let cover = 0
       for (const l of lights) {
         const dx = (x - l.cx) * l.sx
         const dy = (y - l.cy) * l.sy
@@ -118,9 +126,20 @@ function paint(canvas: HTMLCanvasElement, { glows, ground }: Light) {
         r += (l.rgb[0] - r) * a
         g += (l.rgb[1] - g) * a
         b += (l.rgb[2] - b) * a
+        cover += (1 - cover) * a
       }
       // Triangular noise of one level (two uniforms summed), then round.
       const i = (y * w + x) * 4
+      if (bare) {
+        // The colour accumulated premultiplied by the light's own cover: back
+        // to the colour itself, and the cover as the alpha, dithered.
+        const c = Math.max(cover, 1e-6)
+        px[i] = r / c
+        px[i + 1] = g / c
+        px[i + 2] = b / c
+        px[i + 3] = cover * 255 + Math.random() + Math.random() - 1
+        continue
+      }
       px[i] = r + Math.random() + Math.random() - 1
       px[i + 1] = g + Math.random() + Math.random() - 1
       px[i + 2] = b + Math.random() + Math.random() - 1

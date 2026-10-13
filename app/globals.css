@@ -156,8 +156,9 @@
     border-color: var(--color-border, currentcolor);
   }
 
-  /* The page's light and grain are layers of their own (app/layout: `Light`,
-     @ag/ambient-light and @ag/grain). The body clips sideways for what runs off the
+  /* The page's ground is a composed dark gradient (components/light,
+     `PageLight`), its subject stands in a light of its own (`SubjectLight`), and
+     only the home's hero shimmers (`hero-shimmer`). The body clips sideways for what runs off the
      screen's edges on purpose (a profile's handle behind its card); `clip` makes
      no scroller, so sticky holds. */
   body {
@@ -265,6 +266,13 @@
     }
     [data-slot="hero-title"] {
       animation-name: hero-title;
+    }
+    /* The hero's shimmer leaves with the line under the address: the bar it
+       closes into is plain glass. */
+    [data-slot="hero-shimmer"] {
+      animation: hero-lead linear both;
+      animation-timeline: scroll(root);
+      animation-range: var(--hero-range);
     }
     [data-slot="hero-lead"] {
       animation-name: hero-lead;

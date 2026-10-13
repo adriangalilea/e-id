@@ -4,6 +4,7 @@ import { IdCard, type Place } from "@/components/id-card";
 import { Image } from "@/components/ui/image";
 import { placeOf } from "@/lib/data";
 import { HoloLean, HoloLight } from "@/components/ui/holo";
+import { SubjectLight } from "@/components/light";
 import { MaterialProvider } from "@/components/ui/material";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
@@ -51,7 +52,8 @@ function Identity({
     <header className="flex flex-col gap-5 max-lg:[grid-area:id]">
       {/* The same card as the home's: the laminate, a solid body, leaning to the
           hand, only resting flat, as the page's subject. */}
-      <HoloLight>
+      <HoloLight className="relative">
+        <SubjectLight />
         <HoloLean pose="flat" className="max-lg:[transform:none]">
           <IdCard
             holder={{
