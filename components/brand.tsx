@@ -1,3 +1,4 @@
+import { FoilEdge } from "@/components/foil-edge";
 import { Glass } from "@/components/ui/material-glass";
 import { EMOJI_DOMAIN } from "@/lib/const";
 import { MARK_BOX, MARK_PATH } from "@/lib/mark";
@@ -38,6 +39,7 @@ export function BrandLogo({ className }: { className?: string }) {
       <svg viewBox="0 0 24 24" className="size-[62%] fill-white">
         <path d={MARK_PATH} />
       </svg>
+      <FoilEdge />
     </Glass>
   );
 }

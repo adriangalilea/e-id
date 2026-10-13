@@ -49,18 +49,23 @@ function Identity({
 }) {
   return (
     <header className="flex flex-col gap-5 max-lg:[grid-area:id]">
-      <Tilt>
-      <IdCard
-        holder={{
-          name: user.name,
-          username: user.username,
-          image: user.image,
-          country: user.country_code,
-          bio: user.bio,
-          places,
-        }}
-        holo="web"
-      />
+      {/* The same card as the home's: the laminate, a solid body, leaning to the
+          hand, only resting flat, as the page's subject. */}
+      <Tilt pose="flat" className="lg:[perspective:2000px]">
+        <div data-slot="tilt-front">
+          <IdCard
+            holder={{
+              name: user.name,
+              username: user.username,
+              image: user.image,
+              country: user.country_code,
+              bio: user.bio,
+              places,
+            }}
+            holo="laminate"
+            className="[--id-card-thickness:1]"
+          />
+        </div>
       </Tilt>
       {user.bio && (
         <p className="px-1 text-[17px] leading-relaxed font-light text-pretty text-foreground/80">

@@ -1,6 +1,7 @@
 import { BrandMark } from "@/components/brand";
 import { CopyAddress } from "@/components/copy-address";
 import { CountryFlag } from "@/components/country";
+import { FoilEdge } from "@/components/foil-edge";
 import { Glass } from "@/components/ui/material-glass";
 import type { SelectSocial } from "@/db/schema";
 import { HOLO_PRINTS, type HoloPrint } from "@/lib/holo";
@@ -24,6 +25,14 @@ export type Holder = {
 export type Place = { platform: SocialPlatform; url: string };
 
 type SocialPlatform = SelectSocial["platform"];
+
+/** THE KNOCKOUT: what is written on the card stays readable over its print, as a
+ *  real ID clears its security print around the holder's data. Every glyph and
+ *  every mark carries a soft halo of the card's own dark, so the print falls back
+ *  right where the writing is and nowhere else. Text shadows reach the words; the
+ *  icons, being SVG, take the same halo as a drop shadow. */
+const KNOCKOUT =
+  "[text-shadow:0_0_0.5cqw_rgb(14_14_16),0_0_1.2cqw_rgb(14_14_16)] [&_svg]:drop-shadow-[0_0_0.6cqw_rgb(14_14_16)]";
 
 /** An ID-1 card, the size of every ID and bank card (ISO/IEC 7810): 85.6 by 53.98
  *  mm, its corners 3.18 mm round. Everything on the card is a share of its width
@@ -107,7 +116,7 @@ function Flair({ places }: { places: Place[] }) {
   return (
     <nav
       aria-label="places"
-      className="-mx-[0.8cqw] flex items-center text-foreground/50 [&_svg]:size-[3.2cqw] [&_svg]:stroke-[1.5]"
+      className="-mx-[0.8cqw] flex items-center text-foreground/70 [&_svg]:size-[3.2cqw] [&_svg]:stroke-[1.5]"
     >
       {places.map(({ platform, url }) => (
         <a
@@ -163,7 +172,12 @@ export function IdCard({
             first, and what is written is positioned so it paints over them. */}
         <Ghost holder={holder} />
         {holo && <Hologram print={holo} />}
-        <header className="relative flex items-center justify-between text-[3cqw] text-foreground/60">
+        <header
+          className={cn(
+            "relative flex items-center justify-between text-[3cqw] text-foreground/60",
+            KNOCKOUT,
+          )}
+        >
           <span className="flex items-center gap-[1.5cqw] font-medium tracking-tight text-foreground/85">
             <BrandMark className="h-[1cap] w-auto" />
             e-id
@@ -175,7 +189,12 @@ export function IdCard({
         </header>
         <div className="relative flex items-end gap-[5cqw]">
           <Portrait holder={holder} />
-          <div className="flex min-w-0 flex-col gap-[1.5cqw] pb-[1cqw]">
+          <div
+            className={cn(
+              "flex min-w-0 flex-col gap-[1.5cqw] pb-[1cqw]",
+              KNOCKOUT,
+            )}
+          >
             <Name className="line-clamp-2 text-[7cqw] leading-[1.02] font-medium tracking-[-0.03em] text-balance">
               {holder.name || `@${holder.username}`}
             </Name>
@@ -183,6 +202,7 @@ export function IdCard({
             <Flair places={holder.places ?? []} />
           </div>
         </div>
+        <FoilEdge />
       </Glass>
     </div>
   );

@@ -16,9 +16,14 @@ export function Tilt({
   children,
   rest = REST,
   lit,
+  pose = "turned",
   className,
 }: {
   children: React.ReactNode;
+  /** How its front card rests: `turned` away beside a headline (the home), or
+   *  `flat`, facing the reader, as a page's subject (a profile). Either leans
+   *  toward the hand. */
+  pose?: "turned" | "flat";
   /** Where the light rests with no hand on it (a comparison holds it elsewhere). */
   rest?: { x: number; y: number };
   /** Lit as if a hand were on it even when none is (`data-hover` kept). */
@@ -68,6 +73,7 @@ export function Tilt({
       ref={ref}
       data-slot="card-tilt"
       data-hover={lit ? "" : undefined}
+      data-pose={pose}
       className={cn("group/tilt", className)}
       style={{ "--px": rest.x, "--py": rest.y } as React.CSSProperties}
     >
