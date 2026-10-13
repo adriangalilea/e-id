@@ -1009,8 +1009,9 @@ function Pile({ people, away }: { people: Holder[]; away: boolean }) {
             // Its middle placed from the top card's by left and top (shares of
             // the top card's box). Under the hand it comes out of its fade, in
             // focus, but keeps its place in the pile: never over a card that
-            // lies above it.
-            className="group/card absolute top-[calc(50%+var(--dy))] left-[calc(50%+var(--dx))] z-0 w-(--lw) animate-[card-float_ease-in-out_infinite_alternate] blur-(--bl) [transform:translate(-50%,-50%)_rotate(var(--r))] [transition:filter_1s_cubic-bezier(0.22,1,0.36,1)] hover:blur-none motion-reduce:animate-none motion-reduce:transition-none"
+            // lies above it. On one column the top card stands alone: there is
+            // no room round it to spread into.
+            className="group/card max-lg:hidden absolute top-[calc(50%+var(--dy))] left-[calc(50%+var(--dx))] z-0 w-(--lw) animate-[card-float_ease-in-out_infinite_alternate] blur-(--bl) [transform:translate(-50%,-50%)_rotate(var(--r))] [transition:filter_1s_cubic-bezier(0.22,1,0.36,1)] hover:blur-none motion-reduce:animate-none motion-reduce:transition-none"
             style={under(depth, UNDER[depth - 1] as number)}
           >
             {/* Its own light, so it alone tilts toward the hand on it, its
