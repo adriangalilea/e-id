@@ -29,8 +29,8 @@ const BEHIND = [
 
 /** Real e-id cards, the maker's first and then the newest whole ones (a photo, a
  *  name, a country), fanned: the front one under the light, turned toward the
- *  reader and following the hand, catching it in glints; the others dealt out
- *  behind. What a card is, shown, rather than an empty one. */
+ *  reader and following the hand, its hologram showing as it turns; the others
+ *  dealt out behind. What a card is, shown, rather than an empty one. */
 function Stack({ people }: { people: Holder[] }) {
   const [front = YOU, ...behind] = people;
   return (
@@ -53,7 +53,7 @@ function Stack({ people }: { people: Holder[] }) {
         <IdCard
           holder={front}
           heading="p"
-          shimmer
+          holo="laminate"
           className="[--id-card-thickness:1]"
         />
       </div>
@@ -76,6 +76,7 @@ export async function Hero() {
       image: p.image,
       country: p.country_code,
       bio: p.bio,
+      places: p.places,
     }),
   );
   return (

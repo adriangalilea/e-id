@@ -9,7 +9,7 @@ const REST = { x: 0.5, y: 0.35 };
 
 /** Cards someone can turn. The pointer's place over them becomes `--px` and `--py`
  *  (0 to 1 across and down) and `data-hover` while it is there; what those turn and
- *  light is the stylesheet's (globals.css: `card-tilt`, `id-card-shimmer`), so this
+ *  light is the stylesheet's (globals.css: `card-tilt`, `id-card-holo`), so this
  *  only measures, once a frame. On leaving, the light goes back to rest and the
  *  stylesheet eases the cards home. Under reduced motion nothing follows the hand. */
 export function Tilt({

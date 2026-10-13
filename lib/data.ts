@@ -181,6 +181,8 @@ export async function getShowcase(): Promise<
     image: string;
     country_code: string;
     bio: string | null;
+    /** The platforms of their public places, in their order: the card's flair. */
+    places: SelectSocial["platform"][];
   }[]
 > {
   "use cache";
@@ -189,6 +191,7 @@ export async function getShowcase(): Promise<
 
   const rows = await db
     .select({
+      id: users.id,
       name: users.name,
       username: users.username,
       image: users.image,
@@ -210,11 +213,16 @@ export async function getShowcase(): Promise<
     )
     .limit(SHOWCASE);
 
-  return rows.map(({ name, username, image, ...row }) => {
-    if (!name || !username || !image)
-      throw new Error(`showcase row for @${username} lacks what it was chosen for`);
-    return { ...row, name, username, image };
-  });
+  return Promise.all(
+    rows.map(async ({ id, name, username, image, ...row }) => {
+      if (!name || !username || !image)
+        throw new Error(
+          `showcase row for @${username} lacks what it was chosen for`,
+        );
+      const places = (await getPublicSocials(id)).map((s) => s.platform);
+      return { ...row, name, username, image, places };
+    }),
+  );
 }
 
 /** Every username, the way it is shown: the profiles that exist. */

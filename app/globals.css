@@ -412,44 +412,62 @@
   }
 }
 
-/* THE SHIMMER (components/id-card, `Shimmer`): light catching in the card in
-   glints, skin in Twilight's sun, not a gloss. Two tiles of points, laid over the
-   card and added to its light (`plus-lighter`), seen only where the light falls: a
-   soft spot at the hand. The tiles drift against each other as the hand moves, so
-   different points catch and go out; a faint sheen of colder light sweeps with
-   them. At rest the spot sits where the page's beam comes from and the glints are
-   at a third; under the hand they come up to four fifths (full read as glitter,
-   not light). Nothing moves on its own. */
-[data-slot="id-card-shimmer"] {
-  background-image:
-    var(--glitter-a), var(--glitter-b),
-    linear-gradient(
-      115deg,
-      transparent 35%,
-      rgb(255 255 255 / 0.07) 47%,
-      rgb(214 232 255 / 0.06) 53%,
-      transparent 65%
-    );
-  background-size:
-    140px 140px,
-    97px 97px,
-    300% 100%;
-  background-position:
-    calc(var(--px, 0.5) * -40px) calc(var(--py, 0.35) * -40px),
-    calc(var(--px, 0.5) * 30px) calc(var(--py, 0.35) * 30px),
-    calc(var(--px, 0.5) * 100%) 0;
-  mix-blend-mode: plus-lighter;
-  mask-image: radial-gradient(
-    circle at calc(var(--px, 0.5) * 100%) calc(var(--py, 0.35) * 100%),
-    black,
-    rgb(0 0 0 / 0.4) 30%,
-    transparent 68%
+/* THE HOLOGRAM (components/id-card, `Hologram`), as an ID's security laminate:
+   nearly invisible face on, and as the card turns a BAND of iridescent light runs
+   across it, showing the laminate's line work only where the band is. The band
+   (the outer element's mask) is a diagonal stripe whose place across the card is
+   the hand's (`--px`); inside it the laminate's print (the guilloché and the
+   emblems) and its seal are coloured by a pale spectrum whose hue drifts with the
+   hand, the way a diffraction foil changes colour with the angle. Added to the
+   card's light (`plus-lighter`), so it lights the card and never paints over it.
+   At rest it is a whisper (6%); under the hand it comes up to a quarter, so the
+   words under it always read: it should be found, not shown. The spectrum is a
+   foil's, saturated, since a pale one added to the light reads as white. Nothing
+   moves on its own. */
+[data-slot="id-card-holo"] {
+  mask-image: linear-gradient(
+    115deg,
+    transparent calc(var(--px, 0.5) * 100% - 40%),
+    black calc(var(--px, 0.5) * 100% - 8%),
+    black calc(var(--px, 0.5) * 100% + 8%),
+    transparent calc(var(--px, 0.5) * 100% + 40%)
   );
-  opacity: 0.35;
-  transition: opacity 400ms cubic-bezier(0.22, 1, 0.36, 1);
+  mix-blend-mode: plus-lighter;
+  opacity: 0.06;
+  transition: opacity 500ms cubic-bezier(0.22, 1, 0.36, 1);
 }
-[data-hover] [data-slot="id-card-shimmer"] {
-  opacity: 0.8;
+[data-hover] [data-slot="id-card-holo"] {
+  opacity: 0.26;
+}
+[data-slot="id-card-holo"] > * {
+  background-image: linear-gradient(
+    115deg,
+    #ff5fb8,
+    #5fb4ff,
+    #4fffa6,
+    #ffd84f,
+    #a874ff,
+    #ff5fb8
+  );
+  background-size: 400% 100%;
+  background-position: calc(var(--px, 0.5) * 100%) 0;
+}
+[data-slot="id-card-holo-print"][data-print="laminate"] {
+  mask-image: var(--holo-guilloche), var(--holo-emblems);
+  mask-size:
+    160px 40px,
+    72px 72px;
+}
+/* The web is drawn once at the card's proportions: laid over it whole. */
+[data-slot="id-card-holo-print"][data-print="web"] {
+  mask-image: var(--holo-web);
+  mask-size: 100% 100%;
+  mask-repeat: no-repeat;
+}
+[data-slot="id-card-holo-seal"] {
+  mask-image: var(--holo-seal);
+  mask-size: contain;
+  mask-repeat: no-repeat;
 }
 
 textarea,

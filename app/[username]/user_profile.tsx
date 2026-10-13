@@ -1,6 +1,7 @@
 import { SocialComponent } from "@/components/social_component";
 import { InputQuote } from "@/components/quote";
 import { IdCard } from "@/components/id-card";
+import { Tilt } from "@/components/landing/tilt";
 import { MaterialProvider } from "@/components/ui/material";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
@@ -34,16 +35,20 @@ function Face({ user }: { user: Profile }) {
   );
 }
 
-/** Who this is: their e-id card, then what they say of themselves. */
+/** Who this is: their e-id card, its flair their places and its hologram answering
+ *  the hand, then what they say of themselves. */
 function Identity({
   user,
+  places,
   actions,
 }: {
   user: Profile;
+  places: SelectSocial["platform"][];
   actions?: React.ReactNode;
 }) {
   return (
     <header className="flex flex-col gap-5 max-lg:[grid-area:id]">
+      <Tilt>
       <IdCard
         holder={{
           name: user.name,
@@ -51,8 +56,11 @@ function Identity({
           image: user.image,
           country: user.country_code,
           bio: user.bio,
+          places,
         }}
+        holo="web"
       />
+      </Tilt>
       {user.bio && (
         <p className="px-1 text-[17px] leading-relaxed font-light text-pretty text-foreground/80">
           {user.bio}
@@ -81,16 +89,18 @@ const ENGRAVED =
  *  the card at the head, the vouches last. */
 function Side({
   user,
+  places,
   actions,
   vouches,
 }: {
   user: Profile;
+  places: SelectSocial["platform"][];
   actions?: React.ReactNode;
   vouches?: React.ReactNode;
 }) {
   return (
     <aside className="max-lg:contents lg:sticky lg:top-20 lg:flex lg:h-[calc(100dvh-8rem)] lg:min-h-0 lg:flex-col lg:gap-10 lg:self-start lg:[grid-area:side]">
-      <Identity user={user} actions={actions} />
+      <Identity user={user} places={places} actions={actions} />
       <MaterialProvider material="plain">
         <div
           className={cn(
@@ -171,7 +181,12 @@ export default function UserProfile({
   if (!edit)
     return (
       <div className="grid animate-fade-in gap-10 [grid-template-areas:'id'_'places'_'vouch'] lg:grid-cols-[minmax(0,38.2fr)_minmax(0,61.8fr)] lg:[grid-template-areas:'side_places']">
-        <Side user={user} actions={actions} vouches={vouches} />
+        <Side
+          user={user}
+          places={socials.map((social) => social.platform)}
+          actions={actions}
+          vouches={vouches}
+        />
         <main className="flex min-w-0 flex-col gap-16 [grid-area:places]">
           <SocialComponent socials={socials} presence={presence} />
         </main>
