@@ -42,6 +42,13 @@
 
   --ring: oklch(0.85 0 0);
 
+  /* THE FOIL: e-id's one accent, the spectrum a diffraction foil throws, as a list
+     of stops for a gradient to run through (`linear-gradient(115deg,
+     var(--foil))`). The card's hologram wears it, and the one thing a visitor is
+     asked to press; nothing else. Saturated, since it is only ever seen faint or
+     as an edge, and a pale one added to light reads as white. */
+  --foil: #ff5fb8, #5fb4ff, #4fffa6, #ffd84f, #a874ff, #ff5fb8;
+
   /* e-id is glass, and glass places its light by its corner's radius: a square
      glass has no curve to catch it. One radius, the scale below derived from it,
      near the ID card's own corner at the size it stands. */
@@ -448,15 +455,7 @@
   opacity: 0.26;
 }
 [data-slot="id-card-holo"] > * {
-  background-image: linear-gradient(
-    115deg,
-    #ff5fb8,
-    #5fb4ff,
-    #4fffa6,
-    #ffd84f,
-    #a874ff,
-    #ff5fb8
-  );
+  background-image: linear-gradient(115deg, var(--foil));
   background-size: 400% 100%;
   background-position: calc(var(--px, 0.5) * 100%) 0;
 }
@@ -476,6 +475,74 @@
   mask-image: var(--holo-seal);
   mask-size: contain;
   mask-repeat: no-repeat;
+}
+
+/* THE WAY IN (components/landing/make-yours) wears the foil, the one thing on the
+   page besides the card that does: a dark pill whose edge is the spectrum (a
+   1.5px border of the foil, the body laid over it on the padding box), the edge's
+   colours sliding along it under the hand, a faint band of foil crossing the body
+   with them, and a glow of the foil's cool end beneath. Not glass: the hero's
+   ground is flat dark, and glass over nothing is a grey slab. */
+[data-cta] {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border: 1.5px solid transparent;
+  background:
+    linear-gradient(rgb(16 16 19), rgb(16 16 19)) padding-box,
+    linear-gradient(115deg, var(--foil)) border-box;
+  background-size:
+    100% 100%,
+    300% 100%;
+  background-position:
+    0 0,
+    0% 0;
+  color: var(--foreground);
+  box-shadow: 0 12px 32px -14px rgb(168 116 255 / 0.45);
+  transition:
+    background-position 900ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 400ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+[data-cta]:hover {
+  background-position:
+    0 0,
+    100% 0;
+  box-shadow: 0 14px 40px -12px rgb(95 180 255 / 0.5);
+}
+[data-cta]::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(115deg, var(--foil));
+  background-size: 300% 100%;
+  background-position: 0% 0;
+  mask-image: linear-gradient(
+    115deg,
+    transparent 20%,
+    black 50%,
+    transparent 80%
+  );
+  mask-size: 250% 100%;
+  mask-position: 100% 0;
+  mix-blend-mode: plus-lighter;
+  opacity: 0;
+  transition:
+    mask-position 900ms cubic-bezier(0.22, 1, 0.36, 1),
+    background-position 900ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 300ms;
+}
+[data-cta]:hover::after {
+  opacity: 0.22;
+  mask-position: 0% 0;
+  background-position: 100% 0;
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-cta],
+  [data-cta]::after {
+    transition: none;
+  }
 }
 
 textarea,

@@ -7,13 +7,18 @@ import { EmojiDomain } from "@/components/brand";
 import { useChip } from "@/components/session/use-chip";
 import { startSignIn } from "@/lib/sign-in";
 
-/** The call to action: the plain material's primary, a solid pill of the page's
- *  ink with its ground for words, the brightest thing on the page. Not glass: the
- *  hero's ground is flat dark, and glass over nothing reads as a grey slab. */
+/** The call to action: a pill wearing the foil, e-id's accent (`data-cta` in
+ *  globals.css draws it), the arrow leaning on toward where it goes. */
 const CTA =
-  "h-14 w-full justify-between gap-4 rounded-full px-7 text-[17px] font-medium sm:w-auto sm:min-w-64 sm:self-start";
+  "group h-14 w-full justify-between gap-4 rounded-full px-7 text-[17px] font-medium sm:w-auto sm:min-w-64 sm:self-start";
 
-const ARROW = <ArrowRight strokeWidth={1.5} className="size-5" aria-hidden />;
+const ARROW = (
+  <ArrowRight
+    strokeWidth={1.5}
+    className="size-5 transition-transform duration-300 group-hover:translate-x-1 motion-reduce:transition-none"
+    aria-hidden
+  />
+);
 
 /** The landing's call to action, from the display cookie: sign in with GitHub,
  *  or the page the visitor already has. Empty until the page is the browser's,
@@ -26,6 +31,7 @@ export function MakeYours() {
       <Button
         size="lg"
         material="plain"
+        data-cta=""
         className={CTA}
         onClick={() => startSignIn()}
       >
@@ -41,6 +47,7 @@ export function MakeYours() {
       <Button
         size="lg"
         material="plain"
+        data-cta=""
         className={CTA}
         render={<Link href="/null" />}
       >
@@ -52,6 +59,7 @@ export function MakeYours() {
     <Button
       size="lg"
       material="plain"
+        data-cta=""
       className={CTA}
       render={<Link href={`/${chip.u}`} />}
     >

@@ -14,9 +14,15 @@ const REST = { x: 0.5, y: 0.35 };
  *  stylesheet eases the cards home. Under reduced motion nothing follows the hand. */
 export function Tilt({
   children,
+  rest = REST,
+  lit,
   className,
 }: {
   children: React.ReactNode;
+  /** Where the light rests with no hand on it (a comparison holds it elsewhere). */
+  rest?: { x: number; y: number };
+  /** Lit as if a hand were on it even when none is (`data-hover` kept). */
+  lit?: boolean;
   className?: string;
 }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -25,7 +31,7 @@ export function Tilt({
     if (!el) throw new Error("Tilt: no element to measure");
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     let frame = 0;
-    let at = REST;
+    let at = rest;
     const write = () => {
       frame = 0;
       el.style.setProperty("--px", at.x.toFixed(3));
@@ -45,8 +51,8 @@ export function Tilt({
       soon();
     };
     const leave = () => {
-      at = REST;
-      el.removeAttribute("data-hover");
+      at = rest;
+      if (!lit) el.removeAttribute("data-hover");
       soon();
     };
     el.addEventListener("pointermove", move);
@@ -56,9 +62,15 @@ export function Tilt({
       el.removeEventListener("pointermove", move);
       el.removeEventListener("pointerleave", leave);
     };
-  }, []);
+  }, [rest, lit]);
   return (
-    <div ref={ref} data-slot="card-tilt" className={cn("group/tilt", className)}>
+    <div
+      ref={ref}
+      data-slot="card-tilt"
+      data-hover={lit ? "" : undefined}
+      className={cn("group/tilt", className)}
+      style={{ "--px": rest.x, "--py": rest.y } as React.CSSProperties}
+    >
       {children}
     </div>
   );

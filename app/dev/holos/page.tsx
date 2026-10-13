@@ -1,7 +1,7 @@
 // DEVELOPMENT PAGE, never in production: the hologram's prints side by side, to
 // judge them by eye. Each print gets a live card to turn by hand, then a sweep of
-// the same card with ONE thing varied, where the light falls across it, held at
-// the strength the hand brings it to.
+// the same card with ONE thing varied, where the light rests across it, lit at
+// the strength the hand brings it to; each follows the hand while one is on it.
 
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
@@ -59,13 +59,11 @@ export default async function Holos() {
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-5">
             {LIGHT.map((x) => (
               <figure key={x} className="flex flex-col gap-2">
-                {/* `data-hover` holds the strength the hand brings it to. */}
-                <div
-                  data-hover=""
-                  style={{ "--px": x, "--py": 0.4 } as React.CSSProperties}
-                >
+                {/* Lit at the strength a hand brings it to, its light resting at x,
+                    and following the hand while one is on it. */}
+                <Tilt rest={{ x, y: 0.4 }} lit>
                   <IdCard holder={holder} heading="p" holo={print} />
-                </div>
+                </Tilt>
                 <figcaption className="font-mono text-[11px] text-foreground/45">
                   light at {Math.round(x * 100)}%
                 </figcaption>
