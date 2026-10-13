@@ -3,23 +3,13 @@ import { GUTTER } from "@/components/frame";
 import { IdCard, type Holder } from "@/components/id-card";
 import { HeroShown } from "@/components/presence";
 import { Glass } from "@/components/ui/material-glass";
-import { EMOJI_DOMAIN_PUNYCODE } from "@/lib/const";
 import { getShowcase } from "@/lib/data";
 import { HOLO_PRINTS } from "@/lib/holo";
 import { cn } from "@/lib/utils";
+import { FillCard, RealAddress } from "./fill-card";
 import { MakeYours } from "./make-yours";
 import { HoloLean, HoloLight } from "@/components/ui/holo";
 import { HeroShimmer, SubjectLight } from "@/components/light";
-
-/** The card the landing hands its reader when there is nobody yet to show: theirs,
- *  not made yet. */
-const YOU: Holder = {
-  name: "you",
-  username: "you",
-  image: null,
-  country: "XX",
-  bio: null,
-};
 
 /** Where the cards behind the front one lie: turned out from under it, smaller
  *  and dimmer with depth, so the stack reads as real cards dealt on the page. With
@@ -31,12 +21,12 @@ const BEHIND = [
   "rotate-[7deg] translate-x-[10%] -translate-y-[8%] scale-[0.88] brightness-[0.35] [--id-card-thickness:1] group-data-hover/holo:rotate-[8.5deg] group-data-hover/holo:translate-x-[12.5%] group-data-hover/holo:-translate-y-[9.5%]",
 ];
 
-/** Real e-id cards, the maker's first and then the newest whole ones (a photo, a
- *  name, a country), fanned: the front one under the light, turned toward the
- *  reader and following the hand, its hologram showing as it turns; the others
- *  dealt out behind. What a card is, shown, rather than an empty one. */
+/** The visitor's blank card on real ones: in front, under the light, turned
+ *  toward the reader and following the hand, theirs to fill in (`FillCard`);
+ *  dealt out behind it, the maker's and the newest whole ones (a photo, a name, a
+ *  country), what a filled one looks like. */
 function Stack({ people }: { people: Holder[] }) {
-  const [front = YOU, ...behind] = people;
+  const behind = people.slice(0, BEHIND.length);
   return (
     // The page's centre of attention: as wide as its side of the split allows, less
     // the room the cards behind take when they spread (15% either way).
@@ -60,12 +50,7 @@ function Stack({ people }: { people: Holder[] }) {
       {/* Turned toward the reader beside the words, leaning to the hand; on one
           column, where it stands alone, straight. */}
       <HoloLean pose="turned" className="relative max-lg:[transform:none]">
-        <IdCard
-          holder={front}
-          heading="p"
-          holo="laminate"
-          className="[--id-card-thickness:1]"
-        />
+        <FillCard />
       </HoloLean>
     </HoloLight>
   );
@@ -127,23 +112,17 @@ export async function Hero() {
                 <MakeYours />
               </HoloLight>
             </h1>
-            {/* The line under the address hangs from it, as its caption: small,
-                light and quiet, on one line where it fits (pretty where it
-                wraps), starting under the words (past the pill's inset, disc and
-                gap: 0.2em + 1.2cap + 0.1em of the title, a cap 0.7 of Space
-                Grotesk's em). Under it, as small and quieter, that the address
-                is a real one: the emoji itself and the name a browser sends. */}
+            {/* The one line under the address, its caption: that it is a real
+                one, quiet, starting under the words (past the pill's inset,
+                disc and gap: 0.2em + 1.2cap + 0.1em of the title, a cap 0.7 of
+                Space Grotesk's em). No wider than the pill (`contain`: its own
+                width counts for nothing, the words' column is the pill's). The
+                card says the rest by being filled. */}
             <div
               data-slot="hero-lead"
-              className="flex flex-col gap-1.5 pl-[calc(var(--hero-title)*1.14)]"
+              className="pl-[calc(var(--hero-title)*1.14)] [contain:inline-size]"
             >
-              <p className="text-[0.9375rem] leading-snug font-light text-pretty text-foreground/55 sm:text-base">
-                one link for every place you are online.
-              </p>
-              <p className="font-mono text-[0.6875rem] tracking-wide text-foreground/30">
-                <span className="font-sans">👤</span>.to · {EMOJI_DOMAIN_PUNYCODE} · a
-                real domain, type it
-              </p>
+              <RealAddress />
             </div>
           </div>
           <div data-slot="hero-card">
