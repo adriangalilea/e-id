@@ -7,14 +7,14 @@ import {
   getTestimonials,
   getUsernames,
 } from "@/lib/data";
-import { getSocialFacts } from "@/lib/social-facts";
+import { getPresence } from "@/lib/presence";
 import { EMOJI_DOMAIN, PROD_URL } from "@/lib/const";
 import { MakeYourOwn } from "@/components/landing/make-yours";
 import { inlineJson, profileJsonLd, profileUrl } from "@/lib/profile-ld";
 import { CommentInteraction, HiddenFromOwner } from "./comment_section";
 import { OwnerActions } from "./owner_actions";
 import UserProfile from "./user_profile";
-import { Column } from "@/components/frame";
+import { Wide } from "@/components/frame";
 
 // A profile is a static page: prerendered for every username at build, rendered
 // once on its first visit for a username that came later, and rendered again
@@ -84,36 +84,41 @@ export default async function Page(props: {
     getPublicSocials(user.id),
     getTestimonials(user.id),
   ]);
-  const facts = await getSocialFacts(socials);
+  const presence = await getPresence(socials);
 
   return (
-    <Column className="gap-10 sm:gap-12">
+    <Wide>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
           __html: inlineJson(profileJsonLd(user, socials)),
         }}
       />
-      <UserProfile user={user} socials={socials} facts={facts} />
-      <OwnerActions username={user.username} />
-      {testimonials.length > 0 && (
-        <HiddenFromOwner username={user.username}>
-          <div className="flex animate-fade-in flex-col gap-3">
-            {testimonials.map((testimonial) => (
-              <Testimonial
-                key={testimonial.commentId}
-                text={testimonial.body}
-                name={testimonial.user.name ?? ""}
-                image={testimonial.user.image ?? ""}
-                date={testimonial.createdAt}
-                username={testimonial.user.username ?? ""}
-              />
-            ))}
-          </div>
-        </HiddenFromOwner>
-      )}
-      <CommentInteraction profileUserId={user.id} />
-      <MakeYourOwn />
-    </Column>
+      <UserProfile
+        user={user}
+        socials={socials}
+        presence={presence}
+        actions={<OwnerActions username={user.username} />}
+      >
+        {testimonials.length > 0 && (
+          <HiddenFromOwner username={user.username}>
+            <div className="flex animate-fade-in flex-col gap-3">
+              {testimonials.map((testimonial) => (
+                <Testimonial
+                  key={testimonial.commentId}
+                  text={testimonial.body}
+                  name={testimonial.user.name ?? ""}
+                  image={testimonial.user.image ?? ""}
+                  date={testimonial.createdAt}
+                  username={testimonial.user.username ?? ""}
+                />
+              ))}
+            </div>
+          </HiddenFromOwner>
+        )}
+        <CommentInteraction profileUserId={user.id} />
+        <MakeYourOwn />
+      </UserProfile>
+    </Wide>
   );
 }

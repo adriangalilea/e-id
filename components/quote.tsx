@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import { SURFACE } from "./surface";
 import Link from "next/link";
 import { RelativeTime } from "./ui/relative-time";
 import CustomAvatar from "./custom_avatar";
@@ -7,22 +8,15 @@ import { Textarea } from "./ui/textarea";
 /** Somebody's words: a rule down their left, the words beside it. */
 const RULE = "border-l-2 border-foreground/70 pl-5";
 
-const SIZE = {
-  /** A profile's own message, the first thing read after the name. */
-  lead: "text-xl leading-snug sm:text-2xl",
-  /** A social's context line, inside its tab. */
-  body: "text-[15px] leading-relaxed text-foreground/75",
-};
-
-export function Quote({
-  text,
-  size = "body",
-}: {
-  text: string;
-  size?: keyof typeof SIZE;
-}) {
+/** A social's context line, inside its tab. */
+export function Quote({ text }: { text: string }) {
   return (
-    <blockquote className={cn(RULE, SIZE[size], "font-light text-pretty")}>
+    <blockquote
+      className={cn(
+        RULE,
+        "text-[15px] leading-relaxed font-light text-pretty text-foreground/75",
+      )}
+    >
       <p>{text}</p>
     </blockquote>
   );
@@ -43,7 +37,7 @@ export function Testimonial({
   date: Date;
 }) {
   return (
-    <figure className="flex w-full flex-col gap-5 border border-border bg-card p-5 sm:p-6">
+    <figure className={cn("flex w-full flex-col gap-5 p-5 sm:p-6", SURFACE)}>
       <blockquote className="text-[17px] leading-relaxed font-light text-pretty text-foreground/85">
         <p>{text}</p>
       </blockquote>

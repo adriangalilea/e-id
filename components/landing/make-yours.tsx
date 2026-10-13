@@ -5,6 +5,8 @@ import { ArrowRight, Github } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { EmojiDomain } from "@/components/brand";
 import { useChip } from "@/components/session/use-chip";
+import { SURFACE } from "@/components/surface";
+import { cn } from "@/lib/utils";
 import { startSignIn } from "@/lib/sign-in";
 
 /** The call to action's block: solid, the page's ink, standing off the page on a
@@ -54,7 +56,10 @@ export function MakeYourOwn() {
   return (
     <Link
       href="/"
-      className="group flex h-16 items-center justify-between border border-border px-5 text-[15px] transition-colors hover:border-foreground hover:bg-foreground hover:text-background"
+      className={cn(
+        "group flex h-16 items-center justify-between px-5 text-[15px] transition-colors hover:border-foreground hover:bg-foreground hover:from-foreground hover:to-foreground hover:text-background",
+        SURFACE,
+      )}
     >
       <span>
         make your own <EmojiDomain /> page

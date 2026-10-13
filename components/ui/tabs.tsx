@@ -30,12 +30,14 @@ const TabsTrigger = React.forwardRef<
   <TabsPrimitive.Trigger
     ref={ref}
     className={cn(
+      // Focus is drawn INSIDE the tab, a line in its own ink 4px in from its
+      // edge: a ring outside it crossed into the tabs beside it and doubled the
+      // chosen one's frame.
       `inline-flex items-center justify-center whitespace-nowrap px-3 py-1.5
-      text-sm font-medium ring-offset-background transition-all
-      focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring
-      focus-visible:ring-offset-2 disabled:pointer-events-none
-      disabled:opacity-50 data-[state=active]:bg-background
-      data-[state=active]:text-foreground data-[state=active]:shadow-sm`,
+      text-sm font-medium transition-colors focus-visible:outline-1
+      focus-visible:-outline-offset-4 focus-visible:outline-current
+      disabled:pointer-events-none disabled:opacity-50
+      data-[state=active]:bg-background data-[state=active]:text-foreground`,
       className,
     )}
     {...props}
@@ -50,8 +52,10 @@ const TabsContent = React.forwardRef<
   <TabsPrimitive.Content
     ref={ref}
     className={cn(
-      `mt-2 ring-offset-background focus-visible:outline-none
-      focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2`,
+      // The panel takes focus only to be scrolled by keys: its focus is a line
+      // inside its own edge, never a ring over the page.
+      `mt-2 focus-visible:outline-1 focus-visible:-outline-offset-4
+      focus-visible:outline-foreground/40`,
       className,
     )}
     {...props}

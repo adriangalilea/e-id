@@ -1,104 +1,58 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { Copy } from "@/components/ui/copy";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { ToastAction } from "@/components/ui/toast";
-import { useToast } from "@/components/ui/use-toast";
 import { Link as LinkIcon } from "lucide-react";
-import { ClipboardCopy } from "lucide-react";
 import Link from "next/link";
 import { PROD_URL, EMOJI_DOMAIN, EMOJI_DOMAIN_PUNYCODE } from "@/lib/const";
 import { EmojiDomain } from "@/components/brand";
 
+/** One address to share: what it is, the address itself, and the registry's copy
+ *  (@ag/copy), which says it copied in place. */
+function Row({ name, value }: { name: React.ReactNode; value: string }) {
+  return (
+    <div className="flex items-center gap-3 border-b border-border px-3 py-2.5 last:border-b-0">
+      <div className="flex min-w-0 grow flex-col gap-0.5">
+        <span className="text-sm">{name}</span>
+        <span className="truncate font-mono text-[11px] text-foreground/45">
+          {value}
+        </span>
+      </div>
+      <Copy value={value} label className="rounded-none" />
+    </div>
+  );
+}
+
 export default function ShareButton({ username }: { username: string }) {
-  const { toast } = useToast();
   return (
     <Popover>
       <PopoverTrigger render={<Button variant="outline" size="lg" />}>
         <LinkIcon strokeWidth={1} />
         share
       </PopoverTrigger>
-      <PopoverContent align="end" className="w-60 gap-0 p-1">
+      <PopoverContent align="end" className="w-80 gap-0 p-0">
         {/* The brand first: 👤.to opens everywhere (next.config sends every
             browser but Safari on to e-id.to). */}
-        <Button
-          variant="ghost"
-          size="lg"
-          className="w-full justify-start gap-3"
-          onClick={async () => {
-            await navigator.clipboard.writeText(
-              `https://${EMOJI_DOMAIN}/${username}`,
-            );
-            toast({
-              variant: "success",
-              title: "Copied to clipboard!",
-              description: "The emoji URL is ready to be shared",
-              action: (
-                <ToastAction
-                  altText="Why is there an emoji on the URL?"
-                  className="w-fit"
-                >
-                  <Link href={"/about"} className="w-full">
-                    Emoji URL?
-                  </Link>
-                </ToastAction>
-              ),
-            });
-          }}
+        <Row
+          name={<EmojiDomain />}
+          value={`https://${EMOJI_DOMAIN}/${username}`}
+        />
+        <Row name="e-id.to" value={`${PROD_URL}/${username}`} />
+        <Row
+          name="twitter/instagram bio"
+          value={`https://${EMOJI_DOMAIN_PUNYCODE}/${username}`}
+        />
+        <Link
+          href="/about"
+          className="px-3 py-2.5 font-mono text-[11px] text-foreground/55 hover:text-foreground"
         >
-          <ClipboardCopy strokeWidth={1} />
-          <span className="grow text-left">
-            <EmojiDomain />
-          </span>
-        </Button>
-        <Button
-          variant="ghost"
-          size="lg"
-          className="w-full justify-start gap-3"
-          onClick={async () => {
-            await navigator.clipboard.writeText(`${PROD_URL}/${username}`);
-            toast({
-              variant: "success",
-              title: "Copied to clipboard!",
-            });
-          }}
-        >
-          <ClipboardCopy strokeWidth={1} />
-          <span className="grow text-left">
-            e-id.to
-          </span>
-        </Button>
-        <Button
-          variant="ghost"
-          size="lg"
-          className="w-full justify-start gap-3"
-          onClick={async () => {
-            await navigator.clipboard.writeText(
-              `https://${EMOJI_DOMAIN_PUNYCODE}/${username}`,
-            );
-            toast({
-              variant: "success",
-              title: "Copied to clipboard!",
-              description: "The punycode URL is ready to be shared.",
-              action: (
-                <ToastAction altText="What is this?" className="w-fit">
-                  <Link href={"/about"} className="w-full">
-                    What is this?
-                  </Link>
-                </ToastAction>
-              ),
-            });
-          }}
-        >
-          <ClipboardCopy strokeWidth={1} />
-          <span className="grow text-left">
-            twitter/instagram bio
-          </span>
-        </Button>
+          Emoji URL?
+        </Link>
       </PopoverContent>
     </Popover>
   );

@@ -1,23 +1,51 @@
 import { EmojiDomain } from "@/components/brand";
+import { GUTTER } from "@/components/frame";
+import { IdCard, type Holder } from "@/components/id-card";
+import { cn } from "@/lib/utils";
 import { MakeYours } from "./make-yours";
 
+/** Graph paper under the headline, fading out from it: 32px squares, the rhythm's
+ *  rung. */
+const PAPER =
+  "bg-[linear-gradient(to_right,rgb(255_255_255/0.045)_1px,transparent_1px),linear-gradient(to_bottom,rgb(255_255_255/0.045)_1px,transparent_1px)] bg-size-[32px_32px] mask-[radial-gradient(ellipse_70%_80%_at_30%_40%,black,transparent)]";
+
+/** The card the landing hands its reader: theirs, not made yet. Its words are the
+ *  page's own line, what an e-id is. */
+const YOU: Holder = {
+  name: "you",
+  username: "you",
+  image: null,
+  country: "XX",
+  bio: "one link for every place you are online.",
+};
+
+/** The landing's first screen: the address and the way in, beside the card it
+ *  makes, closed by a hairline the sign-ups start from. */
 export function Hero() {
   return (
-    <section className="flex flex-col gap-8 lg:gap-12">
-      <h1 className="text-[clamp(2.75rem,9vw,6rem)] leading-[0.92] font-medium tracking-[-0.045em]">
-        <span className="block text-foreground/45">your page at</span>
-        <EmojiDomain path="/you" className="block" />
-      </h1>
-      <div className="flex max-w-md flex-col gap-3">
-        <p className="text-xl leading-snug">
-          one link for every place you are online.
-        </p>
-        <p className="text-[15px] leading-relaxed text-foreground/55">
-          made for developers: sign in with github and your page fills itself
-          with your name, avatar, links and contribution graph.
-        </p>
+    <section className="relative isolate border-b border-white/10">
+      <div aria-hidden className={cn("absolute inset-0 -z-10", PAPER)} />
+      <div
+        className={cn(
+          "mx-auto grid w-full max-w-6xl items-center gap-16 pt-20 pb-20 sm:pt-28 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:gap-20 lg:py-32",
+          GUTTER,
+        )}
+      >
+        <div className="flex flex-col gap-12">
+          <h1 className="text-[clamp(3rem,7vw,6rem)] leading-[0.95] font-medium tracking-[-0.045em]">
+            <span className="block text-foreground/40">your page at</span>
+            <EmojiDomain path="/you" className="block" />
+          </h1>
+          <MakeYours />
+        </div>
+        <div className="lg:[perspective:1600px]">
+          <IdCard
+            holder={YOU}
+            heading="p"
+            className="mx-auto w-full max-w-sm lg:[transform:rotateY(-16deg)_rotateX(6deg)]"
+          />
+        </div>
       </div>
-      <MakeYours />
     </section>
   );
 }

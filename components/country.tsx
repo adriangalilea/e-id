@@ -1,43 +1,36 @@
-import { getName } from "country-list";
+import { countryName as nameOf, Flag } from "@/components/ui/flag";
 import { cn } from "@/lib/utils";
 
-/** "XX" is the country of a user who never set one. */
+/** "XX" is the country of a user who never set one, the only code with no flag:
+ *  every other comes from the country picker's list, all of which @ag/flag draws. */
 const UNKNOWN = "XX";
 
-/** A country as its ISO code in a square of mono type, the name on hover. Codes
- *  read the same on every system, which flag emoji do not (Windows draws two
- *  letters, and no flag at all for most). */
-export function CountryCode({
+/** A person's country as its flag (@ag/flag), beside their name. One never set
+ *  keeps the flag's room, an empty dashed frame, so a list's names stay in line. */
+export function CountryFlag({
   country,
+  label,
   className,
 }: {
   country: string;
+  /** "" when the country's name is written beside it. */
+  label?: string;
   className?: string;
 }) {
-  const unknown = country === UNKNOWN;
-  const name = unknown ? "unknown country" : getName(country);
-  if (!name) throw new Error(`country code ${country} has no name`);
-  return (
-    <abbr
-      title={name}
-      aria-label={name}
-      className={cn(
-        "inline-grid h-6 w-8 shrink-0 place-items-center border font-mono text-[11px] leading-none no-underline",
-        unknown
-          ? "border-dashed border-foreground/20 text-foreground/30"
-          : "border-foreground/25 text-foreground/80",
-        className,
-      )}
-    >
-      {unknown ? "--" : country}
-    </abbr>
-  );
+  if (country === UNKNOWN)
+    return (
+      <span
+        aria-hidden
+        className={cn(
+          "inline-block h-[0.75em] w-[1.125em] shrink-0 border border-dashed border-foreground/25 align-[-0.08em]",
+          className,
+        )}
+      />
+    );
+  return <Flag code={country} label={label} className={className} />;
 }
 
 /** The country's name as a profile states it, or nothing for one never set. */
 export function countryName(country: string): string | undefined {
-  if (country === UNKNOWN) return undefined;
-  const name = getName(country);
-  if (!name) throw new Error(`country code ${country} has no name`);
-  return name;
+  return country === UNKNOWN ? undefined : nameOf(country);
 }

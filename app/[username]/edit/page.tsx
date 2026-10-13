@@ -1,8 +1,8 @@
 import { notFound, redirect } from "next/navigation";
 import { getAllSocials, getProfile } from "@/lib/data";
-import { getSocialFacts } from "@/lib/social-facts";
+import { getPresence } from "@/lib/presence";
 import { getSession } from "@/lib/session";
-import { Column } from "@/components/frame";
+import { Wide } from "@/components/frame";
 import UserProfile from "../user_profile";
 
 // The one profile page that reads the session: only its owner edits it.
@@ -16,11 +16,11 @@ export default async function EditPage(props: {
   if (session?.user.id !== user.id) redirect(`/${user.username}`);
 
   const socials = await getAllSocials(user.id);
-  const facts = await getSocialFacts(socials);
+  const presence = await getPresence(socials);
 
   return (
-    <Column>
-      <UserProfile user={user} socials={socials} facts={facts} edit={true} />
-    </Column>
+    <Wide>
+      <UserProfile user={user} socials={socials} presence={presence} edit />
+    </Wide>
   );
 }

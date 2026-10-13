@@ -37,7 +37,6 @@ export default defineConfig([
       "components/ui/portal.tsx",
       "components/ui/reactions.tsx",
       "components/ui/remembered.tsx",
-      "components/ui/scroll-thumb.tsx",
       "components/ui/sound-source.tsx",
       "components/ui/spinner.tsx",
       "components/ui/tweet.tsx",
