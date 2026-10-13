@@ -8,33 +8,41 @@
    and the registry's `scheme-dark:` and tones (tokens.css) read the same scheme. */
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* Three layers, each a clear step lighter than the one it stands on: the page
+   (background), what stands on the page (card: a panel, a list, a testimonial), and
+   what stands inside that (muted: a post, a profile card, a preview inside a panel).
+   Hairlines are white at 14%, the same on every layer. */
 :root {
-  --background: oklch(0.145 0 0);
+  --background: oklch(0.12 0 0);
   --foreground: oklch(0.97 0 0);
 
-  --card: oklch(0.175 0 0);
+  --card: oklch(0.19 0 0);
   --card-foreground: oklch(0.97 0 0);
 
-  --popover: oklch(0.175 0 0);
+  --popover: oklch(0.19 0 0);
   --popover-foreground: oklch(0.97 0 0);
 
   --primary: oklch(0.97 0 0);
-  --primary-foreground: oklch(0.145 0 0);
+  --primary-foreground: oklch(0.12 0 0);
 
-  --secondary: oklch(0.24 0 0);
+  --secondary: oklch(0.255 0 0);
   --secondary-foreground: oklch(0.97 0 0);
 
-  --muted: oklch(0.24 0 0);
-  --muted-foreground: oklch(0.7 0 0);
+  --muted: oklch(0.255 0 0);
+  --muted-foreground: oklch(0.72 0 0);
 
-  --accent: oklch(0.24 0 0);
+  --accent: oklch(0.255 0 0);
   --accent-foreground: oklch(0.97 0 0);
 
   --destructive: oklch(0.45 0.16 27);
   --destructive-foreground: oklch(0.97 0 0);
 
-  --border: oklch(1 0 0 / 0.12);
-  --input: oklch(1 0 0 / 0.16);
+  --border: oklch(1 0 0 / 0.14);
+  --input: oklch(1 0 0 / 0.18);
+
+  /* The one accent: a cold electric light, used in slivers (the chosen tab's line,
+     a card's chip, the glow over the page's top), never as a fill. */
+  --glow: oklch(0.84 0.1 215);
   --ring: oklch(0.85 0 0);
 
   /* Square corners are e-id's: every `rounded-*` the theme names is zero, the
@@ -70,6 +78,7 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+  --color-glow: var(--glow);
 
   --radius-xs: var(--radius);
   --radius-sm: var(--radius);
@@ -126,8 +135,16 @@
     border-color: var(--color-border, currentcolor);
   }
 
+  /* The page is lit from above: a cold glow over its top, falling to the dark
+     ground, fixed so it stays where the light is while the page scrolls. */
   body {
     @apply bg-background text-foreground;
+    background-image: radial-gradient(
+      120% 70% at 50% -20%,
+      color-mix(in oklab, var(--glow) 14%, transparent),
+      transparent 65%
+    );
+    background-attachment: fixed;
   }
 }
 
