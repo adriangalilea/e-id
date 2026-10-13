@@ -4,7 +4,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from "@/components/ui/menu";
 import { Tip } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 import OrderDropdownItem from "./order_dropdown_item";
@@ -23,24 +23,18 @@ export default function OrderDropdown({
     <DropdownMenu>
       <Tip content="priority">
         <DropdownMenuTrigger
-          asChild
-          className="ring-0! ring-transparent! bg-transparent"
+          render={
+            <Button
+              variant="outline"
+              size="icon-lg"
+              aria-label={`priority ${position}`}
+            />
+          }
         >
-          <Button
-            className="justify-center border border-border transition-colors hover:bg-zinc-950/15
-              dark:hover:bg-zinc-50/15"
-            variant="outline"
-            size="icon-lg"
-          >
-            {position}
-          </Button>
+          {position}
         </DropdownMenuTrigger>
       </Tip>
-      <DropdownMenuContent
-        align="end"
-        sideOffset={0}
-        className="w-10! min-w-10"
-      >
+      <DropdownMenuContent align="end" sideOffset={0} className="min-w-10">
         {Array.from({ length: count }, (_, index) => (
           <OrderDropdownItem
             key={index}

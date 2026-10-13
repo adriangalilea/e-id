@@ -2,7 +2,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from "@/components/ui/menu";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { socialPlatforms } from "@/db/schema";
@@ -12,17 +12,16 @@ export default function AddSocialDropdownMenu() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
-        asChild
-        className="outline-hidden ring-0! ring-transparent!"
+        render={
+          <Button
+            className="h-full w-full text-foreground/60 hover:text-foreground"
+            variant="ghost"
+            size="lg"
+            aria-label="add a social"
+          />
+        }
       >
-        <Button
-          className="h-full w-full text-foreground/60 hover:text-foreground"
-          variant="ghost"
-          size="lg"
-          aria-label="add a social"
-        >
-          <Plus strokeWidth={1} className="size-5" />
-        </Button>
+        <Plus strokeWidth={1} className="size-5" />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" sideOffset={0} className="min-w-36">
         {socialPlatforms.map((platform) => (

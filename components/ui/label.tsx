@@ -1,26 +1,33 @@
 "use client"
 
-import * as React from "react"
-import * as LabelPrimitive from "@radix-ui/react-label"
-import { cva, type VariantProps } from "class-variance-authority"
-
+import type * as React from "react"
 import { cn } from "@/lib/utils"
+import { type Material, useMaterial } from "@/components/ui/material"
 
-const labelVariants = cva(
-  "text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-)
+// What a field is called: a real <label>, so a press on it focuses its field (or
+// wrap the field in it). The field's own voice, one step quieter than what is typed,
+// at the field's size; dimmed with a disabled field beside it (`peer`) or inside it.
+// `material="glass"`: lettering on glass, catching the rim's light along its foot.
 
-const Label = React.forwardRef<
-  React.ElementRef<typeof LabelPrimitive.Root>,
-  React.ComponentPropsWithoutRef<typeof LabelPrimitive.Root> &
-    VariantProps<typeof labelVariants>
->(({ className, ...props }, ref) => (
-  <LabelPrimitive.Root
-    ref={ref}
-    className={cn(labelVariants(), className)}
-    {...props}
-  />
-))
-Label.displayName = LabelPrimitive.Root.displayName
+export type LabelProps = React.ComponentProps<"label"> & {
+  material?: Material
+}
 
-export { Label }
+export function Label({ material, className, ...props }: LabelProps) {
+  const m = useMaterial(material)
+  return (
+    // biome-ignore lint/a11y/noLabelWithoutControl: the consumer names its control (htmlFor) or wraps it
+    <label
+      data-slot="label"
+      data-material={m}
+      className={cn(
+        "inline-flex items-center gap-2 font-medium text-[13px] leading-none select-none has-[:disabled]:opacity-50 peer-disabled:opacity-50",
+        m === "glass"
+          ? "text-current/90 [text-shadow:0_0.5px_0_color-mix(in_oklab,var(--glass-rim-ink,white)_40%,transparent)]"
+          : "text-foreground/80",
+        className,
+      )}
+      {...props}
+    />
+  )
+}

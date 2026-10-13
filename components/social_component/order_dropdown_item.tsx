@@ -1,7 +1,7 @@
 "use client";
 
 import { SelectSocial } from "@/db/schema";
-import { DropdownMenuItem } from "../ui/dropdown-menu";
+import { DropdownMenuItem } from "@/components/ui/menu";
 import { orderSocial } from "@/db/actions";
 
 export default function OrderDropdownItem({
@@ -13,7 +13,7 @@ export default function OrderDropdownItem({
 }) {
   return (
     <DropdownMenuItem
-      className="flex items-center justify-center gap-2"
+      className="justify-center"
       onClick={async () => {
         await orderSocial(socialId, number);
       }}
