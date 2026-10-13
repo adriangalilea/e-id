@@ -130,6 +130,13 @@ function Flair({ places }: { places: Place[] }) {
  *  and its top 44.25 from the card's foot; its right edge 36 from the left. */
 const SEAL = "bottom-[37cqw] left-[29cqw] size-[14cqw]";
 
+/** A quiet card's print and rim (`quiet`): a third of `Holo`'s 0.06 at rest and
+ *  0.26 under the hand, and of `FoilEdge`'s 0.1 and 0.8. */
+const QUIET = {
+  print: { rest: 0.02, lit: 0.08 },
+  edge: "opacity-[0.035] group-data-[hover]/holo:opacity-25",
+};
+
 /** The name as the card sets it: what a field written in its place wears too. */
 export const NAME =
   "line-clamp-2 text-[7cqw] leading-[1.02] font-medium tracking-[-0.03em] text-balance";
@@ -148,7 +155,7 @@ export function IdCard({
   heading = "h1",
   holo,
   slots,
-  holoStrength,
+  quiet,
   className,
 }: {
   holder: Holder;
@@ -158,9 +165,9 @@ export function IdCard({
   holo?: HoloPrint;
   /** Fields to write in, in place of the holder's written ones. */
   slots?: CardSlots;
-  /** How strongly the print shows at rest and under the hand (`Holo`'s own
-   *  default otherwise): fainter on a card being written on. */
-  holoStrength?: { rest: number; lit: number };
+  /** A card being written on: its print and its foil rim at about a third of a
+   *  card's (`QUIET`), together, so neither stands out of the other. */
+  quiet?: boolean;
   className?: string;
 }) {
   const Name = heading;
@@ -231,11 +238,11 @@ export function IdCard({
             print={holo}
             seal={SEAL}
             emblem={MARK_EMBLEM}
-            strength={holoStrength}
+            strength={quiet ? QUIET.print : undefined}
           />
         )}
         {body}
-        <FoilEdge />
+        <FoilEdge className={quiet ? QUIET.edge : undefined} />
       </Glass>
     </div>
   );
