@@ -3,6 +3,7 @@ import { GUTTER } from "@/components/frame";
 import { IdCard, type Holder } from "@/components/id-card";
 import { HeroShown } from "@/components/presence";
 import { Glass } from "@/components/ui/material-glass";
+import { EMOJI_DOMAIN_PUNYCODE } from "@/lib/const";
 import { getShowcase } from "@/lib/data";
 import { HOLO_PRINTS } from "@/lib/holo";
 import { cn } from "@/lib/utils";
@@ -22,10 +23,12 @@ const YOU: Holder = {
 
 /** Where the cards behind the front one lie: turned out from under it, smaller
  *  and dimmer with depth, so the stack reads as real cards dealt on the page. With
- *  a hand on the stack they spread a little further, as cards do when touched. */
+ *  a hand on the stack they spread a little further, as cards do when touched.
+ *  Dimmed by brightness, never opacity, and solid: a see-through card showed the
+ *  hero's shimmer through it, as if lying on it. */
 const BEHIND = [
-  "-rotate-[8deg] -translate-x-[9%] translate-y-[7%] scale-[0.93] opacity-60 group-data-hover/holo:-rotate-[9.5deg] group-data-hover/holo:-translate-x-[11.5%] group-data-hover/holo:translate-y-[8%]",
-  "rotate-[7deg] translate-x-[10%] -translate-y-[8%] scale-[0.88] opacity-35 group-data-hover/holo:rotate-[8.5deg] group-data-hover/holo:translate-x-[12.5%] group-data-hover/holo:-translate-y-[9.5%]",
+  "-rotate-[8deg] -translate-x-[9%] translate-y-[7%] scale-[0.93] brightness-[0.6] [--id-card-thickness:1] group-data-hover/holo:-rotate-[9.5deg] group-data-hover/holo:-translate-x-[11.5%] group-data-hover/holo:translate-y-[8%]",
+  "rotate-[7deg] translate-x-[10%] -translate-y-[8%] scale-[0.88] brightness-[0.35] [--id-card-thickness:1] group-data-hover/holo:rotate-[8.5deg] group-data-hover/holo:translate-x-[12.5%] group-data-hover/holo:-translate-y-[9.5%]",
 ];
 
 /** Real e-id cards, the maker's first and then the newest whole ones (a photo, a
@@ -108,7 +111,7 @@ export async function Hero() {
             GUTTER,
           )}
         >
-          <div data-slot="hero-words" className="flex flex-col gap-7">
+          <div data-slot="hero-words" className="flex flex-col gap-4">
             {/* The address IS the way in: one pill (make-yours). It carries the
                 card's prints, and the hand's place over it lights them
                 (globals.css, `data-cta`). */}
@@ -124,12 +127,24 @@ export async function Hero() {
                 <MakeYours />
               </HoloLight>
             </h1>
-            <p
+            {/* The line under the address hangs from it, as its caption: small,
+                light and quiet, on one line where it fits (pretty where it
+                wraps), starting under the words (past the pill's inset, disc and
+                gap: 0.2em + 1.2cap + 0.1em of the title, a cap 0.7 of Space
+                Grotesk's em). Under it, as small and quieter, that the address
+                is a real one: the emoji itself and the name a browser sends. */}
+            <div
               data-slot="hero-lead"
-              className="max-w-md text-xl leading-snug text-pretty text-foreground/65 sm:text-2xl"
+              className="flex flex-col gap-1.5 pl-[calc(var(--hero-title)*1.14)]"
             >
-              one link for every place you are online.
-            </p>
+              <p className="text-[0.9375rem] leading-snug font-light text-pretty text-foreground/55 sm:text-base">
+                one link for every place you are online.
+              </p>
+              <p className="font-mono text-[0.6875rem] tracking-wide text-foreground/30">
+                <span className="font-sans">👤</span>.to · {EMOJI_DOMAIN_PUNYCODE} · a
+                real domain, type it
+              </p>
+            </div>
           </div>
           <div data-slot="hero-card">
             <Stack people={people} />

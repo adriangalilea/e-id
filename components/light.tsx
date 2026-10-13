@@ -4,7 +4,9 @@ import { Grain } from "@/components/ui/grain";
 /** THE PAGE'S GROUND: never flat black, a composed dark gradient of a few broad,
  *  very soft pools of light, all neutral (no hue, Adrian's rule: colour reads as a
  *  gaming rig's), so what lies on the page keeps its own colour: one off the top
- *  left, one to the right, one low at the foot. Computed per pixel and dithered
+ *  left, one to the right, one low at the foot. Dim: the glass surfaces on it are
+ *  a step lighter than the ground, and a ground lifted near their tone took the
+ *  layering away. Computed per pixel and dithered
  *  (@ag/ambient-light), so the falls have no rings; fixed, so the page scrolls
  *  over a ground that holds still. */
 export function PageLight() {
@@ -18,7 +20,7 @@ export function PageLight() {
             y: -0.05,
             rx: 0.75,
             ry: 0.85,
-            strength: 0.55,
+            strength: 0.3,
           },
           {
             color: "oklch(0.26 0 0)",
@@ -26,7 +28,7 @@ export function PageLight() {
             y: 0.38,
             rx: 0.6,
             ry: 0.75,
-            strength: 0.4,
+            strength: 0.22,
           },
           {
             color: "oklch(0.24 0 0)",
@@ -34,7 +36,7 @@ export function PageLight() {
             y: 1.08,
             rx: 0.85,
             ry: 0.55,
-            strength: 0.45,
+            strength: 0.25,
           },
         ]}
       />
@@ -61,8 +63,9 @@ export function SubjectLight() {
         glows={[
           // A broad wash round the subject, and a closer, brighter halo a little
           // above its middle, where a light overhead would fall on it.
-          { color: "#fff", x: 0.5, y: 0.5, rx: 0.5, ry: 0.5, strength: 0.07 },
-          { color: "#fff", x: 0.5, y: 0.45, rx: 0.28, ry: 0.26, strength: 0.06 },
+          // Barely there: a spot of light any stronger read as a spotlight.
+          { color: "#fff", x: 0.5, y: 0.5, rx: 0.5, ry: 0.5, strength: 0.03 },
+          { color: "#fff", x: 0.5, y: 0.45, rx: 0.3, ry: 0.28, strength: 0.02 },
         ]}
       />
     </div>
@@ -70,16 +73,17 @@ export function SubjectLight() {
 }
 
 /** THE HERO'S SHIMMER (@ag/grain): a surface of facets that flash at rest and
- *  gather under the hand, faint, for visual interest under the address. It
- *  decays outward (a soft radial mask, centred on the words' side), so it has no
- *  edge and fades out before the cards: through their glass it read as lying on
- *  them. */
+ *  gather under the hand, faint, for visual interest in the hero. It decays
+ *  outward (a soft radial mask), so it has no edge. The cards lie over it and
+ *  hide it, the ones behind too (their bodies are dimmed, not made see-through:
+ *  hero.tsx, `BEHIND`). */
 export function HeroShimmer() {
   return (
     <div
       data-slot="hero-shimmer"
       aria-hidden
-      className="pointer-events-none absolute inset-0 -z-10 [mask-image:radial-gradient(ellipse_55%_75%_at_28%_42%,black_15%,transparent_100%)]"
+      // A soft ellipse over the hero, so it decays toward every edge.
+      className="pointer-events-none absolute inset-0 -z-10 [mask-image:radial-gradient(ellipse_70%_80%_at_45%_45%,black_30%,transparent_100%)]"
     >
       <Grain look="shimmer" strength={0.55} density={0.35} frost={0.01} />
     </div>

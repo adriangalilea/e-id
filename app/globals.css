@@ -44,11 +44,12 @@
 
 
   /* The hero's address, which is its way in (components/landing/make-yours), at
-     the size that fits it in its column. On two columns that column is 38.2% of
-     the content less the 5rem gap (the content is 68rem at most, 2rem in from
-     the screen each side); the pill is 5.42em wide, given 5.7 so the cards'
-     spread never reaches it. One column below 64rem: from the screen. */
-  --hero-title: clamp(3rem, 5.6vw, 5.25rem);
+     four fifths of the size that would fill its column: filling it, the pill
+     shouted. On two columns that column is 38.2% of the content less the 5rem
+     gap (the content is 68rem at most, 2rem in from the screen each side); the
+     pill is 5.42em wide, given 5.7 so the cards' spread never reaches it, then
+     4/5 of that. One column below 64rem: from the screen. */
+  --hero-title: clamp(2.5rem, 4.5vw, 4.25rem);
   /* The bar's wordmark (components/footer) and the size the hero's address
      closes to in it: large enough that its logo reads as a logo. */
   --wordmark: 1.25rem;
@@ -58,8 +59,8 @@
   --wordmark-logo: 1.45;
   @media (min-width: 64rem) {
     --hero-title: min(
-      5.25rem,
-      calc((min(100vw - 4rem, 68rem) - 5rem) * 0.382 / 5.7)
+      4.25rem,
+      calc((min(100vw - 4rem, 68rem) - 5rem) * 0.382 / 5.7 * 0.8)
     );
   }
 
