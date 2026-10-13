@@ -2,8 +2,10 @@
 
 import { Check, CircleAlert, Clipboard } from "lucide-react";
 import { EmojiDomain } from "@/components/brand";
+import { ON_CARD } from "@/components/card-shape";
 import { useCopy } from "@/components/ui/copy";
 import { EMOJI_DOMAIN } from "@/lib/const";
+import { cn } from "@/lib/utils";
 
 /** A card's address IS its copy: the line of text is the button, and the copy
  *  glyph shows only while a hand is on it, focus is on it, or it has just copied.
@@ -28,7 +30,10 @@ export function CopyAddress({ username }: { username: string }) {
             ? "Copied"
             : `Copy ${EMOJI_DOMAIN}/${username}`
       }
-      className="group/copy -mx-[1.2cqw] flex min-w-0 cursor-pointer items-center gap-[1.2cqw] self-start rounded-[1cqw] px-[1.2cqw] py-[0.6cqw] font-mono text-[3cqw] text-foreground/50 transition-colors hover:bg-white/[0.06] hover:text-foreground/85 data-copied:text-foreground/85"
+      className={cn(
+        ON_CARD,
+        "group/copy -mx-[1.2cqw] flex min-w-0 cursor-pointer items-center gap-[1.2cqw] self-start px-[1.2cqw] py-[0.6cqw] font-mono text-[3cqw] text-foreground/50 transition-colors hover:bg-white/[0.06] hover:text-foreground/85 data-copied:text-foreground/85",
+      )}
     >
       <EmojiDomain path={`/${username}`} className="truncate" />
       <span

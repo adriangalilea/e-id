@@ -7,6 +7,7 @@ import { flushSync } from "react-dom";
 import { EmojiDomain } from "@/components/brand";
 import { CountryFlag } from "@/components/country";
 import { type Holder, IdCard, type Place } from "@/components/id-card";
+import { ON_CARD } from "@/components/card-shape";
 import { PROFILE } from "@/components/profile-layout";
 import { useChip } from "@/components/session/use-chip";
 import { SocialComponent } from "@/components/social_component";
@@ -48,20 +49,25 @@ import {
 } from "@/lib/socials";
 import { cn } from "@/lib/utils";
 
-/** The registry's field (@ag/input, in the page's glass) at the card's size: its
- *  height and its round ends in em of the text it holds, so the name's field and
- *  the address's are the same shape at their two sizes, and both shrink with
- *  the card. The well, its rim under the hand and while typing, and its red when
- *  wrong are the field's own. */
-const WELL_ON_CARD =
-  "h-[1.75em] rounded-[0.5em] px-[0.4em] [&_input]:placeholder:text-foreground/45";
-
-/** A field written in and right reads as what is written, printed on the card:
- *  its well comes back only under the hand, while typing in it, or when it is
- *  wrong (the field's own red, which wins). Its padding stays, so the words
- *  never move as the well comes and goes. */
-const SETTLED =
-  "bg-transparent ring-transparent hover:bg-foreground/[0.04] hover:ring-foreground/22";
+/** The registry's field (@ag/input, plain) at the card's size, worn as the card's
+ *  own writing: at rest no well at all, only the words, or the label of what goes
+ *  there in the card's own type (a blank card reads as a card, not a form). The
+ *  well comes under the hand, while typing in it, and red when it is wrong, all
+ *  the field's own. Its height in em of its text, its corner every corner on the
+ *  card's (`ON_CARD`); its padding stays and is taken back outside, so the words
+ *  stand in line with the rest of the card's and never move as the well comes. */
+const WELL_ON_CARD = cn(
+  ON_CARD,
+  "-mx-[0.3em] h-[1.5em] px-[0.3em] [&_input]:placeholder:text-foreground/60",
+  // In the card's language, not a form's: no outline. Where it is written in,
+  // the card clears its print, as an ID's print falls back round the holder's
+  // data (id-card, `KNOCKOUT`): a patch of the card's own dark, feathered at its
+  // edge, faint under the hand and full while typing. Only wrong does it wear
+  // a rim, the field's own red.
+  "bg-transparent ring-transparent shadow-none transition-[background-color,box-shadow] hover:ring-transparent has-[input:focus-visible]:ring-transparent",
+  "hover:bg-[rgb(14_14_16/0.7)] hover:shadow-[0_0_0.35em_0.2em_rgb(14_14_16/0.7)]",
+  "has-[input:focus-visible]:bg-[rgb(14_14_16/0.92)] has-[input:focus-visible]:shadow-[0_0_0.35em_0.2em_rgb(14_14_16/0.92)]",
+);
 
 /** A field on the card is no login: password managers keep their buttons and
  *  suggestions out of it (1Password's sat over the name). Each reads its own
@@ -178,9 +184,6 @@ function FillCard() {
     <IdCard
       heading="p"
       holo="laminate"
-      // Its print and rim a third of a card's: there, but never in the way of
-      // the writing.
-      quiet
       className={FRONT}
       holder={{
         name: draft.name,
@@ -204,8 +207,10 @@ function FillCard() {
             material="plain"
             className={cn(
               WELL_ON_CARD,
-              draft.name.trim() && SETTLED,
-              "w-full text-[6.2cqw] font-medium tracking-[-0.03em]",
+              // The written name's size (id-card, `NAME`), across its row: sized
+              // to the row, never to what is typed (the page sizes fields to
+              // their content), so no letter of it is ever cut.
+              "w-full text-[7cqw] font-medium tracking-[-0.03em] [&_input]:[field-sizing:fixed]",
             )}
           />
         ),
@@ -304,46 +309,49 @@ function Address({
     draft.handle !== "" &&
     (handle?.state === "taken" || handle?.state === "invalid");
   return (
-    <InputGroup
-      aria-label="your username"
-      aria-describedby="handle-state"
-      aria-invalid={wrong}
-      placeholder="you"
-      {...WRITTEN_HERE}
-      autoCapitalize="none"
-      spellCheck={false}
-      value={draft.handle}
-      onChange={(e) => writeDraft({ handle: toHandle(e.target.value) })}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" && free) onClaim();
-      }}
-      // At the card's size (cqw), the address's own type: the well fits what is
-      // written (the input sizes to its content), the domain before it.
-      material="plain"
-      className={cn(
-        WELL_ON_CARD,
-        draft.handle && !wrong && SETTLED,
-        "w-fit max-w-full font-mono text-[3.2cqw] [&_svg]:h-[1cap] [&_svg]:w-auto",
-      )}
-      start={<EmojiDomain path="/" className="text-foreground/60" />}
-      end={
-        <span id="handle-state" aria-live="polite">
-          {free ? (
-            <button
-              type="button"
-              onClick={onClaim}
-              className="rounded-full px-[1.2cqw] text-foreground/85 transition-colors hover:bg-white/[0.1] hover:text-foreground"
-            >
-              claim ↵
-            </button>
-          ) : handle?.state === "taken" ? (
-            "taken"
-          ) : wrong ? (
-            <span className="sr-only">{handle?.why}</span>
-          ) : null}
-        </span>
-      }
-    />
+    // The field holds the address alone; what the address is (taken, or free and
+    // the way to claim it) stands after it, on the same line, at its height.
+    <div className="flex min-w-0 items-center gap-[0.5em] font-mono text-[3.2cqw]">
+      <InputGroup
+        aria-label="your username"
+        aria-describedby="handle-state"
+        aria-invalid={wrong}
+        placeholder="you"
+        {...WRITTEN_HERE}
+        autoCapitalize="none"
+        spellCheck={false}
+        value={draft.handle}
+        onChange={(e) => writeDraft({ handle: toHandle(e.target.value) })}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" && free) onClaim();
+        }}
+        // At the card's size (cqw), the address's own type: the well fits what
+        // is written (the input sizes to its content), the domain before it.
+        material="plain"
+        className={cn(
+          WELL_ON_CARD,
+          "w-fit min-w-0 max-w-full text-[1em] [&_svg]:h-[1cap] [&_svg]:w-auto",
+        )}
+        start={<EmojiDomain path="/" className="text-foreground/60" />}
+      />
+      <span id="handle-state" aria-live="polite" className="shrink-0">
+        {free ? (
+          <Button
+            type="button"
+            material="plain"
+            variant="secondary"
+            onClick={onClaim}
+            className={cn(ON_CARD, "h-[1.5em] px-[0.5em] text-[1em]")}
+          >
+            claim ↵
+          </Button>
+        ) : handle?.state === "taken" ? (
+          <span className="text-foreground/50">taken</span>
+        ) : wrong ? (
+          <span className="sr-only">{handle?.why}</span>
+        ) : null}
+      </span>
+    </div>
   );
 }
 
@@ -364,7 +372,10 @@ function Country({ code }: { code: string }) {
       aria-label={code === "XX" ? "your country" : `your country, ${code}`}
       onPointerEnter={() => setNear(true)}
       onFocus={() => setNear(true)}
-      className="-m-[1cqw] flex cursor-pointer items-center gap-[1.5cqw] rounded-[1cqw] p-[1cqw] font-mono transition-colors hover:bg-white/[0.08]"
+      className={cn(
+        ON_CARD,
+        "-m-[1cqw] flex cursor-pointer items-center gap-[1.5cqw] p-[1cqw] font-mono transition-colors hover:bg-white/[0.08]",
+      )}
     >
       {code === "XX" ? "" : code}
       <CountryFlag country={code} className="text-[4cqw]" />
@@ -414,7 +425,10 @@ function Places({ places }: { places: DraftPlace[] }) {
     (p) => !places.some((place) => place.platform === p),
   );
   const mark =
-    "rounded-[1.2cqw] p-[1.1cqw] transition-colors hover:bg-white/[0.08] hover:text-foreground data-[popup-open]:bg-white/[0.08] data-[popup-open]:text-foreground";
+    cn(
+      ON_CARD,
+      "p-[1.1cqw] transition-colors hover:bg-white/[0.08] hover:text-foreground data-[popup-open]:bg-white/[0.08] data-[popup-open]:text-foreground",
+    );
   const save = (platform: SocialPlatform, value: string) => {
     const others = readDraft().places.filter((p) => p.platform !== platform);
     const next = value ? [...others, { platform, value }] : others;
@@ -452,11 +466,8 @@ function Places({ places }: { places: DraftPlace[] }) {
             <button
               type="button"
               aria-label="add a place"
-              // A dashed ring: an empty place, to be filled.
-              className={cn(
-                mark,
-                "text-foreground/70 shadow-[inset_0_0_0_1px_rgb(255_255_255/0.2)] [&_svg]:size-[3.6cqw]",
-              )}
+              // A mark like the places beside it, a step dimmer: one more to add.
+              className={cn(mark, "text-foreground/55")}
             >
               <Plus />
             </button>
@@ -766,6 +777,15 @@ const PICKED = cn(
   "motion-reduce:transition-none motion-reduce:group-data-[hover]/holo:[transform:none]",
 );
 
+/** THE VEIL between the real cards and the visitor's: a dim and the slightest
+ *  blur over everything behind the visitor's card (the cards round it, the
+ *  shimmer), so theirs is what is in front; a card under the hand rises through
+ *  it, whole. Across the screen's width (the cards run off the stage's edges),
+ *  and faded out at its top and foot, where the hero meets the bar and the page,
+ *  so it has no edge. Under the hand's way it never is: it takes no pointer. */
+const VEIL =
+  "pointer-events-none absolute inset-y-0 left-1/2 z-[5] w-screen -translate-x-1/2 bg-black/30 backdrop-blur-[1.5px] [mask-image:linear-gradient(to_bottom,transparent,black_12%,black_88%,transparent)]";
+
 /** THE HERO'S STAGE: the visitor's card in the middle, still, and real ones
  *  spread round it in depth (`AROUND`), the maker's and the newest whole ones (a
  *  photo, a name, a country), the visitor's own left out: what a filled one is,
@@ -809,7 +829,9 @@ export function Stage({
         return (
           <div
             key={holder.username}
-            className="absolute top-1/2 left-1/2 max-lg:hidden"
+            // Under the hand it comes out from under the veil and over the
+            // visitor's card too, whole, to be looked at (`VEIL`).
+            className="absolute top-1/2 left-1/2 hover:z-30 max-lg:hidden"
             style={placed(at)}
           >
             <div
@@ -833,6 +855,9 @@ export function Stage({
           </div>
         );
       })}
+      {!forming && (
+        <div aria-hidden className={cn(VEIL, "max-lg:hidden")} />
+      )}
       {/* One element in both layouts, so the card is never remounted; named, so
           the view transition carries it from the middle to its column, the
           profile's held pane (components/profile-layout). */}

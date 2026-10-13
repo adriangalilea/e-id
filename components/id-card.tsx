@@ -1,4 +1,5 @@
 import { BrandMark } from "@/components/brand";
+import { ON_CARD } from "@/components/card-shape";
 import { CopyAddress } from "@/components/copy-address";
 import { CountryFlag } from "@/components/country";
 import { FoilEdge, Holo } from "@/components/ui/holo";
@@ -54,14 +55,15 @@ function Portrait({
   return (
     <div
       className={cn(
-        "grid aspect-square w-[30cqw] shrink-0 place-items-center overflow-hidden rounded-[1.4cqw] bg-white/5 shadow-[0_0_0_1px_rgb(255_255_255/0.08)]",
+        "grid aspect-square w-[30cqw] shrink-0 place-items-center overflow-hidden bg-white/5 shadow-[0_0_0_1px_rgb(255_255_255/0.08)]",
+        ON_CARD,
         className,
       )}
     >
       {holder.image ? (
         <Image src={holder.image} alt="" className="size-full object-cover" />
       ) : (
-        <BrandMark className="h-1/2 text-white/15" />
+        <BrandMark className="h-1/2 text-white/25" />
       )}
     </div>
   );
@@ -109,7 +111,10 @@ function Flair({ places }: { places: Place[] }) {
           rel="me noopener"
           target="_blank"
           aria-label={platform}
-          className="rounded-[1.2cqw] p-[1.1cqw] transition-colors hover:bg-white/[0.08] hover:text-foreground"
+          className={cn(
+            ON_CARD,
+            "p-[1.1cqw] transition-colors hover:bg-white/[0.08] hover:text-foreground",
+          )}
         >
           {getSocialIcon(platform)}
         </a>
@@ -129,13 +134,6 @@ function Flair({ places }: { places: Place[] }) {
  *  photo) is centred in the 46.5 left, so its foot is 8.25 above the padding's
  *  and its top 44.25 from the card's foot; its right edge 36 from the left. */
 const SEAL = "bottom-[37cqw] left-[29cqw] size-[14cqw]";
-
-/** A quiet card's print and rim (`quiet`): a third of `Holo`'s 0.06 at rest and
- *  0.26 under the hand, and of `FoilEdge`'s 0.1 and 0.8. */
-const QUIET = {
-  print: { rest: 0.02, lit: 0.08 },
-  edge: "opacity-[0.035] group-data-[hover]/holo:opacity-25",
-};
 
 /** The name as the card sets it. */
 const NAME =
@@ -158,7 +156,6 @@ export function IdCard({
   heading = "h1",
   holo,
   slots,
-  quiet,
   className,
 }: {
   holder: Holder;
@@ -168,9 +165,6 @@ export function IdCard({
   holo?: HoloPrint;
   /** Fields to write in, in place of the holder's written ones. */
   slots?: CardSlots;
-  /** A card being written on: its print and its foil rim at about a third of a
-   *  card's (`QUIET`), together, so neither stands out of the other. */
-  quiet?: boolean;
   className?: string;
 }) {
   const Name = heading;
@@ -206,7 +200,12 @@ export function IdCard({
       <div className="relative my-auto flex items-end gap-[5cqw]">
         <Portrait holder={holder} />
         <div
-          className={cn("flex min-w-0 flex-col gap-[1.5cqw] pb-[1cqw]", KNOCKOUT)}
+          // The rest of the card's width beside the photo, so a field written in
+          // its place has the room the written line would.
+          className={cn(
+            "flex min-w-0 flex-1 flex-col gap-[1.5cqw] pb-[1cqw]",
+            KNOCKOUT,
+          )}
         >
           {slots?.name ?? (
             <Name className={NAME}>{name}</Name>
@@ -245,11 +244,10 @@ export function IdCard({
             print={holo}
             seal={SEAL}
             emblem={MARK_EMBLEM}
-            strength={quiet ? QUIET.print : undefined}
           />
         )}
         {body}
-        <FoilEdge className={quiet ? QUIET.edge : undefined} />
+        <FoilEdge />
       </Glass>
     </div>
   );
