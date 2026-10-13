@@ -179,16 +179,43 @@ function pattern(id: string, a: HoloArt): string {
   return `<pattern id="${id}" width="${a.width}" height="${a.height}" patternUnits="userSpaceOnUse">${a.body}</pattern>`;
 }
 
-/** The card as SVG, 1200 by 630. */
-export async function cardSvg(card: Card): Promise<string> {
-  const { width: W, height: H } = SHARE_SIZE;
-  // The card, ID-1 (85.6 by 53.98 mm, corners 3.18), centred, three quarters as tall
-  // as the image: the image is the card.
-  const cw = 760;
+/** Where the card is drawn: `share`, the share image (1200 by 630, the card on the
+ *  page's ground, its light still); `card`, the card alone, its box the drawing's,
+ *  for the embed (public/embed.js) to set on any page and light by the hand: its
+ *  places and its name are links, and what the hand moves is named (`LIGHT_HOOKS`). */
+export type CardFrame = "share" | "card";
+
+/** The card's width in the drawing, the unit everything on it is a share of. */
+const CARD_W = 760;
+
+/** What the embed moves as the hand moves: the band of light (its gradient's four
+ *  stops, at the light ∓ 40% and ∓ 8%), the foil under it (shifted across, as
+ *  `background-position` shifts the site's), and how strongly the print shows. */
+export const LIGHT_HOOKS = {
+  band: "band",
+  foil: "foil",
+  holo: "holo",
+  light: LIGHT,
+  /** How far the foil moves for the light going from 0 to 1, in drawing units. */
+  foilTravel: 3 * CARD_W,
+} as const;
+
+/** The card as SVG. */
+export async function cardSvg(card: Card, frame: CardFrame = "share"): Promise<string> {
+  const share = frame === "share";
+  // The card, ID-1 (85.6 by 53.98 mm, corners 3.18). In the share image, centred,
+  // three quarters as tall as the image: the image is the card.
+  const cw = CARD_W;
   const ch = (cw * 53.98) / 85.6;
+  const W = share ? SHARE_SIZE.width : cw;
+  const H = share ? SHARE_SIZE.height : ch;
   const u = cw / 100;
   const cx = (W - cw) / 2;
   const cy = (H - ch) / 2;
+  const link = (href: string, body: string, label?: string) =>
+    share
+      ? body
+      : `<a href="${esc(href)}" target="_blank" rel="me noopener"${label ? ` aria-label="${esc(label)}"` : ""}>${body}</a>`;
   const radius = (3.18 / 85.6) * cw;
   const pad = 6 * u;
   const at = (x: number, y: number) => [cx + x * u, cy + y * u] as const;
@@ -210,7 +237,13 @@ export async function cardSvg(card: Card): Promise<string> {
   const flair = places.length
     ? places
         .slice(0, Math.floor((textWidth + 0.6 * u) / (7.4 * u)))
-        .map((p, i) => icon(ICONS[p.platform] as IconNode, cx + textX * u + i * 7.4 * u, cy + (foot - 1.1 - 4.6) * u, 4.6 * u))
+        .map((p, i) => {
+          const x = cx + textX * u + i * 7.4 * u;
+          const y = cy + (foot - 1.1 - 4.6) * u;
+          // The hit area is the icon's padded square, as on the site.
+          const hit = `<rect x="${f(x - 1.1 * u)}" y="${f(y - 1.1 * u)}" width="${f(6.8 * u)}" height="${f(6.8 * u)}" rx="${f(1.2 * u)}" fill="#fff" fill-opacity="0"/>`;
+          return link(p.url, hit + icon(ICONS[p.platform] as IconNode, x, y, 4.6 * u), p.platform);
+        })
         .join("")
     : "";
   if (places.length) foot -= 6.8 + 1.5;
@@ -272,17 +305,29 @@ export async function cardSvg(card: Card): Promise<string> {
   const sealSize = 14 * u;
   const [sx, sy] = at(29, 63.06 - 37 - 14);
   const band = LIGHT * 100;
-  const foilBox = { x: cx - 3 * cw * LIGHT, w: 4 * cw };
+  const foilBox = { x: cx - LIGHT_HOOKS.foilTravel * LIGHT, w: 4 * cw };
+  // Face on, the print is nearly invisible (the site's 0.06); the share image is the
+  // card in a hand, lit (0.26), as it is under the hand.
+  const holoStrength = share ? 0.26 : 0.06;
+  const edge = share ? cssLine(115, 0, 0, W, H) : cssLine(115, cx, cy, cw, ch);
 
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">
+  const page = share
+    ? `<rect width="${W}" height="${H}" fill="${PAGE}"/>
+<rect width="${W}" height="${H}" fill="url(#halo)"/>
+<rect width="${W}" height="${H}" fill="url(#beam)"/>
+<rect x="${f(cx)}" y="${f(cy + 3 * u)}" width="${f(cw)}" height="${f(ch)}" rx="${f(radius)}" fill="#000" fill-opacity="0.65" filter="url(#lift)"/>`
+    : "";
+  const grain = share ? `<rect width="${W}" height="${H}" filter="url(#grain)" opacity="0.045"/>` : "";
+
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${f(W)} ${f(H)}"${share ? "" : ` role="group" aria-label="${esc(`${card.name}'s e-id card`)}"`}>
 <defs>
   <radialGradient id="beam" gradientUnits="userSpaceOnUse" cx="0" cy="0" r="1" gradientTransform="translate(${W / 2} ${f(-0.06 * H)}) scale(${f(0.12 * W)} ${f(0.55 * H)})"><stop offset="0" stop-color="#fff" stop-opacity="0.09"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
   <radialGradient id="halo" gradientUnits="userSpaceOnUse" cx="0" cy="0" r="1" gradientTransform="translate(${W / 2} ${f(-0.12 * H)}) scale(${f(0.42 * W)} ${f(0.75 * H)})"><stop offset="0" stop-color="#fff" stop-opacity="0.055"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
   <linearGradient id="body" ${cssLine(135, cx, cy, cw, ch)}><stop offset="0" stop-color="#1e1e21"/><stop offset="0.55" stop-color="#131315"/><stop offset="1" stop-color="#0d0d0e"/></linearGradient>
   <linearGradient id="rim" ${cssLine(135, cx, cy, cw, ch)}><stop offset="0" stop-color="#fff" stop-opacity="0.4"/><stop offset="0.35" stop-color="#fff" stop-opacity="0.08"/><stop offset="0.75" stop-color="#fff" stop-opacity="0.04"/><stop offset="1" stop-color="#fff" stop-opacity="0.18"/></linearGradient>
   <linearGradient id="foil" ${cssLine(115, foilBox.x, cy, foilBox.w, ch)}>${foilStops()}</linearGradient>
-  <linearGradient id="edge-foil" ${cssLine(115, 0, 0, W, H)}>${foilStops()}</linearGradient>
-  <linearGradient id="band" ${cssLine(115, cx, cy, cw, ch)}><stop offset="${f((band - 40) / 100)}" stop-color="#fff" stop-opacity="0"/><stop offset="${f((band - 8) / 100)}" stop-color="#fff"/><stop offset="${f((band + 8) / 100)}" stop-color="#fff"/><stop offset="${f((band + 40) / 100)}" stop-color="#fff" stop-opacity="0"/></linearGradient>
+  <linearGradient id="edge-foil" ${edge}>${foilStops()}</linearGradient>
+  <linearGradient id="band" ${cssLine(115, cx, cy, cw, ch)}><stop offset="${f(Math.max(0, band - 40) / 100)}" stop-color="#fff" stop-opacity="0"/><stop offset="${f((band - 8) / 100)}" stop-color="#fff"/><stop offset="${f((band + 8) / 100)}" stop-color="#fff"/><stop offset="${f(Math.min(100, band + 40) / 100)}" stop-color="#fff" stop-opacity="0"/></linearGradient>
   <radialGradient id="ghost-fade" cx="0.5" cy="0.5" r="0.5"><stop offset="0.35" stop-color="#fff"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
   ${pattern("guilloche", HOLO_ART.guilloche)}
   ${pattern("emblems", HOLO_ART.emblems)}
@@ -300,27 +345,23 @@ export async function cardSvg(card: Card): Promise<string> {
   <filter id="lift" x="-20%" y="-30%" width="140%" height="160%"><feGaussianBlur stdDeviation="${f(4 * u)}"/></filter>
   <filter id="grain" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="7"/><feColorMatrix type="saturate" values="0"/></filter>
 </defs>
-<rect width="${W}" height="${H}" fill="${PAGE}"/>
-<rect width="${W}" height="${H}" fill="url(#halo)"/>
-<rect width="${W}" height="${H}" fill="url(#beam)"/>
-<rect x="${f(cx)}" y="${f(cy + 3 * u)}" width="${f(cw)}" height="${f(ch)}" rx="${f(radius)}" fill="#000" fill-opacity="0.65" filter="url(#lift)"/>
+${page}
 <rect x="${f(cx)}" y="${f(cy)}" width="${f(cw)}" height="${f(ch)}" rx="${f(radius)}" fill="url(#body)"/>
 <g clip-path="url(#card)">
   ${ghost}
-  <g mask="url(#band-mask)" opacity="0.26" style="mix-blend-mode:screen">
+  <g id="holo" mask="url(#band-mask)" opacity="${holoStrength}" style="mix-blend-mode:screen">
     <rect x="${f(cx)}" y="${f(cy)}" width="${f(cw)}" height="${f(ch)}" fill="url(#foil)" mask="url(#laminate)"/>
     <rect x="${f(cx)}" y="${f(cy)}" width="${f(cw)}" height="${f(ch)}" fill="url(#foil)" mask="url(#seal)"/>
   </g>
   <rect x="${f(px)}" y="${f(py)}" width="${f(ps)}" height="${f(ps)}" rx="${f(1.4 * u)}" fill="#fff" fill-opacity="0.05" stroke="#fff" stroke-opacity="0.08"/>
   ${portrait}
   ${head}
-  ${name}
-  ${address}
+  ${link(card.id, name + address)}
   ${flair}
 </g>
-<rect x="${f(cx + 0.5)}" y="${f(cy + 0.5)}" width="${f(cw - 1)}" height="${f(ch - 1)}" rx="${f(radius - 0.5)}" fill="none" stroke="url(#rim)"/>
-<rect x="${f(cx + 0.5)}" y="${f(cy + 0.5)}" width="${f(cw - 1)}" height="${f(ch - 1)}" rx="${f(radius - 0.5)}" fill="none" stroke="url(#edge-foil)" stroke-opacity="0.16"/>
-<rect width="${W}" height="${H}" filter="url(#grain)" opacity="0.045"/>
+<rect x="${f(cx + 0.5)}" y="${f(cy + 0.5)}" width="${f(cw - 1)}" height="${f(ch - 1)}" rx="${f(radius - 0.5)}" fill="none" stroke="url(#rim)" pointer-events="none"/>
+<rect x="${f(cx + 0.5)}" y="${f(cy + 0.5)}" width="${f(cw - 1)}" height="${f(ch - 1)}" rx="${f(radius - 0.5)}" fill="none" stroke="url(#edge-foil)" stroke-opacity="0.16" pointer-events="none"/>
+${grain}
 </svg>`;
 }
 
