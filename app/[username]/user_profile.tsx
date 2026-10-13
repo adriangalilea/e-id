@@ -7,9 +7,8 @@ import { HoloLean, HoloLight } from "@/components/ui/holo";
 import { SubjectLight } from "@/components/light";
 import { MaterialProvider } from "@/components/ui/material";
 import { cn } from "@/lib/utils";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { AtSign } from "lucide-react";
+import { Input, InputGroup } from "@/components/ui/input";
+import { EmojiDomain } from "@/components/brand";
 import EditCountry from "@/components/edit-country";
 import { SaveButton } from "@/components/save_button";
 import { DiscardButton } from "@/components/discard_button";
@@ -136,23 +135,21 @@ function IdentityEdit({ user }: { user: Profile }) {
         className={`${FIELD} h-12 text-2xl font-medium tracking-tight`}
         placeholder="Name"
       />
-      <div className="flex min-w-0 items-center">
-        <Label
-          htmlFor="username"
-          className="flex size-10 shrink-0 items-center justify-center border border-r-0 border-border bg-foreground/5"
-        >
-          <AtSign strokeWidth={1} size="20" />
-        </Label>
-        <Input
-          data-1p-ignore
-          type="text"
-          id="username"
-          name="username"
-          defaultValue={user.username}
-          className={`${FIELD} min-w-0 grow font-mono text-[16px]`}
-          placeholder="username"
-        />
-      </div>
+      {/* The handle as the address it makes, the domain before it in the well
+          (@ag/input), as the home's card writes it. */}
+      <InputGroup
+        data-1p-ignore
+        type="text"
+        id="username"
+        name="username"
+        aria-label="username"
+        defaultValue={user.username}
+        placeholder="username"
+        material="plain"
+        size="lg"
+        className="min-w-0 gap-0 font-mono"
+        start={<EmojiDomain path="/" />}
+      />
       <EditCountry saved={user.country_code} />
       <InputQuote
         text={user.bio ?? ""}

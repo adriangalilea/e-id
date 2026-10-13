@@ -9,7 +9,7 @@ import {
   getSocialPretextIcon,
   getSocialUrl,
 } from "@/lib/socials";
-import { Input } from "@/components/ui/input";
+import { InputGroup } from "@/components/ui/input";
 import { Copy } from "@/components/ui/copy";
 import { INSET } from "@/components/surface";
 import RemoveSocialButton from "./remove_social_button";
@@ -20,17 +20,10 @@ import { TelegramProfile } from "@/components/ui/telegram-profile";
 import { Tweet } from "@/components/ui/tweet";
 import { WebPreview } from "@/components/ui/web-preview";
 import { YouTube } from "@/components/ui/youtube";
-import { Label } from "../ui/label";
 import { SwitchPublic } from "./switch_public";
 import AddSocialDropdownMenu from "./add_social_dropdown";
 import OrderDropdown from "./order_dropdown";
 import { ArrowUpRight, Star } from "lucide-react";
-
-/** A row of the edit form: the field's icon in a square, the field beside it. */
-const FIELD_ICON =
-  "flex size-10 shrink-0 items-center justify-center border border-r-0 border-border bg-foreground/5";
-const FIELD =
-  "m-0! border border-border bg-transparent! text-[16px] focus-visible:border-foreground/40 focus-visible:ring-0 focus-visible:ring-transparent focus-visible:ring-offset-0";
 
 
 /** GitHub's calendar inside its profile card: square days, at no less than 8px a
@@ -175,45 +168,40 @@ export function SocialComponent({
               social.context_message && <Quote text={social.context_message} />
             )}
 
+            {/* Each field with what it is before it in the well (@ag/input):
+                the place's own mark (@, a link), a star for a highlight. */}
             {edit && (
-              <div className="flex items-center">
-                <Label htmlFor={social.id} className={FIELD_ICON}>
-                  {pretext}
-                </Label>
-                <Input
-                  data-1p-ignore
-                  type="text"
-                  id={social.id}
-                  name={`${social.platform}_${social.id}_value`}
-                  defaultValue={value}
-                  className={FIELD}
-                  placeholder={getSocialPlaceholder(social.platform)}
-                />
-              </div>
+              <InputGroup
+                data-1p-ignore
+                type="text"
+                id={social.id}
+                name={`${social.platform}_${social.id}_value`}
+                aria-label={social.platform}
+                defaultValue={value}
+                placeholder={getSocialPlaceholder(social.platform)}
+                material="plain"
+                size="lg"
+                start={pretext}
+              />
             )}
             {(social.platform === "youtube" || social.platform === "twitter") &&
               edit && (
-                <div className="flex items-center">
-                  <Label
-                    htmlFor={`${social.platform}_${social.id}_highlight`}
-                    className={FIELD_ICON}
-                  >
-                    <Star strokeWidth="1" size="20" />
-                  </Label>
-                  <Input
-                    data-1p-ignore
-                    type="text"
-                    id={`${social.platform}_${social.id}_highlight`}
-                    name={`${social.platform}_${social.id}_highlight`}
-                    defaultValue={social.custom_data?.["highlight"] || ""}
-                    className={FIELD}
-                    placeholder={
-                      social.platform === "youtube"
-                        ? "Optional highlight video ID"
-                        : "Optional highlight tweet ID"
-                    }
-                  />
-                </div>
+                <InputGroup
+                  data-1p-ignore
+                  type="text"
+                  id={`${social.platform}_${social.id}_highlight`}
+                  name={`${social.platform}_${social.id}_highlight`}
+                  aria-label="highlight"
+                  defaultValue={social.custom_data?.["highlight"] || ""}
+                  placeholder={
+                    social.platform === "youtube"
+                      ? "Optional highlight video ID"
+                      : "Optional highlight tweet ID"
+                  }
+                  material="plain"
+                  size="lg"
+                  start={<Star strokeWidth="1" />}
+                />
               )}
             <PresenceOf social={social} presence={presence} />
           </TabsPanel>
