@@ -72,6 +72,26 @@ export function SubjectLight() {
   );
 }
 
+/** THE SHADOW A CARD CASTS on what lies under it, wide and soft, a little below
+ *  it as from a light overhead. Computed and dithered (@ag/ambient-light, a
+ *  glow of black with no ground): as a box shadow it fell through the few 8-bit
+ *  levels between the page's near-black and black in visible steps. Placed
+ *  inside the card's box (positioned), behind it; the card's own close contact
+ *  shadow stays a box shadow, too short to band. */
+export function CastShadow() {
+  return (
+    <div
+      aria-hidden
+      className="pointer-events-none absolute top-[58%] left-1/2 -z-10 h-[150%] w-[130%] -translate-x-1/2 -translate-y-1/2"
+    >
+      <AmbientLight
+        ground="none"
+        glows={[{ color: "#000", x: 0.5, y: 0.5, rx: 0.5, ry: 0.5, strength: 0.75 }]}
+      />
+    </div>
+  );
+}
+
 /** THE HERO'S SHIMMER (@ag/grain): a surface of facets that flash at rest and
  *  gather under the hand, faint, for visual interest in the hero. It decays
  *  outward, so it has no edge: a soft ellipse, cut with a fall to nothing well

@@ -172,6 +172,27 @@
   animation-duration: 350ms;
 }
 
+/* Where the light falls across a card (@ag/holo's `--px`, 0 to 1, written by
+   HoloLight from the hand), registered so it can be animated: the visitor's card
+   at rest lets a light drift slowly across its foil (`holo-idle`). */
+@property --px {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 0.5;
+}
+
+/* The light passing across the visitor's card while no hand is on it
+   (components/landing/hero-cards, `YourCard`): slow, one way and back, so the
+   foil on its rim and print catches it as a card turned under a lamp would. */
+@keyframes holo-idle {
+  from {
+    --px: 0.1;
+  }
+  to {
+    --px: 0.9;
+  }
+}
+
 /* A real card's slow drift round the home's (components/landing/hero-cards,
    `Stage`): up a little and turned a hair, then back. Keyframes, which no utility
    can write; on `translate` and `rotate`, so it adds to the card's placed

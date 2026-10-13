@@ -87,13 +87,22 @@ const SOLID = "[--id-card-thickness:1]";
  *  a shadow cast from the card's box is rounded as the card is at any size. */
 const CORNER = "rounded-[3.715%/5.891%]";
 
-/** The visitor's card lies above every other: its shadow falls wide and soft on
- *  the cards round it, darkest just under it. */
+/** The visitor's card lies above every other: close under it a contact shadow;
+ *  the wide soft one it casts on the cards round it is dithered, apart
+ *  (components/light, `CastShadow`), where a box shadow that wide banded. */
 const FRONT = cn(
   SOLID,
   CORNER,
-  "shadow-[0_2.5rem_5rem_-1rem_rgb(0_0_0/0.75),0_0.75rem_1.5rem_-0.5rem_rgb(0_0_0/0.55)]",
+  "shadow-[0_0.75rem_1.5rem_-0.5rem_rgb(0_0_0/0.6)]",
 );
+
+/** The light drifting across the visitor's card while no hand is on it: the
+ *  place it falls (`--px`, which the card's hologram and foil rim read) swept
+ *  slowly one way and back (globals.css, `holo-idle`), inside the lean, so the
+ *  light moves and the card does not. The hand takes it over the moment it
+ *  comes (HoloLight's own `--px`); under reduced motion it rests. */
+const IDLE =
+  "animate-[holo-idle_6s_ease-in-out_infinite_alternate] group-data-[hover]/holo:animate-none motion-reduce:animate-none";
 
 /** Whether the visitor's card has started becoming a profile: a place on it says
  *  where, so there is a profile to show. The stage gives way to it then. */
@@ -120,7 +129,10 @@ export function YourCard() {
   const chip = useChip();
   const draft = useDraft();
   return (
-    <HoloLight className="w-full">
+    // At rest its foil rim shows a band, not a faint whole ring, and the light
+    // drifting across it (`IDLE`) moves that band: what draws the eye to the
+    // card before the hand comes.
+    <HoloLight className="w-full [&:not([data-hover])_[data-slot=foil-edge]]:opacity-45 [&:not([data-hover])_[data-slot=foil-edge]]:[--edge-floor:0.12]">
       <Claim />
       {chip?.u ? (
         <Suspense
@@ -140,7 +152,9 @@ export function YourCard() {
           }
         >
           <HoloLean pose="flat" className="max-lg:[transform:none]">
-            <OwnCard username={chip.u} />
+            <div className={IDLE}>
+              <OwnCard username={chip.u} />
+            </div>
           </HoloLean>
         </Suspense>
       ) : (
@@ -148,7 +162,9 @@ export function YourCard() {
           {/* Leaning to the hand as a profile's card does (user_profile), by
               no more than a few degrees: alive, and still to write on. */}
           <HoloLean pose="flat" className="max-lg:[transform:none]">
-            <FillCard />
+            <div className={IDLE}>
+              <FillCard />
+            </div>
           </HoloLean>
           {/* Room kept whether it shows or not: the card never moves. */}
           <div className="mt-4 flex h-9 justify-end">
