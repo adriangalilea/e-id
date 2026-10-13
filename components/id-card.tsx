@@ -148,6 +148,7 @@ export function IdCard({
   heading = "h1",
   holo,
   slots,
+  holoStrength,
   className,
 }: {
   holder: Holder;
@@ -157,6 +158,9 @@ export function IdCard({
   holo?: HoloPrint;
   /** Fields to write in, in place of the holder's written ones. */
   slots?: CardSlots;
+  /** How strongly the print shows at rest and under the hand (`Holo`'s own
+   *  default otherwise): fainter on a card being written on. */
+  holoStrength?: { rest: number; lit: number };
   className?: string;
 }) {
   const Name = heading;
@@ -222,7 +226,14 @@ export function IdCard({
             invisible face on, a band of foil running through its print as the
             card turns. The seal bites the photo's corner, where a real one sits
             so the photo cannot be swapped (`SEAL`). */}
-        {holo && <Holo print={holo} seal={SEAL} emblem={MARK_EMBLEM} />}
+        {holo && (
+          <Holo
+            print={holo}
+            seal={SEAL}
+            emblem={MARK_EMBLEM}
+            strength={holoStrength}
+          />
+        )}
         {body}
         <FoilEdge />
       </Glass>

@@ -7,7 +7,7 @@ import { EmojiDomain } from "@/components/brand";
 import { CountryFlag } from "@/components/country";
 import { type Holder, IdCard, NAME, type Place } from "@/components/id-card";
 import { useChip } from "@/components/session/use-chip";
-import { HoloLean, HoloLight } from "@/components/ui/holo";
+import { HoloLight } from "@/components/ui/holo";
 import { useToast } from "@/components/ui/use-toast";
 import { claimDraft, type HandleState, handleState } from "@/db/actions";
 import { type SocialPlatform, socialPlatforms } from "@/db/schema";
@@ -85,6 +85,9 @@ function FillCard() {
     <IdCard
       heading="p"
       holo="laminate"
+      // A third of a card's usual print: there, but never in the way of the
+      // writing.
+      holoStrength={{ rest: 0.02, lit: 0.08 }}
       className={SOLID}
       holder={{
         name: draft.name,
@@ -375,46 +378,87 @@ function OwnCard({ username }: { username: string }) {
   );
 }
 
-// ── the others' ─────────────────────────────────────────────────────────────
+// ── the stage ───────────────────────────────────────────────────────────────
 
-/** Where the cards under the top one lie: turned out from under it, smaller and
- *  dimmer with depth, so the stack reads as real cards dealt on the page. With a
- *  hand on the stack they spread a little further, as cards do when touched.
- *  Dimmed by brightness, never opacity, and solid: a see-through card showed the
- *  hero's shimmer through it, as if lying on it. */
-const UNDER = [
-  "-rotate-[8deg] -translate-x-[9%] translate-y-[7%] scale-[0.93] brightness-[0.6] group-data-hover/holo:-rotate-[9.5deg] group-data-hover/holo:-translate-x-[11.5%] group-data-hover/holo:translate-y-[8%]",
-  "rotate-[7deg] translate-x-[10%] -translate-y-[8%] scale-[0.88] brightness-[0.35] group-data-hover/holo:rotate-[8.5deg] group-data-hover/holo:translate-x-[12.5%] group-data-hover/holo:-translate-y-[9.5%]",
-];
+/** Where the real cards float round the visitor's, in the stage's 3D: across in
+ *  cqw of the stage from its centre, up and down in rem, back in px (all behind
+ *  the visitor's card, which lies at 0), turned to face it. Three each side, one
+ *  near, one far, one low, so the spread reads as depth, not a row. `float` is how
+ *  long one slow rise takes, each its own so they never move in step. */
+const AROUND = [
+  { x: -30, y: -10, z: -350, ry: 24, rx: 6, rz: -5, float: 9 },
+  { x: -47, y: 3, z: -650, ry: 32, rx: 2, rz: 3, float: 11 },
+  { x: -32, y: 12, z: -250, ry: 20, rx: -8, rz: 4, float: 8 },
+  { x: 31, y: -11, z: -300, ry: -24, rx: 6, rz: 6, float: 10 },
+  { x: 48, y: 2, z: -600, ry: -32, rx: 0, rz: -3, float: 12 },
+  { x: 30, y: 12, z: -400, ry: -20, rx: -8, rz: -4, float: 9.5 },
+] as const;
 
-/** OTHER PEOPLE'S CARDS, on the right: what a filled one is, shown rather than
- *  told. The maker's and the newest whole ones (a photo, a name, a country), the
- *  visitor's own left out (it is on the left), dealt in a stack: the top one
- *  leaning toward the hand, its hologram showing as it turns. */
-export function Others({ people }: { people: Holder[] }) {
+/** One card's place, read with the hand (`--px`, `--py` from the stage's
+ *  HoloLight): it slides with the hand and turns toward it, the nearer the more
+ *  (parallax), easing there over most of a second, so the cards have weight. */
+function placed({ x, y, z, ry, rx, rz }: (typeof AROUND)[number]) {
+  const near = 1 + z / 1000;
+  const hx = "(var(--px, 0.5) - 0.5)";
+  const hy = "(var(--py, 0.35) - 0.35)";
+  return {
+    transform: [
+      "translate(-50%, -50%)",
+      `translate3d(calc(${x}cqw + ${hx} * ${(4 * near).toFixed(2)}rem), calc(${y}rem + ${hy} * ${(3 * near).toFixed(2)}rem), ${z}px)`,
+      `rotateY(calc(${ry}deg + ${hx} * 10deg))`,
+      `rotateX(calc(${rx}deg - ${hy} * 8deg))`,
+      `rotateZ(${rz}deg)`,
+    ].join(" "),
+    // Dimmer the further back, as if the light were on the visitor's card; by
+    // brightness, never opacity: a see-through card shows the shimmer through it.
+    filter: `brightness(${Math.min(0.75, Math.max(0.25, 0.85 + z / 1000)).toFixed(2)})`,
+  };
+}
+
+/** THE HERO'S STAGE: the visitor's card in the middle, still, and real ones
+ *  spread round it in depth (`AROUND`), the maker's and the newest whole ones (a
+ *  photo, a name, a country), the visitor's own left out: what a filled one is,
+ *  shown rather than told. They follow the hand across the whole hero and drift
+ *  on their own, slowly; the visitor's card does neither, a card being written
+ *  on lies still. Under reduced motion nothing moves. On one column, their card
+ *  alone. */
+export function Stage({
+  people,
+  children,
+}: {
+  people: Holder[];
+  /** what stands in the middle: the visitor's card and its light */
+  children: React.ReactNode;
+}) {
   const own = useChip()?.u;
-  const [top, ...under] = people
+  const around = people
     .filter((holder) => holder.username !== own)
-    .slice(0, UNDER.length + 1);
-  if (!top) return null;
+    .slice(0, AROUND.length);
   return (
-    <HoloLight className="relative w-full">
-      {under.map((holder, i) => (
-        <IdCard
-          key={holder.username}
-          holder={holder}
-          heading="p"
-          holo="laminate"
-          className={cn(
-            "absolute inset-0 transition-[rotate,translate] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none",
-            SOLID,
-            UNDER[i],
-          )}
-        />
-      ))}
-      <HoloLean pose="turned" className="relative max-lg:[transform:none]">
-        <IdCard holder={top} heading="p" holo="laminate" className={SOLID} />
-      </HoloLean>
+    <HoloLight className="@container relative grid w-full place-items-center [perspective:1600px] lg:h-[36rem]">
+      {around.map((holder, i) => {
+        const at = AROUND[i] as (typeof AROUND)[number];
+        return (
+          <div
+            key={holder.username}
+            // Scenery: neither read out nor reached by Tab, their links too.
+            inert
+            className="absolute top-1/2 left-1/2 w-[20rem] transition-transform duration-[900ms] ease-[cubic-bezier(0.22,1,0.36,1)] max-lg:hidden motion-reduce:transition-none"
+            style={placed(at)}
+          >
+            <div
+              className="animate-[card-float_ease-in-out_infinite_alternate] motion-reduce:animate-none"
+              style={{
+                animationDuration: `${at.float}s`,
+                animationDelay: `-${(at.float * i) / AROUND.length}s`,
+              }}
+            >
+              <IdCard holder={holder} heading="p" holo="laminate" className={SOLID} />
+            </div>
+          </div>
+        );
+      })}
+      <div className="relative z-10 w-full max-w-[30rem]">{children}</div>
     </HoloLight>
   );
 }

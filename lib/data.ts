@@ -180,8 +180,10 @@ export function placeOf(social: SelectSocial): {
   };
 }
 
-/** How many real cards the home's hero fans out. */
-const SHOWCASE = 3;
+/** How many real cards the home's hero spreads round the visitor's: six, and one
+ *  more for when the visitor's own is among them and left out
+ *  (components/landing/hero-cards, `AROUND`). */
+const SHOWCASE = 7;
 
 /** Whose card leads the home's hero, when it exists: the maker's. */
 const SHOWCASE_LEAD = "adriangalilea";

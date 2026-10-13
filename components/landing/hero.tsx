@@ -3,13 +3,13 @@ import type { Holder } from "@/components/id-card";
 import { HeroShimmer, SubjectLight } from "@/components/light";
 import { getShowcase } from "@/lib/data";
 import { cn } from "@/lib/utils";
-import { Others, YourCard } from "./hero-cards";
+import { Stage, YourCard } from "./hero-cards";
 
-/** The landing's first screen, and nothing on it but cards: on the left the
+/** The landing's first screen, and nothing on it but cards: in the middle the
  *  visitor's own, blank until they write on it, which is how a profile is made
- *  here (`YourCard`); on the right other people's, real and filled, which is how
- *  one looks (`Others`). The visitor's card is the subject: it stands in the
- *  light, the shimmer behind both. On a phone, one column and their card alone. */
+ *  here (`YourCard`); round it, in depth, other people's, real and filled, which
+ *  is how one looks (`Stage`). The visitor's card is the subject: it stands in
+ *  the light, the shimmer behind everything. */
 export async function Hero() {
   const people = (await getShowcase()).map(
     (p): Holder => ({
@@ -32,19 +32,14 @@ export async function Hero() {
       <HeroShimmer />
       <div
         className={cn(
-          "mx-auto grid w-full max-w-6xl items-center gap-16 py-16 sm:py-24 lg:grid-cols-2 lg:gap-20",
+          "mx-auto w-full max-w-6xl py-16 sm:py-20 lg:py-8",
           GUTTER,
         )}
       >
-        <div className="relative mx-auto w-full max-w-[30rem]">
+        <Stage people={people}>
           <SubjectLight />
           <YourCard />
-        </div>
-        {/* Room on every side for the cards under the top one as they spread
-            (about an eighth of the card's width either way). */}
-        <div className="mx-auto w-full max-w-[30rem] px-[6%] max-lg:hidden">
-          <Others people={people} />
-        </div>
+        </Stage>
       </div>
     </section>
   );

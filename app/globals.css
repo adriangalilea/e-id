@@ -159,6 +159,21 @@
 /* The card's hologram, its foil edge, the logo's seal and the lean toward the hand
    are @ag/holo's (components/ui/holo), which carries its own styles. */
 
+/* A real card's slow drift round the home's (components/landing/hero-cards,
+   `Stage`): up a little and turned a hair, then back. Keyframes, which no utility
+   can write; on `translate` and `rotate`, so it adds to the card's placed
+   `transform` instead of replacing it. */
+@keyframes card-float {
+  from {
+    translate: 0 0.4rem;
+    rotate: 0 0 1 -0.6deg;
+  }
+  to {
+    translate: 0 -0.4rem;
+    rotate: 0 0 1 0.6deg;
+  }
+}
+
 textarea,
 select,
 input {
