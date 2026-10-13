@@ -1,6 +1,7 @@
 import "server-only";
 
 import { join } from "node:path";
+import { fetchPhoto } from "@/lib/photo";
 import { Resvg } from "@resvg/resvg-js";
 import * as FLAGS from "country-flag-icons/string/3x2";
 import { __iconNode as circleDotDashed } from "lucide-react/dist/esm/icons/circle-dot-dashed.js";
@@ -153,26 +154,11 @@ function icon(node: IconNode, x: number, y: number, size: number): string {
 const dataUri = (mime: string, bytes: Uint8Array) =>
   `data:${mime};base64,${Buffer.from(bytes).toString("base64")}`;
 
-/** The person's photo as a data URI resvg can draw, or null. A photo that cannot be
- *  fetched or is of a kind resvg cannot read (it reads PNG, JPEG and GIF) leaves the
- *  photo slot empty, as a card with no photo has: the share image of a person must
- *  not fail on their avatar host. */
+/** The person's photo as a data URI resvg can draw, or null. */
 async function photoOf(url: string | null): Promise<string | null> {
-  if (!url) return null;
-  const sized = /avatars\.githubusercontent\.com/.test(url)
-    ? `${url}${url.includes("?") ? "&" : "?"}s=460`
-    : url;
-  const response = await fetch(sized);
-  if (!response.ok) {
-    console.warn(`share image: ${url} answered ${response.status}`);
-    return null;
-  }
-  const mime = response.headers.get("content-type")?.split(";")[0] ?? "";
-  if (!["image/png", "image/jpeg", "image/gif"].includes(mime)) {
-    console.warn(`share image: ${url} is ${mime || "of no stated type"}, which resvg cannot draw`);
-    return null;
-  }
-  return dataUri(mime, new Uint8Array(await response.arrayBuffer()));
+  // PNG, JPEG and GIF, which is what resvg reads too.
+  const photo = await fetchPhoto(url, "share image");
+  return photo && dataUri(photo.mime, photo.bytes);
 }
 
 function pattern(id: string, a: HoloArt): string {

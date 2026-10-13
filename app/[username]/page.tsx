@@ -9,6 +9,7 @@ import {
 } from "@/lib/data";
 import { getPresence } from "@/lib/presence";
 import { CARD_TYPE } from "@/lib/card";
+import { VCARD_TYPE } from "@/lib/vcard";
 import { EMOJI_DOMAIN } from "@/lib/const";
 import { inlineJson, profileJsonLd, profileUrl } from "@/lib/profile-ld";
 import { CommentInteraction, HiddenFromOwner } from "./comment_section";
@@ -53,10 +54,12 @@ export async function generateMetadata(props: {
     description,
     alternates: {
       canonical: profileUrl(user.username),
-      // The card as data (lib/card), so a reader finds it from the page alone.
-      // And the card as an embed, for an oEmbed reader (app/api/oembed).
+      // The card as data (lib/card), so a reader finds it from the page alone;
+      // as a contact (lib/vcard); and as an embed, for an oEmbed reader
+      // (app/api/oembed).
       types: {
         [CARD_TYPE]: `/${user.username}/card.json`,
+        [VCARD_TYPE]: `/${user.username}.vcf`,
         "application/json+oembed": `/api/oembed?format=json&url=${encodeURIComponent(profileUrl(user.username))}`,
       },
     },
