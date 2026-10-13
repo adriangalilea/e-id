@@ -1,4 +1,3 @@
-import { EmojiDomain } from "@/components/brand";
 import { NavActions } from "@/components/footer/footer";
 import { GUTTER } from "@/components/frame";
 import { IdCard, type Holder } from "@/components/id-card";
@@ -103,34 +102,25 @@ export async function Hero() {
             GUTTER,
           )}
         >
-          <div data-slot="hero-words" className="flex flex-col gap-10">
-            <div className="flex flex-col gap-5">
-              <h1
-                data-slot="hero-title"
-                className="text-[clamp(3rem,5.6vw,5.25rem)] leading-[0.95] font-medium tracking-[-0.045em] whitespace-nowrap"
-              >
-                <EmojiDomain logo="holo" />
-                <span data-slot="hero-you" className="inline-block">
-                  /you
-                </span>
-              </h1>
-              <p
-                data-slot="hero-lead"
-                className="max-w-md text-xl leading-snug text-pretty text-foreground/65 sm:text-2xl"
-              >
-                one link for every place you are online.
-              </p>
-            </div>
-            {/* The way in carries the card's prints, and the hand's place over it
-                lights them (globals.css, `data-cta`). */}
-            <div
-              data-slot="hero-cta"
+          <div data-slot="hero-words" className="flex flex-col gap-7">
+            {/* The address IS the way in: one pill (make-yours). It carries the
+                card's prints, and the hand's place over it lights them
+                (globals.css, `data-cta`). */}
+            <h1
+              data-slot="hero-title"
+              className="text-(length:--hero-title) leading-none font-medium tracking-[-0.045em] whitespace-nowrap"
               style={HOLO_PRINTS as React.CSSProperties}
             >
               <Tilt className="flex">
                 <MakeYours />
               </Tilt>
-            </div>
+            </h1>
+            <p
+              data-slot="hero-lead"
+              className="max-w-md text-xl leading-snug text-pretty text-foreground/65 sm:text-2xl"
+            >
+              one link for every place you are online.
+            </p>
           </div>
           <div data-slot="hero-card">
             <Stack people={people} />

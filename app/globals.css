@@ -49,6 +49,19 @@
      as an edge, and a pale one added to light reads as white. */
   --foil: #ff5fb8, #5fb4ff, #4fffa6, #ffd84f, #a874ff, #ff5fb8;
 
+  /* The hero's address, which is its way in (components/landing/make-yours), at
+     the size that fits it in its column. On two columns that column is 38.2% of
+     the content less the 5rem gap (the content is 68rem at most, 2rem in from
+     the screen each side); the pill is 5.42em wide, given 5.7 so the cards'
+     spread never reaches it. One column below 64rem: from the screen. */
+  --hero-title: clamp(3rem, 5.6vw, 5.25rem);
+  @media (min-width: 64rem) {
+    --hero-title: min(
+      5.25rem,
+      calc((min(100vw - 4rem, 68rem) - 5rem) * 0.382 / 5.7)
+    );
+  }
+
   /* e-id is glass, and glass places its light by its corner's radius: a square
      glass has no curve to catch it. One radius, the scale below derived from it,
      near the ID card's own corner at the size it stands. */
@@ -300,8 +313,14 @@
       vertical-align: bottom;
       animation-name: hero-you;
     }
-    [data-slot="hero-cta"] {
-      animation-name: hero-leave;
+    [data-slot="hero-title"] [data-cta] {
+      animation-name: hero-pill;
+    }
+    [data-slot="hero-title"] [data-cta]::before,
+    [data-slot="hero-title"] [data-cta]::after {
+      animation: hero-pill-foil linear both;
+      animation-timeline: scroll(root);
+      animation-range: var(--hero-range);
     }
     [data-slot="hero-card"] {
       position: absolute;
@@ -366,11 +385,8 @@
   }
 }
 
+/* No `from`: the title starts at the size the page gives it (`--hero-title`). */
 @keyframes hero-title {
-  from {
-    font-size: clamp(3rem, 5.6vw, 5.25rem);
-    letter-spacing: -0.045em;
-  }
   to {
     font-size: 1.0625rem;
     letter-spacing: -0.02em;
@@ -392,10 +408,12 @@
   }
 }
 
+/* "/you" and the pill's arrow, from their whole width (capped well past any
+   address) to nothing, into the bar. */
 @keyframes hero-you {
   0%,
   60% {
-    max-width: 3em;
+    max-width: 12em;
     opacity: 1;
   }
   90%,
@@ -405,15 +423,23 @@
   }
 }
 
-@keyframes hero-leave {
-  0% {
-    opacity: 1;
-    translate: 0 0;
+/* The pill folds away as the address becomes the bar's wordmark: its edge, its
+   body and its insets go, and the words are left. */
+/* No `from`: it starts from the pill as it is (components/landing/make-yours owns
+   its geometry), never from a copy of it here. */
+@keyframes hero-pill {
+  45%,
+  100% {
+    border-color: transparent;
+    background-color: transparent;
+    padding-left: 0;
+    padding-right: 0;
   }
+}
+
+@keyframes hero-pill-foil {
   30%,
   100% {
-    opacity: 0;
-    translate: 0 -1.5rem;
     visibility: hidden;
   }
 }
@@ -582,7 +608,9 @@
    (`--px` from the Tilt round it, so it follows the pointer, never a clock): its
    edge turns to a one-pixel ring of foil, and the card's guilloché (lib/holo,
    worn by the hero round it) shows faintly through its body, lit the same.
-   Only the coming and going is timed, and quickly. */
+   Only the coming and going is timed, and quickly. The pill is the hero's
+   address itself, so on a wide screen it closes into the bar with it
+   (`hero-pill`). */
 [data-cta] {
   position: relative;
   isolation: isolate;
@@ -642,10 +670,16 @@
   mask-composite: intersect, add;
   mix-blend-mode: plus-lighter;
 }
+/* At rest the ring is faintly there, where the page's light falls on it, so the
+   pill reads as foil-edged before a hand finds it; under the hand it comes up. */
+[data-cta]::before {
+  opacity: 0.3;
+}
 [data-cta]:hover::before {
   opacity: 0.9;
 }
-[data-cta]:hover::after {
+/* The print lights only on a pill that carries it (`data-print`). */
+[data-cta][data-print]:hover::after {
   opacity: 0.35;
 }
 

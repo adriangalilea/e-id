@@ -57,7 +57,9 @@ export function BrandLogo({
   );
   if (!holo) return tile;
   return (
-    <Tilt as="span" className="inline-block align-baseline">
+    // inline-flex: the tile is its item, never an inline box on a line, so no
+    // line's strut is added above it and its box is exactly the tile's.
+    <Tilt as="span" className="inline-flex align-baseline">
       {tile}
     </Tilt>
   );
