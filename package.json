@@ -19,7 +19,6 @@
     "@adriangalilea/utils": "^9.13.0",
     "@base-ui/react": "^1.8.0",
     "@libsql/client": "^0.15.15",
-    "@radix-ui/react-toast": "^1.2.6",
     "@resvg/resvg-js": "2.6.2",
     "@vercel/analytics": "^1.2.2",
     "@vercel/speed-insights": "^1.0.10",

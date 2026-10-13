@@ -4,7 +4,7 @@ import "./globals.css";
 import Footer from "@/components/footer/footer";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
-import { Toaster } from "@/components/ui/toaster";
+import { Toaster } from "@/components/ui/toast";
 import { MaterialProvider } from "@/components/ui/material";
 import { FocusSource } from "@/components/ui/focus-source";
 import { NextImageLoaderProvider } from "@/components/ui/image";

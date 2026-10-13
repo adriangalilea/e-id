@@ -28,7 +28,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { useToast } from "@/components/ui/use-toast";
+import { toast } from "@/components/ui/toast";
 import {
   claimDraft,
   githubCard,
@@ -677,7 +677,6 @@ function Claim() {
   const chip = useChip();
   const draft = useDraft();
   const router = useRouter();
-  const { toast } = useToast();
   const sent = useRef(false);
   useEffect(() => {
     if (!chip || !draft.claiming || sent.current) return;
@@ -687,9 +686,7 @@ function Claim() {
     claimDraft(written).then(
       ({ username, stale, refused }) => {
         if (refused)
-          toast({
-            variant: "destructive",
-            title: `${EMOJI_DOMAIN}/${written.handle}`,
+          toast.error(`${EMOJI_DOMAIN}/${written.handle}`, {
             description: refused,
           });
         if (!username) {
@@ -705,7 +702,7 @@ function Claim() {
         throw error;
       },
     );
-  }, [chip, draft, router, toast]);
+  }, [chip, draft, router]);
   return null;
 }
 
