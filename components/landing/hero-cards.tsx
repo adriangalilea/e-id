@@ -982,7 +982,7 @@ function under(depth: number, float: number) {
     "--sx": `${(Math.sign(dx) * (4 - 0.4 * depth)).toFixed(1)}%`,
     "--sy": `${(Math.sign(dy) * (4 - 0.4 * depth)).toFixed(1)}%`,
     "--sr": `${Math.sign(r)}deg`,
-    "--fade": (0.12 + 0.08 * depth).toFixed(2),
+    "--fade": (0.35 + 0.07 * (depth - 1)).toFixed(2),
     "--bl": `${(1.6 + 0.6 * (depth - 1)).toFixed(2)}px`,
     animationDuration: `${float}s`,
     animationDelay: `-${(float * depth) / UNDER.length}s`,
