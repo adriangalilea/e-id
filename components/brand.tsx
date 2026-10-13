@@ -1,3 +1,4 @@
+import { Glass } from "@/components/ui/material-glass";
 import { EMOJI_DOMAIN } from "@/lib/const";
 import { cn } from "@/lib/utils";
 
@@ -29,24 +30,54 @@ export function BrandMark({ className }: { className?: string }) {
   );
 }
 
+/** THE LOGO: the mark white on its tile of glass, an app icon's corner (22.5% of
+ *  its side), as the favicon draws it (app/icon.svg). Set in a line it is a little
+ *  taller than the capitals (1.2 cap), its foot on the baseline (an inline box that
+ *  clips is aligned by its bottom edge), so it stands as the line's first letter. */
+export function BrandLogo({ className }: { className?: string }) {
+  return (
+    <Glass
+      as="span"
+      shape="surface"
+      aria-hidden
+      className={cn(
+        "inline-grid size-[1.2cap] place-items-center overflow-hidden align-baseline [--glass-radius:calc(1.2cap*0.225)]",
+        className,
+      )}
+    >
+      <svg viewBox="0 0 24 24" className="size-[62%] fill-white">
+        <path d={MARK_PATH} />
+      </svg>
+    </Glass>
+  );
+}
+
 /** 👤.to as e-id writes it: the mark where the emoji stands, the emoji still in the
  *  text under it, so selecting and copying the address gives 👤.to and a screen
- *  reader reads it. The mark is an inline SVG, so its foot is the text's baseline, and
- *  one `cap` tall, the font's own capital height, a letter of the address rather than
- *  a picture beside it. The emoji's own box is never the reference: its font's
- *  ascent and descent are not the text's. */
+ *  reader reads it. In running text (an address, a line of copy) the mark is a
+ *  letter: an inline SVG, its foot on the baseline, one `cap` tall. Where the brand
+ *  itself is the subject (the hero's address, the bar's wordmark) it is the logo,
+ *  the mark on its glass tile (`logo`). The emoji's own box is never the reference:
+ *  its font's ascent and descent are not the text's. */
 export function EmojiDomain({
   path,
+  logo,
   className,
 }: {
   /** What follows the domain, "/you" or "/adriangalilea". */
   path?: string;
+  /** The logo where the mark stands: for the brand as the subject, not in text. */
+  logo?: boolean;
   className?: string;
 }) {
   return (
     <span className={cn("whitespace-nowrap", className)}>
-      <span className="relative mr-[0.08em]">
-        <BrandMark className="inline h-[1cap] align-baseline" />
+      <span className={cn("relative", logo ? "mr-[0.1em]" : "mr-[0.08em]")}>
+        {logo ? (
+          <BrandLogo />
+        ) : (
+          <BrandMark className="inline h-[1cap] align-baseline" />
+        )}
         <span className="absolute inset-0 overflow-hidden leading-none text-transparent">
           {EMOJI}
         </span>

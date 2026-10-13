@@ -179,10 +179,15 @@
        the document after hydration: Next keeps a page you left mounted, hidden,
        and its hero would still be found there. */
     :root:is([data-hero], :not([data-hydrated]):has([data-slot="hero"])) {
-      /* What it holds and a little air: the words from 8rem, the address (0.95 ×
-         7.5rem), the line under it, the gaps, the 3.5rem button; the cards from
-         7.5rem, a 24rem card (15rem tall) and the spread of those behind it. */
-      --hero-h: 28rem;
+      /* What it holds and a little air: the cards from 5rem, a card of up to
+         34rem (21.5rem tall, ID-1) and the spread of those behind it; the words
+         centred against them. */
+      --hero-h: 36rem;
+      /* The split (components/landing/hero): the content's width less its
+         gutters, less the 5rem gap, 61.8% of it the cards' side; the card is
+         centred there, at most 34rem. */
+      --hero-cards: calc((min(100vw - 4rem, 68rem) - 5rem) * 0.618);
+      --hero-card: min(34rem, var(--hero-cards));
       --bar-h: 3.25rem;
       --bar-top: 1rem;
       /* The bar's sides: the content column's edges, 72rem wide, or 2rem in. */
@@ -267,9 +272,11 @@
     }
     [data-slot="hero-card"] {
       position: absolute;
-      top: 7.5rem;
-      right: calc(var(--bar-inset) + 2rem);
-      width: 24rem;
+      top: 5rem;
+      right: calc(
+        var(--bar-inset) + 2rem + (var(--hero-cards) - var(--hero-card)) / 2
+      );
+      width: var(--hero-card);
       animation-name: hero-card;
     }
     [data-slot="hero-actions"] {
@@ -304,12 +311,13 @@
   }
 }
 
-/* The address's block: from where the column's words start to the bar's left end,
-   its foot on the bar's centre line at the end. */
+/* The address's block: from where the column's words start (centred against the
+   cards: the block is about 14rem tall in a 36rem hero) to the bar's left end, its
+   foot on the bar's centre line at the end. */
 @keyframes hero-words {
   from {
     left: var(--content-left);
-    top: 8rem;
+    top: 10.5rem;
   }
   to {
     left: 1.25rem;
@@ -319,7 +327,7 @@
 
 @keyframes hero-title {
   from {
-    font-size: clamp(3.5rem, 8vw, 7.5rem);
+    font-size: clamp(3rem, 5.6vw, 5.25rem);
     letter-spacing: -0.045em;
   }
   to {

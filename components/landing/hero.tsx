@@ -34,7 +34,9 @@ const BEHIND = [
 function Stack({ people }: { people: Holder[] }) {
   const [front = YOU, ...behind] = people;
   return (
-    <Tilt className="relative mx-auto w-full max-w-sm lg:[perspective:1600px]">
+    // The page's centre of attention: as wide as its side of the split allows, less
+    // the room the cards behind take when they spread (15% either way).
+    <Tilt className="relative mx-auto w-full max-w-[34rem] lg:[perspective:2000px]">
       {behind.map((holder, i) => (
         <IdCard
           key={holder.username}
@@ -96,7 +98,7 @@ export async function Hero() {
         <div
           data-slot="hero-grid"
           className={cn(
-            "mx-auto grid w-full max-w-6xl items-center gap-16 pt-16 pb-20 sm:pt-24 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:gap-20 lg:py-28",
+            "mx-auto grid w-full max-w-6xl items-center gap-16 pt-16 pb-20 sm:pt-24 lg:grid-cols-[minmax(0,38.2fr)_minmax(0,61.8fr)] lg:gap-20 lg:py-24",
             GUTTER,
           )}
         >
@@ -104,9 +106,9 @@ export async function Hero() {
             <div className="flex flex-col gap-5">
               <h1
                 data-slot="hero-title"
-                className="text-[clamp(3.5rem,8vw,7.5rem)] leading-[0.95] font-medium tracking-[-0.045em] whitespace-nowrap"
+                className="text-[clamp(3rem,5.6vw,5.25rem)] leading-[0.95] font-medium tracking-[-0.045em] whitespace-nowrap"
               >
-                <EmojiDomain />
+                <EmojiDomain logo />
                 <span data-slot="hero-you" className="inline-block">
                   /you
                 </span>

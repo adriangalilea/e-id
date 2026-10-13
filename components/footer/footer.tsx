@@ -27,7 +27,7 @@ export default function Footer() {
           aria-label="home"
           className="text-[17px] font-medium tracking-[-0.02em] transition-opacity hover:opacity-80"
         >
-          <EmojiDomain />
+          <EmojiDomain logo />
         </Link>
         <NavActions />
       </Glass>
