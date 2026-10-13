@@ -16,12 +16,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tip } from "@/components/ui/tooltip";
 export default function RemoveSocialButton({
   platformId,
 }: {
@@ -29,25 +24,17 @@ export default function RemoveSocialButton({
 }) {
   return (
     <AlertDialog>
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <AlertDialogTrigger asChild>
-              <Button
-                key={platformId}
-                variant="outline"
-                size="icon-lg"
-                className="hover:bg-tone-bad/15 hover:text-tone-bad"
-              >
-                <Trash2 strokeWidth={1} />
-              </Button>
-            </AlertDialogTrigger>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>remove</p>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
+      <Tip content="remove">
+        <AlertDialogTrigger asChild>
+          <Button
+            variant="outline"
+            size="icon-lg"
+            className="hover:bg-tone-bad/15 hover:text-tone-bad"
+          >
+            <Trash2 strokeWidth={1} />
+          </Button>
+        </AlertDialogTrigger>
+      </Tip>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>

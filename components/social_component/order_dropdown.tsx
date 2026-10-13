@@ -5,12 +5,7 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tip } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 import OrderDropdownItem from "./order_dropdown_item";
 
@@ -26,28 +21,21 @@ export default function OrderDropdown({
 }) {
   return (
     <DropdownMenu>
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <DropdownMenuTrigger
-              asChild
-              className="ring-0! ring-transparent! bg-transparent"
-            >
-              <Button
-                className="justify-center border border-border transition-colors hover:bg-zinc-950/15
-                  dark:hover:bg-zinc-50/15"
-                variant="outline"
-                size="icon-lg"
-              >
-                {position}
-              </Button>
-            </DropdownMenuTrigger>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>priority</p>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
+      <Tip content="priority">
+        <DropdownMenuTrigger
+          asChild
+          className="ring-0! ring-transparent! bg-transparent"
+        >
+          <Button
+            className="justify-center border border-border transition-colors hover:bg-zinc-950/15
+              dark:hover:bg-zinc-50/15"
+            variant="outline"
+            size="icon-lg"
+          >
+            {position}
+          </Button>
+        </DropdownMenuTrigger>
+      </Tip>
       <DropdownMenuContent
         align="end"
         sideOffset={0}

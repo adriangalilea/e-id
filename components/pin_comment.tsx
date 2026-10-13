@@ -1,11 +1,6 @@
 "use client";
 
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tip } from "@/components/ui/tooltip";
 import { Button } from "./ui/button";
 import { Pin, PinOff } from "lucide-react";
 import { pinCommentToggle } from "@/db/actions";
@@ -27,18 +22,11 @@ export default function PinComment({
         onChange();
       }}
     >
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button variant="outline" size="icon-lg">
-              {pinned ? <PinOff strokeWidth={1} /> : <Pin strokeWidth={1} />}
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent side="left">
-            <p>{pinned ? "unpin" : "pin"}</p>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
+      <Tip content={pinned ? "unpin" : "pin"} side="left">
+        <Button variant="outline" size="icon-lg">
+          {pinned ? <PinOff strokeWidth={1} /> : <Pin strokeWidth={1} />}
+        </Button>
+      </Tip>
     </form>
   );
 }

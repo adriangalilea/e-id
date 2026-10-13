@@ -5,20 +5,13 @@ import * as SwitchPrimitives from "@radix-ui/react-switch";
 import { Eye, EyeOff } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tip } from "@/components/ui/tooltip";
 
 const SwitchPublic = React.forwardRef<
   React.ElementRef<typeof SwitchPrimitives.Root>,
   React.ComponentPropsWithoutRef<typeof SwitchPrimitives.Root>
 >(({ className, ...props }, ref) => (
-  <TooltipProvider>
-    <Tooltip>
-      <TooltipTrigger asChild>
+  <Tip content="public">
         <SwitchPrimitives.Root
           {...props}
           className={cn(
@@ -42,12 +35,7 @@ const SwitchPublic = React.forwardRef<
             strokeWidth={1}
           />
         </SwitchPrimitives.Root>
-      </TooltipTrigger>
-      <TooltipContent>
-        <p id="public-tootlip">public</p>
-      </TooltipContent>
-    </Tooltip>
-  </TooltipProvider>
+  </Tip>
 ));
 SwitchPublic.displayName = "SwitchWithIcons";
 
