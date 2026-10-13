@@ -22,7 +22,8 @@ export function Quote({ text }: { text: string }) {
   );
 }
 
-/** A comment the profile's owner pinned: the words, then who wrote them and when. */
+/** A comment the profile's owner pinned, on its own pane of glass: the words, then
+ *  who wrote them and when. */
 export function Testimonial({
   text,
   name,
@@ -37,9 +38,11 @@ export function Testimonial({
   date: Date;
 }) {
   return (
-    <figure className={cn("flex w-full flex-col gap-5 p-5 sm:p-6", SURFACE)}>
+    <figure className={cn("flex w-full flex-col justify-between gap-6 p-6", SURFACE)}>
       <blockquote className="text-[17px] leading-relaxed font-light text-pretty text-foreground/85">
-        <p>{text}</p>
+        <p className="-indent-[0.4em] before:content-['“'] after:content-['”']">
+          {text}
+        </p>
       </blockquote>
       <figcaption className="flex items-center justify-between gap-4">
         <Link

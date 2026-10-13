@@ -11,7 +11,8 @@ import {
 } from "@/lib/socials";
 import { Input } from "@/components/ui/input";
 import { Copy } from "@/components/ui/copy";
-import { INSET, SURFACE } from "@/components/surface";
+import { INSET } from "@/components/surface";
+import { glassVariants } from "@/components/ui/material-glass";
 import { cn } from "@/lib/utils";
 import RemoveSocialButton from "./remove_social_button";
 import { InputQuote, Quote } from "../quote";
@@ -67,40 +68,37 @@ function PresenceOf({
   return null;
 }
 
-/** The way to a social: a bordered chip that opens it, and beside it the
- *  registry's copy (@ag/copy) of what a reader takes away, the address for an
- *  email and the link for the rest. */
+/** The way to a social, one quiet line over what it shows: the handle, opening it,
+ *  and the registry's copy (@ag/copy) of what a reader takes away, the address for
+ *  an email and the link for the rest. */
 function SocialLink({ social }: { social: SelectSocial }) {
   const value = social.value ?? "";
   const url = getSocialUrl(social.platform, value);
   return (
-    <div className="flex min-w-0 self-start">
+    <div className="flex min-w-0 items-center justify-between gap-2 px-1">
       <Link
         href={url}
         // rel="me": this page and that profile are the same person, which
         // Mastodon and other IndieWeb readers check to mark the link verified.
         rel="me"
-        className="group flex h-11 min-w-0 items-center border border-border transition-colors
-          hover:border-foreground hover:bg-foreground hover:text-background"
+        className="group flex min-w-0 items-center gap-2.5 text-[15px] text-foreground/75
+          transition-colors hover:text-foreground [&_svg]:size-4 [&_svg]:shrink-0"
       >
-        <span
-          className="grid size-11 shrink-0 place-items-center border-r border-border
-            group-hover:border-background/20"
-        >
+        <span className="text-foreground/45">
           {getSocialPretextIcon(social.platform)}
         </span>
-        <span className="truncate px-3 text-[15px]">
+        <span className="truncate">
           {getSocialDisplayText(social.platform, value)}
         </span>
         <ArrowUpRight
           strokeWidth={1.5}
           aria-hidden
-          className="mr-3 size-4 shrink-0 opacity-50 group-hover:opacity-100"
+          className="opacity-40 transition-[opacity,translate] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:opacity-100"
         />
       </Link>
       <Copy
         value={social.platform === "email" ? value : url}
-        className="size-11 rounded-none border border-l-0 border-border"
+        className="size-9 rounded-full"
       />
     </div>
   );
@@ -122,27 +120,29 @@ export function SocialComponent({
   if (!edit && socials.length === 0) return null;
 
   return (
-    <Tabs defaultValue={socials[0]?.id} className={cn("w-full", SURFACE)}>
+    <Tabs defaultValue={socials[0]?.id} className="flex w-full flex-col gap-6">
       <TabsList
-        className="grid h-12 w-full auto-cols-fr grid-flow-col divide-x divide-white/10 border-b
-          border-white/10 bg-black/20 p-0 text-foreground/50"
+        className={cn(
+          glassVariants({ shape: "bar" }),
+          "max-w-full self-start overflow-x-auto bg-transparent text-foreground/45",
+        )}
       >
         {socials.map(({ id, platform }) => (
-          // The chosen tab is lifted out of the strip and lit along its foot by the
-          // accent: the panel under it is its own.
+          // Icons alone, the chosen one lit and named: the row stays short however
+          // many places a person has.
           <TabsTrigger
             key={id}
             value={id}
             aria-label={platform}
-            className="relative h-full gap-2 px-0 py-0 hover:bg-white/[0.04] hover:text-foreground
-              data-[state=active]:bg-white/[0.07] data-[state=active]:text-foreground
-              data-[state=active]:after:absolute data-[state=active]:after:inset-x-0
-              data-[state=active]:after:bottom-0 data-[state=active]:after:h-0.5
-              data-[state=active]:after:bg-glow data-[state=active]:after:shadow-[0_0_12px_var(--glow)]
+            className="group h-full shrink-0 gap-2 rounded-full px-3.5 hover:text-foreground
+              data-[state=active]:bg-white/[0.12] data-[state=active]:text-foreground
+              data-[state=active]:shadow-[inset_0_1px_0_rgb(255_255_255/0.12)]
               [&_svg]:size-[18px]"
           >
             {getSocialIcon(platform)}
-            <span className="hidden font-mono text-xs xl:inline">{platform}</span>
+            <span className="hidden font-mono text-xs group-data-[state=active]:inline">
+              {platform}
+            </span>
           </TabsTrigger>
         ))}
         {edit && <AddSocialDropdownMenu />}
@@ -154,7 +154,7 @@ export function SocialComponent({
           <TabsContent
             key={social.id}
             value={social.id}
-            className="mt-0 flex flex-col gap-5 p-4 sm:p-6"
+            className="mt-0 flex flex-col gap-4"
           >
             {!edit && <SocialLink social={social} />}
             {edit && (

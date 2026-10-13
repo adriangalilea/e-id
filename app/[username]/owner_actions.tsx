@@ -13,7 +13,7 @@ export function OwnerActions({ username }: { username: string }) {
   if (chip?.u?.toLowerCase() !== username.toLowerCase()) return null;
 
   return (
-    <div className="grid animate-fade-in grid-cols-2 gap-2 [&>*]:w-full">
+    <div className="flex animate-fade-in gap-2">
       <ShareButton username={username} />
       <Button
         variant="outline"

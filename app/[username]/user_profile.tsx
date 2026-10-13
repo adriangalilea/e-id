@@ -32,8 +32,22 @@ function Face({ user }: { user: Profile }) {
   );
 }
 
-/** Who this is, as their e-id card. Pinned beside the places on a wide screen, the
- *  page's head on a phone. */
+/** The handle, large and faint behind the card: what the glass card stands in front
+ *  of and frosts, so it reads as glass and not as a grey panel. It ends just past
+ *  the card and runs off the screen's left edge, never under what is read. */
+function Backdrop({ username }: { username: string }) {
+  return (
+    <div
+      aria-hidden
+      className="pointer-events-none absolute top-1/2 right-[-2rem] -z-10 w-screen -translate-y-1/2 overflow-hidden text-right text-[clamp(6rem,13vw,12rem)] leading-none font-medium tracking-[-0.06em] whitespace-nowrap text-white/[0.055] select-none"
+    >
+      {username}
+    </div>
+  );
+}
+
+/** Who this is: their e-id card, in the light, then what they say of themselves.
+ *  Held still beside the places on a wide screen, the page's head on a phone. */
 function Identity({
   user,
   actions,
@@ -42,16 +56,24 @@ function Identity({
   actions?: React.ReactNode;
 }) {
   return (
-    <aside className="flex flex-col gap-4 lg:sticky lg:top-10 lg:self-start">
-      <IdCard
-        holder={{
-          name: user.name,
-          username: user.username,
-          image: user.image,
-          country: user.country_code,
-          bio: user.bio,
-        }}
-      />
+    <aside className="flex flex-col gap-6 lg:sticky lg:top-10 lg:self-start">
+      <div className="relative isolate">
+        <Backdrop username={user.username} />
+        <IdCard
+          holder={{
+            name: user.name,
+            username: user.username,
+            image: user.image,
+            country: user.country_code,
+            bio: user.bio,
+          }}
+        />
+      </div>
+      {user.bio && (
+        <p className="text-[17px] leading-relaxed font-light text-pretty text-foreground/80">
+          {user.bio}
+        </p>
+      )}
       {actions}
     </aside>
   );
@@ -108,9 +130,10 @@ type ProfileProps = {
   children?: React.ReactNode;
 };
 
-/** A profile as an ID card beside the person's places: on a wide screen the card
- *  holds still on the left while the bio, the socials and what others wrote go
- *  down the right; on a phone they stack under it. */
+/** A profile is the person's card in the light, held still on the left of a wide
+ *  screen, and their places beside it from the first line, so what they made is on
+ *  the first screen; what others wrote of them follows the places. On a phone the
+ *  card heads the page. The edit form keeps the same two columns. */
 export default function UserProfile({
   user,
   socials,
@@ -119,29 +142,30 @@ export default function UserProfile({
   actions,
   children,
 }: ProfileProps) {
-  const content = (
-    <div className="grid animate-fade-in gap-10 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-12">
-      {edit ? (
-        <IdentityEdit user={user} />
-      ) : (
+  if (!edit)
+    return (
+      <div className="grid animate-fade-in gap-12 lg:grid-cols-[minmax(0,26rem)_minmax(0,1fr)] lg:gap-16">
         <Identity user={user} actions={actions} />
-      )}
-      <main className="flex min-w-0 flex-col gap-10">
-        <SocialComponent socials={socials} edit={edit} presence={presence} />
-        {edit && (
+        <main className="flex min-w-0 flex-col gap-16">
+          <SocialComponent socials={socials} presence={presence} />
+          {children}
+        </main>
+      </div>
+    );
+
+  return (
+    <EditForm>
+      <div className="grid animate-fade-in gap-10 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-12">
+        <IdentityEdit user={user} />
+        <main className="flex min-w-0 flex-col gap-10">
+          <SocialComponent socials={socials} edit presence={presence} />
           <div className="flex items-center justify-end gap-2">
             <DiscardButton username={user.username} />
             <SaveButton />
           </div>
-        )}
-        {children}
-      </main>
-    </div>
+          {children}
+        </main>
+      </div>
+    </EditForm>
   );
-
-  if (edit) {
-    return <EditForm>{content}</EditForm>;
-  }
-
-  return content;
 }

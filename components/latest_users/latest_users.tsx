@@ -19,7 +19,7 @@ export async function LatestUsers() {
       aria-labelledby="latest-sign-ups"
       className={cn("mx-auto w-full max-w-6xl py-16 sm:py-20", GUTTER)}
     >
-      <div className={SURFACE}>
+      <div className={cn(SURFACE, "overflow-hidden")}>
         <header className="flex h-12 items-center justify-between border-b border-white/10 bg-black/20 px-4 sm:px-5">
           <h2
             id="latest-sign-ups"

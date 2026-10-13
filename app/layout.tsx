@@ -5,6 +5,7 @@ import Footer from "@/components/footer/footer";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Toaster } from "@/components/ui/toaster";
+import { MaterialProvider } from "@/components/ui/material";
 import { PROD_URL } from "@/lib/const";
 import { SitePageSensor } from "@/components/page-sensor";
 import { visitsEnabled } from "@/lib/visit-store";
@@ -50,12 +51,15 @@ export default async function RootLayout({
       className={`${spaceGrotesk.variable} ${spaceMono.variable} dark`}
     >
       <body className="flex min-h-dvh flex-col font-sans antialiased">
-        <div className="flex flex-1 flex-col">{children}</div>
-        <Toaster />
+        {/* Every control on e-id wears its glass face. */}
+        <MaterialProvider material="glass">
+          <div className="flex flex-1 flex-col">{children}</div>
+          <Toaster />
+          <Footer />
+        </MaterialProvider>
         <Analytics />
         <SpeedInsights />
         {visitsEnabled && <SitePageSensor />}
-        <Footer />
       </body>
     </html>
   );

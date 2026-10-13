@@ -40,14 +40,12 @@
   --border: oklch(1 0 0 / 0.14);
   --input: oklch(1 0 0 / 0.18);
 
-  /* The one accent: a cold electric light, used in slivers (the chosen tab's line,
-     a card's chip, the glow over the page's top), never as a fill. */
-  --glow: oklch(0.84 0.1 215);
   --ring: oklch(0.85 0 0);
 
-  /* Square corners are e-id's: every `rounded-*` the theme names is zero, the
-     registry's items included. */
-  --radius: 0px;
+  /* e-id is glass, and glass places its light by its corner's radius: a square
+     glass has no curve to catch it. One radius, the scale below derived from it,
+     near the ID card's own corner at the size it stands. */
+  --radius: 0.625rem;
 }
 
 @theme inline {
@@ -78,16 +76,15 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
-  --color-glow: var(--glow);
 
-  --radius-xs: var(--radius);
-  --radius-sm: var(--radius);
-  --radius-md: var(--radius);
+  --radius-xs: calc(var(--radius) - 6px);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
-  --radius-xl: var(--radius);
-  --radius-2xl: var(--radius);
-  --radius-3xl: var(--radius);
-  --radius-4xl: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --radius-4xl: calc(var(--radius) + 16px);
 
   /* Two voices of one family: Space Grotesk for words, Space Mono for metadata
      (dates, handles, codes, labels). */
@@ -135,16 +132,27 @@
     border-color: var(--color-border, currentcolor);
   }
 
-  /* The page is lit from above: a cold glow over its top, falling to the dark
-     ground, fixed so it stays where the light is while the page scrolls. */
+  /* The page is lit by one white beam from above its top: a narrow bright core in
+     a wider, fainter cone, both falling to the dark ground before the middle of the
+     screen. Colourless: white light on black, what it lights keeps its own colour.
+     Fixed, so the light stays where it is while the page scrolls under it. The
+     body clips sideways for what runs off the screen's edges on purpose (a
+     profile's handle behind its card); `clip` makes no scroller, so sticky holds. */
   body {
     @apply bg-background text-foreground;
-    background-image: radial-gradient(
-      120% 70% at 50% -20%,
-      color-mix(in oklab, var(--glow) 14%, transparent),
-      transparent 65%
-    );
+    background-image:
+      radial-gradient(
+        12% 55% at 50% -6%,
+        rgb(255 255 255 / 0.09),
+        transparent 100%
+      ),
+      radial-gradient(
+        42% 75% at 50% -12%,
+        rgb(255 255 255 / 0.055),
+        transparent 100%
+      );
     background-attachment: fixed;
+    overflow-x: clip;
   }
 }
 

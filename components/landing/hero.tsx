@@ -4,11 +4,6 @@ import { IdCard, type Holder } from "@/components/id-card";
 import { cn } from "@/lib/utils";
 import { MakeYours } from "./make-yours";
 
-/** Graph paper under the headline, fading out from it: 32px squares, the rhythm's
- *  rung. */
-const PAPER =
-  "bg-[linear-gradient(to_right,rgb(255_255_255/0.045)_1px,transparent_1px),linear-gradient(to_bottom,rgb(255_255_255/0.045)_1px,transparent_1px)] bg-size-[32px_32px] mask-[radial-gradient(ellipse_70%_80%_at_30%_40%,black,transparent)]";
-
 /** The card the landing hands its reader: theirs, not made yet. Its words are the
  *  page's own line, what an e-id is. */
 const YOU: Holder = {
@@ -24,7 +19,6 @@ const YOU: Holder = {
 export function Hero() {
   return (
     <section className="relative isolate border-b border-white/10">
-      <div aria-hidden className={cn("absolute inset-0 -z-10", PAPER)} />
       <div
         className={cn(
           "mx-auto grid w-full max-w-6xl items-center gap-16 pt-20 pb-20 sm:pt-28 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:gap-20 lg:py-32",

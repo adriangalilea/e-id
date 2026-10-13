@@ -102,18 +102,29 @@ export default async function Page(props: {
       >
         {testimonials.length > 0 && (
           <HiddenFromOwner username={user.username}>
-            <div className="flex animate-fade-in flex-col gap-3">
-              {testimonials.map((testimonial) => (
-                <Testimonial
-                  key={testimonial.commentId}
-                  text={testimonial.body}
-                  name={testimonial.user.name ?? ""}
-                  image={testimonial.user.image ?? ""}
-                  date={testimonial.createdAt}
-                  username={testimonial.user.username ?? ""}
-                />
-              ))}
-            </div>
+            <section
+              aria-labelledby="vouched"
+              className="flex animate-fade-in flex-col gap-8"
+            >
+              <h2
+                id="vouched"
+                className="font-mono text-xs text-foreground/50"
+              >
+                vouched by {testimonials.length}
+              </h2>
+              <div className="grid items-start gap-4 sm:grid-cols-2">
+                {testimonials.map((testimonial) => (
+                  <Testimonial
+                    key={testimonial.commentId}
+                    text={testimonial.body}
+                    name={testimonial.user.name ?? ""}
+                    image={testimonial.user.image ?? ""}
+                    date={testimonial.createdAt}
+                    username={testimonial.user.username ?? ""}
+                  />
+                ))}
+              </div>
+            </section>
           </HiddenFromOwner>
         )}
         <CommentInteraction profileUserId={user.id} />

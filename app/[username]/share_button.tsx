@@ -23,7 +23,7 @@ function Row({ name, value }: { name: React.ReactNode; value: string }) {
           {value}
         </span>
       </div>
-      <Copy value={value} label className="rounded-none" />
+      <Copy value={value} label className="rounded-full" />
     </div>
   );
 }
