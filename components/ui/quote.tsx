@@ -37,6 +37,7 @@ import {
 } from "@/lib/quote-card"
 import { Avatar } from "@/components/ui/avatar"
 import { AvatarPortrait } from "@/components/ui/avatar-portrait"
+import { Img } from "@/components/ui/img"
 import type { Material, Scheme } from "@/components/ui/material"
 import { QuoteSurface } from "@/components/ui/quote-surface"
 
@@ -354,8 +355,7 @@ export function Quote({
         // indefinite (it collapsed to a strip along the top edge); a square whose side is
         // stated outright is the same number in every engine.
         // Decorative: the name below it is the accessible attribution.
-        // biome-ignore lint/performance/noImgElement: an item cannot assume next/image
-        <img
+        <Img
           data-slot="quote-portrait"
           className="absolute top-0 left-(--ag-quote-slot) size-(--ag-quote-square) max-w-none object-cover mask-(--ag-quote-dissolve)"
           src={author.avatar}

@@ -8,6 +8,7 @@ import type {
   TweetRun,
 } from "@/lib/tweet-data"
 import { CardLink } from "@/components/ui/card-link"
+import { Img } from "@/components/ui/img"
 import { Video } from "@/components/ui/video"
 import { WebPreview } from "@/components/ui/web-preview"
 
@@ -113,8 +114,7 @@ function Media({ media, url }: { media: TweetMedia[]; url: string }) {
     >
       {media.map((m, i) =>
         m.kind === "photo" ? (
-          // biome-ignore lint/performance/noImgElement: any origin, cropped by its cell
-          <img
+          <Img
             // biome-ignore lint/suspicious/noArrayIndexKey: media are positional
             key={i}
             src={m.src}
@@ -176,8 +176,7 @@ function Avatar({ author, size }: { author: TweetAuthor; size: string }) {
       tabIndex={-1}
       className="shrink-0"
     >
-      {/* biome-ignore lint/performance/noImgElement: X's CDN, fixed small size */}
-      <img
+      <Img
         src={author.avatar}
         alt={author.name}
         className={cn(

@@ -18,6 +18,7 @@ import {
   type YouTubeRef,
   youtubeOf,
 } from "@/lib/youtube-data"
+import { Img } from "@/components/ui/img"
 
 export interface YouTubeProps {
   /** the video: a link YouTube hands out, or its facts */
@@ -37,8 +38,7 @@ export function YouTube({ video, className }: YouTubeProps) {
   if (!facts) throw new Error(`youtube: ${String(video)} names no video`)
   const { title, channel } = facts
   const [playing, setPlaying] = React.useState(false)
-  const [picture, setPicture] = React.useState(0)
-  const src = thumbnails(facts.id)[picture] as string
+  const [first, ...rest] = thumbnails(facts.id) as [string, ...string[]]
   const params = new URLSearchParams({
     autoplay: "1",
     rel: "0",
@@ -69,20 +69,17 @@ export function YouTube({ video, className }: YouTubeProps) {
           onClick={() => setPlaying(true)}
           className="group/yt absolute inset-0 size-full cursor-pointer outline-none"
         >
-          {/* biome-ignore lint/performance/noImgElement: YouTube's own thumbnail, on its host; no loader is ours to resize it */}
-          <img
-            src={src}
+          {/* YouTube's own thumbnail, largest first: maxres is not made for every
+              video, and the 120 px grey it answers with instead is told apart by
+              its width (`minWidth`), so the always-there one stands in. */}
+          <Img
+            src={first}
+            fallbacks={rest}
+            minWidth={121}
             alt=""
             loading="lazy"
             decoding="async"
-            // maxres is not made for every video: the 120 px grey it answers with is
-            // the sign, and the always-there one stands in
-            onLoad={(e) => {
-              if (picture === 0 && e.currentTarget.naturalWidth <= 120)
-                setPicture(1)
-            }}
-            onError={() => setPicture(1)}
-            className="absolute inset-0 size-full object-cover transition-transform duration-300 group-hover/yt:scale-[1.015]"
+            className="absolute inset-0 size-full object-cover group-hover/yt:scale-[1.015]"
           />
           {(title || channel) && (
             <span className="absolute inset-x-0 top-0 flex flex-col items-start gap-0.5 bg-linear-to-b from-black/70 to-transparent px-4 pt-3 pb-8 text-left">

@@ -4,6 +4,7 @@ import NextImage, { type ImageProps as NextImageProps } from "next/image"
 import type * as React from "react"
 import { type CSSProperties, type Ref, useState } from "react"
 import { cn } from "@/lib/utils"
+import type { Arrival } from "./img"
 
 export type ImageProps = Omit<NextImageProps, "placeholder"> & {
   /** Classes on the pixels, e.g. object-contain or object-top. className styles the frame. */
@@ -30,24 +31,12 @@ export function Image({ src, ...props }: ImageProps) {
   )
 }
 
-/** How a picture arrives, said once for Image and Img: held clear and a little
- *  blurred until it is decoded, then it fades and sharpens in, never under reduced
- *  motion's blur. A picture that never arrives stays clear: the browser's broken
- *  glyph and its alt text drawn over the frame are not a picture, and what stands
- *  behind (the frame's tone, the host's stand-in) is the honest face; the alt stays
- *  for a screen reader. Keyed on the element's own data-state. */
-const ARRIVAL =
-  "transition-[opacity,filter] duration-300 ease-out motion-reduce:transition-none data-[state=loading]:opacity-0 motion-safe:data-[state=loading]:blur-sm data-[state=error]:opacity-0"
+/** A plain `<img>` that arrives the way Image does lives in `img.tsx`, free of
+ *  next/image; it is this item's too. */
+export { Img, type ImgProps } from "./img"
 
-/** Where a picture stands in its arrival. None until the page is live: only React
- *  can mark a picture ready, so a picture held from the server's HTML waited for
- *  hydration however early it landed (a cached poster, there in 0.4 s, stayed
- *  blank for seconds on a heavy page). The first paint holds nothing and the
- *  browser paints each picture as it lands; once live, one still on its way is
- *  held and fades in, one already there is ready. Read from the element, since a
- *  load that finished before hydration fired before React was listening. */
-type Arrival = "loading" | "ready" | "error" | undefined
-
+/** Image's arrival, the same states as Img's (`Arrival`, img.tsx), read from the
+ *  element as it mounts and then from its events. */
 function useArrival(ref: Ref<HTMLImageElement> | undefined) {
   const [state, setState] = useState<Arrival>()
   const attach = (el: HTMLImageElement | null) => {
@@ -59,38 +48,6 @@ function useArrival(ref: Ref<HTMLImageElement> | undefined) {
     else if (ref) ref.current = el
   }
   return [state, setState, attach] as const
-}
-
-/** A plain `<img>` that arrives the way Image does, for a picture the optimizer
- *  should not touch (an icon, a poster, any origin, any size). */
-export function Img({
-  className,
-  onLoad,
-  onError,
-  ref,
-  ...props
-}: React.ImgHTMLAttributes<HTMLImageElement> & {
-  ref?: Ref<HTMLImageElement>
-}) {
-  const [state, setState, attach] = useArrival(ref)
-  return (
-    // biome-ignore lint/performance/noImgElement: the unoptimized picture, by design
-    // biome-ignore lint/a11y/useAltText: alt passes through with the rest of the props
-    <img
-      {...props}
-      ref={attach}
-      data-state={state}
-      onLoad={(event) => {
-        setState("ready")
-        onLoad?.(event)
-      }}
-      onError={(event) => {
-        setState("error")
-        onError?.(event)
-      }}
-      className={cn(ARRIVAL, className)}
-    />
-  )
 }
 
 function ImageResource({

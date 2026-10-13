@@ -5,6 +5,7 @@ import type {
   TelegramKind,
 } from "@/lib/telegram-profile-data"
 import { CardLink } from "@/components/ui/card-link"
+import { Img } from "@/components/ui/img"
 
 const BLUE = "#2aabee"
 const COUNT = new Intl.NumberFormat("en", { notation: "compact" })
@@ -61,8 +62,7 @@ export function TelegramProfile({
           className="size-16 shrink-0 overflow-hidden rounded-full bg-foreground/8"
         >
           {profile.photo ? (
-            // biome-ignore lint/performance/noImgElement: Telegram's CDN, a fixed small size
-            <img
+            <Img
               src={profile.photo}
               alt=""
               className="size-full object-cover"

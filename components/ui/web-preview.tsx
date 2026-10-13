@@ -3,6 +3,7 @@ import {
   hostOf,
   type Unfurl,
 } from "@/lib/web-preview-unfurl"
+import { Img } from "@/components/ui/img"
 
 export type WebPreviewStyle = "card" | "telegram" | "x"
 
@@ -40,8 +41,7 @@ export function WebPreview({
         )}
       >
         {facts.image && (
-          // biome-ignore lint/performance/noImgElement: any origin, sized by the card
-          <img
+          <Img
             className="mb-[0.45em] block aspect-video w-full rounded-[0.3em] object-cover"
             src={facts.image}
             alt=""
@@ -73,8 +73,7 @@ export function WebPreview({
       >
         {facts.image ? (
           <>
-            {/* biome-ignore lint/performance/noImgElement: any origin, sized by the card */}
-            <img
+            <Img
               className="block aspect-video w-full object-cover"
               src={facts.image}
               alt=""
@@ -107,8 +106,7 @@ export function WebPreview({
       )}
     >
       {facts.image && (
-        // biome-ignore lint/performance/noImgElement: any origin, sized by the card
-        <img
+        <Img
           className="block aspect-video w-full object-cover"
           src={facts.image}
           alt=""
@@ -117,8 +115,7 @@ export function WebPreview({
       <div className="space-y-1.5 p-4">
         <div className="flex items-center gap-1.5 font-mono text-muted-foreground text-xs lowercase">
           {facts.favicon && (
-            // biome-ignore lint/performance/noImgElement: a 16px icon from the site
-            <img className="size-3.5 rounded-sm" src={facts.favicon} alt="" />
+            <Img className="size-3.5 rounded-sm" src={facts.favicon} alt="" />
           )}
           {host}
         </div>

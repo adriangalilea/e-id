@@ -1,6 +1,7 @@
 import { SocialComponent } from "@/components/social_component";
 import { InputQuote } from "@/components/quote";
 import { IdCard, type Place } from "@/components/id-card";
+import { Img } from "@/components/ui/img";
 import { placeOf } from "@/lib/data";
 import { Tilt } from "@/components/landing/tilt";
 import { MaterialProvider } from "@/components/ui/material";
@@ -25,8 +26,7 @@ function Face({ user }: { user: Profile }) {
   return (
     <div className="grid size-28 shrink-0 place-items-center overflow-hidden border border-border bg-card">
       {user.image ? (
-        // eslint-disable-next-line @next/next/no-img-element -- GitHub's avatar service
-        <img src={user.image} alt="" className="size-full object-cover" />
+        <Img src={user.image} alt="" className="size-full object-cover" />
       ) : (
         <span className="font-mono text-3xl text-foreground/45">
           {user.username.slice(0, 2).toUpperCase()}

@@ -1,5 +1,6 @@
 import type * as React from "react"
 import { cn } from "@/lib/utils"
+import { Img } from "@/components/ui/img"
 
 export type AvatarSize = "sm" | "md" | "lg"
 
@@ -60,8 +61,7 @@ export function avatarLook({
  *  by `alt` on its own; inside a control that carries the name, pass `alt=""`. */
 export function AvatarImage({ src, alt }: { src: string; alt: string }) {
   return (
-    // biome-ignore lint/performance/noImgElement: an item cannot assume next/image
-    <img
+    <Img
       data-slot="avatar-image"
       className="block size-full object-cover object-(--ag-avatar-focus)"
       src={src}
