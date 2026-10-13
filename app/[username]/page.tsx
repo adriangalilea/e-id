@@ -8,6 +8,7 @@ import {
   getUsernames,
 } from "@/lib/data";
 import { getPresence } from "@/lib/presence";
+import { CARD_TYPE } from "@/lib/card";
 import { EMOJI_DOMAIN, PROD_URL } from "@/lib/const";
 import { inlineJson, profileJsonLd, profileUrl } from "@/lib/profile-ld";
 import { CommentInteraction, HiddenFromOwner } from "./comment_section";
@@ -53,7 +54,11 @@ export async function generateMetadata(props: {
   return {
     title: { absolute: title },
     description,
-    alternates: { canonical: profileUrl(user.username) },
+    alternates: {
+      canonical: profileUrl(user.username),
+      // The card as data (lib/card), so a reader finds it from the page alone.
+      types: { [CARD_TYPE]: `/${user.username}/card.json` },
+    },
     openGraph: {
       title,
       description,
