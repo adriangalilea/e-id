@@ -1,0 +1,6 @@
+allowBuilds:
+  esbuild: false
+  unrs-resolver: false
+# Own package, trusted publisher: releases are adopted the day they ship.
+minimumReleaseAgeExclude:
+  - '@adriangalilea/utils'
