@@ -47,7 +47,13 @@
      var(--foil))`). The card's hologram wears it, and the one thing a visitor is
      asked to press; nothing else. Saturated, since it is only ever seen faint or
      as an edge, and a pale one added to light reads as white. */
-  --foil: #ff5fb8, #5fb4ff, #4fffa6, #ffd84f, #a874ff, #ff5fb8;
+  /* Every stop at ONE lightness and chroma (OKLCH), only the hue turning: the
+     foil is added to the light, so a stop lighter than the others (sRGB's
+     yellow and green are) read as the effect growing stronger wherever the hand
+     brought it, not as the colour changing. */
+  --foil:
+    oklch(0.78 0.14 350), oklch(0.78 0.14 250), oklch(0.78 0.14 165),
+    oklch(0.78 0.14 90), oklch(0.78 0.14 300), oklch(0.78 0.14 350);
 
   /* The hero's address, which is its way in (components/landing/make-yours), at
      the size that fits it in its column. On two columns that column is 38.2% of
@@ -732,8 +738,11 @@
   mask-position: 0 center;
   mask-repeat: repeat-x;
 }
+/* Never brighter than the print it stands for (the pill's, 0.35 under the
+   hand): seen through frost it is a little dimmer still. At full strength it
+   glowed as a blob of its own. */
 [data-cta][data-print]:hover [data-slot="disc-print"] {
-  opacity: 1;
+  opacity: 0.28;
 }
 /* At rest the ring is faintly there, where the page's light falls on it, so the
    pill reads as foil-edged before a hand finds it; under the hand it comes up. */

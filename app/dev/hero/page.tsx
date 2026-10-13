@@ -26,7 +26,7 @@ const LOGOS: { logo: PillLogo; note: string }[] = [
 function Pill({ look }: { look: PillLook }) {
   return (
     <div
-      className="text-(length:--hero-title) leading-none font-medium tracking-[-0.045em] whitespace-nowrap"
+      className="text-(length:--hero-title) leading-none font-light tracking-[-0.045em] whitespace-nowrap"
       style={HOLO_PRINTS as React.CSSProperties}
     >
       <Tilt className="flex">

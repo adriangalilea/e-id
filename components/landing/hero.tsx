@@ -109,7 +109,9 @@ export async function Hero() {
                 (globals.css, `data-cta`). */}
             <h1
               data-slot="hero-title"
-              className="text-(length:--hero-title) leading-none font-medium tracking-[-0.045em] whitespace-nowrap"
+              // Space Grotesk at 300: the address large and light (Adrian's
+              // pick); the bar's wordmark, which it becomes, is the same.
+              className="text-(length:--hero-title) leading-none font-light tracking-[-0.045em] whitespace-nowrap"
               style={HOLO_PRINTS as React.CSSProperties}
             >
               <Tilt className="flex">
