@@ -74,16 +74,16 @@ export function SubjectLight() {
 
 /** THE HERO'S SHIMMER (@ag/grain): a surface of facets that flash at rest and
  *  gather under the hand, faint, for visual interest in the hero. It decays
- *  outward (a soft radial mask), so it has no edge. The cards lie over it and
- *  hide it, the ones behind too (their bodies are dimmed, not made see-through:
- *  hero.tsx, `BEHIND`). */
+ *  outward, so it has no edge: a soft ellipse, cut with a fall to nothing well
+ *  before the hero's foot, where the page goes on with no line between them. At
+ *  its top it runs on under the bar (hero.tsx). The cards lie over it and hide it, the ones under the top one too
+ *  (their bodies are dimmed, not made see-through: hero-cards, `UNDER`). */
 export function HeroShimmer() {
   return (
     <div
       data-slot="hero-shimmer"
       aria-hidden
-      // A soft ellipse over the hero, so it decays toward every edge.
-      className="pointer-events-none absolute inset-0 -z-10 [mask-image:radial-gradient(ellipse_70%_80%_at_45%_45%,black_30%,transparent_100%)]"
+      className="pointer-events-none absolute inset-0 -z-10 [mask-composite:intersect] [mask-image:radial-gradient(ellipse_70%_80%_at_45%_45%,black_30%,transparent_100%),linear-gradient(to_bottom,black_55%,transparent)]"
     >
       <Grain look="shimmer" strength={0.55} density={0.35} frost={0.01} />
     </div>

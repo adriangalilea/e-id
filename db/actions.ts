@@ -14,12 +14,12 @@ import {
   socialPlatforms,
 } from "@/db/schema";
 import type { Written } from "@/lib/draft";
-import { countryList } from "@/lib/country_list";
+import { hasFlag } from "@/components/ui/flag";
 import { type Chip, chipOf } from "@/lib/chip";
 import { writeChip } from "@/lib/chip-server";
 import { getSession } from "@/lib/session";
 import { USERS_TAG, profileTag, usernameTag } from "@/lib/tags";
-import { claimUsername } from "@/lib/username";
+import { claimUsername, usernameSchema } from "@/lib/username";
 
 // Every export here is an endpoint anyone can call with any arguments: each one
 // reads the session itself and acts only on what that user owns. A profile's
@@ -265,6 +265,24 @@ export async function setUsernameFromForm(
   return { message: "Username updated.", error: false };
 }
 
+export type HandleState = "free" | "taken" | "invalid";
+
+/** Whether a handle can be someone's new address, as the home's card asks while
+ *  it is typed: free, taken, or not a username at all (`invalid`, with why).
+ *  Public: whether an address is taken is what its page already says. */
+export async function handleState(
+  handle: string,
+): Promise<{ state: HandleState; why: string | null }> {
+  const parsed = usernameSchema.safeParse(handle);
+  if (!parsed.success)
+    return { state: "invalid", why: parsed.error.issues[0].message };
+  const [taken] = await db
+    .select({ id: users.id })
+    .from(users)
+    .where(eq(users.username_normalized, parsed.data.toLowerCase()));
+  return { state: taken ? "taken" : "free", why: null };
+}
+
 /** How new an account must be to take a card filled on the home: the sign-in
  *  that made it has just come back. Older, it is someone signing in again with a
  *  card left in their browser, and their profile is not written over. */
@@ -294,9 +312,9 @@ export async function claimDraft(draft: Written): Promise<Claimed> {
     return { username: row.username, stale: true, refused: null };
 
   const name = draft.name.trim();
-  const country = countryList.some((c) => c.value === draft.country)
-    ? draft.country
-    : "XX";
+  // Any country the picker offers (@ag/country-picker draws the flag set's); "XX"
+  // for none, which has no flag.
+  const country = hasFlag(draft.country) ? draft.country.toUpperCase() : "XX";
   await db
     .update(users)
     .set({ ...(name && { name }), country_code: country })

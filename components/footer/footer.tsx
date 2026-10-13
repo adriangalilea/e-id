@@ -8,9 +8,7 @@ import FooterUser from "./footer_user";
 
 /** The site's one bar, a pill of glass floating over the page: the wordmark home on
  *  its left, the faq and the account on its right. At the foot of a phone, where
- *  the thumb is; at the top of a wide screen, where the eye starts. On the home's
- *  wide screen there is none: the hero itself becomes this bar as the page scrolls
- *  (`hero` in globals.css). */
+ *  the thumb is; at the top of a wide screen, where the eye starts. */
 export default function Footer() {
   return (
     <nav
@@ -25,8 +23,7 @@ export default function Footer() {
         <Link
           href="/"
           aria-label="home"
-          // The wordmark's size is the bar's one (`--wordmark`, globals.css),
-          // which the home's hero closes into.
+          // The wordmark's size is the bar's one (`--wordmark`, globals.css).
           className="flex items-center text-(length:--wordmark) font-light tracking-[-0.02em] transition-opacity [--logo-size:calc(var(--wordmark-logo)*1cap)] hover:opacity-80"
         >
           <EmojiDomain logo />
@@ -37,9 +34,8 @@ export default function Footer() {
   );
 }
 
-/** The bar's right end: the faq and the account. Also what the home's hero shows
- *  at its right end once it has become the bar. */
-export function NavActions() {
+/** The bar's right end: the faq and the account. */
+function NavActions() {
   return (
     // The faq a disc of the same glass and height as the account's pill beside
     // it: two controls of one bar, not a bare glyph next to a button.
