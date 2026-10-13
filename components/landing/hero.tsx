@@ -32,7 +32,9 @@ export async function Hero() {
       <HeroShimmer />
       <div
         className={cn(
-          "mx-auto flex w-full max-w-6xl flex-col gap-8 py-16 sm:py-20 lg:py-8",
+          // Its padding is the stage's: a stage's, or a profile's once the card
+          // becomes one (components/profile-layout).
+          "mx-auto flex w-full max-w-6xl flex-col",
           GUTTER,
         )}
       >

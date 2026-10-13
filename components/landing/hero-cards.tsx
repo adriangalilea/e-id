@@ -6,12 +6,13 @@ import { lazy, Suspense, use, useEffect, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import { EmojiDomain } from "@/components/brand";
 import { CountryFlag } from "@/components/country";
-import { type Holder, IdCard, NAME, type Place } from "@/components/id-card";
+import { type Holder, IdCard, type Place } from "@/components/id-card";
+import { PROFILE } from "@/components/profile-layout";
 import { useChip } from "@/components/session/use-chip";
 import { SocialComponent } from "@/components/social_component";
 import { Button } from "@/components/ui/button";
 import { HoloLight } from "@/components/ui/holo";
-import { InputGroup } from "@/components/ui/input";
+import { Input, InputGroup } from "@/components/ui/input";
 import {
   Popover,
   PopoverContent,
@@ -47,10 +48,20 @@ import {
 } from "@/lib/socials";
 import { cn } from "@/lib/utils";
 
-/** A field written on the card: no box, no line, the card's own type. What is
- *  not written yet shows faint in its place, as a blank form's printed labels. */
-const FIELD =
-  "min-w-0 bg-transparent outline-none placeholder:text-foreground/30 focus-visible:placeholder:text-foreground/20";
+/** The registry's field (@ag/input, in the page's glass) at the card's size: its
+ *  height and its round ends in em of the text it holds, so the name's field and
+ *  the address's are the same shape at their two sizes, and both shrink with
+ *  the card. The well, its rim under the hand and while typing, and its red when
+ *  wrong are the field's own. */
+const WELL_ON_CARD =
+  "h-[1.75em] rounded-[0.5em] px-[0.4em] [&_input]:placeholder:text-foreground/45";
+
+/** A field written in and right reads as what is written, printed on the card:
+ *  its well comes back only under the hand, while typing in it, or when it is
+ *  wrong (the field's own red, which wins). Its padding stays, so the words
+ *  never move as the well comes and goes. */
+const SETTLED =
+  "bg-transparent ring-transparent hover:bg-foreground/[0.04] hover:ring-foreground/22";
 
 /** A field on the card is no login: password managers keep their buttons and
  *  suggestions out of it (1Password's sat over the name). Each reads its own
@@ -148,6 +159,14 @@ export function YourCard() {
 function FillCard() {
   const draft = useDraft();
   const handle = useHandleState(draft.handle);
+  // A blank card waits with the caret on its name, blinking, so the first thing
+  // one sees it do is ask to be written on. Where there is a fine pointer only:
+  // on a phone it would raise the keyboard over the page unasked.
+  const name = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    if (isBlank(readDraft()) && matchMedia("(pointer: fine)").matches)
+      name.current?.focus({ preventScroll: true });
+  }, []);
   useGithubFill(
     draft.places.find((p) => p.platform === "github")?.value.trim() || null,
   );
@@ -172,20 +191,28 @@ function FillCard() {
       }}
       slots={{
         name: (
-          <input
+          <Input
+            ref={name}
             aria-label="your name"
             placeholder="your name"
             {...WRITTEN_HERE}
             spellCheck={false}
             value={draft.name}
             onChange={(e) => writeDraft({ name: e.target.value })}
-            // The name's tight leading (1.02, for two set lines) is shorter than
-            // its glyphs, and a field that short scrolls its own text: room for
-            // them, the line kept where it was by as much margin.
-            className={cn(NAME, FIELD, "-my-[0.14em] w-full leading-[1.3]")}
+            // The registry's field (@ag/input) at the name's size: the well
+            // round it says it is to be written in.
+            material="plain"
+            className={cn(
+              WELL_ON_CARD,
+              draft.name.trim() && SETTLED,
+              "w-full text-[6.2cqw] font-medium tracking-[-0.03em]",
+            )}
           />
         ),
-        address: <Address draft={draft} handle={handle} onClaim={claim} />,
+        // The address heads the card, where its mark and "e-id" stand on a
+        // finished one: it is what the card is for, written first.
+        head: <Address draft={draft} handle={handle} onClaim={claim} />,
+        address: null,
         country: <Country code={draft.country} />,
         flair: <Places places={draft.places} />,
       }}
@@ -271,48 +298,52 @@ function Address({
   onClaim: () => void;
 }) {
   const free = handle?.state === "free";
+  // Wrong while it cannot be theirs: taken, or no username at all yet (too
+  // short, forbidden); the field's rim says so (@ag/input, `aria-invalid`).
+  const wrong =
+    draft.handle !== "" &&
+    (handle?.state === "taken" || handle?.state === "invalid");
   return (
-    <div className="flex min-w-0 items-center gap-[1.6cqw] self-start font-mono text-[3cqw] text-foreground/60">
-      <label className="flex min-w-0 items-center">
-        <EmojiDomain path="/" className="shrink-0" />
-        <input
-          aria-label="your username"
-          aria-describedby="handle-state"
-          placeholder="you"
-          {...WRITTEN_HERE}
-          autoCapitalize="none"
-          spellCheck={false}
-          size={Math.max(draft.handle.length, 3)}
-          value={draft.handle}
-          onChange={(e) => writeDraft({ handle: toHandle(e.target.value) })}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && free) onClaim();
-          }}
-          className={cn(
-            FIELD,
-            "leading-normal",
-            free || handle?.state === "taken"
-              ? "text-foreground/90"
-              : "text-foreground/45",
-          )}
-        />
-      </label>
-      <span id="handle-state" aria-live="polite" className="shrink-0">
-        {free ? (
-          <button
-            type="button"
-            onClick={onClaim}
-            className="-my-[0.6cqw] rounded-[1cqw] px-[1.2cqw] py-[0.6cqw] text-foreground/80 transition-colors hover:bg-white/[0.08] hover:text-foreground"
-          >
-            claim ↵
-          </button>
-        ) : handle?.state === "taken" ? (
-          <span className="text-foreground/45">taken</span>
-        ) : handle?.state === "invalid" && draft.handle ? (
-          <span className="sr-only">{handle.why}</span>
-        ) : null}
-      </span>
-    </div>
+    <InputGroup
+      aria-label="your username"
+      aria-describedby="handle-state"
+      aria-invalid={wrong}
+      placeholder="you"
+      {...WRITTEN_HERE}
+      autoCapitalize="none"
+      spellCheck={false}
+      value={draft.handle}
+      onChange={(e) => writeDraft({ handle: toHandle(e.target.value) })}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" && free) onClaim();
+      }}
+      // At the card's size (cqw), the address's own type: the well fits what is
+      // written (the input sizes to its content), the domain before it.
+      material="plain"
+      className={cn(
+        WELL_ON_CARD,
+        draft.handle && !wrong && SETTLED,
+        "w-fit max-w-full font-mono text-[3.2cqw] [&_svg]:h-[1cap] [&_svg]:w-auto",
+      )}
+      start={<EmojiDomain path="/" className="text-foreground/60" />}
+      end={
+        <span id="handle-state" aria-live="polite">
+          {free ? (
+            <button
+              type="button"
+              onClick={onClaim}
+              className="rounded-full px-[1.2cqw] text-foreground/85 transition-colors hover:bg-white/[0.1] hover:text-foreground"
+            >
+              claim ↵
+            </button>
+          ) : handle?.state === "taken" ? (
+            "taken"
+          ) : wrong ? (
+            <span className="sr-only">{handle?.why}</span>
+          ) : null}
+        </span>
+      }
+    />
   );
 }
 
@@ -421,7 +452,11 @@ function Places({ places }: { places: DraftPlace[] }) {
             <button
               type="button"
               aria-label="add a place"
-              className={cn(mark, "text-foreground/45")}
+              // A dashed ring: an empty place, to be filled.
+              className={cn(
+                mark,
+                "text-foreground/70 shadow-[inset_0_0_0_1px_rgb(255_255_255/0.2)] [&_svg]:size-[3.6cqw]",
+              )}
             >
               <Plus />
             </button>
@@ -762,10 +797,10 @@ export function Stage({
   return (
     <div
       className={cn(
-        "relative grid w-full",
+        "relative w-full",
         forming
-          ? "items-start gap-10 lg:grid-cols-[minmax(0,38.2fr)_minmax(0,61.8fr)] lg:py-6"
-          : "@container place-items-center [perspective:1600px] lg:h-[50rem]",
+          ? cn(PROFILE.grid, PROFILE.frame)
+          : "@container grid place-items-center py-16 [perspective:1600px] sm:py-20 lg:h-[50rem] lg:py-8",
       )}
     >
       {!forming &&
@@ -799,18 +834,31 @@ export function Stage({
         );
       })}
       {/* One element in both layouts, so the card is never remounted; named, so
-          the view transition carries it from the middle to its column. */}
+          the view transition carries it from the middle to its column, the
+          profile's held pane (components/profile-layout). */}
       <div
         className={cn(
           "relative z-10 w-full [view-transition-name:your-card]",
-          forming ? "lg:sticky lg:top-24 lg:self-start" : "max-w-[42rem]",
+          forming
+            ? cn(
+                PROFILE.identity,
+                "lg:sticky lg:top-20 lg:self-start lg:[grid-area:side]",
+              )
+            : "max-w-[42rem]",
         )}
       >
         {children}
       </div>
-      {forming && <div className="min-w-0">{preview}</div>}
+      {forming && <main className={PROFILE.places}>{preview}</main>}
     </div>
   );
+}
+
+/** What the home shows under its hero (the sign-ups), only while the visitor's
+ *  card is a card: once it is becoming their profile, the page is that profile
+ *  and nothing else, as a profile's page is. */
+export function UnlessForming({ children }: { children: React.ReactNode }) {
+  return useForming() ? null : children;
 }
 
 /** A change to the card that may turn it into a profile or back (`forming`

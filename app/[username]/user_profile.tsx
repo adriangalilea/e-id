@@ -16,6 +16,7 @@ import { DiscardButton } from "@/components/discard_button";
 import type { SelectSocial } from "@/db/schema";
 import type { Profile } from "@/lib/data";
 import type { Presence } from "@/lib/presence";
+import { PROFILE } from "@/components/profile-layout";
 import { EditForm } from "./edit_form";
 
 const FIELD =
@@ -49,7 +50,7 @@ function Identity({
   actions?: React.ReactNode;
 }) {
   return (
-    <header className="flex flex-col gap-5 max-lg:[grid-area:id]">
+    <header className={PROFILE.identity}>
       {/* The same card as the home's: the laminate, a solid body, leaning to the
           hand, only resting flat, as the page's subject. */}
       <HoloLight className="relative">
@@ -107,7 +108,7 @@ function Side({
   vouches?: React.ReactNode;
 }) {
   return (
-    <aside className="max-lg:contents lg:sticky lg:top-20 lg:flex lg:h-[calc(100dvh-8rem)] lg:min-h-0 lg:flex-col lg:gap-10 lg:self-start lg:[grid-area:side]">
+    <aside className={PROFILE.side}>
       <Identity user={user} places={places} actions={actions} />
       <MaterialProvider material="plain">
         <div
@@ -188,14 +189,14 @@ export default function UserProfile({
 }: ProfileProps) {
   if (!edit)
     return (
-      <div className="grid animate-fade-in gap-10 [grid-template-areas:'id'_'places'_'vouch'] lg:grid-cols-[minmax(0,38.2fr)_minmax(0,61.8fr)] lg:[grid-template-areas:'side_places']">
+      <div className={cn(PROFILE.grid, "animate-fade-in")}>
         <Side
           user={user}
           places={socials.map(placeOf)}
           actions={actions}
           vouches={vouches}
         />
-        <main className="flex min-w-0 flex-col gap-16 [grid-area:places]">
+        <main className={PROFILE.places}>
           <SocialComponent socials={socials} presence={presence} />
         </main>
       </div>

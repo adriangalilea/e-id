@@ -15,6 +15,7 @@ import { CommentInteraction, HiddenFromOwner } from "./comment_section";
 import { OwnerActions } from "./owner_actions";
 import UserProfile from "./user_profile";
 import { Wide } from "@/components/frame";
+import { PROFILE } from "@/components/profile-layout";
 
 // A profile is a static page: prerendered for every username at build, rendered
 // once on its first visit for a username that came later, and rendered again
@@ -85,10 +86,8 @@ export default async function Page(props: {
   const presence = await getPresence(socials);
 
   return (
-    // On a wide screen the person's pane starts right under the bar and runs to
-    // the screen's foot (user_profile, `Side`): no padding of the page's own, or
-    // the page outgrows the screen and the held pane slides under the bar.
-    <Wide className="lg:py-0">
+    // Framed as every profile is (components/profile-layout).
+    <Wide className={PROFILE.frame}>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{

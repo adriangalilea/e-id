@@ -152,17 +152,34 @@ export function findCountries(query: string): Found[] {
 const NO_REGIONS: readonly string[] = []
 let reader: readonly string[] | null = null
 
-/** The reader's countries, from the languages their browser asks for (en-GB, es-ES:
- *  the UK, Spain), each once; none on the server. Read once: the same list every
- *  call, as a store's snapshot must be. */
+/** A country's time zones as Intl lists them (`Intl.Locale`'s `getTimeZones`, or
+ *  the older `timeZones` property; neither in Firefox yet, which gets none). */
+function zonesOf(code: string): readonly string[] {
+  const locale = new Intl.Locale(`und-${code}`) as Intl.Locale & {
+    getTimeZones?: () => string[]
+    timeZones?: string[]
+  }
+  return locale.getTimeZones?.() ?? locale.timeZones ?? []
+}
+
+/** The reader's countries, each once; none on the server. First where the
+ *  device is: the country whose time zones hold the device's own (Europe/Madrid:
+ *  Spain), the place a person is far more often than their browser's language
+ *  says (an English browser in Spain). Then the languages it asks for (en-GB,
+ *  es-ES: the UK, Spain). Both read on the device and sent nowhere: no
+ *  lookup, no address, nothing about the reader leaves the browser. Read once:
+ *  the same list every call, as a store's snapshot must be. */
 export function readerRegions(): readonly string[] {
   if (typeof navigator === "undefined") return NO_REGIONS
   if (reader) return reader
-  const known = new Set(countries().map((c) => c.code))
-  const out: string[] = []
+  const known = countries().map((c) => c.code)
+  const zone = Intl.DateTimeFormat().resolvedOptions().timeZone
+  const here = known.find((code) => zonesOf(code).includes(zone))
+  const out: string[] = here ? [here] : []
   for (const tag of navigator.languages) {
     const region = new Intl.Locale(tag).maximize().region
-    if (region && known.has(region) && !out.includes(region)) out.push(region)
+    if (region && known.includes(region) && !out.includes(region))
+      out.push(region)
   }
   reader = out
   return reader

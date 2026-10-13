@@ -137,13 +137,16 @@ const QUIET = {
   edge: "opacity-[0.035] group-data-[hover]/holo:opacity-25",
 };
 
-/** The name as the card sets it: what a field written in its place wears too. */
-export const NAME =
+/** The name as the card sets it. */
+const NAME =
   "line-clamp-2 text-[7cqw] leading-[1.02] font-medium tracking-[-0.03em] text-balance";
 
 /** What a card can be written on with: each field's own control, in the place
- *  and at the size the written field takes (the home's blank card, filled in). */
+ *  and at the size the written field takes (the home's blank card, filled in).
+ *  `head` stands where the mark and "e-id" do, across the head's left; a slot
+ *  given as null is left empty (the address, when the head holds it). */
 export type CardSlots = {
+  head?: React.ReactNode;
   name?: React.ReactNode;
   address?: React.ReactNode;
   country?: React.ReactNode;
@@ -180,10 +183,12 @@ export function IdCard({
         KNOCKOUT,
       )}
     >
-      <span className="flex items-center gap-[1.5cqw] font-medium tracking-tight text-foreground/85">
-        <BrandMark className="h-[1cap] w-auto" />
-        e-id
-      </span>
+      {slots?.head ?? (
+        <span className="flex items-center gap-[1.5cqw] font-medium tracking-tight text-foreground/85">
+          <BrandMark className="h-[1cap] w-auto" />
+          e-id
+        </span>
+      )}
       {slots?.country ?? (
         <span className="flex items-center gap-[1.5cqw] font-mono">
           {holder.country === "XX" ? "" : holder.country}
@@ -206,7 +211,9 @@ export function IdCard({
           {slots?.name ?? (
             <Name className={NAME}>{name}</Name>
           )}
-          {slots?.address ?? <CopyAddress username={holder.username} />}
+          {slots?.address === null
+            ? null
+            : (slots?.address ?? <CopyAddress username={holder.username} />)}
           {slots?.flair ?? <Flair places={places} />}
         </div>
       </div>
