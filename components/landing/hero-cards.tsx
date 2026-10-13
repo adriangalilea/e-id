@@ -1,40 +1,55 @@
 "use client";
 
-import { Plus } from "lucide-react";
+import { ArrowLeft, CornerDownLeft, Plus, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { lazy, Suspense, use, useEffect, useRef, useState } from "react";
 import { EmojiDomain } from "@/components/brand";
 import { CountryFlag } from "@/components/country";
 import { type Holder, IdCard, NAME, type Place } from "@/components/id-card";
 import { useChip } from "@/components/session/use-chip";
+import { SocialComponent } from "@/components/social_component";
+import { Button } from "@/components/ui/button";
 import { HoloLight } from "@/components/ui/holo";
+import { InputGroup } from "@/components/ui/input";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { useToast } from "@/components/ui/use-toast";
 import {
   claimDraft,
   githubCard,
   type HandleState,
   handleState,
+  previewPresence,
 } from "@/db/actions";
 import { type SocialPlatform, socialPlatforms } from "@/db/schema";
 import type { Card } from "@/lib/card";
 import { EMOJI_DOMAIN } from "@/lib/const";
 import {
-  clearDraft,
+  asSocials,
   type Draft,
   fill,
-  readDraft,
+  filledPlaces,
+  isBlank,
+  type Place as DraftPlace,
   toHandle,
-  useDraft,
-  writeDraft,
-} from "@/lib/draft";
+} from "@/lib/card-draft";
+import { clearDraft, readDraft, useDraft, writeDraft } from "@/lib/draft";
+import type { Presence } from "@/lib/presence";
 import { startSignIn } from "@/lib/sign-in";
-import { getSocialIcon } from "@/lib/socials";
+import {
+  getSocialIcon,
+  getSocialPlaceholder,
+  getSocialUrl,
+} from "@/lib/socials";
 import { cn } from "@/lib/utils";
 
 /** A field written on the card: no box, no line, the card's own type. What is
  *  not written yet shows faint in its place, as a blank form's printed labels. */
 const FIELD =
-  "min-w-0 bg-transparent outline-none placeholder:text-foreground/25 focus-visible:placeholder:text-foreground/15";
+  "min-w-0 bg-transparent outline-none placeholder:text-foreground/30 focus-visible:placeholder:text-foreground/20";
 
 /** A field on the card is no login: password managers keep their buttons and
  *  suggestions out of it (1Password's sat over the name). Each reads its own
@@ -62,19 +77,30 @@ const FRONT = cn(
   "shadow-[0_2.5rem_5rem_-1rem_rgb(0_0_0/0.75),0_0.75rem_1.5rem_-0.5rem_rgb(0_0_0/0.55)]",
 );
 
+/** Whether the visitor's card has started becoming a profile: a place on it says
+ *  where, so there is a profile to show. The stage gives way to it then. */
+function useForming(): boolean {
+  const chip = useChip();
+  const draft = useDraft();
+  return !chip?.u && filledPlaces(draft).length > 0;
+}
+
 // ── the visitor's card ──────────────────────────────────────────────────────
 
-/** THE VISITOR'S CARD, on the left of the home: their own once they have one;
+/** THE VISITOR'S CARD, in the middle of the home: their own once they have one;
  *  until then a blank e-id they fill in where it lies, and filling it in IS making
- *  the profile. No form round it and no button beside it: the name on the name's
- *  line, the handle after the address (checked as it is typed), the country
- *  picked on its flag, the places pressed onto it; with a free handle the address
- *  itself offers to claim it, and claiming signs in and makes the card the
- *  account's (`Claim`). It lies still: a card being written on does not move. The
- *  page is the same for everyone, so whose it is is known only in the browser
- *  (`useChip`), blank until then. */
+ *  the profile. No form round it: the name on the name's line, the handle after
+ *  the address (checked as it is typed), the country picked on its flag, the
+ *  places added under them, each asking for the username there. The GitHub one
+ *  fills the rest from GitHub (photo, name, country, website), and as places are
+ *  added the page under the card becomes the profile they make (`Preview`). With
+ *  a free handle the address offers to claim it; claiming signs in and the card
+ *  becomes the account's (`Claim`). It lies still: a card being written on does
+ *  not move. The page is the same for everyone, so whose it is is known only in
+ *  the browser (`useChip`), blank until then. */
 export function YourCard() {
   const chip = useChip();
+  const draft = useDraft();
   return (
     <HoloLight className="w-full">
       <Claim />
@@ -98,7 +124,21 @@ export function YourCard() {
           <OwnCard username={chip.u} />
         </Suspense>
       ) : (
-        <FillCard />
+        <>
+          <FillCard />
+          {/* Room kept whether it shows or not: the card never moves. */}
+          <div className="mt-3 flex h-6 justify-end">
+            {!isBlank(draft) && (
+              <button
+                type="button"
+                onClick={() => clearDraft()}
+                className="font-mono text-[11px] text-foreground/40 transition-colors hover:text-foreground/80"
+              >
+                start over
+              </button>
+            )}
+          </div>
+        </>
       )}
     </HoloLight>
   );
@@ -107,6 +147,9 @@ export function YourCard() {
 function FillCard() {
   const draft = useDraft();
   const handle = useHandleState(draft.handle);
+  useGithubFill(
+    draft.places.find((p) => p.platform === "github")?.value.trim() || null,
+  );
   const claim = () => {
     writeDraft({ claiming: true });
     startSignIn();
@@ -150,11 +193,7 @@ function FillCard() {
 }
 
 /** What the server says of a handle, for the handle it was asked about: a
- *  moment after the typing stops, and never an answer about an older one.
- *  Asked at the same time, GitHub's public profile for the same login (the
- *  handle IS the GitHub login at sign-up): when there is one, the card fills
- *  itself with it on the spot (photo, name, country, places: lib/draft, `fill`),
- *  and a handle that is nobody's on GitHub takes the last fill back off. */
+ *  moment after the typing stops, and never an answer about an older one. */
 function useHandleState(handle: string) {
   const [answer, setAnswer] = useState<{
     handle: string;
@@ -162,31 +201,11 @@ function useHandleState(handle: string) {
     why: string | null;
   } | null>(null);
   useEffect(() => {
-    if (!handle) {
-      if (readDraft().auto) writeDraft(fill(readDraft(), null));
-      return;
-    }
+    if (!handle) return;
     let live = true;
     const wait = setTimeout(() => {
       void handleState(handle).then((a) => {
         if (live) setAnswer({ handle, ...a });
-      });
-      void githubCard(handle).then((found) => {
-        const now = readDraft();
-        if (!live || now.handle !== handle) return;
-        if (!found && !now.auto) return;
-        writeDraft(
-          fill(
-            now,
-            found && {
-              login: handle,
-              name: found.name,
-              country: found.country,
-              image: found.image,
-              places: found.website ? ["github", "website"] : ["github"],
-            },
-          ),
-        );
       });
     }, 250);
     return () => {
@@ -195,6 +214,46 @@ function useHandleState(handle: string) {
     };
   }, [handle]);
   return answer?.handle === handle ? answer : null;
+}
+
+/** The card fills itself from the visitor's GitHub once they give it (their
+ *  GitHub place): photo, name, handle, country, website, each only where they
+ *  wrote nothing (lib/draft, `fill`). Another login replaces that fill; none, or
+ *  one GitHub does not know, takes it back off. */
+function useGithubFill(login: string | null) {
+  useEffect(() => {
+    const now = readDraft();
+    if (!login) {
+      if (now.auto) writeDraft(fill(now, null));
+      return;
+    }
+    if (now.auto?.login.toLowerCase() === login.toLowerCase()) return;
+    let live = true;
+    const wait = setTimeout(() => {
+      void githubCard(login).then((found) => {
+        if (!live) return;
+        writeDraft(
+          fill(
+            readDraft(),
+            found && {
+              login: found.login,
+              name: found.name,
+              handle: toHandle(found.login),
+              country: found.country,
+              image: found.image,
+              places: found.website
+                ? [{ platform: "website", value: found.website }]
+                : [],
+            },
+          ),
+        );
+      });
+    }, 300);
+    return () => {
+      live = false;
+      clearTimeout(wait);
+    };
+  }, [login]);
 }
 
 /** The address as the card writes it, the handle typed after its slash, as wide
@@ -212,7 +271,7 @@ function Address({
 }) {
   const free = handle?.state === "free";
   return (
-    <div className="flex min-w-0 items-center gap-[1.6cqw] self-start font-mono text-[3cqw] text-foreground/50">
+    <div className="flex min-w-0 items-center gap-[1.6cqw] self-start font-mono text-[3cqw] text-foreground/60">
       <label className="flex min-w-0 items-center">
         <EmojiDomain path="/" className="shrink-0" />
         <input
@@ -230,9 +289,10 @@ function Address({
           }}
           className={cn(
             FIELD,
+            "leading-normal",
             free || handle?.state === "taken"
-              ? "text-foreground/85"
-              : "text-foreground/40",
+              ? "text-foreground/90"
+              : "text-foreground/45",
           )}
         />
       </label>
@@ -241,12 +301,12 @@ function Address({
           <button
             type="button"
             onClick={onClaim}
-            className="-my-[0.6cqw] rounded-[1cqw] px-[1.2cqw] py-[0.6cqw] text-foreground/70 transition-colors hover:bg-white/[0.08] hover:text-foreground"
+            className="-my-[0.6cqw] rounded-[1cqw] px-[1.2cqw] py-[0.6cqw] text-foreground/80 transition-colors hover:bg-white/[0.08] hover:text-foreground"
           >
             claim ↵
           </button>
         ) : handle?.state === "taken" ? (
-          <span className="text-foreground/35">taken</span>
+          <span className="text-foreground/45">taken</span>
         ) : handle?.state === "invalid" && draft.handle ? (
           <span className="sr-only">{handle.why}</span>
         ) : null}
@@ -293,75 +353,204 @@ function Country({ code }: { code: string }) {
   );
 }
 
-/** The places as the card shows them (id-card, `Flair`), each one a press: a place
- *  on the card takes it off; the "+" lays the ones not on it under the row,
- *  faint, and pressing one puts it on. */
-function Places({ places }: { places: SocialPlatform[] }) {
-  const [open, setOpen] = useState(false);
-  const rest = socialPlatforms.filter((p) => !places.includes(p));
+/** What comes before a username on a platform, as its address is written
+ *  ("github.com/", "youtube.com/@"), from the one place that builds the address
+ *  (lib/socials); nothing for what is written whole (an email, a website). */
+function prefixOf(platform: SocialPlatform): string {
+  const address = getSocialUrl(platform, "").replace(
+    /^(https?:\/\/|mailto:)/,
+    "",
+  );
+  return /[/@]$/.test(address) ? address : "";
+}
+
+/** A pasted address read as the username it ends in, where the platform takes a
+ *  username ("https://github.com/adrian" on github is "adrian"). */
+function valueOf(platform: SocialPlatform, typed: string): string {
+  const prefix = prefixOf(platform);
+  const trimmed = typed.trim();
+  if (!prefix) return trimmed;
+  const bare = trimmed.replace(/^https?:\/\/(www\.)?/, "");
+  return bare.startsWith(prefix) ? bare.slice(prefix.length) : trimmed;
+}
+
+/** The card's places (id-card, `Flair`): each a press that opens it to change or
+ *  take off, and "+" to add one, in a popover (@ag/popover): the platforms by
+ *  name, then the username there. */
+function Places({ places }: { places: DraftPlace[] }) {
+  const rest = socialPlatforms.filter(
+    (p) => !places.some((place) => place.platform === p),
+  );
   const mark =
-    "rounded-[1.2cqw] p-[1.1cqw] transition-colors hover:bg-white/[0.08] hover:text-foreground";
+    "rounded-[1.2cqw] p-[1.1cqw] transition-colors hover:bg-white/[0.08] hover:text-foreground data-[popup-open]:bg-white/[0.08] data-[popup-open]:text-foreground";
+  const save = (platform: SocialPlatform, value: string) => {
+    const others = readDraft().places.filter((p) => p.platform !== platform);
+    writeDraft({
+      places: value ? [...others, { platform, value }] : others,
+    });
+  };
   return (
     <div
       role="group"
       aria-label="places"
-      className="relative -mx-[1.1cqw] flex flex-wrap items-center gap-[0.6cqw] text-foreground/70 [&_svg]:size-[4.6cqw] [&_svg]:stroke-[1.4]"
+      className="-mx-[1.1cqw] flex flex-wrap items-center gap-[0.6cqw] text-foreground/75 [&_svg]:size-[4.6cqw] [&_svg]:stroke-[1.4]"
     >
-      {places.map((platform) => (
-        <button
-          key={platform}
-          type="button"
-          aria-label={`remove ${platform}`}
-          onClick={() =>
-            writeDraft({ places: places.filter((p) => p !== platform) })
+      {places.map((place) => (
+        <PlacePopover
+          key={place.platform}
+          trigger={
+            <button
+              type="button"
+              aria-label={`${place.platform}: ${place.value}`}
+              className={mark}
+            >
+              {getSocialIcon(place.platform)}
+            </button>
           }
-          className={mark}
-        >
-          {getSocialIcon(platform)}
-        </button>
+          platforms={[place.platform]}
+          place={place}
+          onSave={save}
+        />
       ))}
       {rest.length > 0 && (
-        <button
-          type="button"
-          aria-label="add a place"
-          aria-expanded={open}
-          onClick={() => setOpen(!open)}
-          className={cn(
-            mark,
-            "text-foreground/35 [&_svg]:transition-transform aria-expanded:[&_svg]:rotate-45",
-          )}
-        >
-          <Plus />
-        </button>
-      )}
-      {/* Laid under the row, not in it: the card's writing stays where it is
-          while the choice is open. */}
-      {open && (
-        <div className="absolute top-full right-0 left-0 flex flex-wrap gap-[0.6cqw]">
-          {rest.map((platform) => (
+        <PlacePopover
+          trigger={
             <button
-              key={platform}
               type="button"
-              aria-label={`add ${platform}`}
-              onClick={() => writeDraft({ places: [...places, platform] })}
-              className={cn(mark, "text-foreground/25")}
+              aria-label="add a place"
+              className={cn(mark, "text-foreground/45")}
             >
-              {getSocialIcon(platform)}
+              <Plus />
             </button>
-          ))}
-        </div>
+          }
+          platforms={rest}
+          onSave={save}
+        />
       )}
     </div>
   );
 }
 
+/** One place's popover: with several platforms to choose from, the list first
+ *  (icon and name); then the field for the username there, the platform's
+ *  address before it, Enter to keep. A place already on the card opens straight
+ *  to its field, with the way to take it off. */
+function PlacePopover({
+  trigger,
+  platforms,
+  place,
+  onSave,
+}: {
+  trigger: React.ReactElement;
+  platforms: SocialPlatform[];
+  place?: DraftPlace;
+  onSave: (platform: SocialPlatform, value: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [chosen, setChosen] = useState<SocialPlatform | null>(
+    place?.platform ?? (platforms.length === 1 ? platforms[0] : null),
+  );
+  const [typed, setTyped] = useState(place?.value ?? "");
+  return (
+    <Popover
+      open={open}
+      onOpenChange={(next) => {
+        setOpen(next);
+        if (next) {
+          setChosen(
+            place?.platform ?? (platforms.length === 1 ? platforms[0] : null),
+          );
+          setTyped(place?.value ?? "");
+        }
+      }}
+    >
+      <PopoverTrigger render={trigger} />
+      <PopoverContent align="start" className="w-72 gap-2 p-2">
+        {!chosen ? (
+          <div role="listbox" aria-label="add a place" className="flex flex-col">
+            {platforms.map((platform) => (
+              <button
+                key={platform}
+                type="button"
+                role="option"
+                aria-selected={false}
+                onClick={() => setChosen(platform)}
+                className="flex items-center gap-3 rounded-lg px-2.5 py-2 text-sm text-foreground/85 transition-colors hover:bg-foreground/8 hover:text-foreground [&_svg]:size-4 [&_svg]:stroke-[1.5]"
+              >
+                {getSocialIcon(platform)}
+                {platform}
+              </button>
+            ))}
+          </div>
+        ) : (
+          <form
+            className="flex flex-col gap-2"
+            onSubmit={(e) => {
+              e.preventDefault();
+              onSave(chosen, valueOf(chosen, typed));
+              setOpen(false);
+            }}
+          >
+            <div className="flex items-center gap-2 px-1 pt-1 text-sm text-foreground/85 [&_svg]:size-4 [&_svg]:stroke-[1.5]">
+              {!place && platforms.length > 1 && (
+                <button
+                  type="button"
+                  aria-label="other places"
+                  onClick={() => setChosen(null)}
+                  className="-ml-0.5 rounded-md p-0.5 text-foreground/50 hover:text-foreground"
+                >
+                  <ArrowLeft />
+                </button>
+              )}
+              {getSocialIcon(chosen)}
+              {chosen}
+            </div>
+            <InputGroup
+              size="sm"
+              autoFocus
+              aria-label={`your ${chosen}`}
+              placeholder={getSocialPlaceholder(chosen)}
+              {...WRITTEN_HERE}
+              spellCheck={false}
+              autoCapitalize="none"
+              value={typed}
+              onChange={(e) => setTyped(e.target.value)}
+              start={
+                prefixOf(chosen) ? (
+                  <span className="font-mono text-xs text-foreground/50">
+                    {prefixOf(chosen)}
+                  </span>
+                ) : undefined
+              }
+              end={<CornerDownLeft className="text-foreground/40" />}
+            />
+            {place && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="self-start text-foreground/60"
+                onClick={() => {
+                  onSave(place.platform, "");
+                  setOpen(false);
+                }}
+              >
+                <Trash2 /> take off
+              </Button>
+            )}
+          </form>
+        )}
+      </PopoverContent>
+    </Popover>
+  );
+}
+
 /** The card becomes the account's: when the sign-in the address started comes
- *  back signed in, what was written is claimed (`claimDraft`) and the edit page
- *  opens, where the places pressed onto the card wait for their usernames.
- *  Claiming until the server answers, so a lost call is tried again on the next
- *  load; sent once per mount (`sent`), so a second render never claims twice. With
- *  no username to give (the drafted one and the provider's both refused), the
- *  draft stays for /null to start from. */
+ *  back signed in, what was written is claimed (`claimDraft`) and the profile it
+ *  made opens. Claiming until the server answers, so a lost call is tried again
+ *  on the next load; sent once per mount (`sent`), so a second render never
+ *  claims twice. With no username to give (the drafted one and the provider's
+ *  both refused), the draft stays for /null to start from. */
 function Claim() {
   const chip = useChip();
   const draft = useDraft();
@@ -386,7 +575,7 @@ function Claim() {
           return router.push("/null");
         }
         clearDraft();
-        if (!stale) router.push(`/${username}/edit`);
+        if (!stale) router.push(`/${username}`);
       },
       // Still claiming: the next load tries again.
       (error) => {
@@ -435,21 +624,63 @@ function OwnCard({ username }: { username: string }) {
   );
 }
 
+// ── the profile it becomes ──────────────────────────────────────────────────
+
+/** THE PROFILE THE CARD MAKES, under it: once a place on the card says where, the
+ *  page shows what the profile will (the same `SocialComponent` a profile draws,
+ *  its GitHub calendar, its website's preview), read from those places as they
+ *  are written (`previewPresence`), each answer faded in as it comes. Before an
+ *  account exists, built in the browser and nowhere else. */
+export function Preview() {
+  const forming = useForming();
+  const draft = useDraft();
+  const places = filledPlaces(draft);
+  const key = JSON.stringify(places);
+  const [read, setRead] = useState<{ key: string; presence: Presence } | null>(
+    null,
+  );
+  useEffect(() => {
+    if (!forming) return;
+    let live = true;
+    const wait = setTimeout(() => {
+      void previewPresence(JSON.parse(key)).then((presence) => {
+        if (live) setRead({ key, presence });
+      });
+    }, 400);
+    return () => {
+      live = false;
+      clearTimeout(wait);
+    };
+  }, [forming, key]);
+  if (!forming || !read) return null;
+  return (
+    <div
+      key={read.key}
+      className="mx-auto w-full max-w-3xl animate-fade-in motion-reduce:animate-none"
+    >
+      <SocialComponent
+        socials={asSocials(JSON.parse(read.key))}
+        presence={read.presence}
+      />
+    </div>
+  );
+}
+
 // ── the stage ───────────────────────────────────────────────────────────────
 
 /** Where the real cards lie round the visitor's, in the stage's 3D: across in cqw
- *  of the stage from its centre, up and down in rem, back in px (all behind the
- *  visitor's card, which lies at 0), each turned a little, as cards dealt on a
- *  table, never twisted toward a vanishing point. Three each side, one near, one
- *  far, one low, so the spread reads as depth, not a row. `float` is how long one
- *  slow rise takes, each its own so no two move in step. */
+ *  of the stage from its centre, up and down in rem, how far back in px (all
+ *  behind the visitor's card, which lies at 0), each turned a little, as cards
+ *  dealt on a table, never twisted toward a vanishing point. Three each side,
+ *  one near, one far, one low, so the spread reads as depth, not a row. `float`
+ *  is how long one slow rise takes, each its own so no two move in step. */
 const AROUND = [
-  { x: -34, y: -10, z: -220, ry: 10, rx: 3, rz: -6, float: 9 },
-  { x: -48, y: 3, z: -420, ry: 12, rx: 0, rz: 4, float: 11 },
-  { x: -34, y: 12, z: -160, ry: 8, rx: -3, rz: 3, float: 8 },
-  { x: 34, y: -11, z: -200, ry: -10, rx: 3, rz: 5, float: 10 },
-  { x: 49, y: 2, z: -400, ry: -12, rx: 0, rz: -3, float: 12 },
-  { x: 33, y: 12, z: -260, ry: -8, rx: -3, rz: -4, float: 9.5 },
+  { x: -38, y: -11, z: -220, ry: 10, rx: 3, rz: -6, float: 9 },
+  { x: -52, y: 3, z: -420, ry: 12, rx: 0, rz: 4, float: 11 },
+  { x: -38, y: 13, z: -160, ry: 8, rx: -3, rz: 3, float: 8 },
+  { x: 38, y: -12, z: -200, ry: -10, rx: 3, rz: 5, float: 10 },
+  { x: 53, y: 2, z: -400, ry: -12, rx: 0, rz: -3, float: 12 },
+  { x: 37, y: 13, z: -260, ry: -8, rx: -3, rz: -4, float: 9.5 },
 ] as const;
 
 /** The stage's perspective, in px: how far the eye stands from the visitor's
@@ -466,23 +697,29 @@ const CARD_REM = 20;
  *  was painted at the front size and shrunk as a picture, and while it drifted it
  *  was never painted again: soft, jagged words and edges. Dimmer the further
  *  back, as if the light were on the visitor's card (by brightness, never
- *  opacity: a see-through card shows the shimmer through it). */
-function placed({ x, y, z, ry, rx, rz }: (typeof AROUND)[number]) {
+ *  opacity: a see-through card shows the shimmer through it). Once the card
+ *  becomes a profile, each slides out the way it faces and fades. */
+function placed(
+  { x, y, z, ry, rx, rz }: (typeof AROUND)[number],
+  gone: boolean,
+) {
   const seen = EYE / (EYE - z);
   return {
     width: `${(CARD_REM * seen).toFixed(2)}rem`,
     transform: `translate(-50%, -50%) translate(${(x * seen).toFixed(2)}cqw, ${(y * seen).toFixed(2)}rem) rotateY(${ry}deg) rotateX(${rx}deg) rotateZ(${rz}deg)`,
+    translate: gone ? `${Math.sign(x) * 6}rem 0` : "0 0",
+    opacity: gone ? 0 : 1,
     "--dim": (0.82 + z / 1400).toFixed(2),
   } as React.CSSProperties;
 }
 
 /** A real card under the hand: lifted a little (up, never scaled: a scaled card
- *  is a stretched picture of itself), in full light, and tilted toward
- *  the hand, its near edge going down where the hand presses (±9° across, ±7°
- *  up and down: `HoloLean`'s flat pose, ±3°, read as no tilt at this size).
- *  Its shadow on the table under it is close and small at rest, and falls longer
- *  and softer as it lifts. Eased both ways, so it follows with a little weight
- *  and settles flat when the hand leaves. */
+ *  is a stretched picture of itself), in full light, and tilted toward the hand,
+ *  its near edge going down where the hand presses (±9° across, ±7° up and down:
+ *  `HoloLean`'s flat pose, ±3°, read as no tilt at this size). Its shadow on the
+ *  table under it is close and small at rest, and falls longer and softer as it
+ *  lifts. Eased both ways, so it follows with a little weight and settles flat
+ *  when the hand leaves. */
 const PICKED = cn(
   CORNER,
   "brightness-(--dim) shadow-[0_0.75rem_1.5rem_-0.5rem_rgb(0_0_0/0.6)] transition-[filter,transform,box-shadow] duration-300 ease-out",
@@ -497,7 +734,9 @@ const PICKED = cn(
  *  only when the hand is on it, leaning to it with its hologram showing, as a
  *  card picked up would (its own HoloLight); nothing follows the hand across the
  *  hero. The visitor's card does neither: a card being written on lies still.
- *  Under reduced motion nothing moves. On one column, their card alone. */
+ *  Once it starts becoming a profile the others leave and the stage closes round
+ *  it, the profile coming up under it (`Preview`). Under reduced motion nothing
+ *  moves. On one column, their card alone. */
 export function Stage({
   people,
   children,
@@ -507,18 +746,25 @@ export function Stage({
   children: React.ReactNode;
 }) {
   const own = useChip()?.u;
+  const forming = useForming();
   const around = people
     .filter((holder) => holder.username !== own)
     .slice(0, AROUND.length);
   return (
-    <div className="@container relative grid w-full place-items-center [perspective:1600px] lg:h-[40rem]">
+    <div
+      className={cn(
+        "@container relative grid w-full place-items-center [perspective:1600px] [interpolate-size:allow-keywords] transition-[height] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none",
+        forming ? "lg:h-auto lg:py-6" : "lg:h-[42rem]",
+      )}
+    >
       {around.map((holder, i) => {
         const at = AROUND[i] as (typeof AROUND)[number];
         return (
           <div
             key={holder.username}
-            className="absolute top-1/2 left-1/2 max-lg:hidden"
-            style={placed(at)}
+            inert={forming}
+            className="absolute top-1/2 left-1/2 transition-[opacity,translate] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] max-lg:hidden motion-reduce:transition-none"
+            style={placed(at, forming)}
           >
             <div
               className="animate-[card-float_ease-in-out_infinite_alternate] motion-reduce:animate-none"
@@ -541,7 +787,7 @@ export function Stage({
           </div>
         );
       })}
-      <div className="relative z-10 w-full max-w-[36rem]">{children}</div>
+      <div className="relative z-10 w-full max-w-[42rem]">{children}</div>
     </div>
   );
 }

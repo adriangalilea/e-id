@@ -3,7 +3,7 @@ import type { Holder } from "@/components/id-card";
 import { HeroShimmer, SubjectLight } from "@/components/light";
 import { getShowcase } from "@/lib/data";
 import { cn } from "@/lib/utils";
-import { Stage, YourCard } from "./hero-cards";
+import { Preview, Stage, YourCard } from "./hero-cards";
 
 /** The landing's first screen, and nothing on it but cards: in the middle the
  *  visitor's own, blank until they write on it, which is how a profile is made
@@ -32,7 +32,7 @@ export async function Hero() {
       <HeroShimmer />
       <div
         className={cn(
-          "mx-auto w-full max-w-6xl py-16 sm:py-20 lg:py-8",
+          "mx-auto flex w-full max-w-6xl flex-col gap-8 py-16 sm:py-20 lg:py-8",
           GUTTER,
         )}
       >
@@ -40,6 +40,7 @@ export async function Hero() {
           <SubjectLight />
           <YourCard />
         </Stage>
+        <Preview />
       </div>
     </section>
   );

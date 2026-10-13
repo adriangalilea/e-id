@@ -13,7 +13,7 @@ import {
   type SocialPlatform,
   socialPlatforms,
 } from "@/db/schema";
-import type { Written } from "@/lib/draft";
+import { asSocials, type Written } from "@/lib/card-draft";
 import { hasFlag } from "@/components/ui/flag";
 import { type Chip, chipOf } from "@/lib/chip";
 import { writeChip } from "@/lib/chip-server";
@@ -21,6 +21,7 @@ import { getSession } from "@/lib/session";
 import { USERS_TAG, profileTag, usernameTag } from "@/lib/tags";
 import { claimUsername, usernameSchema } from "@/lib/username";
 import { getGithubProfile } from "@/lib/github";
+import { getPresence } from "@/lib/presence";
 import { countryOf } from "@/lib/country-of";
 
 // Every export here is an endpoint anyone can call with any arguments: each one
@@ -285,28 +286,41 @@ export async function handleState(
   return { state: taken ? "taken" : "free", why: null };
 }
 
+/** A GitHub login as GitHub allows one: letters, digits and single hyphens, at
+ *  most 39. */
+const GITHUB_LOGIN = /^[a-z\d](?:[a-z\d]|-(?=[a-z\d])){0,38}$/i;
+
 /** What GitHub says publicly of a login, as the home's card fills itself with it
- *  while the handle is typed: the photo, the name, the country its location
- *  names, its website. The GitHub login and the e-id handle are the same thing at
- *  sign-up (auth.ts takes the login), so the handle is the question. Null when
- *  GitHub has no such person. */
+ *  when the visitor gives their GitHub: the photo, the name, the country its
+ *  location names, its website. Null when GitHub has no such person (or only an
+ *  organization). */
 export async function githubCard(login: string): Promise<{
+  login: string;
   name: string | null;
   /** large enough for the card's photo at 2x */
   image: string;
   country: string | null;
   website: string | null;
 } | null> {
-  const parsed = usernameSchema.safeParse(login);
-  if (!parsed.success) return null;
-  const profile = await getGithubProfile(parsed.data);
+  const typed = login.trim();
+  if (!GITHUB_LOGIN.test(typed)) return null;
+  const profile = await getGithubProfile(typed);
   if (!profile || profile.user.org) return null;
   return {
+    login: profile.user.login,
     name: profile.name ?? null,
     image: profile.user.avatar.replace(/([?&])s=\d+/, "$1s=480"),
     country: profile.location ? countryOf(profile.location) : null,
     website: profile.website ?? null,
   };
+}
+
+/** What the profile would show of each place on the home's card, before there
+ *  is an account: the same reads a profile makes (lib/presence), from the card's
+ *  places instead of stored socials. Public reads of public pages, cached as a
+ *  profile's are. */
+export async function previewPresence(places: Written["places"]) {
+  return getPresence(asSocials(places));
 }
 
 /** How new an account must be to take a card filled on the home: the sign-in
@@ -324,9 +338,8 @@ export type Claimed = {
 };
 
 /** The card a visitor filled on the home (lib/draft), written onto the account
- *  they just signed up with: the name, the country, a place for each one they
- *  pressed (private and empty, for the edit page to fill) and the handle as the
- *  username. */
+ *  they just signed up with: the name, the country, its places (public, as they
+ *  were on the card) and the handle as the username. */
 export async function claimDraft(draft: Written): Promise<Claimed> {
   const user = await requireUser();
   const [row] = await db
@@ -337,43 +350,41 @@ export async function claimDraft(draft: Written): Promise<Claimed> {
   if (Date.now() - row.createdAt.getTime() > FRESH_MS)
     return { username: row.username, stale: true, refused: null };
 
-  const owned = await db
-    .select({ platform: socials.platform, value: socials.value })
-    .from(socials)
-    .where(eq(socials.user_id, user.id));
-  // What the card filled from GitHub is taken only when the handle is this
-  // account's own GitHub login (sign-up keeps it as the github place): a card
-  // filled with someone else's login never brings their website or country.
-  const own = owned.some(
-    (s) =>
-      s.platform === "github" &&
-      s.value?.toLowerCase() === draft.handle.toLowerCase(),
-  );
-  const github = own && draft.handle ? await githubCard(draft.handle) : null;
-
   const name = draft.name.trim();
   // Any country the picker offers (@ag/country-picker draws the flag set's); "XX"
   // for none, which has no flag.
-  const country = hasFlag(draft.country)
-    ? draft.country.toUpperCase()
-    : (github?.country ?? "XX");
+  const country = hasFlag(draft.country) ? draft.country.toUpperCase() : "XX";
   await db
     .update(users)
     .set({ ...(name && { name }), country_code: country })
     .where(eq(users.id, user.id));
 
-  const added = socialPlatforms.filter(
-    (p) => draft.places.includes(p) && !owned.some((s) => s.platform === p),
+  // Sign-up already made a place for the provider (github, email): one the card
+  // has too is made public, as it was on the card; the rest are made as written.
+  const owned = await db
+    .select({ id: socials.id, platform: socials.platform })
+    .from(socials)
+    .where(eq(socials.user_id, user.id));
+  const places = draft.places.filter(
+    (p) => socialPlatforms.includes(p.platform) && p.value.trim() !== "",
+  );
+  for (const place of places) {
+    const had = owned.find((s) => s.platform === place.platform);
+    if (had)
+      await db.update(socials).set({ public: true }).where(eq(socials.id, had.id));
+  }
+  const added = places.filter(
+    (p) => !owned.some((s) => s.platform === p.platform),
   );
   if (added.length > 0)
     await db.insert(socials).values(
-      added.map((platform) => ({
+      added.map((place, i) => ({
         id: crypto.randomUUID(),
         user_id: user.id,
-        platform,
-        ...(platform === "website" && github?.website
-          ? { value: github.website }
-          : {}),
+        platform: place.platform,
+        value: place.value.trim(),
+        public: true,
+        order: owned.length + i,
       })),
     );
   updateTag(USERS_TAG);
