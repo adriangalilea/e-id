@@ -452,17 +452,32 @@ const AROUND = [
   { x: 33, y: 12, z: -260, ry: -8, rx: -3, rz: -4, float: 9.5 },
 ] as const;
 
-/** One card's place, and how dim it is there: dimmer the further back, as if
- *  the light were on the visitor's card (by brightness, never opacity: a
- *  see-through card shows the shimmer through it). */
+/** The stage's perspective, in px: how far the eye stands from the visitor's
+ *  card. */
+const EYE = 1600;
+
+/** A card's width at the front, before its depth. */
+const CARD_REM = 20;
+
+/** One card's place, and how dim it is there. Its depth is drawn, not moved
+ *  into: the card is given the width and place it has at that depth (seen from
+ *  `EYE`, a card `z` back is EYE / (EYE − z) its size and as near the middle), so
+ *  the browser paints it at the size it is seen. Pushed back with translateZ it
+ *  was painted at the front size and shrunk as a picture, and while it drifted it
+ *  was never painted again: soft, jagged words and edges. Dimmer the further
+ *  back, as if the light were on the visitor's card (by brightness, never
+ *  opacity: a see-through card shows the shimmer through it). */
 function placed({ x, y, z, ry, rx, rz }: (typeof AROUND)[number]) {
+  const seen = EYE / (EYE - z);
   return {
-    transform: `translate(-50%, -50%) translate3d(${x}cqw, ${y}rem, ${z}px) rotateY(${ry}deg) rotateX(${rx}deg) rotateZ(${rz}deg)`,
+    width: `${(CARD_REM * seen).toFixed(2)}rem`,
+    transform: `translate(-50%, -50%) translate(${(x * seen).toFixed(2)}cqw, ${(y * seen).toFixed(2)}rem) rotateY(${ry}deg) rotateX(${rx}deg) rotateZ(${rz}deg)`,
     "--dim": (0.82 + z / 1400).toFixed(2),
   } as React.CSSProperties;
 }
 
-/** A real card under the hand: lifted a little, in full light, and tilted toward
+/** A real card under the hand: lifted a little (up, never scaled: a scaled card
+ *  is a stretched picture of itself), in full light, and tilted toward
  *  the hand, its near edge going down where the hand presses (±9° across, ±7°
  *  up and down: `HoloLean`'s flat pose, ±3°, read as no tilt at this size).
  *  Its shadow on the table under it is close and small at rest, and falls longer
@@ -470,8 +485,8 @@ function placed({ x, y, z, ry, rx, rz }: (typeof AROUND)[number]) {
  *  and settles flat when the hand leaves. */
 const PICKED = cn(
   CORNER,
-  "brightness-(--dim) shadow-[0_0.75rem_1.5rem_-0.5rem_rgb(0_0_0/0.6)] transition-[filter,scale,transform,box-shadow] duration-300 ease-out",
-  "group-data-[hover]/holo:scale-[1.04] group-data-[hover]/holo:brightness-100 group-data-[hover]/holo:shadow-[0_2rem_3.5rem_-0.75rem_rgb(0_0_0/0.7)] group-data-[hover]/holo:[transform:perspective(1200px)_rotateY(calc((var(--px,0.5)-0.5)*18deg))_rotateX(calc((var(--py,0.5)-0.5)*-14deg))]",
+  "brightness-(--dim) shadow-[0_0.75rem_1.5rem_-0.5rem_rgb(0_0_0/0.6)] transition-[filter,transform,box-shadow] duration-300 ease-out",
+  "group-data-[hover]/holo:brightness-100 group-data-[hover]/holo:shadow-[0_2rem_3.5rem_-0.75rem_rgb(0_0_0/0.7)] group-data-[hover]/holo:[transform:perspective(1200px)_translateY(-0.5rem)_rotateY(calc((var(--px,0.5)-0.5)*18deg))_rotateX(calc((var(--py,0.5)-0.5)*-14deg))]",
   "motion-reduce:transition-none motion-reduce:group-data-[hover]/holo:[transform:none]",
 );
 
@@ -502,7 +517,7 @@ export function Stage({
         return (
           <div
             key={holder.username}
-            className="absolute top-1/2 left-1/2 w-[20rem] max-lg:hidden"
+            className="absolute top-1/2 left-1/2 max-lg:hidden"
             style={placed(at)}
           >
             <div
