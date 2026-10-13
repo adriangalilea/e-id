@@ -63,7 +63,9 @@ function Ghost({ holder }: { holder: Holder }) {
 /** A person's e-id as the card it is named for, in glass: the mark and the country
  *  across its head, the portrait, the name and the handle, the address along its
  *  foot, the ghost image in its corner. What they say of themselves is the page's,
- *  under the card. */
+ *  under the card. How much the glass hides of what is behind it is inherited
+ *  (`--id-card-thickness`, `--id-card-blur`): a card lying on others is set near
+ *  solid by whoever stacks it, as a real card is. */
 export function IdCard({
   holder,
   heading = "h1",
@@ -81,7 +83,7 @@ export function IdCard({
         as="article"
         shape="surface"
         data-slot="id-card"
-        className="flex aspect-(--id1-ratio) w-full flex-col justify-between overflow-hidden p-[6cqw] [--glass-radius:var(--id1-radius)] [--glass-thickness:0.3] [--glass-blur:9px]"
+        className="flex aspect-(--id1-ratio) w-full flex-col justify-between overflow-hidden p-[6cqw] [--glass-radius:var(--id1-radius)] [--glass-thickness:var(--id-card-thickness,0.3)] [--glass-blur:var(--id-card-blur,9px)]"
         style={
           {
             "--id1-ratio": ID1_RATIO,

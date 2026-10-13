@@ -1,6 +1,6 @@
 import "server-only";
 
-import { and, asc, desc, eq, isNotNull } from "drizzle-orm";
+import { and, asc, desc, eq, isNotNull, ne } from "drizzle-orm";
 import { cacheLife, cacheTag } from "next/cache";
 import { db } from "@/db";
 import { comments, socials, users, type SelectSocial } from "@/db/schema";
@@ -163,6 +163,51 @@ export async function getLatestUsers(): Promise<ListedUser[]> {
   const withFlag = listed.filter((user) => user.country_code !== "XX");
   const withoutFlag = listed.filter((user) => user.country_code === "XX");
   return [...withFlag, ...withoutFlag].slice(0, LATEST_USERS);
+}
+
+/** How many real cards the home's hero fans out. */
+const SHOWCASE = 3;
+
+/** The people whose cards the home shows: the latest with a whole card to show (a
+ *  photo, a name and a country), newest first. Expires with the sign-ups list. */
+export async function getShowcase(): Promise<
+  {
+    name: string;
+    username: string;
+    image: string;
+    country_code: string;
+    bio: string | null;
+  }[]
+> {
+  "use cache";
+  cacheLife("max");
+  cacheTag(USERS_TAG);
+
+  const rows = await db
+    .select({
+      name: users.name,
+      username: users.username,
+      image: users.image,
+      country_code: users.country_code,
+      bio: users.bio,
+    })
+    .from(users)
+    .where(
+      and(
+        isNotNull(users.username),
+        isNotNull(users.image),
+        isNotNull(users.name),
+        ne(users.country_code, "XX"),
+      ),
+    )
+    .orderBy(desc(users.createdAt))
+    .limit(SHOWCASE);
+
+  return rows.map(({ name, username, image, ...row }) => {
+    if (!name || !username || !image)
+      throw new Error(`showcase row for @${username} lacks what it was chosen for`);
+    return { ...row, name, username, image };
+  });
 }
 
 /** Every username, the way it is shown: the profiles that exist. */

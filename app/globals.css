@@ -179,8 +179,9 @@
        the document after hydration: Next keeps a page you left mounted, hidden,
        and its hero would still be found there. */
     :root:is([data-hero], :not([data-hydrated]):has([data-slot="hero"])) {
-      /* What it holds and a little air: the words from 8rem, two lines of the
-         title (2 × 0.95 × 6rem), the 3rem gap, the 3.5rem button. */
+      /* What it holds and a little air: the words from 8rem, the address (0.95 ×
+         7.5rem), the line under it, the gaps, the 3.5rem button; the cards from
+         7.5rem, a 24rem card (15rem tall) and the spread of those behind it. */
       --hero-h: 28rem;
       --bar-h: 3.25rem;
       --bar-top: 1rem;
@@ -318,7 +319,7 @@
 
 @keyframes hero-title {
   from {
-    font-size: clamp(3rem, 7vw, 6rem);
+    font-size: clamp(3.5rem, 8vw, 7.5rem);
     letter-spacing: -0.045em;
   }
   to {
@@ -327,18 +328,18 @@
   }
 }
 
+/* The line under the address leaves early; it is below the address, so nothing
+   it holds up moves when it goes. */
 @keyframes hero-lead {
   0% {
-    font-size: 1em;
     opacity: 1;
+    translate: 0 0;
   }
-  40% {
-    opacity: 0;
-  }
-  70%,
+  35%,
   100% {
-    font-size: 0em;
     opacity: 0;
+    translate: 0 -1rem;
+    visibility: hidden;
   }
 }
 
