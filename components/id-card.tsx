@@ -95,8 +95,7 @@ function Ghost({ holder }: { holder: Holder }) {
 /** THE HOLOGRAM, as an ID card's security laminate: nearly invisible face on, a
  *  band of foil running through its print as the card turns (lib/holo draws the
  *  prints; `id-card-holo` in globals.css lights them). The seal bites the photo's
- *  corner, where a real one sits so the photo cannot be swapped; where that corner
- *  is, is the layout's (`SEAL`). */
+ *  corner, where a real one sits so the photo cannot be swapped (`SEAL`). */
 function Hologram({
   print,
   seal,
@@ -157,40 +156,16 @@ function Flair({ places }: { places: Place[] }) {
  *  under the card. How much the glass hides of what is behind it is inherited
  *  (`--id-card-thickness`, `--id-card-blur`): a card lying on others is set near
  *  solid by whoever stacks it, as a real card is. */
-/** How the card's room is given out, every one the same structure (the head
- *  alone above; the photo with the name, the address and the places beside it),
- *  each a different answer to the band left empty under the head. All in cqw on
- *  the ID-1 card, 63 tall, 51 inside its padding:
- *  `now`: a 30 square photo and the body at the foot.
- *  `tall`: the photo 3:4 (30 by 40), rising into the band.
- *  `bigger`: the photo 36 square and the name 8, the body filling the card.
- *  `centred`: `now`'s sizes, the body centred between the head and the foot. */
-export type CardLayout = "now" | "tall" | "bigger" | "centred";
-
-/** Where each layout's photo has the corner its seal bites: centred on it. */
-const SEAL: Record<CardLayout, string> = {
-  now: "bottom-[29cqw] left-[29cqw]",
-  tall: "bottom-[39cqw] left-[29cqw]",
-  bigger: "bottom-[35cqw] left-[35cqw]",
-  centred: "bottom-[37cqw] left-[29cqw]",
-};
-
-/** Each layout's sizes: the photo, the name, and how the body sits. */
-const SIZES: Record<
-  CardLayout,
-  { photo: string; name: string; body: string }
-> = {
-  now: { photo: "", name: "text-[7cqw]", body: "" },
-  tall: { photo: "aspect-[3/4]", name: "text-[7cqw]", body: "" },
-  bigger: { photo: "w-[36cqw]", name: "text-[8cqw]", body: "" },
-  centred: { photo: "", name: "text-[7cqw]", body: "my-auto" },
-};
+/** The seal bites the photo's top-right corner: centred on it. The card is 63 cqw
+ *  tall, 51 inside its padding; under the 4.5 of the head the body (the 30 square
+ *  photo) is centred in the 46.5 left, so its foot is 8.25 above the padding's
+ *  and its top 44.25 from the card's foot; its right edge 36 from the left. */
+const SEAL = "bottom-[37cqw] left-[29cqw]";
 
 export function IdCard({
   holder,
   heading = "h1",
   holo,
-  layout = "now",
   className,
 }: {
   holder: Holder;
@@ -198,7 +173,6 @@ export function IdCard({
   heading?: "h1" | "p";
   /** The security print (`Hologram`), for a card someone can turn. */
   holo?: HoloPrint;
-  layout?: CardLayout;
   className?: string;
 }) {
   const Name = heading;
@@ -221,23 +195,18 @@ export function IdCard({
       </span>
     </header>
   );
-  const size = SIZES[layout];
+  // The head alone above, and the body (the photo; the name, the address and the
+  // places beside it) centred in the room under it, the air shared above and
+  // below rather than left as one empty band.
   const body = (
     <>
       {head}
-      <div className={cn("relative flex items-end gap-[5cqw]", size.body)}>
-        <Portrait holder={holder} className={size.photo} />
+      <div className="relative my-auto flex items-end gap-[5cqw]">
+        <Portrait holder={holder} />
         <div
           className={cn("flex min-w-0 flex-col gap-[1.5cqw] pb-[1cqw]", KNOCKOUT)}
         >
-          <Name
-            // The size first: tailwind-merge drops a line height set before a
-            // font size, a font size carrying one of its own.
-            className={cn(
-              size.name,
-              "line-clamp-2 leading-[1.02] font-medium tracking-[-0.03em] text-balance",
-            )}
-          >
+          <Name className="line-clamp-2 text-[7cqw] leading-[1.02] font-medium tracking-[-0.03em] text-balance">
             {name}
           </Name>
           <CopyAddress username={holder.username} />
@@ -263,7 +232,7 @@ export function IdCard({
         {/* The prints lie in the card, under everything written on it: drawn
             first, and what is written is positioned so it paints over them. */}
         <Ghost holder={holder} />
-        {holo && <Hologram print={holo} seal={SEAL[layout]} />}
+        {holo && <Hologram print={holo} seal={SEAL} />}
         {body}
         <FoilEdge />
       </Glass>

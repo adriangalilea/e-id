@@ -23,8 +23,8 @@ export function BrandMark({ className }: { className?: string }) {
   );
 }
 
-/** THE LOGO: the mark white on its tile of glass, an app icon's corner (22.5% of
- *  its side), as the favicon draws it (app/icon.svg). Set in a line it is a little
+/** THE LOGO: the mark white on a disc of glass, the seal's own shape, as the
+ *  favicon draws it (app/icon.svg). Set in a line it is a little
  *  taller than the capitals (1.2 cap), its foot on the baseline (an inline box that
  *  clips is aligned by its bottom edge), so it stands as the line's first letter. */
 export function BrandLogo({
@@ -43,7 +43,7 @@ export function BrandLogo({
       shape="surface"
       aria-hidden
       className={cn(
-        "inline-grid size-[1.2cap] place-items-center overflow-hidden align-baseline [--glass-radius:calc(1.2cap*0.225)]",
+        "inline-grid size-[1.2cap] place-items-center overflow-hidden align-baseline [--glass-radius:calc(1.2cap/2)]",
         className,
       )}
       style={holo ? (HOLO_PRINTS as React.CSSProperties) : undefined}
