@@ -11,7 +11,10 @@ import {
   type SelectComment,
   type SelectSocial,
   type SocialPlatform,
+  socialPlatforms,
 } from "@/db/schema";
+import type { Written } from "@/lib/draft";
+import { countryList } from "@/lib/country_list";
 import { type Chip, chipOf } from "@/lib/chip";
 import { writeChip } from "@/lib/chip-server";
 import { getSession } from "@/lib/session";
@@ -260,6 +263,78 @@ export async function setUsernameFromForm(
     return renameError(error);
   }
   return { message: "Username updated.", error: false };
+}
+
+/** How new an account must be to take a card filled on the home: the sign-in
+ *  that made it has just come back. Older, it is someone signing in again with a
+ *  card left in their browser, and their profile is not written over. */
+const FRESH_MS = 10 * 60 * 1000;
+
+export type Claimed = {
+  /** null: none could be given (the drafted one and the provider's both taken). */
+  username: string | null;
+  /** The account was not new, so nothing was written. */
+  stale: boolean;
+  /** Why the drafted handle could not be the username (taken, too short). */
+  refused: string | null;
+};
+
+/** The card a visitor filled on the home (lib/draft), written onto the account
+ *  they just signed up with: the name, the country, a place for each one they
+ *  pressed (private and empty, for the edit page to fill) and the handle as the
+ *  username. */
+export async function claimDraft(draft: Written): Promise<Claimed> {
+  const user = await requireUser();
+  const [row] = await db
+    .select({ createdAt: users.createdAt, username: users.username })
+    .from(users)
+    .where(eq(users.id, user.id));
+  if (!row) throw new Error(`claimDraft: no user ${user.id}`);
+  if (Date.now() - row.createdAt.getTime() > FRESH_MS)
+    return { username: row.username, stale: true, refused: null };
+
+  const name = draft.name.trim();
+  const country = countryList.some((c) => c.value === draft.country)
+    ? draft.country
+    : "XX";
+  await db
+    .update(users)
+    .set({ ...(name && { name }), country_code: country })
+    .where(eq(users.id, user.id));
+
+  const owned = await db
+    .select({ platform: socials.platform })
+    .from(socials)
+    .where(eq(socials.user_id, user.id));
+  const added = socialPlatforms.filter(
+    (p) => draft.places.includes(p) && !owned.some((s) => s.platform === p),
+  );
+  if (added.length > 0)
+    await db.insert(socials).values(
+      added.map((platform) => ({
+        id: crypto.randomUUID(),
+        user_id: user.id,
+        platform,
+      })),
+    );
+  updateTag(USERS_TAG);
+  updateTag(profileTag(user.id));
+
+  if (!draft.handle || draft.handle === row.username)
+    return { username: row.username, stale: false, refused: null };
+  try {
+    return {
+      username: await renameTo(user, draft.handle),
+      stale: false,
+      refused: null,
+    };
+  } catch (error) {
+    return {
+      username: row.username,
+      stale: false,
+      refused: renameError(error).message,
+    };
+  }
 }
 
 // ── socials ─────────────────────────────────────────────────────────────────

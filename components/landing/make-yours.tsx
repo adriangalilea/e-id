@@ -4,6 +4,7 @@ import Link from "next/link";
 import { BrandLogo } from "@/components/brand";
 import { useChip } from "@/components/session/use-chip";
 import { EMOJI_DOMAIN } from "@/lib/const";
+import { isWritten, useDraft, writeDraft } from "@/lib/draft";
 import { startSignIn } from "@/lib/sign-in";
 
 /** THE WAY IN IS THE ADDRESS: "👤.to/you" at the headline's size inside one round
@@ -80,6 +81,7 @@ function Words({ path }: { path: string }) {
  *  their own address, which opens it; with no name yet, where to pick one. */
 export function MakeYours() {
   const chip = useChip();
+  const draft = useDraft();
   const pill = {
     "data-cta": "",
     // The card's guilloché lights inside it under the hand (globals.css).
@@ -103,11 +105,15 @@ export function MakeYours() {
         <Words path="/you" />
       </Link>
     );
+  // Signing in from here makes the card filled on the home theirs (lib/draft).
   return (
     <button
       type="button"
       {...pill}
-      onClick={() => startSignIn()}
+      onClick={() => {
+        if (isWritten(draft)) writeDraft({ claiming: true });
+        startSignIn();
+      }}
       aria-label={`make yours: ${EMOJI_DOMAIN}/you`}
     >
       <Words path="/you" />

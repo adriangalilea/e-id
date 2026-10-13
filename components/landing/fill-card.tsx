@@ -1,13 +1,17 @@
 "use client";
 
 import { Plus } from "lucide-react";
-import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 import { EmojiDomain } from "@/components/brand";
 import { CountryFlag } from "@/components/country";
 import { IdCard, NAME } from "@/components/id-card";
+import { useChip } from "@/components/session/use-chip";
+import { useToast } from "@/components/ui/use-toast";
+import { claimDraft } from "@/db/actions";
 import { type SocialPlatform, socialPlatforms } from "@/db/schema";
-import { EMOJI_DOMAIN_PUNYCODE } from "@/lib/const";
-import { toHandle, useDraft, writeDraft } from "@/lib/draft";
+import { EMOJI_DOMAIN, EMOJI_DOMAIN_PUNYCODE } from "@/lib/const";
+import { clearDraft, toHandle, useDraft, writeDraft } from "@/lib/draft";
 import { countryList } from "@/lib/country_list";
 import { getSocialIcon } from "@/lib/socials";
 import { cn } from "@/lib/utils";
@@ -79,6 +83,49 @@ function Places({ places }: { places: SocialPlatform[] }) {
   );
 }
 
+/** The card becomes the account's: when the sign-in the pill started comes back
+ *  signed in, what was written is claimed (`claimDraft`) and the edit page opens,
+ *  where the places pressed onto the card wait for their usernames. Claiming
+ *  until the server answers, so a lost call is tried again on the next load; sent
+ *  once per mount (`sent`), so a second render never claims twice. With no username to
+ *  give (the drafted one and the provider's both refused), the draft stays for
+ *  /null to start from. */
+function Claim() {
+  const chip = useChip();
+  const draft = useDraft();
+  const router = useRouter();
+  const { toast } = useToast();
+  const sent = useRef(false);
+  useEffect(() => {
+    if (!chip || !draft.claiming || sent.current) return;
+    sent.current = true;
+    const { name, handle, country, places } = draft;
+    const written = { name, handle, country, places };
+    claimDraft(written).then(
+      ({ username, stale, refused }) => {
+        if (refused)
+          toast({
+            variant: "destructive",
+            title: `${EMOJI_DOMAIN}/${written.handle}`,
+            description: refused,
+          });
+        if (!username) {
+          writeDraft({ claiming: false });
+          return router.push("/null");
+        }
+        clearDraft();
+        if (!stale) router.push(`/${username}/edit`);
+      },
+      // Still claiming: the next load tries again.
+      (error) => {
+        sent.current = false;
+        throw error;
+      },
+    );
+  }, [chip, draft, router, toast]);
+  return null;
+}
+
 /** That the address is a real one, under the hero's pill, quiet: the emoji
  *  domain with the handle being written, and the same as a browser sends it. */
 export function RealAddress() {
@@ -107,69 +154,80 @@ export function RealAddress() {
 export function FillCard() {
   const draft = useDraft();
   return (
-    <IdCard
-      heading="p"
-      holo="laminate"
-      className="[--id-card-thickness:1]"
-      holder={{
-        name: draft.name,
-        username: draft.handle || "you",
-        image: null,
-        country: draft.country,
-        bio: null,
-      }}
-      slots={{
-        name: (
-          <input
-            aria-label="your name"
-            placeholder="your name"
-            autoComplete="name"
-            spellCheck={false}
-            value={draft.name}
-            onChange={(e) => writeDraft({ name: e.target.value })}
-            className={cn(NAME, FIELD, "w-full")}
-          />
-        ),
-        // The address as the card writes it, the handle typed after its slash;
-        // as wide as what is typed (a monospace field is that many characters).
-        address: (
-          <label className="flex min-w-0 items-center self-start font-mono text-[3cqw] text-foreground/50">
-            <EmojiDomain path="/" className="shrink-0" />
+    <>
+      <Claim />
+      <IdCard
+        heading="p"
+        holo="laminate"
+        className="[--id-card-thickness:1]"
+        holder={{
+          name: draft.name,
+          username: draft.handle || "you",
+          image: null,
+          country: draft.country,
+          bio: null,
+        }}
+        slots={{
+          name: (
             <input
-              aria-label="your username"
-              placeholder="you"
-              autoComplete="username"
-              autoCapitalize="none"
+              aria-label="your name"
+              placeholder="your name"
+              autoComplete="name"
               spellCheck={false}
-              size={Math.max(draft.handle.length, 3)}
-              value={draft.handle}
-              onChange={(e) => writeDraft({ handle: toHandle(e.target.value) })}
-              className={cn(FIELD, "text-foreground/85")}
+              value={draft.name}
+              onChange={(e) => writeDraft({ name: e.target.value })}
+              className={cn(NAME, FIELD, "w-full")}
             />
-          </label>
-        ),
-        // The country's own picker, unseen, over the flag: pressing the flag opens
-        // the list the browser gives every select.
-        country: (
-          <label className="relative flex items-center gap-[1.5cqw] font-mono">
-            {draft.country === "XX" ? "" : draft.country}
-            <CountryFlag country={draft.country} className="text-[4cqw]" />
-            <select
-              aria-label="your country"
-              value={draft.country}
-              onChange={(e) => writeDraft({ country: e.target.value })}
-              className="absolute inset-0 cursor-pointer opacity-0"
-            >
-              {countryList.map(({ value, label }) => (
-                <option key={value} value={value}>
-                  {value === "XX" ? "none" : label}
-                </option>
-              ))}
-            </select>
-          </label>
-        ),
-        flair: <Places places={draft.places} />,
-      }}
-    />
+          ),
+          // The address as the card writes it, the handle typed after its slash;
+          // as wide as what is typed (a monospace field is that many characters).
+          address: (
+            <label className="flex min-w-0 items-center self-start font-mono text-[3cqw] text-foreground/50">
+              <EmojiDomain path="/" className="shrink-0" />
+              <input
+                aria-label="your username"
+                placeholder="you"
+                autoComplete="username"
+                autoCapitalize="none"
+                spellCheck={false}
+                size={Math.max(draft.handle.length, 3)}
+                value={draft.handle}
+                onChange={(e) =>
+                  writeDraft({ handle: toHandle(e.target.value) })
+                }
+                // Faint until it is long enough to be a username (lib/username).
+                className={cn(
+                  FIELD,
+                  draft.handle.length < 5
+                    ? "text-foreground/40"
+                    : "text-foreground/85",
+                )}
+              />
+            </label>
+          ),
+          // The country's own picker, unseen, over the flag: pressing the flag opens
+          // the list the browser gives every select.
+          country: (
+            <label className="relative flex items-center gap-[1.5cqw] font-mono">
+              {draft.country === "XX" ? "" : draft.country}
+              <CountryFlag country={draft.country} className="text-[4cqw]" />
+              <select
+                aria-label="your country"
+                value={draft.country}
+                onChange={(e) => writeDraft({ country: e.target.value })}
+                className="absolute inset-0 cursor-pointer opacity-0"
+              >
+                {countryList.map(({ value, label }) => (
+                  <option key={value} value={value}>
+                    {value === "XX" ? "none" : label}
+                  </option>
+                ))}
+              </select>
+            </label>
+          ),
+          flair: <Places places={draft.places} />,
+        }}
+      />
+    </>
   );
 }

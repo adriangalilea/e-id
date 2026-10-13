@@ -11,10 +11,32 @@ export type Draft = {
   /** ISO 3166 alpha-2, "XX" for none. */
   country: string;
   places: SocialPlatform[];
+  /** Signing in to make it theirs: set by the pill, so the account the sign-in
+   *  comes back with takes the card (components/landing/fill-card, `Claim`). */
+  claiming: boolean;
 };
 
+/** What is written on the card, none of it the browser's own state. */
+export type Written = Omit<Draft, "claiming">;
+
 const KEY = "eid:draft";
-const EMPTY: Draft = { name: "", handle: "", country: "XX", places: [] };
+const EMPTY: Draft = {
+  name: "",
+  handle: "",
+  country: "XX",
+  places: [],
+  claiming: false,
+};
+
+/** Anything written on the card at all. */
+export function isWritten(draft: Draft): boolean {
+  return (
+    draft.name.trim() !== "" ||
+    draft.handle !== "" ||
+    draft.country !== EMPTY.country ||
+    draft.places.length > 0
+  );
+}
 
 /** What a username may hold (lib/username), as the visitor types: lowercase, and
  *  every other character dropped. */
@@ -54,5 +76,11 @@ export function useDraft(): Draft {
 
 export function writeDraft(patch: Partial<Draft>) {
   localStorage.setItem(KEY, JSON.stringify({ ...read(), ...patch }));
+  for (const listener of listeners) listener();
+}
+
+/** The card handed over: blank again. */
+export function clearDraft() {
+  localStorage.removeItem(KEY);
   for (const listener of listeners) listener();
 }
