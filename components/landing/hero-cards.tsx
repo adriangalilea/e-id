@@ -787,7 +787,7 @@ const PICKED = cn(
  *  and faded out at its top and foot, where the hero meets the bar and the page,
  *  so it has no edge. Under the hand's way it never is: it takes no pointer. */
 const VEIL =
-  "pointer-events-none absolute inset-y-0 left-1/2 z-[5] w-screen -translate-x-1/2 bg-black/30 backdrop-blur-[1.5px] [mask-image:linear-gradient(to_bottom,transparent,black_12%,black_88%,transparent)]";
+  "pointer-events-none absolute inset-y-0 left-1/2 z-[5] w-screen -translate-x-1/2 bg-black/40 backdrop-blur-[2.5px] [mask-image:linear-gradient(to_bottom,transparent,black_12%,black_88%,transparent)]";
 
 /** THE HERO'S STAGE: the visitor's card in the middle, still, and real ones
  *  spread round it in depth (`AROUND`), the maker's and the newest whole ones (a
