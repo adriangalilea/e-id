@@ -553,6 +553,28 @@
   opacity: 0.8;
 }
 
+/* THE LOGO'S HOLO (components/brand, `BrandLogo holo`): the seal printed in foil
+   behind the mark, a trace at rest, lit under the hand, the band of light at the
+   hand as on the card. */
+[data-slot="logo-holo"] {
+  position: absolute;
+  inset: 6%;
+  pointer-events: none;
+  background: linear-gradient(115deg, var(--foil));
+  background-size: 300% 100%;
+  background-position: calc(var(--px, 0.5) * 100%) 0;
+  mask-image: var(--holo-seal);
+  mask-size: contain;
+  mask-repeat: no-repeat;
+  mask-position: center;
+  mix-blend-mode: plus-lighter;
+  opacity: 0.12;
+  transition: opacity 300ms ease-out;
+}
+[data-slot="card-tilt"][data-hover] [data-slot="logo-holo"] {
+  opacity: 0.5;
+}
+
 /* THE WAY IN (components/landing/make-yours) holds the foil as the card does:
    quiet until a hand finds it, and only ever as PRINT, never as a wash (a faint
    smooth gradient over this dark bands into mud). At rest a neutral pill, a

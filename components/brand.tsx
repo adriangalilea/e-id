@@ -1,4 +1,7 @@
+import { FoilEdge } from "@/components/foil-edge";
+import { Tilt } from "@/components/landing/tilt";
 import { Glass } from "@/components/ui/material-glass";
+import { HOLO_PRINTS } from "@/lib/holo";
 import { EMOJI_DOMAIN } from "@/lib/const";
 import { MARK_BOX, MARK_PATH } from "@/lib/mark";
 import { cn } from "@/lib/utils";
@@ -24,8 +27,17 @@ export function BrandMark({ className }: { className?: string }) {
  *  its side), as the favicon draws it (app/icon.svg). Set in a line it is a little
  *  taller than the capitals (1.2 cap), its foot on the baseline (an inline box that
  *  clips is aligned by its bottom edge), so it stands as the line's first letter. */
-export function BrandLogo({ className }: { className?: string }) {
-  return (
+export function BrandLogo({
+  holo,
+  className,
+}: {
+  /** The card's craft on the logo where it is the brand at its largest (the
+   *  hero): the seal printed faintly in foil behind the mark, a foil edge, both
+   *  lit where the hand is (`logo-holo`, `foil-edge` in globals.css). */
+  holo?: boolean;
+  className?: string;
+}) {
+  const tile = (
     <Glass
       as="span"
       shape="surface"
@@ -34,11 +46,20 @@ export function BrandLogo({ className }: { className?: string }) {
         "inline-grid size-[1.2cap] place-items-center overflow-hidden align-baseline [--glass-radius:calc(1.2cap*0.225)]",
         className,
       )}
+      style={holo ? (HOLO_PRINTS as React.CSSProperties) : undefined}
     >
-      <svg viewBox="0 0 24 24" className="size-[62%] fill-white">
+      {holo && <span data-slot="logo-holo" />}
+      <svg viewBox="0 0 24 24" className="relative size-[62%] fill-white">
         <path d={MARK_PATH} />
       </svg>
+      {holo && <FoilEdge />}
     </Glass>
+  );
+  if (!holo) return tile;
+  return (
+    <Tilt as="span" className="inline-block align-baseline">
+      {tile}
+    </Tilt>
   );
 }
 
@@ -56,19 +77,22 @@ export function EmojiDomain({
 }: {
   /** What follows the domain, "/you" or "/adriangalilea". */
   path?: string;
-  /** The logo where the mark stands: for the brand as the subject, not in text. */
-  logo?: boolean;
+  /** The logo where the mark stands: for the brand as the subject, not in text;
+   *  `holo` for the brand at its largest, carrying the card's craft. */
+  logo?: boolean | "holo";
   className?: string;
 }) {
   return (
     <span className={cn("whitespace-nowrap", className)}>
       <span className={cn("relative", logo ? "mr-[0.1em]" : "mr-[0.08em]")}>
         {logo ? (
-          <BrandLogo />
+          <BrandLogo holo={logo === "holo"} />
         ) : (
           <BrandMark className="inline h-[1cap] align-baseline" />
         )}
-        <span className="absolute inset-0 overflow-hidden leading-none text-transparent">
+        {/* In the text for copying and reading, never in the hand's way: the
+            pointer reaches the mark or the logo under it. */}
+        <span className="pointer-events-none absolute inset-0 overflow-hidden leading-none text-transparent">
           {EMOJI}
         </span>
       </span>

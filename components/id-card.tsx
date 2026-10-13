@@ -42,9 +42,21 @@ const ID1_RADIUS = `${(3.18 / 85.6) * 100}cqw`;
 
 /** The face, square: the avatar GitHub gave, or with none the mark itself, the
  *  empty photo slot it draws. */
-function Portrait({ holder }: { holder: Holder }) {
+function Portrait({
+  holder,
+  className,
+}: {
+  holder: Holder;
+  /** Its size and shape where a layout wants another than 30 cqw square. */
+  className?: string;
+}) {
   return (
-    <div className="grid aspect-square w-[30cqw] shrink-0 place-items-center overflow-hidden rounded-[1.4cqw] bg-white/5 shadow-[0_0_0_1px_rgb(255_255_255/0.08)]">
+    <div
+      className={cn(
+        "grid aspect-square w-[30cqw] shrink-0 place-items-center overflow-hidden rounded-[1.4cqw] bg-white/5 shadow-[0_0_0_1px_rgb(255_255_255/0.08)]",
+        className,
+      )}
+    >
       {holder.image ? (
         // eslint-disable-next-line @next/next/no-img-element -- GitHub's avatar service
         <img src={holder.image} alt="" className="size-full object-cover" />
@@ -83,10 +95,15 @@ function Ghost({ holder }: { holder: Holder }) {
 /** THE HOLOGRAM, as an ID card's security laminate: nearly invisible face on, a
  *  band of foil running through its print as the card turns (lib/holo draws the
  *  prints; `id-card-holo` in globals.css lights them). The seal bites the photo's
- *  top-right corner, where a real one sits so the photo cannot be swapped: its
- *  centre on the corner, the portrait being 30 cqw square from the card's left and
- *  bottom padding of 6 cqw. */
-function Hologram({ print }: { print: HoloPrint }) {
+ *  corner, where a real one sits so the photo cannot be swapped; where that corner
+ *  is, is the layout's (`SEAL`). */
+function Hologram({
+  print,
+  seal,
+}: {
+  print: HoloPrint;
+  seal: string;
+}) {
   return (
     <span
       aria-hidden
@@ -101,7 +118,7 @@ function Hologram({ print }: { print: HoloPrint }) {
       />
       <span
         data-slot="id-card-holo-seal"
-        className="absolute bottom-[29cqw] left-[29cqw] size-[14cqw]"
+        className={cn("absolute size-[14cqw]", seal)}
       />
     </span>
   );
@@ -140,10 +157,49 @@ function Flair({ places }: { places: Place[] }) {
  *  under the card. How much the glass hides of what is behind it is inherited
  *  (`--id-card-thickness`, `--id-card-blur`): a card lying on others is set near
  *  solid by whoever stacks it, as a real card is. */
+/** How the card's room is given out (all on the ID-1 card, in cqw; the card is
+ *  63 cqw tall, 51 inside its padding):
+ *  `now`: the photo square at the foot, the name, the address and the places
+ *  beside it, the head alone above.
+ *  `passport`: a 3:4 ID photo the body's full height, and beside it the data as
+ *  labelled fields spread over that height, as an ID prints them.
+ *  `badge`: the photo bleeding the whole left edge, fading into the card; head,
+ *  name, address and places down the right, top to foot.
+ *  `stacked`: the name large across the top, a small photo with the address and
+ *  the places along the foot. */
+export type CardLayout = "now" | "passport" | "badge" | "stacked";
+
+/** Where each layout's photo has the corner its seal bites: centred on it. */
+const SEAL: Record<CardLayout, string> = {
+  now: "bottom-[29cqw] left-[29cqw]",
+  passport: "top-[7.5cqw] left-[27cqw]",
+  badge: "bottom-[5cqw] left-[31cqw]",
+  stacked: "bottom-[16cqw] left-[16cqw]",
+};
+
+/** A field's label, as an ID prints it: small, mono, spaced capitals. */
+function Field({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="flex min-w-0 flex-col gap-[0.8cqw]">
+      <span className="font-mono text-[2.1cqw] tracking-[0.18em] text-foreground/40 uppercase">
+        {label}
+      </span>
+      {children}
+    </div>
+  );
+}
+
 export function IdCard({
   holder,
   heading = "h1",
   holo,
+  layout = "now",
   className,
 }: {
   holder: Holder;
@@ -151,9 +207,125 @@ export function IdCard({
   heading?: "h1" | "p";
   /** The security print (`Hologram`), for a card someone can turn. */
   holo?: HoloPrint;
+  layout?: CardLayout;
   className?: string;
 }) {
   const Name = heading;
+  const name = holder.name || `@${holder.username}`;
+  const places = holder.places ?? [];
+  const head = (
+    <header
+      className={cn(
+        "relative flex items-center justify-between text-[3cqw] text-foreground/60",
+        KNOCKOUT,
+      )}
+    >
+      <span className="flex items-center gap-[1.5cqw] font-medium tracking-tight text-foreground/85">
+        <BrandMark className="h-[1cap] w-auto" />
+        e-id
+      </span>
+      <span className="flex items-center gap-[1.5cqw] font-mono">
+        {holder.country === "XX" ? "" : holder.country}
+        <CountryFlag country={holder.country} className="text-[4cqw]" />
+      </span>
+    </header>
+  );
+  const body =
+    layout === "passport" ? (
+      <>
+        {head}
+        <div className="relative flex flex-1 gap-[5cqw] pt-[4cqw]">
+          <Portrait holder={holder} className="aspect-[3/4] w-[28cqw]" />
+          <div
+            className={cn(
+              "flex min-w-0 flex-1 flex-col justify-between",
+              KNOCKOUT,
+            )}
+          >
+            <Field label="name">
+              <Name className="line-clamp-2 text-[6cqw] leading-[1.05] font-medium tracking-[-0.03em] text-balance">
+                {name}
+              </Name>
+            </Field>
+            <Field label="e-id">
+              <CopyAddress username={holder.username} />
+            </Field>
+            {places.length > 0 && (
+              <Field label="places">
+                <Flair places={places} />
+              </Field>
+            )}
+          </div>
+        </div>
+      </>
+    ) : layout === "badge" ? (
+      <>
+        <div
+          aria-hidden
+          className="absolute inset-y-0 left-0 w-[38cqw] [mask-image:linear-gradient(to_right,black_62%,transparent)]"
+        >
+          <Portrait
+            holder={holder}
+            className="aspect-auto h-full w-full rounded-none shadow-none"
+          />
+        </div>
+        <div className="relative ml-[36cqw] flex flex-1 flex-col justify-between">
+          {head}
+          <div className={cn("flex min-w-0 flex-col gap-[2cqw]", KNOCKOUT)}>
+            <Name className="line-clamp-2 text-[6.5cqw] leading-[1.03] font-medium tracking-[-0.03em] text-balance">
+              {name}
+            </Name>
+            <CopyAddress username={holder.username} />
+          </div>
+          <div className={KNOCKOUT}>
+            <Flair places={places} />
+          </div>
+        </div>
+      </>
+    ) : layout === "stacked" ? (
+      <>
+        {head}
+        <Name
+          className={cn(
+            "relative line-clamp-2 text-[8.5cqw] leading-[1.02] font-medium tracking-[-0.035em] text-balance",
+            KNOCKOUT,
+          )}
+        >
+          {name}
+        </Name>
+        <div className="relative flex items-end gap-[4cqw]">
+          <Portrait holder={holder} className="w-[17cqw]" />
+          <div
+            className={cn(
+              "flex min-w-0 flex-1 items-end justify-between gap-[3cqw] pb-[0.5cqw]",
+              KNOCKOUT,
+            )}
+          >
+            <CopyAddress username={holder.username} />
+            <Flair places={places} />
+          </div>
+        </div>
+      </>
+    ) : (
+      <>
+        {head}
+        <div className="relative flex items-end gap-[5cqw]">
+          <Portrait holder={holder} />
+          <div
+            className={cn(
+              "flex min-w-0 flex-col gap-[1.5cqw] pb-[1cqw]",
+              KNOCKOUT,
+            )}
+          >
+            <Name className="line-clamp-2 text-[7cqw] leading-[1.02] font-medium tracking-[-0.03em] text-balance">
+              {name}
+            </Name>
+            <CopyAddress username={holder.username} />
+            <Flair places={places} />
+          </div>
+        </div>
+      </>
+    );
   return (
     <div className={cn("@container w-full", className)}>
       <Glass
@@ -171,37 +343,8 @@ export function IdCard({
         {/* The prints lie in the card, under everything written on it: drawn
             first, and what is written is positioned so it paints over them. */}
         <Ghost holder={holder} />
-        {holo && <Hologram print={holo} />}
-        <header
-          className={cn(
-            "relative flex items-center justify-between text-[3cqw] text-foreground/60",
-            KNOCKOUT,
-          )}
-        >
-          <span className="flex items-center gap-[1.5cqw] font-medium tracking-tight text-foreground/85">
-            <BrandMark className="h-[1cap] w-auto" />
-            e-id
-          </span>
-          <span className="flex items-center gap-[1.5cqw] font-mono">
-            {holder.country === "XX" ? "" : holder.country}
-            <CountryFlag country={holder.country} className="text-[4cqw]" />
-          </span>
-        </header>
-        <div className="relative flex items-end gap-[5cqw]">
-          <Portrait holder={holder} />
-          <div
-            className={cn(
-              "flex min-w-0 flex-col gap-[1.5cqw] pb-[1cqw]",
-              KNOCKOUT,
-            )}
-          >
-            <Name className="line-clamp-2 text-[7cqw] leading-[1.02] font-medium tracking-[-0.03em] text-balance">
-              {holder.name || `@${holder.username}`}
-            </Name>
-            <CopyAddress username={holder.username} />
-            <Flair places={holder.places ?? []} />
-          </div>
-        </div>
+        {holo && <Hologram print={holo} seal={SEAL[layout]} />}
+        {body}
         <FoilEdge />
       </Glass>
     </div>

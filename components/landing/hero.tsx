@@ -109,7 +109,7 @@ export async function Hero() {
                 data-slot="hero-title"
                 className="text-[clamp(3rem,5.6vw,5.25rem)] leading-[0.95] font-medium tracking-[-0.045em] whitespace-nowrap"
               >
-                <EmojiDomain logo />
+                <EmojiDomain logo="holo" />
                 <span data-slot="hero-you" className="inline-block">
                   /you
                 </span>

@@ -17,9 +17,12 @@ export function Tilt({
   rest = REST,
   lit,
   pose = "turned",
+  as: Element = "div",
   className,
 }: {
   children: React.ReactNode;
+  /** `span` where it stands inside a line of text (the logo in a headline). */
+  as?: "div" | "span";
   /** How its front card rests: `turned` away beside a headline (the home), or
    *  `flat`, facing the reader, as a page's subject (a profile). Either leans
    *  toward the hand. */
@@ -30,7 +33,7 @@ export function Tilt({
   lit?: boolean;
   className?: string;
 }) {
-  const ref = useRef<HTMLDivElement>(null);
+  const ref = useRef<HTMLElement>(null);
   useEffect(() => {
     const el = ref.current;
     if (!el) throw new Error("Tilt: no element to measure");
@@ -69,8 +72,8 @@ export function Tilt({
     };
   }, [rest, lit]);
   return (
-    <div
-      ref={ref}
+    <Element
+      ref={ref as React.Ref<HTMLDivElement & HTMLSpanElement>}
       data-slot="card-tilt"
       data-hover={lit ? "" : undefined}
       data-pose={pose}
@@ -78,6 +81,6 @@ export function Tilt({
       style={{ "--px": rest.x, "--py": rest.y } as React.CSSProperties}
     >
       {children}
-    </div>
+    </Element>
   );
 }
