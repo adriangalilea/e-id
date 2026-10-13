@@ -163,6 +163,102 @@ export type TabsListProps = Omit<
   "className"
 > & { className?: string }
 
+/** Where the indicator comes to REST under `labels="active"`, in the list's own
+ *  coordinates: the active tab's box once every other tab has closed and it has
+ *  opened. Base UI's indicator measures where the tab IS, and while the words open
+ *  that is a moving target: each frame restarted its glide toward a box still
+ *  growing, so it chased, landed late and crept the last pixels, the words cut where
+ *  the lift ended. This is the box it will be: a tab closed is its width less its
+ *  words' track and the gap that track takes (the words' negative margin gives the
+ *  gap back when closed, so the sum holds at any point of the motion), a tab open is
+ *  that plus the gap and its words' own width (`scrollWidth`, whole even inside a
+ *  closed track). The tabs come first in the list; anything after them (an add
+ *  button) moves nothing before the indicator. */
+function restingBox(list: HTMLElement): Box | null {
+  const tabs = Array.from(
+    list.querySelectorAll<HTMLElement>(":scope > [data-slot=tabs-tab]"),
+  )
+  const active = tabs.findIndex((tab) => tab.hasAttribute("data-active"))
+  if (active === -1) return null
+  const widths = tabs.map((tab) => {
+    const words = tab.querySelector<HTMLElement>(
+      ":scope > [data-slot=tabs-tab-words]",
+    )
+    const inner = words?.firstElementChild
+    if (!words || !(inner instanceof HTMLElement))
+      throw new Error(
+        'TabsList: a tab under labels="active" has no words track',
+      )
+    const gap = Number.parseFloat(getComputedStyle(tab).columnGap) || 0
+    const margin = Number.parseFloat(getComputedStyle(words).marginLeft) || 0
+    const closed =
+      tab.getBoundingClientRect().width -
+      words.getBoundingClientRect().width -
+      gap -
+      margin
+    return { closed, open: closed + gap + inner.scrollWidth }
+  })
+  const between = Number.parseFloat(getComputedStyle(list).columnGap) || 0
+  const first = tabs[0]
+  const tab = tabs[active]
+  const width = widths[active]
+  if (!first || !tab || !width)
+    throw new Error("TabsList: the active tab vanished")
+  const left = widths
+    .slice(0, active)
+    .reduce((x, w) => x + w.closed + between, first.offsetLeft)
+  return {
+    left,
+    top: tab.offsetTop,
+    width: width.open,
+    height: tab.offsetHeight,
+  }
+}
+
+type Box = { left: number; top: number; width: number; height: number }
+
+const sameBox = (a: Box | null, b: Box | null) =>
+  a === b ||
+  (a !== null &&
+    b !== null &&
+    Math.abs(a.left - b.left) < 0.5 &&
+    Math.abs(a.width - b.width) < 0.5 &&
+    a.top === b.top &&
+    a.height === b.height)
+
+/** The indicator's resting box under `labels="active"`, kept current: when a tab
+ *  becomes active, and when the list changes size (a font arriving, the words
+ *  moving: re-reading mid-motion gives the same box, so it settles at once).
+ *  `moving` turns the glide on after the first placement, so the lift appears where
+ *  it belongs instead of sliding in from the corner. */
+function useRestingBox(list: HTMLElement | null, on: boolean) {
+  const [box, setBox] = React.useState<Box | null>(null)
+  const [moving, setMoving] = React.useState(false)
+  React.useLayoutEffect(() => {
+    if (!on || !list) return
+    const place = () => {
+      const next = restingBox(list)
+      setBox((was) => (sameBox(was, next) ? was : next))
+    }
+    place()
+    const frame = requestAnimationFrame(() => setMoving(true))
+    const actives = new MutationObserver(place)
+    actives.observe(list, {
+      subtree: true,
+      attributes: true,
+      attributeFilter: ["data-active"],
+    })
+    const sizes = new ResizeObserver(place)
+    sizes.observe(list)
+    return () => {
+      cancelAnimationFrame(frame)
+      actives.disconnect()
+      sizes.disconnect()
+    }
+  }, [list, on])
+  return { box, moving }
+}
+
 /** The tabs, and the indicator that slides between them. */
 export function TabsList({
   className,
@@ -172,11 +268,41 @@ export function TabsList({
 }: TabsListProps) {
   const m = useMaterial()
   const [s, here] = useSurfaceScheme<HTMLDivElement>(undefined, ref)
-  const { size, variant } = React.useContext(Look)
+  const { size, variant, labels } = React.useContext(Look)
   const glass = m === "glass"
+  const folded = labels === "active"
+  const [list, setList] = React.useState<HTMLDivElement | null>(null)
+  const both = React.useCallback(
+    (node: HTMLDivElement | null) => {
+      setList(node)
+      here(node)
+    },
+    [here],
+  )
+  const resting = useRestingBox(list, folded)
+  const indicator = cn(
+    "pointer-events-none absolute -z-10",
+    (!folded || resting.moving) && [
+      "transition-[translate,width,height]",
+      GLIDE,
+    ],
+    variant === "segment"
+      ? [
+          "top-0 left-0 h-(--active-tab-height) w-(--active-tab-width) translate-x-(--active-tab-left) translate-y-(--active-tab-top)",
+          glass
+            ? [glassLift, GLASS_LIFT[size]]
+            : "rounded-md bg-background shadow-[0_1px_2px_rgb(0_0_0/0.15)] ring-1 ring-foreground/8 scheme-dark:bg-foreground/12",
+        ]
+      : [
+          "bottom-0 left-0 h-0.5 w-(--active-tab-width) translate-x-(--active-tab-left) rounded-full",
+          glass
+            ? "bg-current shadow-[0_0_8px_color-mix(in_oklab,currentColor_60%,transparent)]"
+            : "bg-foreground",
+        ],
+  )
   return (
     <BaseTabs.List
-      ref={here}
+      ref={both}
       data-slot="tabs-list"
       className={cn(
         "relative z-0 flex w-fit items-center",
@@ -200,26 +326,27 @@ export function TabsList({
       {...props}
     >
       {children}
-      <BaseTabs.Indicator
-        data-slot="tabs-indicator"
-        className={cn(
-          "pointer-events-none absolute -z-10 transition-[translate,width,height]",
-          GLIDE,
-          variant === "segment"
-            ? [
-                "top-0 left-0 h-(--active-tab-height) w-(--active-tab-width) translate-x-(--active-tab-left) translate-y-(--active-tab-top)",
-                glass
-                  ? [glassLift, GLASS_LIFT[size]]
-                  : "rounded-md bg-background shadow-[0_1px_2px_rgb(0_0_0/0.15)] ring-1 ring-foreground/8 scheme-dark:bg-foreground/12",
-              ]
-            : [
-                "bottom-0 left-0 h-0.5 w-(--active-tab-width) translate-x-(--active-tab-left) rounded-full",
-                glass
-                  ? "bg-current shadow-[0_0_8px_color-mix(in_oklab,currentColor_60%,transparent)]"
-                  : "bg-foreground",
-              ],
-        )}
-      />
+      {folded ? (
+        // Its own indicator, on the same variables Base UI's sets, placed at the
+        // resting box (`restingBox`); none until it is measured.
+        resting.box && (
+          <span
+            aria-hidden
+            data-slot="tabs-indicator"
+            className={indicator}
+            style={
+              {
+                "--active-tab-left": `${resting.box.left}px`,
+                "--active-tab-top": `${resting.box.top}px`,
+                "--active-tab-width": `${resting.box.width}px`,
+                "--active-tab-height": `${resting.box.height}px`,
+              } as React.CSSProperties
+            }
+          />
+        )
+      ) : (
+        <BaseTabs.Indicator data-slot="tabs-indicator" className={indicator} />
+      )}
     </BaseTabs.List>
   )
 }
