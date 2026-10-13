@@ -1,7 +1,6 @@
 import { SocialComponent } from "@/components/social_component";
 import { InputQuote } from "@/components/quote";
 import { IdCard } from "@/components/id-card";
-import { SURFACE } from "@/components/surface";
 import { MaterialProvider } from "@/components/ui/material";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
@@ -64,14 +63,22 @@ function Identity({
   );
 }
 
-/** The person's side of a wide screen: ONE pane of glass, held still under the
- *  bar, as tall as the screen less the page's room for the bar (5rem, layout) and
- *  its foot (3rem), the card its only card. What others say of them
- *  scrolls inside it (fading at its foot, no bar: a short capped scroller), so the
- *  pane never moves with the page and never runs past the screen. Inside the pane
- *  the vouches are on the plain material, entries of the pane rather than more
- *  panes. On a phone the pane is no box (`display: contents`): its two parts take
- *  their own places in the page's grid, the card at the head, the vouches last. */
+/** What others say, set INTO the page rather than on it: no surface, the words dim,
+ *  and each letter lit as a debossed one is, a dark edge above (the lip that
+ *  shades it) and a faint light one below (the floor of the cut catching the
+ *  light from above). Text shadows inherit, so the quote's words, name and date all
+ *  take it. */
+const ENGRAVED =
+  "[text-shadow:0_-1px_0_rgb(0_0_0/0.7),0_1px_0_rgb(255_255_255/0.07)] [&_[data-slot=quote-body]]:text-foreground/50 [&_[data-slot=quote-name]]:text-foreground/45";
+
+/** The person's side of a wide screen, held still under the bar, as tall as the
+ *  screen less the page's room for the bar (5rem, layout) and its foot (3rem). No
+ *  pane: the e-id card stands alone at its top, the one object on the page that
+ *  floats, and what others say of them lies engraved in the ground under it,
+ *  scrolling in its own room (fading at its foot, no bar: a short capped
+ *  scroller) so the side never moves with the page. On a phone it is no box
+ *  (`display: contents`): its two parts take their own places in the page's grid,
+ *  the card at the head, the vouches last. */
 function Side({
   user,
   actions,
@@ -82,17 +89,15 @@ function Side({
   vouches?: React.ReactNode;
 }) {
   return (
-    <aside
-      className={cn(
-        SURFACE,
-        // `contents` drops the box but keeps its pseudo-elements, which are the
-        // glass's rim: hidden with it.
-        "max-lg:contents max-lg:before:hidden max-lg:after:hidden lg:sticky lg:top-20 lg:flex lg:h-[calc(100dvh-8rem)] lg:min-h-0 lg:flex-col lg:gap-8 lg:self-start lg:p-5 lg:[grid-area:side]",
-      )}
-    >
+    <aside className="max-lg:contents lg:sticky lg:top-20 lg:flex lg:h-[calc(100dvh-8rem)] lg:min-h-0 lg:flex-col lg:gap-10 lg:self-start lg:[grid-area:side]">
       <Identity user={user} actions={actions} />
       <MaterialProvider material="plain">
-        <div className="flex min-h-0 flex-col gap-3 text-sm max-lg:[grid-area:vouch] lg:-mx-2 lg:flex-1 lg:overflow-y-auto lg:px-2 lg:pb-8 lg:[mask-image:linear-gradient(to_bottom,black_calc(100%-2rem),transparent)] lg:[scrollbar-width:none]">
+        <div
+          className={cn(
+            "flex min-h-0 flex-col gap-1 text-sm max-lg:[grid-area:vouch] lg:flex-1 lg:overflow-y-auto lg:pb-8 lg:[mask-image:linear-gradient(to_bottom,black_calc(100%-2rem),transparent)] lg:[scrollbar-width:none]",
+            ENGRAVED,
+          )}
+        >
           {vouches}
         </div>
       </MaterialProvider>

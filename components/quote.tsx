@@ -47,7 +47,9 @@ export function Testimonial({
         avatar: image || undefined,
       }}
       date={DAY.format(date)}
-      className="w-full"
+      // No surface of its own: a vouch lies in the page's ground (the profile
+      // engraves it there), not on a step above it.
+      className="w-full bg-transparent px-0 [&_[data-slot=quote-mark]]:left-0"
     />
   );
 }

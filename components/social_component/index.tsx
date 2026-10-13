@@ -1,4 +1,4 @@
-import { Tabs, TabsList, TabsPanel, TabsTab } from "@/components/ui/tabs";
+import { TabsBox, TabsPanel, TabsTab } from "@/components/ui/tabs";
 import Link from "next/link";
 import type { SelectSocial } from "@/db/schema";
 import type { Presence } from "@/lib/presence";
@@ -103,10 +103,13 @@ function SocialLink({ social }: { social: SelectSocial }) {
   );
 }
 
-/** A profile's socials as @ag/tabs: their icons in a bar of glass, the chosen one
- *  named (`labels="active"`), over the person's presence there. `socials` arrive
- *  filtered and ordered by the caller (lib/data): the public ones on the profile,
- *  all of them on the edit form. */
+/** A profile's socials as one @ag/tabs box: a single surface whose head is the
+ *  strip of their icons (the chosen one named, `labels="active"`; on the edit form
+ *  the way to add one at its end) and whose body is the person's presence there.
+ *  The head pins under the site's bar (5rem, the layout's room for it) while a
+ *  long panel scrolls under it. `socials` arrive filtered and ordered by the
+ *  caller (lib/data): the public ones on the profile, all of them on the edit
+ *  form. */
 export function SocialComponent({
   socials,
   edit,
@@ -119,20 +122,19 @@ export function SocialComponent({
   if (!edit && socials.length === 0) return null;
 
   return (
-    <Tabs
+    <TabsBox
       defaultValue={socials[0]?.id}
       size="lg"
       labels="active"
-      className="w-full gap-6"
+      top="5rem"
+      className="w-full"
+      action={edit ? <AddSocialDropdownMenu /> : undefined}
+      tabs={socials.map(({ id, platform }) => (
+        <TabsTab key={id} value={id} icon={getSocialIcon(platform)}>
+          {platform}
+        </TabsTab>
+      ))}
     >
-      <TabsList className="max-w-full">
-        {socials.map(({ id, platform }) => (
-          <TabsTab key={id} value={id} icon={getSocialIcon(platform)}>
-            {platform}
-          </TabsTab>
-        ))}
-        {edit && <AddSocialDropdownMenu />}
-      </TabsList>
       {socials.map((social, index) => {
         const value = social.value ?? "";
         const pretext = getSocialPretextIcon(social.platform);
@@ -217,6 +219,6 @@ export function SocialComponent({
           </TabsPanel>
         );
       })}
-    </Tabs>
+    </TabsBox>
   );
 }

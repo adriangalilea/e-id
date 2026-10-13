@@ -29,7 +29,7 @@ function Portrait({ holder }: { holder: Holder }) {
         // eslint-disable-next-line @next/next/no-img-element -- GitHub's avatar service
         <img src={holder.image} alt="" className="size-full object-cover" />
       ) : (
-        <BrandMark className="size-1/2 text-white/15" />
+        <BrandMark className="h-1/2 text-white/15" />
       )}
     </div>
   );
