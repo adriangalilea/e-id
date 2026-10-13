@@ -79,6 +79,18 @@ const AKA: Record<string, readonly string[]> = {
 /** Codes the set draws that name no country: the EU's flag, and two Intl cannot name. */
 const NOT_COUNTRIES = new Set(["EU", "XC", "XO"])
 
+/** One region namer per language, made once: building a namer is the costly
+ *  part, and a namer per country made the first opening wait about a second. */
+const namers = new Map<string, Intl.DisplayNames>()
+function regionIn(language: string, code: string): string | undefined {
+  let namer = namers.get(language)
+  if (!namer) {
+    namer = new Intl.DisplayNames([language], { type: "region" })
+    namers.set(language, namer)
+  }
+  return namer.of(code)
+}
+
 let every: Country[] | null = null
 /** Every country the flag set draws, by English name. Built once. */
 export function countries(): Country[] {
@@ -88,7 +100,7 @@ export function countries(): Country[] {
       if (name === code)
         throw new Error(`country-picker: Intl names no ${code}`)
       const language = new Intl.Locale(`und-${code}`).maximize().language
-      const own = new Intl.DisplayNames([language], { type: "region" }).of(code)
+      const own = regionIn(language, code)
       return {
         code,
         name,
@@ -185,6 +197,9 @@ export function readerRegions(): readonly string[] {
   return reader
 }
 
+/** The rows drawn with the picker's first frame, more than its list shows. */
+const FIRST = 40
+
 const noRegions = () => NO_REGIONS
 const subscribeNever = () => () => {}
 const onClient = () => true
@@ -242,8 +257,20 @@ export function CountryPicker({
   // the browser (a country's own name, one's English name): the list is drawn in
   // the browser only, its names the reader's.
   const client = React.useSyncExternalStore(subscribeNever, onClient, onServer)
+  // The first rows at once, every row a frame later as an update that yields:
+  // two hundred and fifty rows, each with its flag, held the popover closed for
+  // about a second after the press. What shows at first is all that fits in
+  // view, so nothing is seen arriving.
+  const [whole, setWhole] = React.useState(false)
+  React.useEffect(() => {
+    const frame = requestAnimationFrame(() =>
+      React.startTransition(() => setWhole(true)),
+    )
+    return () => cancelAnimationFrame(frame)
+  }, [])
   const sections = React.useMemo((): Section[] => {
     if (!client) return []
+    const shown = <T,>(items: T[]) => (whole ? items : items.slice(0, FIRST))
     const row = (country: Country, ranges: Range[] = []): Row => ({
       key: country.code,
       country,
@@ -253,7 +280,9 @@ export function CountryPicker({
       return [
         {
           heading: "found",
-          items: findCountries(query).map((f) => row(f.country, f.ranges)),
+          items: shown(findCountries(query)).map((f) =>
+            row(f.country, f.ranges),
+          ),
         },
       ]
     const byCode = new Map(countries().map((c) => [c.code, c]))
@@ -271,9 +300,12 @@ export function CountryPicker({
           ]
         : []),
       ...(yours.length > 0 ? [{ heading: "yours", items: yours }] : []),
-      { heading: "every country", items: countries().map((c) => row(c)) },
+      {
+        heading: "every country",
+        items: shown(countries()).map((c) => row(c)),
+      },
     ]
-  }, [client, query, first, none])
+  }, [client, whole, query, first, none])
 
   return (
     <div
@@ -407,9 +439,14 @@ export function CountryPickerPopover({
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger render={children} />
+      {/* Just under its trigger, growing from it (the popover's own origin),
+          so it reads as come out of what was pressed, not laid near it. The
+          trigger says it is open (`data-popup-open`, Base UI's) for the
+          consumer to draw. */}
       <PopoverContent
         side={side}
         align={align}
+        sideOffset={4}
         material={picker.material}
         className="w-80 p-2"
       >

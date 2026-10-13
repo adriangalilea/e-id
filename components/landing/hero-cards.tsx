@@ -2,7 +2,7 @@
 
 import { ArrowLeft, CornerDownLeft, Plus, RotateCcw, X } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { lazy, Suspense, use, useEffect, useRef, useState } from "react";
+import { Suspense, use, useEffect, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import { EmojiDomain } from "@/components/brand";
 import { CountryFlag } from "@/components/country";
@@ -13,6 +13,7 @@ import { useChip } from "@/components/session/use-chip";
 import { SocialComponent } from "@/components/social_component";
 import { Button } from "@/components/ui/button";
 import { HoloLean, HoloLight } from "@/components/ui/holo";
+import { LazyCountryPickerPopover } from "@/components/ui/country-picker-lazy";
 import { Input, InputGroup } from "@/components/ui/input";
 import {
   Popover,
@@ -385,44 +386,30 @@ function Address({
   );
 }
 
-/** Every country's flag weighs about 45 KB: the picker (@ag/country-picker) is
- *  loaded once a hand or focus comes to the flag, before it is pressed. */
-const CountryPickerPopover = lazy(() =>
-  import("@/components/ui/country-picker").then((m) => ({
-    default: m.CountryPickerPopover,
-  })),
-);
-
-/** The country on the card's head, its flag the picker's trigger. "XX" is none. */
+/** The country on the card's head, its flag the picker's trigger (the picker
+ *  fetched as the card is drawn, off the page's first load, ready before it is
+ *  pressed: @ag/country-picker, `LazyCountryPickerPopover`). Pressed while the
+ *  picker is open, so the picker reads as come out of it. "XX" is none. */
 function Country({ code }: { code: string }) {
-  const [near, setNear] = useState(false);
-  const flag = (
-    <button
-      type="button"
-      aria-label={code === "XX" ? "your country" : `your country, ${code}`}
-      onPointerEnter={() => setNear(true)}
-      onFocus={() => setNear(true)}
-      className={cn(
-        ON_CARD,
-        "-m-[1cqw] flex cursor-pointer items-center gap-[1.5cqw] p-[1cqw] font-mono transition-colors hover:bg-white/[0.08]",
-      )}
-    >
-      {code === "XX" ? "" : code}
-      <CountryFlag country={code} className="text-[4cqw]" />
-    </button>
-  );
-  if (!near) return flag;
   return (
-    <Suspense fallback={flag}>
-      <CountryPickerPopover
-        value={code === "XX" ? undefined : code}
-        onChange={(picked) => writeDraft({ country: picked ?? "XX" })}
-        none="none"
-        align="end"
+    <LazyCountryPickerPopover
+      value={code === "XX" ? undefined : code}
+      onChange={(picked) => writeDraft({ country: picked ?? "XX" })}
+      none="none"
+      align="end"
+    >
+      <button
+        type="button"
+        aria-label={code === "XX" ? "your country" : `your country, ${code}`}
+        className={cn(
+          ON_CARD,
+          "-m-[1cqw] flex cursor-pointer items-center gap-[1.5cqw] p-[1cqw] font-mono transition-colors hover:bg-white/[0.08] data-[popup-open]:bg-white/[0.12]",
+        )}
       >
-        {flag}
-      </CountryPickerPopover>
-    </Suspense>
+        {code === "XX" ? "" : code}
+        <CountryFlag country={code} className="text-[4cqw]" />
+      </button>
+    </LazyCountryPickerPopover>
   );
 }
 
