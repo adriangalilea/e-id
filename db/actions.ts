@@ -20,6 +20,8 @@ import { writeChip } from "@/lib/chip-server";
 import { getSession } from "@/lib/session";
 import { USERS_TAG, profileTag, usernameTag } from "@/lib/tags";
 import { claimUsername, usernameSchema } from "@/lib/username";
+import { getGithubProfile } from "@/lib/github";
+import { countryOf } from "@/lib/country-of";
 
 // Every export here is an endpoint anyone can call with any arguments: each one
 // reads the session itself and acts only on what that user owns. A profile's
@@ -283,6 +285,30 @@ export async function handleState(
   return { state: taken ? "taken" : "free", why: null };
 }
 
+/** What GitHub says publicly of a login, as the home's card fills itself with it
+ *  while the handle is typed: the photo, the name, the country its location
+ *  names, its website. The GitHub login and the e-id handle are the same thing at
+ *  sign-up (auth.ts takes the login), so the handle is the question. Null when
+ *  GitHub has no such person. */
+export async function githubCard(login: string): Promise<{
+  name: string | null;
+  /** large enough for the card's photo at 2x */
+  image: string;
+  country: string | null;
+  website: string | null;
+} | null> {
+  const parsed = usernameSchema.safeParse(login);
+  if (!parsed.success) return null;
+  const profile = await getGithubProfile(parsed.data);
+  if (!profile || profile.user.org) return null;
+  return {
+    name: profile.name ?? null,
+    image: profile.user.avatar.replace(/([?&])s=\d+/, "$1s=480"),
+    country: profile.location ? countryOf(profile.location) : null,
+    website: profile.website ?? null,
+  };
+}
+
 /** How new an account must be to take a card filled on the home: the sign-in
  *  that made it has just come back. Older, it is someone signing in again with a
  *  card left in their browser, and their profile is not written over. */
@@ -311,19 +337,31 @@ export async function claimDraft(draft: Written): Promise<Claimed> {
   if (Date.now() - row.createdAt.getTime() > FRESH_MS)
     return { username: row.username, stale: true, refused: null };
 
+  const owned = await db
+    .select({ platform: socials.platform, value: socials.value })
+    .from(socials)
+    .where(eq(socials.user_id, user.id));
+  // What the card filled from GitHub is taken only when the handle is this
+  // account's own GitHub login (sign-up keeps it as the github place): a card
+  // filled with someone else's login never brings their website or country.
+  const own = owned.some(
+    (s) =>
+      s.platform === "github" &&
+      s.value?.toLowerCase() === draft.handle.toLowerCase(),
+  );
+  const github = own && draft.handle ? await githubCard(draft.handle) : null;
+
   const name = draft.name.trim();
   // Any country the picker offers (@ag/country-picker draws the flag set's); "XX"
   // for none, which has no flag.
-  const country = hasFlag(draft.country) ? draft.country.toUpperCase() : "XX";
+  const country = hasFlag(draft.country)
+    ? draft.country.toUpperCase()
+    : (github?.country ?? "XX");
   await db
     .update(users)
     .set({ ...(name && { name }), country_code: country })
     .where(eq(users.id, user.id));
 
-  const owned = await db
-    .select({ platform: socials.platform })
-    .from(socials)
-    .where(eq(socials.user_id, user.id));
   const added = socialPlatforms.filter(
     (p) => draft.places.includes(p) && !owned.some((s) => s.platform === p),
   );
@@ -333,6 +371,9 @@ export async function claimDraft(draft: Written): Promise<Claimed> {
         id: crypto.randomUUID(),
         user_id: user.id,
         platform,
+        ...(platform === "website" && github?.website
+          ? { value: github.website }
+          : {}),
       })),
     );
   updateTag(USERS_TAG);

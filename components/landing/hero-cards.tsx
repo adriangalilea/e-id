@@ -7,15 +7,22 @@ import { EmojiDomain } from "@/components/brand";
 import { CountryFlag } from "@/components/country";
 import { type Holder, IdCard, NAME, type Place } from "@/components/id-card";
 import { useChip } from "@/components/session/use-chip";
-import { HoloLean, HoloLight } from "@/components/ui/holo";
+import { HoloLight } from "@/components/ui/holo";
 import { useToast } from "@/components/ui/use-toast";
-import { claimDraft, type HandleState, handleState } from "@/db/actions";
+import {
+  claimDraft,
+  githubCard,
+  type HandleState,
+  handleState,
+} from "@/db/actions";
 import { type SocialPlatform, socialPlatforms } from "@/db/schema";
 import type { Card } from "@/lib/card";
 import { EMOJI_DOMAIN } from "@/lib/const";
 import {
   clearDraft,
   type Draft,
+  fill,
+  readDraft,
   toHandle,
   useDraft,
   writeDraft,
@@ -43,6 +50,18 @@ const WRITTEN_HERE = {
 /** Solid: a card hides what is behind it, as a real one does. */
 const SOLID = "[--id-card-thickness:1]";
 
+/** A card's own corner (ID-1: 3.18 mm on 85.6 by 53.98), as shares of its box, so
+ *  a shadow cast from the card's box is rounded as the card is at any size. */
+const CORNER = "rounded-[3.715%/5.891%]";
+
+/** The visitor's card lies above every other: its shadow falls wide and soft on
+ *  the cards round it, darkest just under it. */
+const FRONT = cn(
+  SOLID,
+  CORNER,
+  "shadow-[0_2.5rem_5rem_-1rem_rgb(0_0_0/0.75),0_0.75rem_1.5rem_-0.5rem_rgb(0_0_0/0.55)]",
+);
+
 // ── the visitor's card ──────────────────────────────────────────────────────
 
 /** THE VISITOR'S CARD, on the left of the home: their own once they have one;
@@ -65,7 +84,7 @@ export function YourCard() {
             <IdCard
               heading="p"
               holo="laminate"
-              className={SOLID}
+              className={FRONT}
               holder={{
                 name: null,
                 username: chip.u,
@@ -99,11 +118,11 @@ function FillCard() {
       // Its print and rim a third of a card's: there, but never in the way of
       // the writing.
       quiet
-      className={SOLID}
+      className={FRONT}
       holder={{
         name: draft.name,
         username: draft.handle || "you",
-        image: null,
+        image: draft.image,
         country: draft.country,
         bio: null,
       }}
@@ -116,7 +135,10 @@ function FillCard() {
             spellCheck={false}
             value={draft.name}
             onChange={(e) => writeDraft({ name: e.target.value })}
-            className={cn(NAME, FIELD, "w-full")}
+            // The name's tight leading (1.02, for two set lines) is shorter than
+            // its glyphs, and a field that short scrolls its own text: room for
+            // them, the line kept where it was by as much margin.
+            className={cn(NAME, FIELD, "-my-[0.14em] w-full leading-[1.3]")}
           />
         ),
         address: <Address draft={draft} handle={handle} onClaim={claim} />,
@@ -128,7 +150,11 @@ function FillCard() {
 }
 
 /** What the server says of a handle, for the handle it was asked about: a
- *  moment after the typing stops, and never an answer about an older one. */
+ *  moment after the typing stops, and never an answer about an older one.
+ *  Asked at the same time, GitHub's public profile for the same login (the
+ *  handle IS the GitHub login at sign-up): when there is one, the card fills
+ *  itself with it on the spot (photo, name, country, places: lib/draft, `fill`),
+ *  and a handle that is nobody's on GitHub takes the last fill back off. */
 function useHandleState(handle: string) {
   const [answer, setAnswer] = useState<{
     handle: string;
@@ -136,11 +162,31 @@ function useHandleState(handle: string) {
     why: string | null;
   } | null>(null);
   useEffect(() => {
-    if (!handle) return;
+    if (!handle) {
+      if (readDraft().auto) writeDraft(fill(readDraft(), null));
+      return;
+    }
     let live = true;
     const wait = setTimeout(() => {
       void handleState(handle).then((a) => {
         if (live) setAnswer({ handle, ...a });
+      });
+      void githubCard(handle).then((found) => {
+        const now = readDraft();
+        if (!live || now.handle !== handle) return;
+        if (!found && !now.auto) return;
+        writeDraft(
+          fill(
+            now,
+            found && {
+              login: handle,
+              name: found.name,
+              country: found.country,
+              image: found.image,
+              places: found.website ? ["github", "website"] : ["github"],
+            },
+          ),
+        );
       });
     }, 250);
     return () => {
@@ -383,7 +429,7 @@ function OwnCard({ username }: { username: string }) {
     <IdCard
       heading="p"
       holo="laminate"
-      className={SOLID}
+      className={FRONT}
       holder={use(cardHolder(username))}
     />
   );
@@ -416,11 +462,18 @@ function placed({ x, y, z, ry, rx, rz }: (typeof AROUND)[number]) {
   } as React.CSSProperties;
 }
 
-/** A real card under the hand: lifted a little and in full light, as one picked
- *  up from the table; the lean toward the hand is its HoloLean's. Eased both
- *  ways, so it settles back when the hand leaves. */
-const PICKED =
-  "brightness-(--dim) transition-[filter,scale] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-data-[hover]/holo:scale-[1.04] group-data-[hover]/holo:brightness-100 motion-reduce:transition-none";
+/** A real card under the hand: lifted a little, in full light, and tilted toward
+ *  the hand, its near edge going down where the hand presses (±9° across, ±7°
+ *  up and down: `HoloLean`'s flat pose, ±3°, read as no tilt at this size).
+ *  Its shadow on the table under it is close and small at rest, and falls longer
+ *  and softer as it lifts. Eased both ways, so it follows with a little weight
+ *  and settles flat when the hand leaves. */
+const PICKED = cn(
+  CORNER,
+  "brightness-(--dim) shadow-[0_0.75rem_1.5rem_-0.5rem_rgb(0_0_0/0.6)] transition-[filter,scale,transform,box-shadow] duration-300 ease-out",
+  "group-data-[hover]/holo:scale-[1.04] group-data-[hover]/holo:brightness-100 group-data-[hover]/holo:shadow-[0_2rem_3.5rem_-0.75rem_rgb(0_0_0/0.7)] group-data-[hover]/holo:[transform:perspective(1200px)_rotateY(calc((var(--px,0.5)-0.5)*18deg))_rotateX(calc((var(--py,0.5)-0.5)*-14deg))]",
+  "motion-reduce:transition-none motion-reduce:group-data-[hover]/holo:[transform:none]",
+);
 
 /** THE HERO'S STAGE: the visitor's card in the middle, still, and real ones
  *  spread round it in depth (`AROUND`), the maker's and the newest whole ones (a
@@ -461,14 +514,12 @@ export function Stage({
             >
               <HoloLight>
                 <div className={PICKED}>
-                  <HoloLean pose="flat">
-                    <IdCard
-                      holder={holder}
-                      heading="p"
-                      holo="laminate"
-                      className={SOLID}
-                    />
-                  </HoloLean>
+                  <IdCard
+                    holder={holder}
+                    heading="p"
+                    holo="laminate"
+                    className={SOLID}
+                  />
                 </div>
               </HoloLight>
             </div>
