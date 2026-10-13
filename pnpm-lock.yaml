@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@adriangalilea/utils':
+        specifier: ^9.13.0
+        version: 9.13.0(next@16.3.3(@babel/core@7.29.7(supports-color@7.2.0))(@types/node@24.13.3)(react-dom@19.2.1(react@19.2.1))(react@19.2.1))(zod@4.4.3)
       '@libsql/client':
         specifier: ^0.15.15
         version: 0.15.15
@@ -92,6 +95,9 @@ importers:
       tailwind-merge:
         specifier: ^3.4.0
         version: 3.6.0
+      web-vitals:
+        specifier: ^6.2.3
+        version: 6.2.3
       zod:
         specifier: ^4.1.13
         version: 4.4.3
@@ -173,6 +179,44 @@ importers:
         version: 5.9.3
 
 packages:
+
+  '@adriangalilea/utils@9.13.0':
+    resolution: {integrity: sha512-VGSQkgIP0T6HBomVLGakmKG/8BpjpbaqIjh/bR0ECKaLQrJ73UmGx0ohvVG0QxzWPkZiBnFO3GUJUcCEiN1WXg==}
+    peerDependencies:
+      '@ai-sdk/anthropic': ^4.0.0
+      '@ai-sdk/openai-compatible': ^3.0.0
+      '@gramio/format': '>=0.8.0'
+      '@gramio/session': '>=0.2.0'
+      '@gramio/split': ^0.0.1
+      '@gramio/storage': '>=2.0.0'
+      '@openrouter/ai-sdk-provider': ^3.0.0
+      ai: ^7.0.0
+      gramio: ^0.15.0
+      next: '>=15'
+      zod: '>=3.22'
+    peerDependenciesMeta:
+      '@ai-sdk/anthropic':
+        optional: true
+      '@ai-sdk/openai-compatible':
+        optional: true
+      '@gramio/format':
+        optional: true
+      '@gramio/session':
+        optional: true
+      '@gramio/split':
+        optional: true
+      '@gramio/storage':
+        optional: true
+      '@openrouter/ai-sdk-provider':
+        optional: true
+      ai:
+        optional: true
+      gramio:
+        optional: true
+      next:
+        optional: true
+      zod:
+        optional: true
 
   '@alloc/quick-lru@5.2.0':
     resolution: {integrity: sha512-UrcABB+4bUrFABwbluTIBErXwvbsU/V7TZWfmbgJfbkwiBuziS9gxdODUyuiecfdGQ85jglMW6juS3+z5TsKLw==}
@@ -3076,6 +3120,9 @@ packages:
     resolution: {integrity: sha512-NXYBzinNrblfraPGyrbPoD19C1h9lfI/1mzgWYvXUTe414Gz/X1FD2XBZSZM7rRTrMA8JL3OtAaGifrIKhQ5yQ==}
     engines: {node: '>= 12.0.0'}
 
+  linkifyjs@4.3.3:
+    resolution: {integrity: sha512-P8aEP5U/D1/IlTY2OeYsErdwh9bGuLE30NcXtKEjgdHcahveQoQwM2yZNsioQHsWFz0P7KKudisbrzCgR0sDHg==}
+
   locate-path@6.0.0:
     resolution: {integrity: sha512-iPZK6eYjbxRu3uB4/WZ3EsEIMJFMqAoopl3R+zuq0UjcAm/MO6KCweDgPfP3elTztoKP3KtnVHxTn2NHBSDVUw==}
     engines: {node: '>=10'}
@@ -3719,6 +3766,9 @@ packages:
     resolution: {integrity: sha512-d2JWLCivmZYTSIoge9MsgFCZrt571BikcWGYkjC1khllbTeDlGqZ2D8vD8E/lJa8WGWbb7Plm8/XJYV7IJHZZw==}
     engines: {node: '>= 8'}
 
+  web-vitals@6.2.3:
+    resolution: {integrity: sha512-Dmy+vdO1UPMqXiAtZSNayhl4f794Bxfd94W4HIj2HlYtczEQfEOon969memlcpcHrTuOKLa5baFjX7WbgmOq+A==}
+
   which-boxed-primitive@1.1.1:
     resolution: {integrity: sha512-TbX3mj8n0odCBFVlY8AxkqcHASw3L60jIuF8jFP78az3C2YhmGvqbHBpAjTRH2/xqYunrJ9g1jSyjCjpoWzIAA==}
     engines: {node: '>= 0.4'}
@@ -3776,6 +3826,13 @@ packages:
     resolution: {integrity: sha512-ytENFjIJFl2UwYglde2jchW2Hwm4GJFLDiSXWdTrJQBIN9Fcyp7n4DhxJEiWNAJMV1/BqWfW/kkg71UDcHJyTQ==}
 
 snapshots:
+
+  '@adriangalilea/utils@9.13.0(next@16.3.3(@babel/core@7.29.7(supports-color@7.2.0))(@types/node@24.13.3)(react-dom@19.2.1(react@19.2.1))(react@19.2.1))(zod@4.4.3)':
+    dependencies:
+      linkifyjs: 4.3.3
+    optionalDependencies:
+      next: 16.3.3(@babel/core@7.29.7(supports-color@7.2.0))(@types/node@24.13.3)(react-dom@19.2.1(react@19.2.1))(react@19.2.1)
+      zod: 4.4.3
 
   '@alloc/quick-lru@5.2.0': {}
 
@@ -6414,6 +6471,8 @@ snapshots:
       lightningcss-win32-arm64-msvc: 1.32.0
       lightningcss-win32-x64-msvc: 1.32.0
 
+  linkifyjs@4.3.3: {}
+
   locate-path@6.0.0:
     dependencies:
       p-locate: 5.0.0
@@ -7090,6 +7149,8 @@ snapshots:
   util-deprecate@1.0.2: {}
 
   web-streams-polyfill@3.3.3: {}
+
+  web-vitals@6.2.3: {}
 
   which-boxed-primitive@1.1.1:
     dependencies:

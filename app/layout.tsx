@@ -6,6 +6,8 @@ import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Toaster } from "@/components/ui/toaster";
 import { getBaseUrl } from "@/lib/url";
+import { SitePageSensor } from "@/components/page-sensor";
+import { visitsEnabled } from "@/lib/visits";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -58,6 +60,7 @@ export default async function RootLayout({
         <Toaster />
         <Analytics />
         <SpeedInsights />
+        {visitsEnabled && <SitePageSensor />}
         <Footer />
       </body>
     </html>
