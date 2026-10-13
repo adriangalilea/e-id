@@ -121,7 +121,10 @@ export async function Hero() {
               </p>
             </div>
             <div data-slot="hero-cta">
-              <MakeYours />
+              {/* The hand's place over the way in lights its band of foil. */}
+              <Tilt className="flex">
+                <MakeYours />
+              </Tilt>
             </div>
           </div>
           <div data-slot="hero-card">

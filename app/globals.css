@@ -477,37 +477,26 @@
   mask-repeat: no-repeat;
 }
 
-/* THE WAY IN (components/landing/make-yours) wears the foil, the one thing on the
-   page besides the card that does: a dark pill whose edge is the spectrum (a
-   1.5px border of the foil, the body laid over it on the padding box), the edge's
-   colours sliding along it under the hand, a faint band of foil crossing the body
-   with them, and a glow of the foil's cool end beneath. Not glass: the hero's
-   ground is flat dark, and glass over nothing is a grey slab. */
+/* THE WAY IN (components/landing/make-yours) holds the foil as the card does:
+   quiet until a hand finds it. At rest a neutral pill, a little light and a white
+   hairline, no colour. Under the hand a band of foil lights inside it, WHERE the
+   hand is (`--px` from the Tilt round it, so it follows the pointer itself, never
+   a clock), faint, added to the light; the hairline brightens. Only the band's
+   coming and going is timed, and quickly. */
 [data-cta] {
   position: relative;
   isolation: isolate;
   overflow: hidden;
-  border: 1.5px solid transparent;
-  background:
-    linear-gradient(rgb(16 16 19), rgb(16 16 19)) padding-box,
-    linear-gradient(115deg, var(--foil)) border-box;
-  background-size:
-    100% 100%,
-    300% 100%;
-  background-position:
-    0 0,
-    0% 0;
+  border: 1px solid rgb(255 255 255 / 0.16);
+  background: rgb(255 255 255 / 0.06);
   color: var(--foreground);
-  box-shadow: 0 12px 32px -14px rgb(168 116 255 / 0.45);
   transition:
-    background-position 900ms cubic-bezier(0.22, 1, 0.36, 1),
-    box-shadow 400ms cubic-bezier(0.22, 1, 0.36, 1);
+    border-color 200ms ease-out,
+    background-color 200ms ease-out;
 }
 [data-cta]:hover {
-  background-position:
-    0 0,
-    100% 0;
-  box-shadow: 0 14px 40px -12px rgb(95 180 255 / 0.5);
+  border-color: rgb(255 255 255 / 0.32);
+  background: rgb(255 255 255 / 0.09);
 }
 [data-cta]::after {
   content: "";
@@ -517,32 +506,19 @@
   pointer-events: none;
   background: linear-gradient(115deg, var(--foil));
   background-size: 300% 100%;
-  background-position: 0% 0;
+  background-position: calc(var(--px, 0.5) * 100%) 0;
   mask-image: linear-gradient(
     115deg,
-    transparent 20%,
-    black 50%,
-    transparent 80%
+    transparent calc(var(--px, 0.5) * 100% - 35%),
+    black calc(var(--px, 0.5) * 100%),
+    transparent calc(var(--px, 0.5) * 100% + 35%)
   );
-  mask-size: 250% 100%;
-  mask-position: 100% 0;
   mix-blend-mode: plus-lighter;
   opacity: 0;
-  transition:
-    mask-position 900ms cubic-bezier(0.22, 1, 0.36, 1),
-    background-position 900ms cubic-bezier(0.22, 1, 0.36, 1),
-    opacity 300ms;
+  transition: opacity 200ms ease-out;
 }
 [data-cta]:hover::after {
-  opacity: 0.22;
-  mask-position: 0% 0;
-  background-position: 100% 0;
-}
-@media (prefers-reduced-motion: reduce) {
-  [data-cta],
-  [data-cta]::after {
-    transition: none;
-  }
+  opacity: 0.2;
 }
 
 textarea,

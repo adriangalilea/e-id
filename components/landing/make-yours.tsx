@@ -7,8 +7,9 @@ import { EmojiDomain } from "@/components/brand";
 import { useChip } from "@/components/session/use-chip";
 import { startSignIn } from "@/lib/sign-in";
 
-/** The call to action: a pill wearing the foil, e-id's accent (`data-cta` in
- *  globals.css draws it), the arrow leaning on toward where it goes. */
+/** The call to action: a quiet pill whose foil, e-id's accent, lights only under
+ *  the hand and where the hand is (`data-cta` in globals.css draws it; the hero's
+ *  Tilt gives it the hand), the arrow leaning on toward where it goes. */
 const CTA =
   "group h-14 w-full justify-between gap-4 rounded-full px-7 text-[17px] font-medium sm:w-auto sm:min-w-64 sm:self-start";
 
