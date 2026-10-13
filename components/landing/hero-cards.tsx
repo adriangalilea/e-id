@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft, CornerDownLeft, Plus, X } from "lucide-react";
+import { ArrowLeft, CornerDownLeft, Plus, RotateCcw, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { lazy, Suspense, use, useEffect, useRef, useState } from "react";
 import { flushSync } from "react-dom";
@@ -145,15 +145,18 @@ export function YourCard() {
         <>
           <FillCard />
           {/* Room kept whether it shows or not: the card never moves. */}
-          <div className="mt-3 flex h-6 justify-end">
+          <div className="mt-4 flex h-9 justify-end">
             {!isBlank(draft) && (
-              <button
+              // The page's own button (@ag/button, in its glass): read over any
+              // card that lies under it, named by its glyph and its words.
+              <Button
                 type="button"
+                size="sm"
                 onClick={() => shape(false, clearDraft)}
-                className="font-mono text-[11px] text-foreground/40 transition-colors hover:text-foreground/80"
+                className="animate-fade-in motion-reduce:animate-none"
               >
-                start over
-              </button>
+                <RotateCcw /> start over
+              </Button>
             )}
           </div>
         </>
@@ -321,6 +324,11 @@ function Address({
         autoCapitalize="none"
         spellCheck={false}
         value={draft.handle}
+        // As wide as the handle and one more character for the caret: a field
+        // sized to its text alone scrolled it by a hair once the caret stood at
+        // its end, and the first letter slid out of sight. Monospace, so a
+        // character is exactly 1ch.
+        style={{ width: `${Math.max(draft.handle.length, 3) + 1}ch` }}
         onChange={(e) => writeDraft({ handle: toHandle(e.target.value) })}
         onKeyDown={(e) => {
           if (e.key === "Enter" && free) onClaim();
@@ -330,7 +338,7 @@ function Address({
         material="plain"
         className={cn(
           WELL_ON_CARD,
-          "w-fit min-w-0 max-w-full text-[1em] [&_svg]:h-[1cap] [&_svg]:w-auto",
+          "w-fit min-w-0 max-w-full text-[1em] [&_input]:flex-none [&_input]:[field-sizing:fixed] [&_svg]:h-[1cap] [&_svg]:w-auto",
         )}
         start={<EmojiDomain path="/" className="text-foreground/60" />}
       />
@@ -751,20 +759,22 @@ const LARGE = 27;
  *  card was painted at the front size and shrunk as a picture, and while it
  *  drifted it was never painted again (soft, jagged words and edges). A smaller
  *  card reads as further back: dimmer (by brightness, never opacity: a
- *  see-through card shows the shimmer through it) and turned a little less
- *  toward the middle. Once the card becomes a profile, each slides away from the
- *  middle the way it lies and fades. */
+ *  see-through card shows the shimmer through it), out of focus the way a lens
+ *  sets what is behind its subject (a blur, from 1px near to 3px far: each card
+ *  its own depth, never a layer laid over them, which had an edge and banded
+ *  in its fade), and turned a little less toward the middle. */
 function placed({ x, y, w, rz }: (typeof AROUND)[number]) {
   const near = (w - SMALL) / (LARGE - SMALL);
   return {
     width: `${w}rem`,
     transform: `translate(-50%, -50%) translate(${x}cqw, ${y}rem) rotateY(${(-Math.sign(x) * (4 + 6 * near)).toFixed(1)}deg) rotateZ(${rz}deg)`,
-    "--dim": (0.45 + 0.37 * near).toFixed(2),
+    "--dim": (0.4 + 0.3 * near).toFixed(2),
+    "--blur": `${(3 - 2 * near).toFixed(2)}px`,
   } as React.CSSProperties;
 }
 
-/** A real card under the hand: lifted a little (up, never scaled: a scaled card
- *  is a stretched picture of itself), in full light, and tilted toward the hand,
+/** A real card under the hand: in focus, lifted a little (up, never scaled: a
+ *  scaled card is a stretched picture of itself), in full light, and tilted toward the hand,
  *  its near edge going down where the hand presses (±9° across, ±7° up and down:
  *  `HoloLean`'s flat pose, ±3°, read as no tilt at this size). Its shadow on the
  *  table under it is close and small at rest, and falls longer and softer as it
@@ -775,19 +785,10 @@ const PICKED = cn(
   // Slow and soft both ways: it comes into the light over a second, and the
   // tilt follows the hand over most of one, so it moves as a thing with weight
   // and never snaps.
-  "brightness-(--dim) shadow-[0_0.75rem_1.5rem_-0.5rem_rgb(0_0_0/0.6)] [transition:filter_1s_cubic-bezier(0.22,1,0.36,1),box-shadow_1s_cubic-bezier(0.22,1,0.36,1),transform_0.7s_cubic-bezier(0.22,1,0.36,1)]",
-  "group-data-[hover]/holo:brightness-100 group-data-[hover]/holo:shadow-[0_2rem_3.5rem_-0.75rem_rgb(0_0_0/0.7)] group-data-[hover]/holo:[transform:perspective(1200px)_translateY(-0.5rem)_rotateY(calc((var(--px,0.5)-0.5)*18deg))_rotateX(calc((var(--py,0.5)-0.5)*-14deg))]",
+  "brightness-(--dim) blur-(--blur) shadow-[0_0.75rem_1.5rem_-0.5rem_rgb(0_0_0/0.6)] [transition:filter_1s_cubic-bezier(0.22,1,0.36,1),box-shadow_1s_cubic-bezier(0.22,1,0.36,1),transform_0.7s_cubic-bezier(0.22,1,0.36,1)]",
+  "group-data-[hover]/holo:brightness-100 group-data-[hover]/holo:blur-none group-data-[hover]/holo:shadow-[0_2rem_3.5rem_-0.75rem_rgb(0_0_0/0.7)] group-data-[hover]/holo:[transform:perspective(1200px)_translateY(-0.5rem)_rotateY(calc((var(--px,0.5)-0.5)*18deg))_rotateX(calc((var(--py,0.5)-0.5)*-14deg))]",
   "motion-reduce:transition-none motion-reduce:group-data-[hover]/holo:[transform:none]",
 );
-
-/** THE VEIL between the real cards and the visitor's: a dim and the slightest
- *  blur over everything behind the visitor's card (the cards round it, the
- *  shimmer), so theirs is what is in front; a card under the hand rises through
- *  it, whole. Across the screen's width (the cards run off the stage's edges),
- *  and faded out at its top and foot, where the hero meets the bar and the page,
- *  so it has no edge. Under the hand's way it never is: it takes no pointer. */
-const VEIL =
-  "pointer-events-none absolute inset-y-0 left-1/2 z-[5] w-screen -translate-x-1/2 bg-black/40 backdrop-blur-[2.5px] [mask-image:linear-gradient(to_bottom,transparent,black_12%,black_88%,transparent)]";
 
 /** THE HERO'S STAGE: the visitor's card in the middle, still, and real ones
  *  spread round it in depth (`AROUND`), the maker's and the newest whole ones (a
@@ -832,11 +833,7 @@ export function Stage({
         return (
           <div
             key={holder.username}
-            // Under the hand it comes out from under the veil, whole, to be
-            // looked at (`VEIL`), still under the visitor's card. On leaving it
-            // stays out until it has dimmed again (`PICKED`'s second), then
-            // goes back under: nothing pops.
-            className="absolute top-1/2 left-1/2 z-0 transition-[z-index] delay-1000 duration-0 hover:z-[7] hover:delay-0 max-lg:hidden"
+            className="absolute top-1/2 left-1/2 max-lg:hidden"
             style={placed(at)}
           >
             <div
@@ -860,9 +857,6 @@ export function Stage({
           </div>
         );
       })}
-      {!forming && (
-        <div aria-hidden className={cn(VEIL, "max-lg:hidden")} />
-      )}
       {/* One element in both layouts, so the card is never remounted; named, so
           the view transition carries it from the middle to its column, the
           profile's held pane (components/profile-layout). */}
