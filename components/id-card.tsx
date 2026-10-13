@@ -157,43 +157,34 @@ function Flair({ places }: { places: Place[] }) {
  *  under the card. How much the glass hides of what is behind it is inherited
  *  (`--id-card-thickness`, `--id-card-blur`): a card lying on others is set near
  *  solid by whoever stacks it, as a real card is. */
-/** How the card's room is given out (all on the ID-1 card, in cqw; the card is
- *  63 cqw tall, 51 inside its padding):
- *  `now`: the photo square at the foot, the name, the address and the places
- *  beside it, the head alone above.
- *  `passport`: a 3:4 ID photo the body's full height, and beside it the data as
- *  labelled fields spread over that height, as an ID prints them.
- *  `badge`: the photo bleeding the whole left edge, fading into the card; head,
- *  name, address and places down the right, top to foot.
- *  `stacked`: the name large across the top, a small photo with the address and
- *  the places along the foot. */
-export type CardLayout = "now" | "passport" | "badge" | "stacked";
+/** How the card's room is given out, every one the same structure (the head
+ *  alone above; the photo with the name, the address and the places beside it),
+ *  each a different answer to the band left empty under the head. All in cqw on
+ *  the ID-1 card, 63 tall, 51 inside its padding:
+ *  `now`: a 30 square photo and the body at the foot.
+ *  `tall`: the photo 3:4 (30 by 40), rising into the band.
+ *  `bigger`: the photo 36 square and the name 8, the body filling the card.
+ *  `centred`: `now`'s sizes, the body centred between the head and the foot. */
+export type CardLayout = "now" | "tall" | "bigger" | "centred";
 
 /** Where each layout's photo has the corner its seal bites: centred on it. */
 const SEAL: Record<CardLayout, string> = {
   now: "bottom-[29cqw] left-[29cqw]",
-  passport: "top-[7.5cqw] left-[27cqw]",
-  badge: "bottom-[5cqw] left-[31cqw]",
-  stacked: "bottom-[16cqw] left-[16cqw]",
+  tall: "bottom-[39cqw] left-[29cqw]",
+  bigger: "bottom-[35cqw] left-[35cqw]",
+  centred: "bottom-[37cqw] left-[29cqw]",
 };
 
-/** A field's label, as an ID prints it: small, mono, spaced capitals. */
-function Field({
-  label,
-  children,
-}: {
-  label: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="flex min-w-0 flex-col gap-[0.8cqw]">
-      <span className="font-mono text-[2.1cqw] tracking-[0.18em] text-foreground/40 uppercase">
-        {label}
-      </span>
-      {children}
-    </div>
-  );
-}
+/** Each layout's sizes: the photo, the name, and how the body sits. */
+const SIZES: Record<
+  CardLayout,
+  { photo: string; name: string; body: string }
+> = {
+  now: { photo: "", name: "text-[7cqw]", body: "" },
+  tall: { photo: "aspect-[3/4]", name: "text-[7cqw]", body: "" },
+  bigger: { photo: "w-[36cqw]", name: "text-[8cqw]", body: "" },
+  centred: { photo: "", name: "text-[7cqw]", body: "my-auto" },
+};
 
 export function IdCard({
   holder,
@@ -230,102 +221,31 @@ export function IdCard({
       </span>
     </header>
   );
-  const body =
-    layout === "passport" ? (
-      <>
-        {head}
-        <div className="relative flex flex-1 gap-[5cqw] pt-[4cqw]">
-          <Portrait holder={holder} className="aspect-[3/4] w-[28cqw]" />
-          <div
-            className={cn(
-              "flex min-w-0 flex-1 flex-col justify-between",
-              KNOCKOUT,
-            )}
-          >
-            <Field label="name">
-              <Name className="line-clamp-2 text-[6cqw] leading-[1.05] font-medium tracking-[-0.03em] text-balance">
-                {name}
-              </Name>
-            </Field>
-            <Field label="e-id">
-              <CopyAddress username={holder.username} />
-            </Field>
-            {places.length > 0 && (
-              <Field label="places">
-                <Flair places={places} />
-              </Field>
-            )}
-          </div>
-        </div>
-      </>
-    ) : layout === "badge" ? (
-      <>
+  const size = SIZES[layout];
+  const body = (
+    <>
+      {head}
+      <div className={cn("relative flex items-end gap-[5cqw]", size.body)}>
+        <Portrait holder={holder} className={size.photo} />
         <div
-          aria-hidden
-          className="absolute inset-y-0 left-0 w-[38cqw] [mask-image:linear-gradient(to_right,black_62%,transparent)]"
+          className={cn("flex min-w-0 flex-col gap-[1.5cqw] pb-[1cqw]", KNOCKOUT)}
         >
-          <Portrait
-            holder={holder}
-            className="aspect-auto h-full w-full rounded-none shadow-none"
-          />
-        </div>
-        <div className="relative ml-[36cqw] flex flex-1 flex-col justify-between">
-          {head}
-          <div className={cn("flex min-w-0 flex-col gap-[2cqw]", KNOCKOUT)}>
-            <Name className="line-clamp-2 text-[6.5cqw] leading-[1.03] font-medium tracking-[-0.03em] text-balance">
-              {name}
-            </Name>
-            <CopyAddress username={holder.username} />
-          </div>
-          <div className={KNOCKOUT}>
-            <Flair places={places} />
-          </div>
-        </div>
-      </>
-    ) : layout === "stacked" ? (
-      <>
-        {head}
-        <Name
-          className={cn(
-            "relative line-clamp-2 text-[8.5cqw] leading-[1.02] font-medium tracking-[-0.035em] text-balance",
-            KNOCKOUT,
-          )}
-        >
-          {name}
-        </Name>
-        <div className="relative flex items-end gap-[4cqw]">
-          <Portrait holder={holder} className="w-[17cqw]" />
-          <div
+          <Name
+            // The size first: tailwind-merge drops a line height set before a
+            // font size, a font size carrying one of its own.
             className={cn(
-              "flex min-w-0 flex-1 items-end justify-between gap-[3cqw] pb-[0.5cqw]",
-              KNOCKOUT,
+              size.name,
+              "line-clamp-2 leading-[1.02] font-medium tracking-[-0.03em] text-balance",
             )}
           >
-            <CopyAddress username={holder.username} />
-            <Flair places={places} />
-          </div>
+            {name}
+          </Name>
+          <CopyAddress username={holder.username} />
+          <Flair places={places} />
         </div>
-      </>
-    ) : (
-      <>
-        {head}
-        <div className="relative flex items-end gap-[5cqw]">
-          <Portrait holder={holder} />
-          <div
-            className={cn(
-              "flex min-w-0 flex-col gap-[1.5cqw] pb-[1cqw]",
-              KNOCKOUT,
-            )}
-          >
-            <Name className="line-clamp-2 text-[7cqw] leading-[1.02] font-medium tracking-[-0.03em] text-balance">
-              {name}
-            </Name>
-            <CopyAddress username={holder.username} />
-            <Flair places={places} />
-          </div>
-        </div>
-      </>
-    );
+      </div>
+    </>
+  );
   return (
     <div className={cn("@container w-full", className)}>
       <Glass

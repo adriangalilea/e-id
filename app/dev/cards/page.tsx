@@ -14,17 +14,11 @@ export const metadata: Metadata = { title: "cards", robots: "noindex" };
 
 const LAYOUTS: { layout: CardLayout; note: string }[] = [
   { layout: "now", note: "for reference: the card as it is" },
+  { layout: "tall", note: "the photo 3:4, rising into the empty band" },
+  { layout: "bigger", note: "the photo and the name larger, the body filling the card" },
   {
-    layout: "passport",
-    note: "a 3:4 ID photo the body's height, the data beside it as labelled fields",
-  },
-  {
-    layout: "badge",
-    note: "the photo bleeding the left edge; head, name, address, places down the right",
-  },
-  {
-    layout: "stacked",
-    note: "the name large across the top; a small photo, the address and the places at the foot",
+    layout: "centred",
+    note: "the same sizes, the body centred between the head and the foot",
   },
 ];
 
