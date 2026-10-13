@@ -1,50 +1,83 @@
-"use client";
+import type * as React from "react"
+import { cn } from "@/lib/utils"
 
-import * as React from "react";
-import * as AvatarPrimitive from "@radix-ui/react-avatar";
+export type AvatarSize = "sm" | "md" | "lg"
 
-import { cn } from "@/lib/utils";
+export interface AvatarProps {
+  /** The rendition the page paints. */
+  src: string
+  /** The person's name: the accessible name of the picture. */
+  alt: string
+  /** On the studio's rungs: 24, 40, 64 px. */
+  size?: AvatarSize
+  /** Where the subject sits across the picture, 0 to 1: the sidecar's number. */
+  focus?: number
+  /** The picture's own colour, for the hairline ring. */
+  tone?: { accent: string } | null
+  className?: string
+}
 
-const Avatar = React.forwardRef<
-  React.ElementRef<typeof AvatarPrimitive.Root>,
-  React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Root>
->(({ className, ...props }, ref) => (
-  <AvatarPrimitive.Root
-    ref={ref}
-    className={cn(
-      "relative flex h-10 w-10 shrink-0 overflow-hidden",
+/** Rungs of the 8·2ⁿ scale, in rem: a comment or a feed line, an attribution, a header. */
+export const AVATAR_SIZES: Record<AvatarSize, string> = {
+  sm: "1.5rem",
+  md: "2.5rem",
+  lg: "4rem",
+}
+
+/** A HAIRLINE IN THE PICTURE'S OWN COLOUR. On a dark ground a dark portrait has no edge;
+ *  the ring gives it one, and taking the colour from the picture keeps it belonging to the
+ *  picture rather than to the page. Without a tone it is the page's border. */
+const RING = "ring-1 ring-(--ag-avatar-ink)/40"
+const RING_PLAIN = "ring-1 ring-border/40"
+
+/** The face's frame, as classes and custom properties: what an avatar and a portrait
+ *  that opens wear alike. */
+export function avatarLook({
+  size = "md",
+  focus = 0.5,
+  tone,
+  className,
+}: Pick<AvatarProps, "size" | "focus" | "tone" | "className">): {
+  className: string
+  style: React.CSSProperties
+} {
+  return {
+    className: cn(
+      "inline-block flex-none size-(--ag-avatar-size) overflow-hidden rounded-full align-middle",
+      tone ? RING : RING_PLAIN,
       className,
-    )}
-    {...props}
-  />
-));
-Avatar.displayName = AvatarPrimitive.Root.displayName;
+    ),
+    style: {
+      "--ag-avatar-size": AVATAR_SIZES[size],
+      // The whole object-position, so the class consumes one value.
+      "--ag-avatar-focus": `${(focus * 100).toFixed(1)}% 50%`,
+      ...(tone ? { "--ag-avatar-ink": tone.accent } : {}),
+    } as React.CSSProperties,
+  }
+}
 
-const AvatarImage = React.forwardRef<
-  React.ElementRef<typeof AvatarPrimitive.Image>,
-  React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Image>
->(({ className, ...props }, ref) => (
-  <AvatarPrimitive.Image
-    ref={ref}
-    className={cn("aspect-square h-full w-full", className)}
-    {...props}
-  />
-));
-AvatarImage.displayName = AvatarPrimitive.Image.displayName;
+/** The picture itself, POSITIONED ON THE SUBJECT, not on the middle of the file. Named
+ *  by `alt` on its own; inside a control that carries the name, pass `alt=""`. */
+export function AvatarImage({ src, alt }: { src: string; alt: string }) {
+  return (
+    // biome-ignore lint/performance/noImgElement: an item cannot assume next/image
+    <img
+      data-slot="avatar-image"
+      className="block size-full object-cover object-(--ag-avatar-focus)"
+      src={src}
+      alt={alt}
+      width={64}
+      height={64}
+      loading="lazy"
+    />
+  )
+}
 
-const AvatarFallback = React.forwardRef<
-  React.ElementRef<typeof AvatarPrimitive.Fallback>,
-  React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Fallback>
->(({ className, ...props }, ref) => (
-  <AvatarPrimitive.Fallback
-    ref={ref}
-    className={cn(
-      "flex h-full w-full items-center justify-center bg-muted",
-      className,
-    )}
-    {...props}
-  />
-));
-AvatarFallback.displayName = AvatarPrimitive.Fallback.displayName;
-
-export { Avatar, AvatarImage, AvatarFallback };
+export function Avatar({ src, alt, ...look }: AvatarProps) {
+  const { className, style } = avatarLook(look)
+  return (
+    <span data-slot="avatar" className={className} style={style}>
+      <AvatarImage src={src} alt={alt} />
+    </span>
+  )
+}

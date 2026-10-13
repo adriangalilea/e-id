@@ -1,0 +1,510 @@
+@property --lb-p {
+  syntax: "<number>";
+  inherits: false;
+  initial-value: 0;
+}
+/* The active layer's source crop in layer px (sourceView's clip), set by the engine
+   on the layer with the pose; zero when the trigger's aspect matches the media's.
+   Inherited on purpose: the crop window and the media box below the layer read it. */
+@property --lb-clip-w {
+  syntax: "<length>";
+  inherits: true;
+  initial-value: 0px;
+}
+@property --lb-clip-h {
+  syntax: "<length>";
+  inherits: true;
+  initial-value: 0px;
+}
+
+@layer components {
+  .ag-lb {
+    position: fixed;
+    inset: 0;
+    overflow: hidden;
+    outline: none;
+    color: var(--foreground);
+  }
+  .ag-lb[data-z="fly"] {
+    z-index: var(--lb-z-fly, 5);
+  }
+  .ag-lb[data-z="own"] {
+    z-index: var(--lb-z, 50);
+  }
+
+  /* Its own element, opacity only, on its own compositor layer for the open lifetime:
+   the one element that changes every frame never repaints the viewport. */
+  .ag-lb-scrim {
+    position: absolute;
+    inset: 0;
+    background: var(--background);
+    opacity: calc(0.001 + var(--lb-p) * 0.919);
+    will-change: opacity;
+    touch-action: none;
+  }
+
+  .ag-lb-stage {
+    position: absolute;
+    outline: none;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+  }
+  .ag-lb-media > img,
+  .ag-lb-media > video {
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+  }
+  /* The track is a REAL scroll container, and the ENGINE drives it for every input.
+   The snap properties are there to land what the engine leaves: `mandatory` is why an
+   image can never be parked between two locks; `scroll-snap-stop: always` is why one
+   gesture is one slide however hard it is thrown, enforced on the compositor by both
+   engines. Nothing here infers a release, because the web exposes no gesture phase to
+   page JS (macOS reports a momentum phase to the browser engine, not to us) and an
+   inference off wheel deltas is what a reader feels as a lottery. Full rationale and
+   the numbers behind it: CLAUDE.md.
+
+   Every slide is mounted, so the scroll offset IS the index and chaining costs
+   nothing: no window to shift, nothing to put back under the reader mid-throw. */
+
+  /* The track spans the whole viewport, not the media band: the enter and exit flights
+   scale the image from a trigger anywhere on the page, and a scroll container
+   clips. */
+  .ag-lb-track {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    gap: 32px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    overscroll-behavior: contain;
+    scrollbar-width: none;
+    scroll-snap-type: x mandatory;
+  }
+  /* A step the engine is animating frame by frame. Every one of those frames looks to
+   the browser like a scroll coming to rest, and a mandatory container would snap out
+   of each one. The magnets return the moment it arrives, on a snap point. */
+  .ag-lb-track[data-stepping] {
+    scroll-snap-type: none;
+  }
+  .ag-lb-track::-webkit-scrollbar {
+    display: none;
+  }
+  /* One slide per screenful. `none` keeps EVERY gesture for the engine, sideways
+   included. Handing the pan to the browser with `pan-x` cost the dismiss: the moment
+   it claimed the touch, `pointercancel` ended our gesture with the finger still down,
+   so a reader swiping through pictures could not then swipe up to leave without
+   lifting first. The engine drives the track for every pointer, so there is no second
+   mover to fight, and the snap properties land what the ENGINE leaves. */
+  .ag-lb-slot {
+    position: relative;
+    flex: none;
+    width: 100%;
+    height: 100%;
+    touch-action: none;
+    scroll-snap-align: center;
+    scroll-snap-stop: always;
+  }
+  /* Zoomed, the image owns every gesture: the fingers go to the engine, not the
+   scroller, so a pan cannot drag the track sideways, and the track must not tug a
+   panned image toward a lock. */
+  .ag-lb[data-zoomed] .ag-lb-track {
+    scroll-snap-type: none;
+  }
+
+  /* Three layers: index − 1, index, index + 1. Only the active one moves, and it
+   moves as Web Animations the engine samples from its spring, every one of them a
+   compositor property: the layer's transform (the pose), and inside it a crop
+   window laid out at the source crop (the layer minus --lb-clip on every side) that
+   scales toward the whole layer while the media box inside scales back, so the
+   media holds its fit size and only the window grows. The window carries the source
+   corner (border-radius: screen radius × (1 − p), divided by the scale so it reads
+   in screen px) and the overflow clip; the media box under it is its own compositor
+   layer, so that rounded clip is composited (CALayer cornerRadius in WebKit, a mask
+   layer in Chromium) and a scale or corner change never re-rasters the image. */
+  .ag-lb-layer {
+    position: absolute;
+    transform-origin: center;
+  }
+  .ag-lb-crop {
+    position: absolute;
+    inset: var(--lb-clip-h) var(--lb-clip-w);
+    overflow: hidden;
+    transform-origin: center;
+  }
+  .ag-lb-media {
+    position: absolute;
+    top: calc(-1 * var(--lb-clip-h));
+    left: calc(-1 * var(--lb-clip-w));
+    width: calc(100% + 2 * var(--lb-clip-w));
+    height: calc(100% + 2 * var(--lb-clip-h));
+    box-sizing: border-box;
+    transform-origin: center;
+    background-size: cover;
+    background-position: center;
+  }
+  .ag-lb-media > img,
+  .ag-lb-media > video,
+  .ag-lb-media > iframe,
+  .ag-lb-frame-ghost {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border: 0;
+  }
+  .ag-lb-layer[data-active] .ag-lb-crop,
+  .ag-lb-layer[data-active] .ag-lb-media {
+    will-change: transform;
+  }
+
+  /* The trigger after a close: focus returns to it, ringed by @ag/tokens' ring,
+   which follows the trigger's own corner (give the trigger the radius, it is the
+   source rect), and stays quiet when the close came from a pointer or a finger. */
+  [data-lightbox][data-focus-quiet]:focus-visible {
+    outline: none;
+  }
+  /* The media box's padding IS the gutter (FRAME_GUTTER in the component); the
+   frame fills the content box. */
+  .ag-lb-layer[data-kind="frame"] iframe,
+  .ag-lb-layer[data-kind="frame"] .ag-lb-frame-ghost {
+    background: var(--sidebar);
+  }
+  .ag-lb-frame-ghost {
+    display: grid;
+    place-items: center;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    text-transform: lowercase;
+    opacity: var(--alpha-meta);
+  }
+  /* The frame owns its own pointer, except while a drag crosses it. */
+  .ag-lb[data-gesture] iframe {
+    pointer-events: none;
+  }
+  /* The original cross-fades over the page's pixels once decoded. */
+  .ag-lb-up,
+  .ag-lb-video {
+    position: absolute;
+    inset: 0;
+  }
+  .ag-lb-up {
+    opacity: 0;
+    transition: opacity var(--dur-2) var(--ease-out);
+  }
+  .ag-lb-up[data-ready] {
+    opacity: 1;
+  }
+  .ag-lb[data-kind="image"] .ag-lb-layer[data-active] {
+    cursor: zoom-in;
+  }
+  /* The cursor says what a click does: in at fit, out when zoomed; a drag pans. */
+  .ag-lb[data-kind="image"][data-zoomed] .ag-lb-layer[data-active] {
+    cursor: zoom-out;
+  }
+  .ag-lb[data-gesture][data-zoomed] .ag-lb-layer[data-active] {
+    cursor: grabbing;
+  }
+
+  /* Chrome reads --lb-p; the group carries its own compositor layer for the open
+   lifetime so a fade never restyles text per frame. Mono, lowercase, alpha ladder.
+   Its box is the media lane, set inline from the same band the stage measures. */
+  .ag-lb-chrome {
+    position: absolute;
+    pointer-events: none;
+    opacity: clamp(0, (var(--lb-p) - 0.7) / 0.3, 1);
+    will-change: opacity;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    text-transform: lowercase;
+  }
+  /* Hidden chrome leaves the tab order and the accessibility tree, not just the
+   screen: visibility, never opacity alone. The live region lives outside it. */
+  .ag-lb[data-chrome="off"] .ag-lb-chrome {
+    visibility: hidden;
+  }
+  .ag-lb-bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 0 8px 0 16px;
+  }
+  .ag-lb-counter {
+    opacity: var(--alpha-meta);
+    font-variant-numeric: tabular-nums;
+  }
+  .ag-lb-status {
+    opacity: var(--alpha-meta);
+  }
+  .ag-lb-spacer {
+    flex: 1;
+  }
+  .ag-lb-btn {
+    pointer-events: auto;
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: inherit;
+    opacity: var(--alpha-meta);
+    cursor: pointer;
+  }
+  .ag-lb-btn:hover,
+  .ag-lb-btn:focus-visible {
+    opacity: var(--alpha-title);
+  }
+  /* Unavailable stays focusable (a disabled control drops focus to body and takes
+   the keyboard with it); it dims and its dispatch is a no-op. */
+  .ag-lb-btn[aria-disabled="true"] {
+    opacity: calc(var(--alpha-meta) * 0.4);
+    cursor: default;
+  }
+  .ag-lb-btn[aria-pressed="true"] {
+    opacity: var(--alpha-title);
+  }
+  .ag-lb-btn svg {
+    width: 16px;
+    height: 16px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  /* Zoomed, the image is the whole stage: the arrows would sit on it unreadable, and
+   a drag there pans. Shift+arrow still steps; the strip still jumps. */
+  .ag-lb[data-zoomed] [data-slot="edge-arrow"] {
+    visibility: hidden;
+  }
+  /* Present only when it explains: the figure's caption, hidden while zoomed or flying. */
+  .ag-lb-caption {
+    position: absolute;
+    left: 16px;
+    right: 16px;
+    bottom: 16px;
+    text-align: center;
+    font-family: var(--font-sans);
+    font-size: 0.875rem;
+    line-height: 1.4;
+    text-transform: none;
+    opacity: var(--alpha-body);
+    transition: opacity var(--dur-2) var(--ease-out);
+    will-change: opacity;
+  }
+  .ag-lb[data-zoomed] .ag-lb-caption,
+  .ag-lb[data-gesture] .ag-lb-caption {
+    opacity: 0;
+  }
+  .ag-lb-live {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    pointer-events: none;
+  }
+
+  /* The rail: beside the media at lg, under it below; both sizes come from the root
+   (the component writes them from its constants). Consumer-owned content under the
+   primitive's facts line. */
+  .ag-lb-rail {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    height: var(--lb-rail-h);
+    overflow: auto;
+    padding: 16px;
+    background: var(--sidebar);
+    border-top: 1px solid
+      color-mix(
+        in oklch,
+        currentColor calc(var(--alpha-hairline) * 100%),
+        transparent
+      );
+    font-family: var(--font-sans);
+    font-size: 0.875rem;
+  }
+  @media (min-width: 64rem) {
+    .ag-lb-rail {
+      top: 0;
+      left: auto;
+      height: auto;
+      width: var(--lb-rail-w);
+      border-top: 0;
+      border-left: 1px solid
+        color-mix(
+          in oklch,
+          currentColor calc(var(--alpha-hairline) * 100%),
+          transparent
+        );
+    }
+  }
+  .ag-lb-facts {
+    margin-bottom: 16px;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    text-transform: lowercase;
+    opacity: var(--alpha-meta);
+  }
+
+  /* The ? sheet: only the actions the world behind it answers to, grouped by section,
+   esc once on its current rung. */
+  .ag-lb-sheet {
+    position: absolute;
+    outline: none;
+    left: 50%;
+    top: 50%;
+    translate: -50% -50%;
+    width: min(320px, calc(100% - 32px));
+    max-height: calc(100% - 32px);
+    overflow: auto;
+    padding: 16px;
+    border-radius: 12px;
+    background: var(--popover);
+    color: var(--popover-foreground);
+    border: 1px solid
+      color-mix(
+        in oklch,
+        currentColor calc(var(--alpha-hairline) * 100%),
+        transparent
+      );
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    text-transform: lowercase;
+  }
+  .ag-lb-sheet-head {
+    margin-bottom: 8px;
+    opacity: var(--alpha-meta);
+  }
+  .ag-lb-sheet dl + .ag-lb-sheet-head {
+    margin-top: 16px;
+  }
+  .ag-lb-sheet dl {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 8px 16px;
+    margin: 0;
+  }
+  .ag-lb-sheet dl > div {
+    display: contents;
+  }
+  .ag-lb-sheet dt {
+    display: flex;
+    gap: 4px;
+  }
+  .ag-lb-sheet dd {
+    margin: 0;
+    opacity: var(--alpha-body);
+  }
+  .ag-lb-sheet kbd {
+    display: inline-block;
+    min-width: 1.5em;
+    padding: 0 4px;
+    border-radius: 4px;
+    text-align: center;
+    background: color-mix(
+      in oklch,
+      currentColor calc(var(--alpha-wash) * 100%),
+      transparent
+    );
+    font: inherit;
+  }
+
+  /* The thumbnail strip rides the bar, between the counter and the buttons, taking
+   the room left. The chrome passes the pointer through; the strip takes it back.
+   Not utilities on the strip: the zoomed rule below must be able to undo them. */
+  .ag-lb-bar > [data-slot="thumb-strip"] {
+    flex: 1;
+    pointer-events: auto;
+    transition: opacity var(--dur-2) var(--ease-out);
+  }
+  /* Zoomed, the strip gets out of the way. It does NOT hide for a gesture: a swipe
+   between slides IS navigation, and the index you are navigating by is the last
+   thing that should blink out. A dismiss drag takes it with the rest of the chrome
+   through --lb-p, which is where fading belongs. */
+  .ag-lb[data-zoomed] .ag-lb-bar > [data-slot="thumb-strip"] {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  /* The debug trace, when a consumer asks for it. */
+  .ag-lb-debug {
+    position: absolute;
+    left: 8px;
+    bottom: 56px;
+    z-index: 30;
+    max-width: calc(100% - 16px);
+    margin: 0;
+    padding: 6px 8px;
+    border-radius: 6px;
+    background: color-mix(in oklab, var(--background) 88%, transparent);
+    color: var(--foreground);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    line-height: 1.35;
+    white-space: pre;
+    /* A trajectory table is taller than a log, and the point of one is handing it to
+     someone else, so this scrolls and takes a pointer instead of ignoring it. Bounded
+     in BOTH axes: at full height it covered the picture it was recording. */
+    max-height: 40vh;
+    max-inline-size: min(calc(100% - 16px), 42ch);
+    overflow: auto;
+    pointer-events: auto;
+    overscroll-behavior: contain;
+  }
+  .ag-lb-debug pre {
+    margin: 0;
+    /* One tap selects the lot, which is the only usable clipboard on a phone. */
+    user-select: all;
+    -webkit-user-select: all;
+  }
+  /* A header, not a floating pair of buttons. It stays put while the trace scrolls
+   under it, because a buffer worth reading is longer than the box and a copy control
+   that scrolls away cannot be reached; but it is OPAQUE and full width, or the lines
+   passing behind it read as part of it. */
+  .ag-lb-debug-bar {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 2px;
+    /* Out to the padding edges, so nothing shows down the sides. */
+    margin: -6px -8px 6px;
+    padding: 4px 6px;
+    background: var(--background);
+    border-bottom: 1px solid var(--border);
+  }
+  .ag-lb-debug-btn {
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: var(--muted-foreground);
+    font: inherit;
+    cursor: pointer;
+  }
+  .ag-lb-debug-btn:hover {
+    color: var(--foreground);
+    background: color-mix(in oklab, var(--foreground) 8%, transparent);
+  }
+
+  /* Reduced motion: the spring assumes its target at once (STILL), the scrim sits at
+   rest, and nothing cross-fades. Gestures still follow the finger. */
+  @media (prefers-reduced-motion: reduce) {
+    .ag-lb-up,
+    .ag-lb-caption,
+    .ag-lb-bar > [data-slot="thumb-strip"] {
+      transition: none;
+    }
+  }
+}
