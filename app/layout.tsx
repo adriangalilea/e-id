@@ -7,7 +7,7 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Toaster } from "@/components/ui/toaster";
 import { getBaseUrl } from "@/lib/url";
 import { SitePageSensor } from "@/components/page-sensor";
-import { visitsEnabled } from "@/lib/visits";
+import { visitsEnabled } from "@/lib/visit-store";
 
 const inter = Inter({
   subsets: ["latin"],
