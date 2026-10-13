@@ -17,6 +17,12 @@ const NOT_SAFARI = ".*(?:Chrome|CriOS).*";
 
 const nextConfig: NextConfig = {
   cacheComponents: true,
+  // The share image's renderer is a native addon (lib/card-image): loaded from
+  // node_modules at run time, never bundled.
+  serverExternalPackages: ["@resvg/resvg-js"],
+  // Its fonts are read from disk at run time; the trace is told, since a path
+  // built from process.cwd() is not followed.
+  outputFileTracingIncludes: { "/[username]/opengraph-image": ["./assets/fonts/*"] },
   async redirects() {
     return [
       {

@@ -9,7 +9,7 @@ import {
 } from "@/lib/data";
 import { getPresence } from "@/lib/presence";
 import { CARD_TYPE } from "@/lib/card";
-import { EMOJI_DOMAIN, PROD_URL } from "@/lib/const";
+import { EMOJI_DOMAIN } from "@/lib/const";
 import { inlineJson, profileJsonLd, profileUrl } from "@/lib/profile-ld";
 import { CommentInteraction, HiddenFromOwner } from "./comment_section";
 import { OwnerActions } from "./owner_actions";
@@ -38,10 +38,6 @@ export async function generateMetadata(props: {
 
   const socials = await getPublicSocials(user.id);
   const platforms = [...new Set(socials.map((social) => social.platform))];
-  const ogUrl = new URL(`${PROD_URL}/api/og`);
-  ogUrl.searchParams.set("name", user.name || "");
-  ogUrl.searchParams.set("socials", platforms.join(","));
-
   const title = user.name
     ? `${user.name} (@${user.username})`
     : `@${user.username}`;
@@ -65,15 +61,9 @@ export async function generateMetadata(props: {
       type: "profile",
       username: user.username,
       url: profileUrl(user.username),
-      images: [
-        {
-          url: ogUrl.toString(),
-          width: 1200,
-          height: 630,
-          alt: `${title} on ${EMOJI_DOMAIN}`,
-        },
-      ],
     },
+    // The image is the card (opengraph-image), shown large.
+    twitter: { card: "summary_large_image", title, description },
   };
 }
 

@@ -1,0 +1,331 @@
+import "server-only";
+
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+import { Resvg } from "@resvg/resvg-js";
+import * as FLAGS from "country-flag-icons/string/3x2";
+import { __iconNode as circleDotDashed } from "lucide-react/dist/esm/icons/circle-dot-dashed.js";
+import { __iconNode as github } from "lucide-react/dist/esm/icons/github.js";
+import { __iconNode as instagram } from "lucide-react/dist/esm/icons/instagram.js";
+import { __iconNode as link } from "lucide-react/dist/esm/icons/link.js";
+import { __iconNode as mail } from "lucide-react/dist/esm/icons/mail.js";
+import { __iconNode as send } from "lucide-react/dist/esm/icons/send.js";
+import { __iconNode as twitter } from "lucide-react/dist/esm/icons/twitter.js";
+import { __iconNode as youtube } from "lucide-react/dist/esm/icons/youtube.js";
+import type { Card } from "@/lib/card";
+import { EMOJI_DOMAIN } from "@/lib/const";
+import { HOLO_ART, type HoloArt } from "@/lib/holo";
+import { MARK_BOX, MARK_PATH } from "@/lib/mark";
+
+// THE SHARE IMAGE: a person's card (lib/card) drawn as the card the profile shows,
+// as one SVG, rasterised by resvg. The same geometry as components/id-card, every
+// length a share of the card's width (`u`, its cqw), the same prints (lib/holo),
+// lit as a hand holding the card would light them. Text is measured by the
+// renderer that draws it, with the site's own fonts (assets/fonts, OFL), so a name
+// wraps and a handle truncates where they really end.
+
+export const SHARE_SIZE = { width: 1200, height: 630 };
+
+const FONTS = ["SpaceGrotesk-Regular.ttf", "SpaceGrotesk-Medium.ttf", "SpaceMono-Regular.ttf"].map(
+  (file) => join(process.cwd(), "assets/fonts", file),
+);
+const RESVG_FONT = { fontFiles: FONTS, loadSystemFonts: false, defaultFontFamily: "Space Grotesk" };
+const SANS = "Space Grotesk";
+const MONO = "Space Mono";
+
+/** The page and the card, the site's dark (`--background`, `--foreground`, globals.css). */
+const PAGE = "#060606";
+const INK = "#f5f5f5";
+
+/** THE FOIL, `--foil` in globals.css: the same stops, one OKLCH lightness and chroma,
+ *  only the hue turning, written here as sRGB since that is what an SVG takes. */
+const FOIL = [350, 250, 165, 90, 300, 350].map((hue) => oklchHex(0.78, 0.14, hue));
+
+/** Where the light lies across the card, as a hand tilting it would put it (`--px`):
+ *  a third of the way in, on the photo's edge, so the band crosses the seal. */
+const LIGHT = 0.36;
+
+type IconNode = [string, Record<string, string>][];
+const ICONS: Record<string, IconNode> = {
+  website: link,
+  email: mail,
+  github,
+  twitter,
+  youtube,
+  instagram,
+  self: circleDotDashed,
+  telegram: send,
+};
+
+function oklchHex(L: number, C: number, hue: number): string {
+  const a = C * Math.cos((hue * Math.PI) / 180);
+  const b = C * Math.sin((hue * Math.PI) / 180);
+  const l = (L + 0.3963377774 * a + 0.2158037573 * b) ** 3;
+  const m = (L - 0.1055613458 * a - 0.0638541728 * b) ** 3;
+  const s = (L - 0.0894841775 * a - 1.291485548 * b) ** 3;
+  const linear = [
+    4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s,
+    -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s,
+    -0.0041960863 * l - 0.7034186147 * m + 1.707614701 * s,
+  ];
+  return `#${linear
+    .map((x) => {
+      const c = Math.min(1, Math.max(0, x));
+      const g = c <= 0.0031308 ? 12.92 * c : 1.055 * c ** (1 / 2.4) - 0.055;
+      return Math.round(g * 255)
+        .toString(16)
+        .padStart(2, "0");
+    })
+    .join("")}`;
+}
+
+const esc = (s: string) =>
+  s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+const f = (n: number) => Number(n.toFixed(2));
+
+/** A CSS `linear-gradient(<angle>deg, …)` over a box, as an SVG gradient's ends: the
+ *  line through the box's centre at that angle, long enough that its ends' normals
+ *  touch the far corners (CSS's own definition). */
+function cssLine(angle: number, x: number, y: number, w: number, h: number) {
+  const r = (angle * Math.PI) / 180;
+  const dx = Math.sin(r);
+  const dy = -Math.cos(r);
+  const half = (Math.abs(w * dx) + Math.abs(h * dy)) / 2;
+  const cx = x + w / 2;
+  const cy = y + h / 2;
+  return `x1="${f(cx - dx * half)}" y1="${f(cy - dy * half)}" x2="${f(cx + dx * half)}" y2="${f(cy + dy * half)}" gradientUnits="userSpaceOnUse"`;
+}
+
+const foilStops = () =>
+  FOIL.map((c, i) => `<stop offset="${f(i / (FOIL.length - 1))}" stop-color="${c}"/>`).join("");
+
+/** How wide `text` sets, in px: the renderer's own measure of it. */
+function measure(text: string, family: string, weight: number, size: number): number {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${size * text.length * 2}" height="${size * 2}"><text x="0" y="${size}" font-family="${family}" font-weight="${weight}" font-size="${size}">${esc(text)}</text></svg>`;
+  const box = new Resvg(svg, { font: RESVG_FONT }).getBBox();
+  return box ? box.x + box.width : 0;
+}
+
+/** Lines of at most `width`, at most `max` of them, the last cut with an ellipsis. */
+function wrap(text: string, width: number, max: number, fits: (s: string) => boolean): string[] {
+  const words = text.split(/\s+/).filter(Boolean);
+  const lines: string[] = [];
+  let line = "";
+  for (const word of words) {
+    const next = line ? `${line} ${word}` : word;
+    if (fits(next) || !line) line = next;
+    else {
+      lines.push(line);
+      line = word;
+    }
+  }
+  if (line) lines.push(line);
+  if (lines.length > max) lines.splice(max - 1, lines.length, lines.slice(max - 1).join(" "));
+  return lines.map((l) => (fits(l) ? l : cut(l, fits)));
+}
+
+/** The longest start of `text` that fits with an ellipsis after it. */
+function cut(text: string, fits: (s: string) => boolean): string {
+  let n = text.length;
+  while (n > 1 && !fits(`${text.slice(0, n).trimEnd()}…`)) n--;
+  return `${text.slice(0, n).trimEnd()}…`;
+}
+
+/** The mark (lib/mark), its own box `size` tall, its foot on `y`. */
+function mark(x: number, y: number, size: number, fill: string): string {
+  const k = size / MARK_BOX.h;
+  return `<path transform="translate(${f(x - MARK_BOX.x * k)} ${f(y - size - MARK_BOX.y * k)}) scale(${f(k)})" d="${MARK_PATH}" fill="${fill}"/>`;
+}
+
+function icon(node: IconNode, x: number, y: number, size: number): string {
+  const parts = node
+    .map(([tag, attrs]) => {
+      const a = Object.entries(attrs)
+        .filter(([k]) => k !== "key")
+        .map(([k, v]) => `${k.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`)}="${esc(String(v))}"`)
+        .join(" ");
+      return `<${tag} ${a}/>`;
+    })
+    .join("");
+  return `<g transform="translate(${f(x)} ${f(y)}) scale(${f(size / 24)})" fill="none" stroke="${INK}" stroke-opacity="0.7" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">${parts}</g>`;
+}
+
+const dataUri = (mime: string, bytes: Uint8Array) =>
+  `data:${mime};base64,${Buffer.from(bytes).toString("base64")}`;
+
+/** The person's photo as a data URI resvg can draw, or null. A photo that cannot be
+ *  fetched or is of a kind resvg cannot read (it reads PNG, JPEG and GIF) leaves the
+ *  photo slot empty, as a card with no photo has: the share image of a person must
+ *  not fail on their avatar host. */
+async function photoOf(url: string | null): Promise<string | null> {
+  if (!url) return null;
+  const sized = /avatars\.githubusercontent\.com/.test(url)
+    ? `${url}${url.includes("?") ? "&" : "?"}s=460`
+    : url;
+  const response = await fetch(sized);
+  if (!response.ok) {
+    console.warn(`share image: ${url} answered ${response.status}`);
+    return null;
+  }
+  const mime = response.headers.get("content-type")?.split(";")[0] ?? "";
+  if (!["image/png", "image/jpeg", "image/gif"].includes(mime)) {
+    console.warn(`share image: ${url} is ${mime || "of no stated type"}, which resvg cannot draw`);
+    return null;
+  }
+  return dataUri(mime, new Uint8Array(await response.arrayBuffer()));
+}
+
+function pattern(id: string, a: HoloArt): string {
+  return `<pattern id="${id}" width="${a.width}" height="${a.height}" patternUnits="userSpaceOnUse">${a.body}</pattern>`;
+}
+
+/** The card as SVG, 1200 by 630. */
+export async function cardSvg(card: Card): Promise<string> {
+  const { width: W, height: H } = SHARE_SIZE;
+  // The card, ID-1 (85.6 by 53.98 mm, corners 3.18), centred, three quarters as tall
+  // as the image: the image is the card.
+  const cw = 760;
+  const ch = (cw * 53.98) / 85.6;
+  const u = cw / 100;
+  const cx = (W - cw) / 2;
+  const cy = (H - ch) / 2;
+  const radius = (3.18 / 85.6) * cw;
+  const pad = 6 * u;
+  const at = (x: number, y: number) => [cx + x * u, cy + y * u] as const;
+
+  // The body: the head alone above, the photo and the words beside it centred in
+  // the room under it (components/id-card).
+  const headLine = 4.5;
+  const bodyTop = 6 + headLine + ((63.06 - 6 - (6 + headLine)) - 30) / 2;
+  const bodyFoot = bodyTop + 30;
+  const photoX = 6;
+  const textX = photoX + 30 + 5;
+  const textWidth = (100 - 6 - textX) * u;
+
+  const photo = await photoOf(card.photo);
+
+  // The words, from the foot up: the places, the address, the name.
+  const places = card.places.filter((p) => ICONS[p.platform]);
+  let foot = bodyFoot - 1;
+  const flair = places.length
+    ? places
+        .slice(0, Math.floor((textWidth + 0.6 * u) / (7.4 * u)))
+        .map((p, i) => icon(ICONS[p.platform] as IconNode, cx + textX * u + i * 7.4 * u, cy + (foot - 1.1 - 4.6) * u, 4.6 * u))
+        .join("")
+    : "";
+  if (places.length) foot -= 6.8 + 1.5;
+
+  const addressSize = 3 * u;
+  const addressBase = foot - 0.6 - 1.5 + 0.2;
+  const markSize = addressSize * 0.72;
+  const tail = `.${EMOJI_DOMAIN.split(".").slice(1).join(".")}/${card.handle}`;
+  const tailRoom = textWidth - markSize - 0.15 * addressSize;
+  const tailFits = (s: string) => measure(s, MONO, 400, addressSize) <= tailRoom;
+  const tailText = tailFits(tail) ? tail : cut(tail, tailFits);
+  const address =
+    mark(cx + textX * u, cy + addressBase * u, markSize, `${INK}`) +
+    `<text x="${f(cx + textX * u + markSize + 0.15 * addressSize)}" y="${f(cy + addressBase * u)}" font-family="${MONO}" font-size="${f(addressSize)}" fill="${INK}" fill-opacity="0.5">${esc(tailText)}</text>`;
+  foot -= 5.7 + 1.5;
+
+  const nameSize = 7 * u;
+  const nameFits = (s: string) => measure(s, SANS, 500, nameSize) <= textWidth;
+  const nameLines = wrap(card.name, textWidth, 2, nameFits);
+  const lineStep = 1.02 * nameSize;
+  const name = nameLines
+    .map((line, i) => {
+      const base = cy + foot * u - (nameLines.length - 1 - i) * lineStep - 0.2 * nameSize;
+      return `<text x="${f(cx + textX * u)}" y="${f(base)}" font-family="${SANS}" font-weight="500" font-size="${f(nameSize)}" letter-spacing="${f(-0.03 * nameSize)}" fill="${INK}">${esc(line)}</text>`;
+    })
+    .join("");
+
+  // The head: the mark and e-id, the country and its flag.
+  const headBase = 6 + 3.25;
+  const headSize = 3 * u;
+  const flag = card.country ? (FLAGS as Record<string, string>)[card.country] : undefined;
+  const flagH = 4 * u * 0.7;
+  const flagW = flagH * 1.5;
+  const [hx, hy] = at(100 - 6, headBase);
+  const head =
+    mark(cx + pad, hy, headSize * 0.7, INK) +
+    `<text x="${f(cx + pad + headSize * 0.7 * (MARK_BOX.w / MARK_BOX.h) + 1.5 * u)}" y="${f(hy)}" font-family="${SANS}" font-weight="500" font-size="${f(headSize)}" letter-spacing="${f(-0.02 * headSize)}" fill="${INK}" fill-opacity="0.85">e-id</text>` +
+    (flag
+      ? `<image href="${dataUri("image/svg+xml", new TextEncoder().encode(flag))}" x="${f(hx - flagW)}" y="${f(hy - flagH)}" width="${f(flagW)}" height="${f(flagH)}" preserveAspectRatio="none"/>` +
+        `<rect x="${f(hx - flagW)}" y="${f(hy - flagH)}" width="${f(flagW)}" height="${f(flagH)}" fill="none" stroke="#fff" stroke-opacity="0.18" stroke-width="1"/>` +
+        `<text x="${f(hx - flagW - 1.5 * u)}" y="${f(hy)}" text-anchor="end" font-family="${MONO}" font-size="${f(headSize)}" fill="${INK}" fill-opacity="0.6">${esc(card.country ?? "")}</text>`
+      : "");
+
+  // The photo, and its ghost: the same face again as a line-screened print in the
+  // card's corner, dissolving at its edges.
+  const [px, py] = at(photoX, bodyTop);
+  const ps = 30 * u;
+  const portrait = photo
+    ? `<image href="${photo}" x="${f(px)}" y="${f(py)}" width="${f(ps)}" height="${f(ps)}" preserveAspectRatio="xMidYMid slice" clip-path="url(#photo)"/>`
+    : `<g opacity="0.15">${mark(px + ps / 2 - (ps / 2) * (MARK_BOX.w / MARK_BOX.h) / 2, py + ps * 0.75, ps / 2, "#fff")}</g>`;
+  const [gx, gy] = at(100 - 2 - 34, 6);
+  const gs = 34 * u;
+  const ghost = photo
+    ? `<image href="${photo}" x="${f(gx)}" y="${f(gy)}" width="${f(gs)}" height="${f(gs)}" preserveAspectRatio="xMidYMid slice" filter="url(#ghost)" mask="url(#ghost-mask)" opacity="0.3"/>`
+    : "";
+
+  // The hologram, lit: the laminate's line work and the seal, in the foil, shown
+  // only in the band of light.
+  const sealSize = 14 * u;
+  const [sx, sy] = at(29, 63.06 - 37 - 14);
+  const band = LIGHT * 100;
+  const foilBox = { x: cx - 3 * cw * LIGHT, w: 4 * cw };
+
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">
+<defs>
+  <radialGradient id="beam" gradientUnits="userSpaceOnUse" cx="0" cy="0" r="1" gradientTransform="translate(${W / 2} ${f(-0.06 * H)}) scale(${f(0.12 * W)} ${f(0.55 * H)})"><stop offset="0" stop-color="#fff" stop-opacity="0.09"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
+  <radialGradient id="halo" gradientUnits="userSpaceOnUse" cx="0" cy="0" r="1" gradientTransform="translate(${W / 2} ${f(-0.12 * H)}) scale(${f(0.42 * W)} ${f(0.75 * H)})"><stop offset="0" stop-color="#fff" stop-opacity="0.055"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
+  <linearGradient id="body" ${cssLine(135, cx, cy, cw, ch)}><stop offset="0" stop-color="#1e1e21"/><stop offset="0.55" stop-color="#131315"/><stop offset="1" stop-color="#0d0d0e"/></linearGradient>
+  <linearGradient id="rim" ${cssLine(135, cx, cy, cw, ch)}><stop offset="0" stop-color="#fff" stop-opacity="0.4"/><stop offset="0.35" stop-color="#fff" stop-opacity="0.08"/><stop offset="0.75" stop-color="#fff" stop-opacity="0.04"/><stop offset="1" stop-color="#fff" stop-opacity="0.18"/></linearGradient>
+  <linearGradient id="foil" ${cssLine(115, foilBox.x, cy, foilBox.w, ch)}>${foilStops()}</linearGradient>
+  <linearGradient id="edge-foil" ${cssLine(115, 0, 0, W, H)}>${foilStops()}</linearGradient>
+  <linearGradient id="band" ${cssLine(115, cx, cy, cw, ch)}><stop offset="${f((band - 40) / 100)}" stop-color="#fff" stop-opacity="0"/><stop offset="${f((band - 8) / 100)}" stop-color="#fff"/><stop offset="${f((band + 8) / 100)}" stop-color="#fff"/><stop offset="${f((band + 40) / 100)}" stop-color="#fff" stop-opacity="0"/></linearGradient>
+  <radialGradient id="ghost-fade" cx="0.5" cy="0.5" r="0.5"><stop offset="0.35" stop-color="#fff"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
+  ${pattern("guilloche", HOLO_ART.guilloche)}
+  ${pattern("emblems", HOLO_ART.emblems)}
+  <pattern id="screen" width="3" height="3" patternUnits="userSpaceOnUse"><rect width="3" height="1" fill="#fff"/></pattern>
+  <clipPath id="card"><rect x="${f(cx)}" y="${f(cy)}" width="${f(cw)}" height="${f(ch)}" rx="${f(radius)}"/></clipPath>
+  <clipPath id="photo"><rect x="${f(px)}" y="${f(py)}" width="${f(ps)}" height="${f(ps)}" rx="${f(1.4 * u)}"/></clipPath>
+  <mask id="screen-mask"><rect x="${f(gx)}" y="${f(gy)}" width="${f(gs)}" height="${f(gs)}" fill="url(#screen)"/></mask>
+  <mask id="ghost-mask"><g mask="url(#screen-mask)"><rect x="${f(gx)}" y="${f(gy)}" width="${f(gs)}" height="${f(gs)}" fill="url(#ghost-fade)"/></g></mask>
+  <filter id="ghost" color-interpolation-filters="sRGB"><feColorMatrix type="saturate" values="0"/><feComponentTransfer><feFuncR type="linear" slope="1.25" intercept="-0.125"/><feFuncG type="linear" slope="1.25" intercept="-0.125"/><feFuncB type="linear" slope="1.25" intercept="-0.125"/></feComponentTransfer></filter>
+  <mask id="band-mask"><rect x="${f(cx)}" y="${f(cy)}" width="${f(cw)}" height="${f(ch)}" fill="url(#band)"/></mask>
+  <mask id="laminate"><rect x="${f(cx)}" y="${f(cy)}" width="${f(cw)}" height="${f(ch)}" fill="url(#guilloche)"/><rect x="${f(cx)}" y="${f(cy)}" width="${f(cw)}" height="${f(ch)}" fill="url(#emblems)"/></mask>
+  <mask id="seal"><g transform="translate(${f(sx)} ${f(sy)}) scale(${f(sealSize / HOLO_ART.seal.width)})">${HOLO_ART.seal.body}</g></mask>
+  <!-- The card's shadow is its own shape, blurred: a drop shadow filter on the
+       body made resvg draw the body's gradient in hard steps. -->
+  <filter id="lift" x="-20%" y="-30%" width="140%" height="160%"><feGaussianBlur stdDeviation="${f(4 * u)}"/></filter>
+  <filter id="grain" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="7"/><feColorMatrix type="saturate" values="0"/></filter>
+</defs>
+<rect width="${W}" height="${H}" fill="${PAGE}"/>
+<rect width="${W}" height="${H}" fill="url(#halo)"/>
+<rect width="${W}" height="${H}" fill="url(#beam)"/>
+<rect x="${f(cx)}" y="${f(cy + 3 * u)}" width="${f(cw)}" height="${f(ch)}" rx="${f(radius)}" fill="#000" fill-opacity="0.65" filter="url(#lift)"/>
+<rect x="${f(cx)}" y="${f(cy)}" width="${f(cw)}" height="${f(ch)}" rx="${f(radius)}" fill="url(#body)"/>
+<g clip-path="url(#card)">
+  ${ghost}
+  <g mask="url(#band-mask)" opacity="0.26" style="mix-blend-mode:screen">
+    <rect x="${f(cx)}" y="${f(cy)}" width="${f(cw)}" height="${f(ch)}" fill="url(#foil)" mask="url(#laminate)"/>
+    <rect x="${f(cx)}" y="${f(cy)}" width="${f(cw)}" height="${f(ch)}" fill="url(#foil)" mask="url(#seal)"/>
+  </g>
+  <rect x="${f(px)}" y="${f(py)}" width="${f(ps)}" height="${f(ps)}" rx="${f(1.4 * u)}" fill="#fff" fill-opacity="0.05" stroke="#fff" stroke-opacity="0.08"/>
+  ${portrait}
+  ${head}
+  ${name}
+  ${address}
+  ${flair}
+</g>
+<rect x="${f(cx + 0.5)}" y="${f(cy + 0.5)}" width="${f(cw - 1)}" height="${f(ch - 1)}" rx="${f(radius - 0.5)}" fill="none" stroke="url(#rim)"/>
+<rect x="${f(cx + 0.5)}" y="${f(cy + 0.5)}" width="${f(cw - 1)}" height="${f(ch - 1)}" rx="${f(radius - 0.5)}" fill="none" stroke="url(#edge-foil)" stroke-opacity="0.16"/>
+<rect width="${W}" height="${H}" filter="url(#grain)" opacity="0.045"/>
+</svg>`;
+}
+
+/** The card as the PNG a link preview shows. */
+export async function cardPng(card: Card): Promise<Uint8Array> {
+  const svg = await cardSvg(card);
+  return new Resvg(svg, { font: RESVG_FONT, fitTo: { mode: "original" } }).render().asPng();
+}

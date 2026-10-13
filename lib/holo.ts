@@ -6,11 +6,19 @@
 // as custom properties (`HOLO_PRINTS`); which it shows, where the band of light
 // is (`--px`, from a Tilt) and how strongly are the stylesheet's (`id-card-holo`,
 // `data-cta`). Each is from a fixed seed or pure geometry, so the server and the
-// browser draw the same.
+// browser draw the same, and the share image (lib/card-image) draws the same
+// prints from the same geometry (`HOLO_ART`).
 
 import { MARK_PATH } from "@/lib/mark";
 
-function svgUrl(width: number, height: number, body: string): string {
+/** A print as SVG: its tile's size and what is drawn in it, white on nothing. */
+export type HoloArt = { width: number; height: number; body: string };
+
+function art(width: number, height: number, body: string): HoloArt {
+  return { width, height, body };
+}
+
+function svgUrl({ width, height, body }: HoloArt): string {
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">${body}</svg>`;
   return `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
 }
@@ -30,7 +38,7 @@ function seeded(seed: number): () => number {
 /** GUILLOCHÉ, the line work of banknotes: five sine waves a fifth of a turn apart,
  *  one period every 80 px, in a band 40 px tall, a tile that repeats seamlessly
  *  across and stacks into ribbons down. */
-function guilloche(): string {
+function guilloche(): HoloArt {
   const W = 160;
   const H = 40;
   const waves = Array.from({ length: 5 }, (_, i) => {
@@ -42,25 +50,25 @@ function guilloche(): string {
     });
     return `<polyline points="${points.join(" ")}" fill="none" stroke="#fff" stroke-width="0.45"/>`;
   });
-  return svgUrl(W, H, waves.join(""));
+  return art(W, H, waves.join(""));
 }
 
 /** EMBLEMS: the mark, 10 px, twice in a 72 px tile, staggered, a texture. */
-function emblems(): string {
+function emblems(): HoloArt {
   const at = (x: number, y: number) =>
     `<path transform="translate(${x} ${y}) scale(0.42)" d="${MARK_PATH}" fill="#fff"/>`;
-  return svgUrl(72, 72, at(8, 8) + at(44, 44));
+  return art(72, 72, at(8, 8) + at(44, 44));
 }
 
 /** A SEAL: two rings, a rosette of 48 ticks between them, the mark at its heart. */
-function seal(): string {
+function seal(): HoloArt {
   const ticks = Array.from({ length: 48 }, (_, i) => {
     const a = (i * 2 * Math.PI) / 48;
     const p = (r: number) =>
       `${(50 + r * Math.cos(a)).toFixed(2)} ${(50 + r * Math.sin(a)).toFixed(2)}`;
     return `M${p(31)}L${p(40)}`;
   });
-  return svgUrl(
+  return art(
     100,
     100,
     `<circle cx="50" cy="50" r="46" fill="none" stroke="#fff" stroke-width="1.2"/>` +
@@ -74,7 +82,7 @@ function seal(): string {
  *  clump), each joined to its two nearest, a few hubs joined to four and drawn as
  *  the mark in a ring. Drawn once at an ID card's proportions (100 across) and laid
  *  over a surface whole, not tiled. */
-function web(): string {
+function web(): HoloArt {
   const W = 100;
   const H = (100 * 53.98) / 85.6;
   const random = seeded(19);
@@ -108,19 +116,27 @@ function web(): string {
         `<path transform="translate(${f(n.x - 1.5)} ${f(n.y - 1.6)}) scale(0.125)" d="${MARK_PATH}" fill="#fff"/>`
       : `<circle cx="${f(n.x)}" cy="${f(n.y)}" r="0.35" fill="#fff"/>`,
   );
-  return svgUrl(
+  return art(
     W,
     H,
     `<path d="${lines.join("")}" stroke="#fff" stroke-width="0.12" fill="none"/>${dots.join("")}`,
   );
 }
 
+/** The prints, drawn once. */
+export const HOLO_ART = {
+  guilloche: guilloche(),
+  emblems: emblems(),
+  web: web(),
+  seal: seal(),
+};
+
 /** The prints as the custom properties a surface wears to carry them. */
 export const HOLO_PRINTS = {
-  "--holo-guilloche": guilloche(),
-  "--holo-emblems": emblems(),
-  "--holo-web": web(),
-  "--holo-seal": seal(),
+  "--holo-guilloche": svgUrl(HOLO_ART.guilloche),
+  "--holo-emblems": svgUrl(HOLO_ART.emblems),
+  "--holo-web": svgUrl(HOLO_ART.web),
+  "--holo-seal": svgUrl(HOLO_ART.seal),
 } as Record<`--holo-${string}`, string>;
 
 /** Which print a card's hologram carries: the laminate (guilloché and emblems), or
