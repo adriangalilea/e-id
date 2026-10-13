@@ -25,8 +25,10 @@ export function BrandMark({ className }: { className?: string }) {
 
 /** 👤.to as e-id writes it: the mark where the emoji stands, the emoji still in the
  *  text under it, so selecting and copying the address gives 👤.to and a screen
- *  reader reads it. The mark is set at the capitals' height on the baseline, a
- *  letter of the address rather than a picture beside it. */
+ *  reader reads it. The mark is an inline SVG, so its foot is the text's baseline, and
+ *  one `cap` tall, the font's own capital height, a letter of the address rather than
+ *  a picture beside it. The emoji's own box is never the reference: its font's
+ *  ascent and descent are not the text's. */
 export function EmojiDomain({
   path,
   className,
@@ -37,9 +39,11 @@ export function EmojiDomain({
 }) {
   return (
     <span className={cn("whitespace-nowrap", className)}>
-      <span className="mr-[0.06em] inline-grid place-items-end align-baseline *:col-start-1 *:row-start-1">
-        <span className="opacity-0">{EMOJI}</span>
-        <BrandMark className="mb-[0.02em] size-[0.72em]" />
+      <span className="relative mr-[0.08em]">
+        <BrandMark className="inline size-[1cap] align-baseline" />
+        <span className="absolute inset-0 overflow-hidden leading-none text-transparent">
+          {EMOJI}
+        </span>
       </span>
       {TLD}
       {path}
