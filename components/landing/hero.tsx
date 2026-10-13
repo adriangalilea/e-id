@@ -2,6 +2,7 @@ import { EmojiDomain } from "@/components/brand";
 import { NavActions } from "@/components/footer/footer";
 import { GUTTER } from "@/components/frame";
 import { IdCard, type Holder } from "@/components/id-card";
+import { HeroShown } from "@/components/presence";
 import { Glass } from "@/components/ui/material-glass";
 import { cn } from "@/lib/utils";
 import { MakeYours } from "./make-yours";
@@ -25,6 +26,7 @@ const YOU: Holder = {
 export function Hero() {
   return (
     <>
+      <HeroShown />
       <div data-slot="hero-space" aria-hidden className="hidden" />
       <section
         data-slot="hero"

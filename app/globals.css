@@ -174,7 +174,11 @@
    page, the bar at the foot. */
 @media (min-width: 48rem) {
   @supports (animation-timeline: scroll()) {
-    body:has([data-slot="hero"]) {
+    /* "The hero is shown": its effect says so once React owns the page; before
+       that, for the first paint, the document does (components/presence). Never
+       the document after hydration: Next keeps a page you left mounted, hidden,
+       and its hero would still be found there. */
+    :root:is([data-hero], :not([data-hydrated]):has([data-slot="hero"])) {
       /* What it holds and a little air: the words from 8rem, two lines of the
          title (2 × 0.95 × 6rem), the 3rem gap, the 3.5rem button. */
       --hero-h: 28rem;
@@ -187,10 +191,12 @@
       --content-left: max(2rem, calc((100vw - 72rem) / 2 + 2rem));
       --hero-range: 0px calc(var(--hero-h) - var(--bar-h) - var(--bar-top));
     }
-    body:has([data-slot="hero"]) [data-slot="site-nav"] {
+    :root:is([data-hero], :not([data-hydrated]):has([data-slot="hero"]))
+      [data-slot="site-nav"] {
       display: none;
     }
-    body:has([data-slot="hero"]) [data-slot="page"] {
+    :root:is([data-hero], :not([data-hydrated]):has([data-slot="hero"]))
+      [data-slot="page"] {
       padding-top: 0;
     }
     [data-slot="hero-space"] {
