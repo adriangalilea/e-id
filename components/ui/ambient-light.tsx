@@ -15,9 +15,16 @@
 // light composited over the page afterwards in 8 bits would band again in
 // its alpha. It fills its positioned parent (`absolute inset-0`); place and
 // size that box (a fixed layer, a section). The canvas is drawn at half the
-// box's CSS pixels, then smoothed up: light this broad has no detail to
-// lose, and the dither survives the upscale. Colours may be any CSS colour,
-// `var()` included, resolved where the canvas stands.
+// box's CSS pixels, then enlarged pixel for pixel (never smoothed, which
+// averaged the dither away): light this broad has no detail to lose. Colours
+// may be any CSS colour, `var()` included, resolved where the canvas stands.
+//
+// With no ground (`ground="none"`) it is the light alone, its alpha dithered,
+// over whatever lies under it. Say what that is (`over`) when the light is
+// near it in tone, a shadow on a dark page above all: there a whole 255 steps
+// of alpha cross only the few levels between the two colours, so a noise of one
+// alpha step moves no pixel and the fall banded. Knowing the colour under it,
+// the noise is sized to one level of what is seen.
 //
 // It is there in the page's first paint. An inline script right after the
 // canvas paints it while the page is still being parsed: the stylesheets
@@ -51,10 +58,14 @@ export interface AmbientLightProps {
    *  the light alone over whatever lies under it (behind a page's subject, in
    *  the middle of the page, where a ground would cover what is round it). */
   ground?: string
+  /** With no ground: the colour the light lies over, so its dither is sized to
+   *  what is seen (a shadow over a dark page). Any CSS colour; default none,
+   *  for a light far from what it lies on. */
+  over?: string
   className?: string
 }
 
-type Light = { glows: Glow[]; ground: string }
+type Light = { glows: Glow[]; ground: string; over: string | null }
 
 /** The size a canvas was painted for, so a repaint happens only when the box
  *  changed (or nothing painted it yet). */
@@ -64,7 +75,7 @@ const sizeOf = (canvas: HTMLCanvasElement) =>
 /** Paints the light into `canvas` at half its box, dithered. Self-contained
  *  (no imports, no outer names): it is also serialized into the inline
  *  script that paints the canvas before the first paint. */
-function paint(canvas: HTMLCanvasElement, { glows, ground }: Light) {
+function paint(canvas: HTMLCanvasElement, { glows, ground, over }: Light) {
   const scale = 0.5
   // A CSS colour as sRGB 0..255, read through a 1px canvas, which accepts
   // every colour syntax the browser does; custom properties resolved as the
@@ -95,6 +106,7 @@ function paint(canvas: HTMLCanvasElement, { glows, ground }: Light) {
   // over whatever it lies on.
   const bare = ground === "none"
   const base = bare ? ([0, 0, 0] as const) : rgb(ground)
+  const under = bare && over ? rgb(over) : null
   const lights = glows.map((g) => ({
     ...g,
     rgb: rgb(g.color),
@@ -132,12 +144,31 @@ function paint(canvas: HTMLCanvasElement, { glows, ground }: Light) {
       const i = (y * w + x) * 4
       if (bare) {
         // The colour accumulated premultiplied by the light's own cover: back
-        // to the colour itself, and the cover as the alpha, dithered.
+        // to the colour itself, and the cover as the alpha, dithered. Where
+        // there is no light at all, nothing, not even noise: the box's edge
+        // would show as where the grain stops.
+        if (cover === 0) {
+          px[i + 3] = 0
+          continue
+        }
         const c = Math.max(cover, 1e-6)
-        px[i] = r / c
-        px[i + 1] = g / c
-        px[i + 2] = b / c
-        px[i + 3] = cover * 255 + Math.random() + Math.random() - 1
+        const own = [r / c, g / c, b / c]
+        px[i] = own[0] as number
+        px[i + 1] = own[1] as number
+        px[i + 2] = own[2] as number
+        // One level of what is seen: over a known colour, the alpha that moves
+        // the result by one level (the two colours' widest channel apart);
+        // over an unknown one, one level of alpha.
+        const apart = under
+          ? Math.max(
+              1,
+              Math.abs((own[0] as number) - under[0]),
+              Math.abs((own[1] as number) - under[1]),
+              Math.abs((own[2] as number) - under[2]),
+            )
+          : 255
+        px[i + 3] =
+          cover * 255 + (Math.random() + Math.random() - 1) * (255 / apart)
         continue
       }
       px[i] = r + Math.random() + Math.random() - 1
@@ -152,10 +183,15 @@ function paint(canvas: HTMLCanvasElement, { glows, ground }: Light) {
 export function AmbientLight({
   glows,
   ground = "var(--background)",
+  over,
   className,
 }: AmbientLightProps) {
   const ref = React.useRef<HTMLCanvasElement>(null)
-  const spec = JSON.stringify({ glows, ground } satisfies Light)
+  const spec = JSON.stringify({
+    glows,
+    ground,
+    over: over ?? null,
+  } satisfies Light)
 
   React.useEffect(() => {
     const canvas = ref.current

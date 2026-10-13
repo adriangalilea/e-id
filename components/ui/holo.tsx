@@ -19,7 +19,8 @@
 //
 // The prints are lib/holo-prints' (masks), coloured by lib/foil's spectrum, added to
 // the light (`plus-lighter`) so they light the surface and never paint over it. At
-// rest a whisper (6%); under the hand a quarter, so what is written over it always
+// rest a whisper (6%); under the hand under a fifth (a quarter was loud on a card
+// being looked at closely), so what is written over it always
 // reads: it should be found, not shown. Only the coming and going is timed. Under
 // reduced motion nothing follows the hand and nothing leans.
 
@@ -226,7 +227,7 @@ export function Holo({
   print = "laminate",
   seal,
   emblem = SPARK,
-  strength = { rest: 0.06, lit: 0.26 },
+  strength = { rest: 0.06, lit: 0.18 },
   floor,
   className,
 }: {

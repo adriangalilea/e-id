@@ -1,5 +1,6 @@
 import { AmbientLight } from "@/components/ui/ambient-light";
 import { Grain } from "@/components/ui/grain";
+import { cn } from "@/lib/utils";
 
 /** THE PAGE'S GROUND: never flat black, a composed dark gradient of a few broad,
  *  very soft pools of light, all neutral (no hue, Adrian's rule: colour reads as a
@@ -60,6 +61,7 @@ export function SubjectLight() {
     >
       <AmbientLight
         ground="none"
+        over="var(--background)"
         glows={[
           // A broad wash round the subject, and a closer, brighter halo a little
           // above its middle, where a light overhead would fall on it.
@@ -75,17 +77,20 @@ export function SubjectLight() {
 /** THE SHADOW A CARD CASTS on what lies under it, wide and soft, a little below
  *  it as from a light overhead. Computed and dithered (@ag/ambient-light, a
  *  glow of black with no ground): as a box shadow it fell through the few 8-bit
- *  levels between the page's near-black and black in visible steps. Placed
- *  inside the card's box (positioned), behind it; the card's own close contact
+ *  levels between the page's near-black and black in visible steps. It falls on
+ *  the page's ground only, under anything else lying there (`className` places
+ *  and sizes it): its dither is sized to that ground's few levels (`over`), and
+ *  over a picture the same noise read as dirt. The card's own close contact
  *  shadow stays a box shadow, too short to band. */
-export function CastShadow() {
+export function CastShadow({ className }: { className?: string }) {
   return (
     <div
       aria-hidden
-      className="pointer-events-none absolute top-[58%] left-1/2 -z-10 h-[150%] w-[130%] -translate-x-1/2 -translate-y-1/2"
+      className={cn("pointer-events-none absolute", className)}
     >
       <AmbientLight
         ground="none"
+        over="var(--background)"
         glows={[{ color: "#000", x: 0.5, y: 0.5, rx: 0.5, ry: 0.5, strength: 0.75 }]}
       />
     </div>
@@ -111,7 +116,15 @@ export function HeroShimmer() {
       // of that depth without being seen blurred.
       className="pointer-events-none absolute inset-0 z-[5] blur-[0.4px] [mask-composite:intersect] [mask-image:radial-gradient(ellipse_70%_80%_at_45%_45%,black_30%,transparent_100%),linear-gradient(to_bottom,black_55%,transparent)]"
     >
-      <Grain look="shimmer" strength={0.55} density={0.35} frost={0.01} />
+      {/* Swaying as the cards it lies among float (hero-cards, `card-float`:
+          ±0.4rem), so it moves as one of them. */}
+      <Grain
+        look="shimmer"
+        strength={0.55}
+        density={0.35}
+        frost={0.01}
+        sway={6}
+      />
     </div>
   );
 }

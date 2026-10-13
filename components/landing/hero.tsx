@@ -1,6 +1,6 @@
 import { GUTTER } from "@/components/frame";
 import type { Holder } from "@/components/id-card";
-import { CastShadow, HeroShimmer, SubjectLight } from "@/components/light";
+import { HeroShimmer, SubjectLight } from "@/components/light";
 import { getShowcase } from "@/lib/data";
 import { cn } from "@/lib/utils";
 import { Preview, Stage, YourCard } from "./hero-cards";
@@ -40,7 +40,6 @@ export async function Hero() {
       >
         <Stage people={people} preview={<Preview />}>
           <SubjectLight />
-          <CastShadow />
           <YourCard />
         </Stage>
       </div>

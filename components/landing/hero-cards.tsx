@@ -8,6 +8,7 @@ import { EmojiDomain } from "@/components/brand";
 import { CountryFlag } from "@/components/country";
 import { type Holder, IdCard, type Place } from "@/components/id-card";
 import { ON_CARD } from "@/components/card-shape";
+import { CastShadow } from "@/components/light";
 import { PROFILE } from "@/components/profile-layout";
 import { useChip } from "@/components/session/use-chip";
 import { SocialComponent } from "@/components/social_component";
@@ -854,6 +855,13 @@ export function Stage({
           : "grid place-items-center py-16 sm:py-20 lg:h-[50rem] lg:py-8",
       )}
     >
+      {/* The shadow the visitor's card casts, drawn first: on the page's ground
+          under the cards round it, never over them. As wide as the card and a
+          third again, as tall and a half (the card is 42rem by 26.5 at most),
+          its middle a little below the card's. */}
+      {!forming && (
+        <CastShadow className="top-[calc(50%+2rem)] left-1/2 aspect-[1.374] w-[min(54.6rem,130%)] -translate-x-1/2 -translate-y-1/2" />
+      )}
       {!forming &&
         around.map((holder, i) => {
         const at = AROUND[i] as (typeof AROUND)[number];

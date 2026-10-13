@@ -60,6 +60,11 @@ export interface GrainProps {
    *  and settles back. A whisper by default (0.15); much past a half it reads as
    *  a slurry, the facets' grid stretching where the wake pulls hardest. */
   flow?: number
+  /** shimmer: how far the whole surface sways, in CSS pixels, 0 still (default):
+   *  slowly, up and down over some eighteen seconds there and back with a
+   *  little sideways on its own longer beat, as cards floating on a page do, so
+   *  a shimmer among them moves as one of them. */
+  sway?: number
   /** shimmer: alive at rest (default): the facets turn on their own and flash all
    *  over the surface, visual interest with nothing moving. */
   rest?: boolean
@@ -216,6 +221,7 @@ uniform float uEnergy;
 uniform vec4 uWake[12];
 uniform float uWakeAge[12];
 uniform float uFlow;
+uniform float uSway;
 
 // The surface as the hand's wake has moved it: each mark in the wake pushes the
 // surface along the way the hand went and curls it round the hand's path, within
@@ -314,8 +320,11 @@ float facet(vec2 cell, out vec2 centre, out float flash, out float sheen, out ve
   return 1.0;
 }
 void main() {
-  // The page's pixel: down from the top, plus the scroll.
-  vec2 at = flowed(vec2(gl_FragCoord.x, uSize.y - gl_FragCoord.y + uScroll));
+  // The page's pixel: down from the top, plus the scroll, the whole surface
+  // swayed (uSway: up and down over some eighteen seconds there and back, a
+  // little sideways on a longer beat of its own, so it never reads as a loop).
+  vec2 sway = uSway * vec2(0.35 * sin(uTime * 0.22 + 1.7), sin(uTime * 0.35));
+  vec2 at = flowed(vec2(gl_FragCoord.x, uSize.y - gl_FragCoord.y + uScroll) + sway);
   vec2 home = floor(at / uCell);
   vec2 here = floor(at / uSpeck);
   // The facets that may have drifted onto this pixel: its own cell's and its
@@ -382,6 +391,7 @@ type Knobs = Required<
     | "speed"
     | "drift"
     | "flow"
+    | "sway"
     | "rest"
     | "hand"
   >
@@ -400,6 +410,7 @@ function Shimmer({
   speed = 1,
   drift = 1,
   flow = 0.15,
+  sway = 0,
   className,
 }: GrainProps) {
   const ref = React.useRef<HTMLCanvasElement>(null)
@@ -416,6 +427,7 @@ function Shimmer({
     speed,
     drift,
     flow,
+    sway,
   }
 
   React.useEffect(() => {
@@ -499,6 +511,7 @@ function Shimmer({
       gl.uniform1f(u("uDrift"), m.drift)
       gl.uniform1i(u("uRest"), m.rest ? 1 : 0)
       gl.uniform1f(u("uFlow"), m.flow)
+      gl.uniform1f(u("uSway"), m.sway * k)
       const box = canvas.getBoundingClientRect()
       const dt = Math.min(0.1, (now - then) / 1000)
       then = now
