@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 import Link from "next/link";
-import HumanTime from "./human_date";
+import { RelativeTime } from "./ui/relative-time";
 import CustomAvatar from "./custom_avatar";
 import { Textarea } from "./ui/textarea";
 
@@ -49,7 +49,10 @@ export function Testimonial({
             {name}
           </span>
         </Link>
-        <HumanTime date={date} dateOnly={true} />
+        <RelativeTime
+          at={date.getTime()}
+          className="font-code px-1 py-0.5 text-xs font-normal opacity-50 hover:bg-zinc-500/20"
+        />
       </footer>
     </blockquote>
   );

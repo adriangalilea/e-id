@@ -7,7 +7,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import HumanTime from "@/components/human_date";
+import { RelativeTime } from "@/components/ui/relative-time";
 import Flag from "@/components/flag";
 import { getLatestUsersWithUsernameCached } from "@/db/actions";
 import Link from "next/link";
@@ -44,7 +44,10 @@ export async function LatestUsersTable() {
             </TableCell>
             <TableCell className="prose prose-zinc dark:prose-invert text-sm p-0">
               <Link href={`/${user.username}`} className="block no-underline px-4 py-2">
-                <HumanTime date={user.createdAt} />
+                <RelativeTime
+                  at={user.createdAt.getTime()}
+                  className="font-code px-1 py-0.5 text-xs font-normal hover:bg-zinc-500/20"
+                />
               </Link>
             </TableCell>
           </TableRow>
