@@ -6,7 +6,8 @@ import { cn } from "@/lib/utils";
 const UNKNOWN = "XX";
 
 /** A person's country as its flag (@ag/flag), beside their name. One never set
- *  keeps the flag's room, an empty dashed frame, so a list's names stay in line. */
+ *  keeps the flag's room as a blank printed field, solid like the flag it stands
+ *  for, so a list's names stay in line. */
 export function CountryFlag({
   country,
   label,
@@ -22,7 +23,7 @@ export function CountryFlag({
       <span
         aria-hidden
         className={cn(
-          "inline-block h-[0.75em] w-[1.125em] shrink-0 border border-dashed border-foreground/25 align-[-0.08em]",
+          "inline-block h-[0.75em] w-[1.125em] shrink-0 bg-foreground/[0.14] align-[-0.08em]",
           className,
         )}
       />

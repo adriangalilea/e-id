@@ -55,7 +55,7 @@ function Portrait({
   return (
     <div
       className={cn(
-        "grid aspect-square w-[30cqw] shrink-0 place-items-center overflow-hidden bg-white/5 shadow-[0_0_0_1px_rgb(255_255_255/0.08)]",
+        "grid aspect-square w-[30cqw] shrink-0 place-items-center overflow-hidden bg-white/[0.1]",
         ON_CARD,
         className,
       )}
@@ -63,7 +63,7 @@ function Portrait({
       {holder.image ? (
         <Image src={holder.image} alt="" className="size-full object-cover" />
       ) : (
-        <BrandMark className="h-1/2 text-white/25" />
+        <BrandMark className="h-1/2 text-white/30" />
       )}
     </div>
   );
