@@ -1,23 +1,19 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 
-export function useColorScheme() {
-  const [colorScheme, setColorScheme] = useState<"light" | "dark">("light");
+const query = "(prefers-color-scheme: dark)";
 
-  const onChange = (event: MediaQueryListEvent) =>
-    setColorScheme(event.matches ? "dark" : "light");
+function subscribe(onChange: () => void) {
+  const mediaQuery = window.matchMedia(query);
+  mediaQuery.addEventListener("change", onChange);
+  return () => mediaQuery.removeEventListener("change", onChange);
+}
 
-  useEffect(() => {
-    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
-    setColorScheme(mediaQuery.matches ? "dark" : "light");
-
-    mediaQuery.addEventListener("change", onChange);
-
-    return () => {
-      mediaQuery.removeEventListener("change", onChange);
-    };
-  }, []);
-
-  return colorScheme;
+export function useColorScheme(): "light" | "dark" {
+  return useSyncExternalStore(
+    subscribe,
+    () => (window.matchMedia(query).matches ? "dark" : "light"),
+    () => "light",
+  );
 }

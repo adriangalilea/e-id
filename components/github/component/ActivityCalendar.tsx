@@ -153,7 +153,7 @@ export interface Props {
 }
 
 const ActivityCalendar: FunctionComponent<Props> = ({
-  data,
+  data: dataProp,
   blockMargin = 4,
   blockRadius = 2,
   blockSize = 12,
@@ -164,7 +164,7 @@ const ActivityCalendar: FunctionComponent<Props> = ({
   hideMonthLabels = false,
   hideTotalCount = false,
   labels: labelsProp = undefined,
-  maxLevel = 4,
+  maxLevel: maxLevelProp = 4,
   loading = false,
   renderBlock = undefined,
   showWeekdayLabels = false,
@@ -173,7 +173,7 @@ const ActivityCalendar: FunctionComponent<Props> = ({
   totalCount: totalCountProp = undefined,
   weekStart = 0, // Sunday
 }: Props) => {
-  maxLevel = Math.max(1, maxLevel);
+  const maxLevel = Math.max(1, maxLevelProp);
 
   const theme = createTheme(themeProp, maxLevel + 1);
   const systemColorScheme = useColorScheme();
@@ -181,9 +181,7 @@ const ActivityCalendar: FunctionComponent<Props> = ({
 
   const useAnimation = !usePrefersReducedMotion();
 
-  if (loading) {
-    data = generateEmptyData();
-  }
+  const data = loading ? generateEmptyData() : dataProp;
 
   if (data.length === 0) {
     return null;
