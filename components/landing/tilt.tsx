@@ -40,10 +40,13 @@ export function Tilt({
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     let frame = 0;
     let at = rest;
+    // As shares (`--px`, `--py`, what a turn and a sweep across a card read) and
+    // in pixels (`--hx`, where a light centred on the hand is drawn).
     const write = () => {
       frame = 0;
       el.style.setProperty("--px", at.x.toFixed(3));
       el.style.setProperty("--py", at.y.toFixed(3));
+      el.style.setProperty("--hx", `${(at.x * el.offsetWidth).toFixed(1)}px`);
     };
     const soon = () => {
       if (!frame) frame = requestAnimationFrame(write);

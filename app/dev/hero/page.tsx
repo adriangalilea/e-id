@@ -29,7 +29,7 @@ function Pill({ look }: { look: PillLook }) {
       className="text-(length:--hero-title) leading-none font-light tracking-[-0.045em] whitespace-nowrap"
       style={HOLO_PRINTS as React.CSSProperties}
     >
-      <Tilt className="flex">
+      <Tilt className="inline-flex">
         <MakeYours look={look} />
       </Tilt>
     </div>

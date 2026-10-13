@@ -114,7 +114,8 @@ export async function Hero() {
               className="text-(length:--hero-title) leading-none font-light tracking-[-0.045em] whitespace-nowrap"
               style={HOLO_PRINTS as React.CSSProperties}
             >
-              <Tilt className="flex">
+              {/* Exactly the pill's size: the hand is measured across it. */}
+              <Tilt className="inline-flex">
                 <MakeYours />
               </Tilt>
             </h1>

@@ -667,11 +667,15 @@
   background-position: calc(var(--px, 0.5) * 100%) 0;
   opacity: 0;
   transition: opacity 200ms ease-out;
+  /* The light on the hand: centred exactly where it is (`--hx`, from the Tilt
+     round the pill), the same width everywhere along the pill, running off its
+     ends rather than shrinking toward them, so it is as strong at the disc as at
+     the far end. In the pill's units: two disc-widths either side. */
   --band: linear-gradient(
-    100deg,
-    transparent calc(var(--px, 0.5) * 100% - 45%),
-    black calc(var(--px, 0.5) * 100%),
-    transparent calc(var(--px, 0.5) * 100% + 45%)
+    to right,
+    transparent calc(var(--hx, 50%) - 2 * var(--disc, 1em)),
+    black var(--hx, 50%),
+    transparent calc(var(--hx, 50%) + 2 * var(--disc, 1em))
   );
 }
 /* The ring: the border box less the content box, one pixel in, then the band. */
@@ -726,6 +730,14 @@
   mix-blend-mode: plus-lighter;
   opacity: 0;
   transition: opacity 200ms ease-out;
+  /* Lit by the same light on the hand as the pill's print: the box starts at the
+     pill's padding box, so the hand's place is the same number here. */
+  mask-image: linear-gradient(
+    to right,
+    transparent calc(var(--hx, 50%) - 2 * var(--disc, 1em)),
+    black var(--hx, 50%),
+    transparent calc(var(--hx, 50%) + 2 * var(--disc, 1em))
+  );
 }
 [data-slot="disc-print"] > span {
   position: absolute;
@@ -742,7 +754,7 @@
    hand): seen through frost it is a little dimmer still. At full strength it
    glowed as a blob of its own. */
 [data-cta][data-print]:hover [data-slot="disc-print"] {
-  opacity: 0.28;
+  opacity: 0.3;
 }
 /* At rest the ring is faintly there, where the page's light falls on it, so the
    pill reads as foil-edged before a hand finds it; under the hand it comes up. */
