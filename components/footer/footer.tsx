@@ -4,7 +4,6 @@ import { EmojiDomain } from "@/components/brand";
 import { Button } from "@/components/ui/button";
 import { Glass } from "@/components/ui/material-glass";
 
-import { FoilEdge } from "@/components/foil-edge";
 import FooterUser from "./footer_user";
 
 /** The site's one bar, a pill of glass floating over the page: the wordmark home on
@@ -31,7 +30,6 @@ export default function Footer() {
           <EmojiDomain logo />
         </Link>
         <NavActions />
-        <FoilEdge />
       </Glass>
     </nav>
   );

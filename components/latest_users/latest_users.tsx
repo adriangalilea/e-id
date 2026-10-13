@@ -2,7 +2,6 @@ import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { RelativeTime } from "@/components/ui/relative-time";
 import { CountryFlag } from "@/components/country";
-import { FoilEdge } from "@/components/foil-edge";
 import { GUTTER } from "@/components/frame";
 import { SURFACE } from "@/components/surface";
 import { getLatestUsers } from "@/lib/data";
@@ -83,7 +82,6 @@ export async function LatestUsers() {
             </li>
           ))}
         </ol>
-        <FoilEdge />
       </div>
     </section>
   );

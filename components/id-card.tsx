@@ -116,7 +116,7 @@ function Flair({ places }: { places: Place[] }) {
   return (
     <nav
       aria-label="places"
-      className="-mx-[0.8cqw] flex items-center text-foreground/70 [&_svg]:size-[3.2cqw] [&_svg]:stroke-[1.5]"
+      className="-mx-[1.1cqw] flex items-center gap-[0.6cqw] text-foreground/70 [&_svg]:size-[4.6cqw] [&_svg]:stroke-[1.4]"
     >
       {places.map(({ platform, url }) => (
         <a
@@ -125,7 +125,7 @@ function Flair({ places }: { places: Place[] }) {
           rel="me noopener"
           target="_blank"
           aria-label={platform}
-          className="rounded-[0.8cqw] p-[0.8cqw] transition-colors hover:bg-white/[0.06] hover:text-foreground"
+          className="rounded-[1.2cqw] p-[1.1cqw] transition-colors hover:bg-white/[0.08] hover:text-foreground"
         >
           {getSocialIcon(platform)}
         </a>

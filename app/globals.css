@@ -516,7 +516,9 @@
 }
 
 /* THE FOIL EDGE (components/foil-edge): a one-pixel ring of the foil over a glass's
-   rim, the border box less the content box one pixel in. Its spectrum is laid
+   rim, the border box less the content box one pixel in. The card's alone: the
+   foil is its security feature, and worn by every surface it read as a theme (a
+   gaming rig's), not a mark. Barely there at rest (a tenth). Its spectrum is laid
    across the screen (`fixed`), so every edge takes the colour of where it stands
    and they shift together as the page scrolls, as foil does with the angle; faint,
    added to the light. Inside a Tilt with a hand on it, the ring is lit in a band
@@ -533,7 +535,7 @@
   mask-clip: content-box, border-box;
   mask-composite: exclude;
   mix-blend-mode: plus-lighter;
-  opacity: 0.22;
+  opacity: 0.1;
   transition: opacity 300ms ease-out;
 }
 [data-slot="card-tilt"][data-hover] [data-slot="foil-edge"] {

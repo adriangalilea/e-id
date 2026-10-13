@@ -1,5 +1,6 @@
 /** A FOIL EDGE for a surface of glass: its rim catches the foil (`--foil`) as a
- *  laminate's does, in a one-pixel ring. Composed, not built in: placed as a child
+ *  laminate's does, in a one-pixel ring. e-id gives it to the card alone, where
+ *  the foil means security print; on every surface it read as a theme. Composed, not built in: placed as a child
  *  of any glass (or any rounded, positioned box), it follows that box's corners and
  *  draws over its edge, and the glass material itself is untouched. How it shows is
  *  the stylesheet's (`foil-edge` in globals.css): faint everywhere, its spectrum
