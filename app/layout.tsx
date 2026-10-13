@@ -7,6 +7,7 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Toaster } from "@/components/ui/toaster";
 import { MaterialProvider } from "@/components/ui/material";
 import { FocusSource } from "@/components/ui/focus-source";
+import { NextImageLoaderProvider } from "@/components/ui/image";
 import { PROD_URL } from "@/lib/const";
 import { SitePageSensor } from "@/components/page-sensor";
 import { visitsEnabled } from "@/lib/visit-store";
@@ -60,7 +61,7 @@ export default async function RootLayout({
             data-slot="page"
             className="flex flex-1 flex-col pb-24 md:pt-20 md:pb-12"
           >
-            {children}
+            <NextImageLoaderProvider>{children}</NextImageLoaderProvider>
           </div>
           <Toaster />
           <Footer />

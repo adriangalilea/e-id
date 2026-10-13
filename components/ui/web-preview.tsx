@@ -3,7 +3,7 @@ import {
   hostOf,
   type Unfurl,
 } from "@/lib/web-preview-unfurl"
-import { Img } from "@/components/ui/img"
+import { Image } from "@/components/ui/image"
 
 export type WebPreviewStyle = "card" | "telegram" | "x"
 
@@ -41,7 +41,7 @@ export function WebPreview({
         )}
       >
         {facts.image && (
-          <Img
+          <Image
             className="mb-[0.45em] block aspect-video w-full rounded-[0.3em] object-cover"
             src={facts.image}
             alt=""
@@ -73,7 +73,7 @@ export function WebPreview({
       >
         {facts.image ? (
           <>
-            <Img
+            <Image
               className="block aspect-video w-full object-cover"
               src={facts.image}
               alt=""
@@ -106,7 +106,7 @@ export function WebPreview({
       )}
     >
       {facts.image && (
-        <Img
+        <Image
           className="block aspect-video w-full object-cover"
           src={facts.image}
           alt=""
@@ -115,7 +115,7 @@ export function WebPreview({
       <div className="space-y-1.5 p-4">
         <div className="flex items-center gap-1.5 font-mono text-muted-foreground text-xs lowercase">
           {facts.favicon && (
-            <Img className="size-3.5 rounded-sm" src={facts.favicon} alt="" />
+            <Image className="size-3.5 rounded-sm" src={facts.favicon} alt="" />
           )}
           {host}
         </div>

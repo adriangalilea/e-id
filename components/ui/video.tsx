@@ -49,7 +49,7 @@ import { cn } from "@/lib/utils"
 import { claim, type VoiceKey } from "@/lib/audible"
 import type { Span } from "@/lib/clip"
 import { msOf, seekSeconds } from "@/lib/timebase"
-import { Image, Img } from "@/components/ui/image"
+import { Image } from "@/components/ui/image"
 import { useMediaIntent } from "@/components/ui/image-intent"
 import { useWater } from "@/components/ui/water"
 
@@ -84,17 +84,18 @@ export type VideoProps = Omit<
   width?: number
   height?: number
   poster?: string
-  /** A tiny blurred image of the poster: Image's placeholder when optimized, else
-   *  painted under the poster in the first paint until its pixels arrive. */
+  /** A tiny picture of the poster, drawn blurred under it from the first paint
+   *  until its pixels arrive (Image's placeholder). */
   blurDataURL?: string
   /** Responsive poster width, using the same sizes syntax as Image. */
   sizes?: string
-  /** Pass the poster through Next's optimizer (default). False for any-origin posters
-   *  the optimizer is not configured for (a CDN frame, an avatar). */
+  /** Pass the poster through the site's image loader (default). False loads it as
+   *  it is, whatever the loader would do (a CDN frame already at its size). */
   optimizePoster?: boolean
-  /** How an unoptimized poster arrives: "fade" in once decoded (the registry's
-   *  picture arrival), or "instant", in the first paint (a still that must stand
-   *  for the video from the server's HTML on, like a stage resting mid-clip). */
+  /** How the poster arrives: "fade" in once decoded (the registry's picture
+   *  arrival), or "instant", asked for first and in the first paint (a still that
+   *  must stand for the video from the server's HTML on, like a stage resting
+   *  mid-clip; Image's `priority`). */
   posterArrival?: "fade" | "instant"
   className?: string
   videoClassName?: string
@@ -452,63 +453,31 @@ function VideoSource({
         width && height && !poster && !sized && "bg-foreground/4",
         className,
       )}
-      // An unoptimized poster's blur is painted under it in the first paint, for as
-      // long as the poster stands in: the poster's pixels simply cover it.
       style={
-        {
-          ...(width && height
-            ? { "--video-aspect": `${width} / ${height}` }
-            : {}),
-          ...(blurDataURL && !optimizePoster && (hidden || !loaded)
-            ? {
-                backgroundImage: `url(${blurDataURL})`,
-                backgroundSize: "cover",
-              }
-            : {}),
-        } as React.CSSProperties
+        width && height
+          ? ({
+              "--video-aspect": `${width} / ${height}`,
+            } as React.CSSProperties)
+          : undefined
       }
     >
-      {poster &&
-        (hidden || !loaded) &&
-        (optimizePoster ? (
-          <Image
-            ref={water.ref}
-            style={water.style}
-            src={poster}
-            alt=""
-            fill
-            sizes={sizes}
-            blurDataURL={blurDataURL}
-            className="pointer-events-none absolute inset-0 rounded-[inherit]"
-            imageClassName={cn(
-              "rounded-[inherit] object-cover",
-              videoClassName,
-            )}
-          />
-        ) : posterArrival === "fade" ? (
-          <Img
-            ref={water.ref}
-            style={water.style}
-            src={poster}
-            alt=""
-            className={cn(
-              "pointer-events-none absolute inset-0 size-full rounded-[inherit] object-cover",
-              videoClassName,
-            )}
-          />
-        ) : (
-          // biome-ignore lint/performance/noImgElement: a still that must be in the first paint, any origin
-          <img
-            ref={water.ref}
-            style={water.style}
-            src={poster}
-            alt=""
-            className={cn(
-              "pointer-events-none absolute inset-0 size-full rounded-[inherit] object-cover",
-              videoClassName,
-            )}
-          />
-        ))}
+      {poster && (hidden || !loaded) && (
+        <Image
+          ref={water.ref}
+          style={water.style}
+          src={poster}
+          alt=""
+          fill
+          sizes={sizes}
+          unoptimized={!optimizePoster}
+          priority={posterArrival === "instant"}
+          blurDataURL={blurDataURL}
+          className={cn(
+            "pointer-events-none rounded-[inherit] object-cover",
+            videoClassName,
+          )}
+        />
+      )}
       {water.filter}
       <video
         {...props}

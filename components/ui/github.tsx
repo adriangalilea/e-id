@@ -33,7 +33,7 @@ import type {
   GithubUser,
 } from "@/lib/github-data"
 import { CardLink } from "@/components/ui/card-link"
-import { Img } from "@/components/ui/img"
+import { Image } from "@/components/ui/image"
 import { Reactions } from "@/components/ui/reactions"
 
 const ANCHOR = { target: "_blank", rel: "noopener noreferrer" } as const
@@ -141,7 +141,7 @@ function Avatar({
   size: string
 }) {
   return (
-    <Img
+    <Image
       src={user.avatar}
       alt=""
       className={cn(

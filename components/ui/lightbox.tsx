@@ -419,9 +419,7 @@ export function Lightbox({
     // A responsive image's actual pixels can differ from its fallback src.
     // Start with that cache-hot rendition, without making Lightbox depend on Next.
     const trigger = triggers.current.get(id)?.el
-    const img =
-      trigger?.querySelector<HTMLImageElement>('[data-slot="image-content"]') ??
-      trigger?.querySelector("img")
+    const img = trigger?.querySelector("img")
     const src = img?.complete && img.naturalWidth ? img.currentSrc : undefined
     if (src && e.media.kind !== "frame") {
       const previous = renditions.current.get(id)

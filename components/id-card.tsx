@@ -2,7 +2,7 @@ import { BrandMark } from "@/components/brand";
 import { CopyAddress } from "@/components/copy-address";
 import { CountryFlag } from "@/components/country";
 import { FoilEdge } from "@/components/foil-edge";
-import { Img } from "@/components/ui/img";
+import { Image } from "@/components/ui/image";
 import { Glass } from "@/components/ui/material-glass";
 import type { SelectSocial } from "@/db/schema";
 import { HOLO_PRINTS, type HoloPrint } from "@/lib/holo";
@@ -59,7 +59,7 @@ function Portrait({
       )}
     >
       {holder.image ? (
-        <Img src={holder.image} alt="" className="size-full object-cover" />
+        <Image src={holder.image} alt="" className="size-full object-cover" />
       ) : (
         <BrandMark className="h-1/2 text-white/15" />
       )}
@@ -79,7 +79,7 @@ const GHOST_MASK =
 function Ghost({ holder }: { holder: Holder }) {
   if (!holder.image) return null;
   return (
-    <Img
+    <Image
       src={holder.image}
       alt=""
       aria-hidden

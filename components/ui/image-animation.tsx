@@ -57,7 +57,7 @@ function AnimationSource({
         fill
         sizes={sizes}
         blurDataURL={blurDataURL}
-        imageClassName={imageClassName}
+        className={imageClassName}
       />
       {active && (
         <Image
@@ -66,7 +66,7 @@ function AnimationSource({
           aria-hidden
           fill
           unoptimized
-          imageClassName={imageClassName}
+          className={imageClassName}
         />
       )}
       {controls && (

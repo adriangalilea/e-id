@@ -18,7 +18,7 @@ import {
   type YouTubeRef,
   youtubeOf,
 } from "@/lib/youtube-data"
-import { Img } from "@/components/ui/img"
+import { Image } from "@/components/ui/image"
 
 export interface YouTubeProps {
   /** the video: a link YouTube hands out, or its facts */
@@ -72,7 +72,7 @@ export function YouTube({ video, className }: YouTubeProps) {
           {/* YouTube's own thumbnail, largest first: maxres is not made for every
               video, and the 120 px grey it answers with instead is told apart by
               its width (`minWidth`), so the always-there one stands in. */}
-          <Img
+          <Image
             src={first}
             fallbacks={rest}
             minWidth={121}

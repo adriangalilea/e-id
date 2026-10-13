@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { EmojiDomain } from "@/components/brand";
 import { Wide } from "@/components/frame";
 import { INSET } from "@/components/surface";
 import { Copy } from "@/components/ui/copy";
+import { Image } from "@/components/ui/image";
 import { cn } from "@/lib/utils";
 import linkInBio from "@/public/link_in_bio.webp";
 
