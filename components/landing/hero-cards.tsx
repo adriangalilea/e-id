@@ -2,13 +2,20 @@
 
 import { ArrowLeft, CornerDownLeft, Plus, RotateCcw, X } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { Suspense, use, useEffect, useRef, useState } from "react";
+import {
+  createContext,
+  Suspense,
+  use,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { flushSync } from "react-dom";
 import { EmojiDomain } from "@/components/brand";
 import { CountryFlag } from "@/components/country";
 import { type Holder, IdCard, type Place } from "@/components/id-card";
 import { ON_CARD } from "@/components/card-shape";
-import { CastShadow } from "@/components/light";
+import { SubjectLight } from "@/components/light";
 import { PROFILE } from "@/components/profile-layout";
 import { useChip } from "@/components/session/use-chip";
 import { SocialComponent } from "@/components/social_component";
@@ -89,13 +96,13 @@ const SOLID = "[--id-card-thickness:1]";
  *  a shadow cast from the card's box is rounded as the card is at any size. */
 const CORNER = "rounded-[3.715%/5.891%]";
 
-/** The visitor's card lies above every other: close under it a contact shadow;
- *  the wide soft one it casts on the cards round it is dithered, apart
- *  (components/light, `CastShadow`), where a box shadow that wide banded. */
+/** A front card lies above every other: close under it a contact shadow, and a
+ *  wider, softer one it casts on what lies under it, both the card's own (its
+ *  box, its corner), so the shadow is the card's shape and moves with it. */
 const FRONT = cn(
   SOLID,
   CORNER,
-  "shadow-[0_0.75rem_1.5rem_-0.5rem_rgb(0_0_0/0.6)]",
+  "shadow-[0_0.75rem_1.5rem_-0.5rem_rgb(0_0_0/0.6),0_2.5rem_4rem_-1.5rem_rgb(0_0_0/0.5)]",
 );
 
 /** The light drifting across the visitor's card while no hand is on it: the
@@ -130,6 +137,7 @@ function useForming(): boolean {
 export function YourCard() {
   const chip = useChip();
   const draft = useDraft();
+  const { writing, open, close } = useWriting();
   return (
     // At rest its foil rim shows a band, not a faint whole ring, and the light
     // drifting across it (`IDLE`) moves that band: what draws the eye to the
@@ -138,7 +146,16 @@ export function YourCard() {
     // printed, never a bare grey: much of it at rest, little under the hand,
     // where the print is lit four times stronger and a whole face of it was
     // loud; so it reads about as faint either way, the band alone standing out.
-    <HoloLight className="w-full [--holo-floor:0.15] [&:not([data-hover])]:[--holo-floor:0.6] [&:not([data-hover])_[data-slot=foil-edge]]:opacity-25 [&:not([data-hover])_[data-slot=foil-edge]]:[--edge-floor:0.12]">
+    // Waiting to be taken up, its rim catches the light passing over it at
+    // full strength: the one card on the stage asking for the hand.
+    <HoloLight
+      className={cn(
+        "relative w-full [--holo-floor:0.15] [&:not([data-hover])]:[--holo-floor:0.6] [&:not([data-hover])_[data-slot=foil-edge]]:[--edge-floor:0.12]",
+        writing
+          ? "[&:not([data-hover])_[data-slot=foil-edge]]:opacity-25"
+          : "[&:not([data-hover])_[data-slot=foil-edge]]:opacity-80",
+      )}
+    >
       <Claim />
       {chip?.u ? (
         <Suspense
@@ -166,21 +183,46 @@ export function YourCard() {
       ) : (
         <>
           {/* Leaning to the hand as a profile's card does (user_profile), by
-              no more than a few degrees: alive, and still to write on. */}
-          <HoloLean pose="flat" className="max-lg:[transform:none]">
-            <div className={IDLE}>
+              no more than a few degrees: alive, and still to write on. Flat
+              with no hand on it. */}
+          <HoloLean
+            pose="flat"
+            className="[transform:none] group-data-[hover]/holo:[transform:var(--holo-lean)] max-lg:group-data-[hover]/holo:[transform:none]"
+          >
+            <div inert={!writing} className={IDLE}>
               <FillCard />
             </div>
           </HoloLean>
-          {/* Room kept whether it shows or not: the card never moves. */}
-          <div className="mt-4 flex h-9 justify-end">
+          {!writing && (
+            // While it waits by the stack the whole card is one press: taking
+            // it up, not writing on it yet.
+            <button
+              type="button"
+              aria-label="make your card"
+              onClick={open}
+              className={cn(CORNER, "absolute inset-0 z-10 cursor-pointer")}
+            />
+          )}
+          {/* Under the card, outside its box: the card is placed by its own
+              middle, never moved by what shows under it. */}
+          <div
+            className={cn(
+              "absolute top-full right-0 mt-4 flex justify-end transition-opacity",
+              !writing && "opacity-0",
+            )}
+          >
             {!isBlank(draft) && (
               // The page's own button (@ag/button, in its glass): read over any
               // card that lies under it, named by its glyph and its words.
               <Button
                 type="button"
                 size="sm"
-                onClick={() => shape(false, clearDraft)}
+                onClick={() =>
+                  shape(false, () => {
+                    clearDraft();
+                    close();
+                  })
+                }
                 className="animate-fade-in motion-reduce:animate-none"
               >
                 <RotateCcw /> start over
@@ -196,14 +238,15 @@ export function YourCard() {
 function FillCard() {
   const draft = useDraft();
   const handle = useHandleState(draft.handle);
-  // A blank card waits with the caret on its name, blinking, so the first thing
-  // one sees it do is ask to be written on. Where there is a fine pointer only:
-  // on a phone it would raise the keyboard over the page unasked.
+  // A blank card taken up comes with the caret on its name, blinking, so the
+  // first thing it does is ask to be written on. Where there is a fine pointer
+  // only: on a phone it would raise the keyboard over the page unasked.
+  const { writing } = useWriting();
   const name = useRef<HTMLInputElement>(null);
   useEffect(() => {
-    if (isBlank(readDraft()) && matchMedia("(pointer: fine)").matches)
+    if (writing && isBlank(readDraft()) && matchMedia("(pointer: fine)").matches)
       name.current?.focus({ preventScroll: true });
-  }, []);
+  }, [writing]);
   useGithubFill(
     draft.places.find((p) => p.platform === "github")?.value.trim() || null,
   );
@@ -745,91 +788,361 @@ export function Preview() {
 
 // ── the stage ───────────────────────────────────────────────────────────────
 
-/** Where the real cards lie round the visitor's, composed rather than mirrored:
- *  each card's centre across in % of the stage's width and up or down in rem from the
- *  stage's centre, its width in rem, its turn on the table in degrees. Two large
- *  ones on the diagonal (upper left, lower right) carry the weight; two peek out
- *  from behind the visitor's card, one over its top edge and one under its foot,
- *  so no side of it is bare; two small ones far out (right and high, left and
- *  low) are the accents. The visitor's card is 42rem by 26.5, so ±31% by
- *  ±13.2rem round the centre. `float` is how long one slow rise takes, each its
- *  own so no two move in step. */
-const AROUND = [
-  { x: -41, y: -9, w: 27, rz: -7, float: 9 },
-  { x: 15, y: -18, w: 20, rz: 4, float: 11 },
-  { x: 55, y: -5, w: 19, rz: 9, float: 10 },
-  { x: 39, y: 11, w: 26, rz: -4, float: 9.5 },
-  { x: -14, y: 18.5, w: 23, rz: -3, float: 8 },
-  { x: -56, y: 10, w: 18, rz: 6, float: 12 },
+/** Whether the visitor's card has been taken up to be written on, and the two
+ *  ways it changes: taken up from where it waits by the stack, put back on
+ *  starting over. Held by the stage, which lays the cards out by it. */
+const Writing = createContext<{
+  writing: boolean;
+  open: () => void;
+  close: () => void;
+} | null>(null);
+
+function useWriting() {
+  const writing = use(Writing);
+  if (!writing) throw new Error("the visitor's card is drawn outside Stage");
+  return writing;
+}
+
+/** How many cards lie under the pile's top one, each with how long its slow
+ *  drift takes (globals.css, `card-float`), no two in step. */
+const UNDER = [9, 11, 10, 12, 9.5, 10.5, 11.5, 8.5] as const;
+
+/** The funnel the cards are carried along, lying on its side as a tornado
+ *  blown over: its axis from the top card's middle to the deepest card's,
+ *  under the visitor's card (`end`, the top card's widths across and heights
+ *  up or down). Round that axis the cards swing (`TURN`, degrees a card), wide
+ *  at the top card (`MOUTH`, the swing in the top card's heights either side
+ *  of the axis) and narrowing to nothing at the tip, each card a step further
+ *  along it, the steps lengthening a little as it goes (`ALONG`). */
+function end() {
+  return {
+    x: ((WAITING.x - MIDDLE.x) / 100) * (STAGE / MIDDLE.w),
+    y: (WAITING.y - MIDDLE.y) / (MIDDLE.w / (85.6 / 53.98)),
+  };
+}
+const MOUTH = 1;
+const TURN = 130;
+const ALONG = 0.85;
+
+/** Where the funnel's mouth is, as a share of the way from the top card to the
+ *  tip: below nothing, so past the top card's right side, the mouth behind it
+ *  and the spread round it on both sides. */
+const BEHIND = -0.3;
+
+/** What keeps the funnel from being drawn with a ruler: each card a little off
+ *  its place on it, along (the top card's widths), across (its heights), and
+ *  in its turn (degrees). Fixed, so the page is the same on every load. */
+const WOBBLE = [
+  { along: 0.03, across: 0.04, turn: 2 },
+  { along: -0.02, across: -0.05, turn: -3 },
+  { along: 0.04, across: 0.03, turn: 2 },
+  { along: -0.03, across: -0.04, turn: 3 },
+  { along: 0.02, across: 0.05, turn: -2 },
+  { along: -0.04, across: -0.03, turn: 3 },
+  { along: 0.03, across: 0.02, turn: -3 },
+  { along: 0, across: 0, turn: 1 },
 ] as const;
 
-/** The smallest and the largest card's widths, between which a card reads from
- *  far back to near. */
-const SMALL = 18;
-const LARGE = 27;
+/** One card's width under the top, a share of the top card's: smaller with
+ *  depth, as it is further away. */
+function widthAt(depth: number) {
+  return 0.72 - 0.05 * depth;
+}
 
-/** One card's place, and how it shows its depth. Its size is its own (`w`), so
- *  the browser paints it at the size it is seen: pushed back with translateZ a
- *  card was painted at the front size and shrunk as a picture, and while it
- *  drifted it was never painted again (soft, jagged words and edges). A smaller
- *  card reads as further back: dimmer (by brightness, never opacity: a
- *  see-through card shows the shimmer through it), out of focus the way a lens
- *  sets what is behind its subject (a blur, from 1px near to 3px far: each card
- *  its own depth, never a layer laid over them, which had an edge and banded
- *  in its fade), and turned a little less toward the middle. */
-function placed({ x, y, w, rz }: (typeof AROUND)[number]) {
-  const near = (w - SMALL) / (LARGE - SMALL);
-  // Placed by left and top in the stage (a share of its width across, rem down),
-  // each card carrying its own perspective: neither a container query nor a
-  // perspective on the stage, either of which makes the stage one flat layer
-  // and leaves the hero's shimmer nothing to lie between (components/light).
+/** A card under the top, in the funnel: its middle from the top card's, as
+ *  shares of the top card's width and height, and its turn, in degrees, leaning
+ *  as it swings, less as the funnel narrows. */
+function funneled(depth: number) {
+  const wobble = WOBBLE[depth - 1] as (typeof WOBBLE)[number];
+  const tip = end();
+  const t = (depth / UNDER.length) ** ALONG + wobble.along;
+  // Its axis starts past the top card's right side (`BEHIND`), so the wide
+  // mouth lies behind the top card, and runs left to the tip.
+  const along = BEHIND + (1 - BEHIND) * t;
+  // The nearest swings up first, the next down, and so on round.
+  const swing = (TURN * depth - 220) * (Math.PI / 180);
+  const wide = MOUTH * (1 - t);
   return {
-    width: `${(w * RECEDE).toFixed(2)}rem`,
-    left: `calc(50% + ${(x * RECEDE).toFixed(2)}%)`,
-    top: `calc(50% + ${(y * RECEDE).toFixed(2)}rem)`,
-    transform: `translate(-50%, -50%) perspective(${EYE}px) rotateY(${(-Math.sign(x) * (4 + 6 * near)).toFixed(1)}deg) rotateZ(${rz}deg)`,
-    "--dim": (0.38 + 0.3 * near).toFixed(2),
-    "--blur": `${(3.5 - 2 * near).toFixed(2)}px`,
+    dx: tip.x * along * 100,
+    dy: (tip.y * along + wide * Math.sin(swing) + wobble.across) * 100,
+    r: -9 * Math.cos(swing) * (1 - t) + wobble.turn,
+  };
+}
+
+/** The pile's room, in the top card's widths from its middle (both ways): from
+ *  the visitor's card's middle to just past the top card's right side, from
+ *  under the bar to a little under the top card's foot. */
+const ROOM = { left: -0.05, right: 0.45, top: -0.85, bottom: 0.3 };
+
+/** How much more room the two cards that hold still claim than one card under
+ *  the top: the top card is the largest, the visitor's next. */
+const CLAIM = { top: 0.2, visitor: 0.08 };
+
+/** The cards' places: the room shared out evenly among them, each card at the
+ *  middle of its own share (a centroidal Voronoi tessellation, by Lloyd's
+ *  relaxation over a grid of the room), the top card and the visitor's holding
+ *  still and claiming more (`CLAIM`). Distances are in card shapes (heights
+ *  scaled to widths), so each share is a card's shape, not a square: no card
+ *  bunched on another, no part of the room left bare. Then the nearest to the
+ *  top card is the nearest in depth, and so on out. Once, on first use (the
+ *  slots it reads are defined below it). */
+let settledPlaces: { dx: number; dy: number; r: number }[] | null = null;
+
+function settled() {
+  if (settledPlaces) return settledPlaces;
+  const ratio = 85.6 / 53.98;
+  const tip = end();
+  // Card shapes: across in the top card's widths, down in its heights.
+  const still = [
+    { u: 0, v: 0, claim: CLAIM.top },
+    { u: tip.x, v: tip.y, claim: CLAIM.visitor },
+  ];
+  const left = tip.x + ROOM.left;
+  const right = ROOM.right;
+  const top = ROOM.top * ratio;
+  const bottom = ROOM.bottom * ratio;
+  const free = UNDER.map((_, i) => {
+    const { dx, dy } = funneled(i + 1);
+    return {
+      u: Math.min(right, Math.max(left, dx / 100)),
+      v: Math.min(bottom, Math.max(top, dy / 100)),
+    };
+  });
+  const samples: { u: number; v: number }[] = [];
+  for (let i = 0; i < 90; i++)
+    for (let j = 0; j < 60; j++)
+      samples.push({
+        u: left + ((right - left) * (i + 0.5)) / 90,
+        v: top + ((bottom - top) * (j + 0.5)) / 60,
+      });
+  for (let round = 0; round < 80; round++) {
+    const sums = free.map(() => ({ u: 0, v: 0, n: 0 }));
+    for (const sample of samples) {
+      let nearest = -1;
+      let best = Number.POSITIVE_INFINITY;
+      for (const [i, card] of still.entries()) {
+        const d =
+          (sample.u - card.u) ** 2 + (sample.v - card.v) ** 2 - card.claim;
+        if (d < best) {
+          best = d;
+          nearest = -1 - i;
+        }
+      }
+      for (const [i, card] of free.entries()) {
+        const d = (sample.u - card.u) ** 2 + (sample.v - card.v) ** 2;
+        if (d < best) {
+          best = d;
+          nearest = i;
+        }
+      }
+      if (nearest < 0) continue;
+      const sum = sums[nearest] as (typeof sums)[number];
+      sum.u += sample.u;
+      sum.v += sample.v;
+      sum.n += 1;
+    }
+    for (const [i, card] of free.entries()) {
+      const sum = sums[i] as (typeof sums)[number];
+      if (sum.n === 0) continue;
+      card.u = sum.u / sum.n;
+      card.v = sum.v / sum.n;
+    }
+  }
+  settledPlaces = free
+    .toSorted((a, b) => Math.hypot(a.u, a.v) - Math.hypot(b.u, b.v))
+    .map((card, i) => ({
+      dx: card.u * 100,
+      dy: card.v * 100,
+      r: (WOBBLE[i] as (typeof WOBBLE)[number]).turn * 1.5,
+    }));
+  return settledPlaces;
+}
+
+/** One card under the top: as deep as its place in the pile (`depth`, 1 the
+ *  nearest), and everything about it goes with that depth, a step at a time, so
+ *  the nearest are still read and the deepest only seen: smaller by its own
+ *  width (painted at the size it is seen, never a shrunk picture), faded into
+ *  the page (a scrim of the page's own ground over it, `--fade`: never darker
+ *  than the ground it fades onto, as dimming made it, and never see-through,
+ *  which showed the shimmer through it), and out of focus the way a lens sets
+ *  what lies behind its subject, plainly from the first card under the top
+ *  (1.6px) to the deepest (5.8px). Each drifts on its own
+ *  (globals.css, `card-float`). */
+function under(depth: number, float: number) {
+  const { dx, dy, r } = settled()[depth - 1] as ReturnType<
+    typeof settled
+  >[number];
+  return {
+    "--lw": `${(widthAt(depth) * 100).toFixed(1)}%`,
+    "--dx": `${dx.toFixed(2)}%`,
+    "--dy": `${dy.toFixed(2)}%`,
+    "--r": `${r.toFixed(2)}deg`,
+    // Under the hand, a nudge further out, the way it already lies: the nearest
+    // the most, the deepest, already far out, hardly at all.
+    "--sx": `${(Math.sign(dx) * (4 - 0.4 * depth)).toFixed(1)}%`,
+    "--sy": `${(Math.sign(dy) * (4 - 0.4 * depth)).toFixed(1)}%`,
+    "--sr": `${Math.sign(r)}deg`,
+    "--fade": (0.12 + 0.08 * depth).toFixed(2),
+    "--bl": `${(1.6 + 0.6 * (depth - 1)).toFixed(2)}px`,
+    animationDuration: `${float}s`,
+    animationDelay: `-${(float * depth) / UNDER.length}s`,
   } as React.CSSProperties;
 }
 
-/** How far the whole spread stands behind the visitor's card: every card a tenth
- *  smaller and a tenth nearer the middle, as a step back in perspective takes
- *  them, the composition (`AROUND`) unchanged. */
-const RECEDE = 0.9;
+/** Real e-id cards in one pile, the maker's on top and then the newest whole ones
+ *  (a photo, a name, a country): the top one flat on the table as the rest are,
+ *  leaning to the hand, its hologram showing as it turns, over the hero's
+ *  shimmer; the rest under it, under the shimmer too (components/light, z-[5]),
+ *  spreading under the hand. Nothing here makes a stacking context of its own
+ *  (no transform, no filter on the pile), so each card's layer is the hero's:
+ *  the shimmer lies between the top card and the rest. `away`, the whole pile
+ *  under it. What a card is, shown whole. */
+function Pile({ people, away }: { people: Holder[]; away: boolean }) {
+  const [top, ...rest] = people;
+  if (!top) throw new Error("the home's pile has nobody to show");
+  return (
+    // With a hand on it the pile spreads a little, as cards do when touched
+    // (`under`, `--sx`).
+    <HoloLight className="relative w-full data-[hover]:[--spread:1]">
+      {rest
+        .map((holder, i) => ({ holder, depth: i + 1 }))
+        .reverse()
+        .map(({ holder, depth }) => (
+          <div
+            key={holder.username}
+            // Its middle placed from the top card's by left and top (shares of
+            // the top card's box), the nudge under the hand by translate (a
+            // share of its own). Under the hand it comes out of its fade, in
+            // focus, but keeps its place in the pile: never over a card that
+            // lies above it.
+            className="group/card absolute top-[calc(50%+var(--dy))] left-[calc(50%+var(--dx))] z-0 w-(--lw) animate-[card-float_ease-in-out_infinite_alternate] blur-(--bl) [transition:transform_0.5s_cubic-bezier(0.22,1,0.36,1),filter_1s_cubic-bezier(0.22,1,0.36,1)] [transform:translate(-50%,-50%)_translate(calc(var(--sx)*var(--spread,0)),calc(var(--sy)*var(--spread,0)))_rotate(calc(var(--r)+var(--sr)*var(--spread,0)))] hover:blur-none motion-reduce:animate-none motion-reduce:transition-none"
+            style={under(depth, UNDER[depth - 1] as number)}
+          >
+            {/* Its own light, so it alone tilts toward the hand on it, its
+                near edge going down where the hand presses (±9° across, ±7° up
+                and down), lifted a little; flat again when the hand leaves. */}
+            <HoloLight>
+              <div
+                className={cn(
+                  CORNER,
+                  "relative transition-[transform,box-shadow] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/card:shadow-[0_2rem_3.5rem_-0.75rem_rgb(0_0_0/0.7)] group-hover/card:[transform:perspective(1200px)_translateY(-0.5rem)_rotateY(calc((var(--px,0.5)-0.5)*18deg))_rotateX(calc((var(--py,0.5)-0.5)*-14deg))] motion-reduce:transition-none motion-reduce:group-hover/card:[transform:none]",
+                )}
+              >
+                <IdCard
+                  holder={holder}
+                  heading="p"
+                  holo="laminate"
+                  className={SOLID}
+                />
+                <div
+                  aria-hidden
+                  className={cn(
+                    CORNER,
+                    "pointer-events-none absolute inset-0 bg-background opacity-(--fade) transition-opacity duration-1000 group-hover/card:opacity-0",
+                  )}
+                />
+              </div>
+            </HoloLight>
+          </div>
+        ))}
+      {/* Drifting as the cards under it do (globals.css, `card-float`), on its
+          own time, so the pile moves as one loose thing. */}
+      <div
+        className={cn(
+          "relative animate-[card-float_10s_ease-in-out_infinite_alternate] [animation-delay:-3s] motion-reduce:animate-none",
+          away ? "z-0" : "z-10",
+        )}
+      >
+        {/* Its light, carried with it. */}
+        {!away && <SubjectLight />}
+        {/* Flat on the table as the rest are; leaning to the hand only while
+            it is on it. */}
+        <HoloLean
+          pose="flat"
+          className="[transform:none] group-data-[hover]/holo:[transform:var(--holo-lean)] max-lg:group-data-[hover]/holo:[transform:none]"
+        >
+          {/* Dropped on the table a little askew, as the rest lie, never
+              square to the page. */}
+          <div className="[transform:rotate(3deg)]">
+            <IdCard holder={top} heading="p" holo="laminate" className={FRONT} />
+          </div>
+        </HoloLean>
+      </div>
+    </HoloLight>
+  );
+}
 
-/** How far the eye stands from the cards, in px: the perspective each turns in. */
-const EYE = 1600;
+/** A place on the stage: its centre across in % of the stage's width and up or
+ *  down in rem from the stage's centre, its width in rem, its turn on the table
+ *  in degrees. */
+type Slot = { x: number; y: number; w: number; rz: number };
 
-/** A real card under the hand: in focus, lifted a little (up, never scaled: a
- *  scaled card is a stretched picture of itself), in full light, and tilted toward the hand,
- *  its near edge going down where the hand presses (±9° across, ±7° up and down:
- *  `HoloLean`'s flat pose, ±3°, read as no tilt at this size). Its shadow on the
- *  table under it is close and small at rest, and falls longer and softer as it
- *  lifts. Eased both ways, so it follows with a little weight and settles flat
- *  when the hand leaves. */
-const PICKED = cn(
-  CORNER,
-  // Slow and soft both ways: it comes into the light over a second, and the
-  // tilt follows the hand over most of one, so it moves as a thing with weight
-  // and never snaps.
-  "brightness-(--dim) blur-(--blur) shadow-[0_0.75rem_1.5rem_-0.5rem_rgb(0_0_0/0.6)] [transition:filter_1s_cubic-bezier(0.22,1,0.36,1),box-shadow_1s_cubic-bezier(0.22,1,0.36,1),transform_0.7s_cubic-bezier(0.22,1,0.36,1)]",
-  "group-data-[hover]/holo:brightness-100 group-data-[hover]/holo:blur-none group-data-[hover]/holo:shadow-[0_2rem_3.5rem_-0.75rem_rgb(0_0_0/0.7)] group-data-[hover]/holo:[transform:perspective(1200px)_translateY(-0.5rem)_rotateY(calc((var(--px,0.5)-0.5)*18deg))_rotateX(calc((var(--py,0.5)-0.5)*-14deg))]",
-  "motion-reduce:transition-none motion-reduce:group-data-[hover]/holo:[transform:none]",
+/** The middle: the pile's top card at rest, right of centre, the pile spread
+ *  from it leftward toward the visitor's card (`UNDER`), so the two stand
+ *  centred as one group; the visitor's card once taken up. */
+const MIDDLE = { x: 31, y: 8, w: 34, rz: 0 } as const;
+
+/** The stage's width on a wide screen, in rem (the page's 72rem column): what
+ *  turns a slot's place across, a share of it, into the top card's widths. */
+const STAGE = 72;
+
+/** Where the visitor's blank card waits: on the left where the eye starts, a
+ *  little above the pile's middle, lying over the pile's deepest cards (they are
+ *  under the shimmer, it over), so it reads as the nearest card on the table.
+ *  Taken up, the pile goes to lie where it lay: the two trade places. */
+const WAITING = { x: -34.5, y: -5, w: 27, rz: 0 } as const;
+
+/** Where the pile goes once the visitor's card is taken up: pushed back from
+ *  the middle the visitor's card grows into, further right and a little down,
+ *  smaller as further away. */
+const PUSHED = { x: MIDDLE.x + 12, y: MIDDLE.y + 3, w: 26, rz: 0 } as const;
+
+/** A slot as the variables a card is laid out by (`PLACED`, `PILED`). */
+function at({ x, y, w, rz }: Slot): React.CSSProperties {
+  return {
+    "--w": `${w}rem`,
+    "--l": `calc(50% + ${x}%)`,
+    "--t": `calc(50% + ${y}rem)`,
+    "--rz": `${rz}deg`,
+  } as React.CSSProperties;
+}
+
+/** One easing for every card changing place on the stage: slow, settling at the
+ *  end, as a card slid across a table. */
+const SLIDE =
+  "duration-[900ms] ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none";
+
+/** The visitor's card, laid out by its slot on a wide screen: placed by left and
+ *  top in the stage, by its centre, turned on the table. On one column, in the
+ *  page's flow. */
+const PLACED = cn(
+  "lg:absolute lg:top-(--t) lg:left-(--l) lg:w-(--w) lg:[transform:translate(-50%,-50%)_rotate(var(--rz))]",
+  "transition-[left,top,width,transform]",
+  SLIDE,
 );
 
-/** THE HERO'S STAGE: the visitor's card in the middle, still, and real ones
- *  spread round it in depth (`AROUND`), the maker's and the newest whole ones (a
- *  photo, a name, a country), the visitor's own left out: what a filled one is,
- *  shown rather than told. Each drifts on its own, slowly, and answers the hand
- *  only when the hand is on it, leaning to it with its hologram showing, as a
- *  card picked up would (its own HoloLight); nothing follows the hand across the
- *  hero. The visitor's card does neither: a card being written on lies still.
- *  Once it starts becoming a profile the stage IS the profile page's layout (the
- *  golden split, app/[username]/user_profile): the card held in the left column,
- *  the places it makes on the right (`Preview`), the others gone. The card moves
- *  there as one thing (a view transition, `shape`), never a jump. Under reduced
- *  motion nothing moves. On one column, their card alone. */
+/** The pile, laid out by its slot without a transform (its left and top taken
+ *  back by half its size, a card being 1.586 times as wide as tall): a transform
+ *  would make the pile one layer and leave the shimmer nothing to lie between
+ *  its top card and the rest (`Pile`). */
+const PILED = cn(
+  "lg:absolute lg:top-[calc(var(--t)-var(--w)/3.172)] lg:left-[calc(var(--l)-var(--w)/2)] lg:w-(--w)",
+  "transition-[left,top,width,filter]",
+  SLIDE,
+);
+
+/** THE HERO'S STAGE: real cards in one pile in the middle (`Pile`), the top one
+ *  whole and in the light, the rest spread down under the shimmer; apart from
+ *  it, the visitor's own, blank and in focus, the light passing over it (`IDLE`)
+ *  drawing the eye (`WAITING`). Taken up, it and the pile trade places: it slides
+ *  to the middle at its full size to be written on, the pile, smaller, to where
+ *  it waited, all of it under the shimmer. Once it starts becoming a profile the
+ *  stage IS the profile page's layout (the golden split,
+ *  app/[username]/user_profile): the card held in the left column, the places
+ *  it makes on the right (`Preview`), the pile gone. The card moves there as one
+ *  thing (a view transition, `shape`), never a jump. A visitor with an account
+ *  has their own card in the middle from the start. Under reduced motion nothing
+ *  moves. On one column, the pile, then their card under it. */
 export function Stage({
   people,
   preview,
@@ -838,86 +1151,115 @@ export function Stage({
   people: Holder[];
   /** the profile the card makes, beside it once it forms */
   preview: React.ReactNode;
-  /** what stands in the middle: the visitor's card and its light */
+  /** what the visitor holds: their card */
   children: React.ReactNode;
 }) {
   const own = useChip()?.u;
+  const draft = useDraft();
   const forming = useForming();
-  const around = people
+  const [asked, setAsked] = useState(false);
+  const writing = Boolean(own) || asked || !isBlank(draft);
+  // Taken up and still blank, it goes back where it waited on Esc or a press
+  // anywhere off it: nothing written is ever put down. A popup open on it (the
+  // country picker, a place) takes its own Esc and presses first.
+  const yours = useRef<HTMLDivElement>(null);
+  const putBack = asked && !own && isBlank(draft);
+  useEffect(() => {
+    if (!putBack) return;
+    const popupOpen = () => document.querySelector("[data-popup-open]");
+    const key = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && !popupOpen()) setAsked(false);
+    };
+    const press = (e: PointerEvent) => {
+      const target = e.target as Element;
+      if (popupOpen() || target.closest("[data-side]")) return;
+      if (!yours.current?.contains(target)) setAsked(false);
+    };
+    // Captured, so a popup is still open when it is asked about: its own Esc
+    // closes it after.
+    document.addEventListener("keydown", key, true);
+    document.addEventListener("pointerdown", press, true);
+    return () => {
+      document.removeEventListener("keydown", key, true);
+      document.removeEventListener("pointerdown", press, true);
+    };
+  }, [putBack]);
+  const pile = people
     .filter((holder) => holder.username !== own)
-    .slice(0, AROUND.length);
+    .slice(0, UNDER.length + 1);
   return (
-    <div
-      className={cn(
-        "relative w-full",
-        forming
-          ? cn(PROFILE.grid, PROFILE.frame)
-          : "grid place-items-center py-16 sm:py-20 lg:h-[50rem] lg:py-8",
-      )}
+    <Writing
+      value={{
+        writing,
+        open: () => setAsked(true),
+        close: () => setAsked(false),
+      }}
     >
-      {/* The shadow the visitor's card casts, drawn first: on the page's ground
-          under the cards round it, never over them. As wide as the card and a
-          third again, as tall and a half (the card is 42rem by 26.5 at most),
-          its middle a little below the card's. */}
-      {!forming && (
-        <CastShadow className="top-[calc(50%+2rem)] left-1/2 aspect-[1.374] w-[min(54.6rem,130%)] -translate-x-1/2 -translate-y-1/2" />
-      )}
-      {!forming &&
-        around.map((holder, i) => {
-        const at = AROUND[i] as (typeof AROUND)[number];
-        return (
-          <div
-            key={holder.username}
-            // Under the hero's shimmer (components/light, z-[5]); under the hand
-            // it comes up through it, in front, still under the visitor's card
-            // (10). On leaving it goes back under a moment later, dimming on
-            // under the shimmer: the shimmer is back at once, not after the
-            // card's whole second (`PICKED`).
-            className="absolute z-0 transition-[z-index] delay-200 duration-0 hover:z-[7] hover:delay-0 max-lg:hidden"
-            style={placed(at)}
-          >
-            <div
-              className="animate-[card-float_ease-in-out_infinite_alternate] motion-reduce:animate-none"
-              style={{
-                animationDuration: `${at.float}s`,
-                animationDelay: `-${(at.float * i) / AROUND.length}s`,
-              }}
-            >
-              <HoloLight>
-                <div className={PICKED}>
-                  <IdCard
-                    holder={holder}
-                    heading="p"
-                    holo="laminate"
-                    className={SOLID}
-                  />
-                </div>
-              </HoloLight>
-            </div>
-          </div>
-        );
-      })}
-      {/* One element in both layouts, so the card is never remounted; named, so
-          the view transition carries it from the middle to its column, the
-          profile's held pane (components/profile-layout). */}
       <div
         className={cn(
-          "relative z-10 w-full [view-transition-name:your-card]",
+          "relative w-full",
           forming
-            ? cn(
-                PROFILE.identity,
-                "lg:sticky lg:top-20 lg:self-start lg:[grid-area:side]",
-              )
-            : "max-w-[42rem]",
+            ? cn(PROFILE.grid, PROFILE.frame)
+            : "flex flex-col items-center gap-12 py-16 sm:py-20 lg:block lg:h-[50rem] lg:py-0",
         )}
       >
-        {children}
+        {!forming && (
+          // In the middle at rest; once the visitor's card is taken up and
+          // grows into the middle, pushed back where it lay (`PUSHED`), smaller
+          // and well out of focus, every card of it (a filter, which makes the
+          // pile one layer, all of it under the shimmer then).
+          <div
+            inert={writing}
+            className={cn(
+              PILED,
+              "relative w-full max-w-[34rem] lg:max-w-none",
+              writing && "lg:blur-[3px] max-lg:hidden",
+            )}
+            style={at(writing ? PUSHED : MIDDLE)}
+          >
+            <Pile people={pile} away={writing} />
+          </div>
+        )}
+        {/* One element in every layout, so the card is never remounted; named,
+            so the view transition carries it from the middle to its column, the
+            profile's held pane (components/profile-layout). */}
+        <div
+          ref={yours}
+          className={cn(
+            "relative w-full [view-transition-name:your-card]",
+            forming
+              ? cn(
+                  PROFILE.identity,
+                  "z-10 lg:sticky lg:top-20 lg:self-start lg:[grid-area:side]",
+                )
+              : cn(PLACED, "z-10 max-w-[42rem] lg:max-w-none"),
+          )}
+          style={
+            forming
+              ? undefined
+              : at(writing ? { x: 0, y: 0, w: 42, rz: 0 } : WAITING)
+          }
+        >
+          {/* Its light, carried with it wherever it lies. */}
+          {!forming && <SubjectLight />}
+          {/* Waiting, it drifts, slowly (globals.css, `card-float`): alive
+              where it lies, still once it is being written on. */}
+          <div
+            className={cn(
+              !forming &&
+                !writing &&
+                "animate-[card-float_10s_ease-in-out_infinite_alternate] motion-reduce:animate-none",
+            )}
+          >
+            {children}
+          </div>
+        </div>
+        {forming && (
+          // Over the hero's shimmer, as the card is: it is the page's subject.
+          <main className={cn(PROFILE.places, "relative z-10")}>{preview}</main>
+        )}
       </div>
-      {forming && (
-        // Over the hero's shimmer, as the card is: it is the page's subject.
-        <main className={cn(PROFILE.places, "relative z-10")}>{preview}</main>
-      )}
-    </div>
+    </Writing>
   );
 }
 

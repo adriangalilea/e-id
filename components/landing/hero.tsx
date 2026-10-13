@@ -1,15 +1,14 @@
 import { GUTTER } from "@/components/frame";
 import type { Holder } from "@/components/id-card";
-import { HeroShimmer, SubjectLight } from "@/components/light";
+import { HeroShimmer } from "@/components/light";
 import { getShowcase } from "@/lib/data";
 import { cn } from "@/lib/utils";
 import { Preview, Stage, YourCard } from "./hero-cards";
 
-/** The landing's first screen, and nothing on it but cards: in the middle the
- *  visitor's own, blank until they write on it, which is how a profile is made
- *  here (`YourCard`); round it, in depth, other people's, real and filled, which
- *  is how one looks (`Stage`). The visitor's card is the subject: it stands in
- *  the light, the shimmer behind everything. */
+/** The landing's first screen, and nothing on it but cards: in the middle real
+ *  ones, stacked, which is how one looks; by them the visitor's own, blank, to
+ *  be taken up and written on, which is how a profile is made here (`Stage`,
+ *  `YourCard`). The middle stands in the light, the shimmer behind everything. */
 export async function Hero() {
   const people = (await getShowcase()).map(
     (p): Holder => ({
@@ -39,7 +38,6 @@ export async function Hero() {
         )}
       >
         <Stage people={people} preview={<Preview />}>
-          <SubjectLight />
           <YourCard />
         </Stage>
       </div>

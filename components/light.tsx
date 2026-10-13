@@ -1,6 +1,5 @@
 import { AmbientLight } from "@/components/ui/ambient-light";
 import { Grain } from "@/components/ui/grain";
-import { cn } from "@/lib/utils";
 
 /** THE PAGE'S GROUND: never flat black, a composed dark gradient of a few broad,
  *  very soft pools of light, all neutral (no hue, Adrian's rule: colour reads as a
@@ -69,29 +68,6 @@ export function SubjectLight() {
           { color: "#fff", x: 0.5, y: 0.5, rx: 0.5, ry: 0.5, strength: 0.03 },
           { color: "#fff", x: 0.5, y: 0.45, rx: 0.3, ry: 0.28, strength: 0.02 },
         ]}
-      />
-    </div>
-  );
-}
-
-/** THE SHADOW A CARD CASTS on what lies under it, wide and soft, a little below
- *  it as from a light overhead. Computed and dithered (@ag/ambient-light, a
- *  glow of black with no ground): as a box shadow it fell through the few 8-bit
- *  levels between the page's near-black and black in visible steps. It falls on
- *  the page's ground only, under anything else lying there (`className` places
- *  and sizes it): its dither is sized to that ground's few levels (`over`), and
- *  over a picture the same noise read as dirt. The card's own close contact
- *  shadow stays a box shadow, too short to band. */
-export function CastShadow({ className }: { className?: string }) {
-  return (
-    <div
-      aria-hidden
-      className={cn("pointer-events-none absolute", className)}
-    >
-      <AmbientLight
-        ground="none"
-        over="var(--background)"
-        glows={[{ color: "#000", x: 0.5, y: 0.5, rx: 0.5, ry: 0.5, strength: 0.75 }]}
       />
     </div>
   );

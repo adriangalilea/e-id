@@ -193,8 +193,8 @@
   }
 }
 
-/* A real card's slow drift round the home's (components/landing/hero-cards,
-   `Stage`): up a little and turned a hair, then back. Keyframes, which no utility
+/* A real card's slow drift in the home's spread (components/landing/hero-cards,
+   `Float`): up a little and turned a hair, then back. Keyframes, which no utility
    can write; on `translate` and `rotate`, so it adds to the card's placed
    `transform` instead of replacing it. */
 @keyframes card-float {

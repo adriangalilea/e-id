@@ -180,10 +180,10 @@ export function placeOf(social: SelectSocial): {
   };
 }
 
-/** How many real cards the home's hero spreads round the visitor's: six, and one
- *  more for when the visitor's own is among them and left out
- *  (components/landing/hero-cards, `AROUND`). */
-const SHOWCASE = 7;
+/** How many real cards the home's hero piles: the top one and eight under it,
+ *  and one more for when the visitor's own is among them and left out
+ *  (components/landing/hero-cards, `Pile`, `UNDER`). */
+const SHOWCASE = 10;
 
 /** Whose card leads the home's hero, when it exists: the maker's. */
 const SHOWCASE_LEAD = "adriangalilea";
