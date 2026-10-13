@@ -29,7 +29,7 @@ export function ClientForm() {
         <Button
           variant="outline"
           type="submit"
-          size="icon"
+          size="icon-lg"
           className="shrink-0"
         >
           <Check className="size-4" />

@@ -8,13 +8,12 @@ export function DiscardButton({ username }: { username: string }) {
   return (
     <Button
       variant="ghost"
-      asChild
-      className="self-end hover:bg-red-500/10 hover:text-red-500"
+      size="lg"
+      render={<Link href={`/${username}`} />}
+      className="self-end hover:bg-tone-bad/15 hover:text-tone-bad"
     >
-      <Link href={`/${username}`}>
-        <X strokeWidth={1} size="18" />
-        <span className="ml-2">discard</span>
-      </Link>
+      <X strokeWidth={1} />
+      discard
     </Button>
   );
 }

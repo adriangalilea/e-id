@@ -38,8 +38,9 @@ export default function CommentForm({
         />
         <Button
           type="submit"
-          className="z-10 h-10! w-10! shrink-0 grow-0 bg-zinc-500/20 p-0! shadow-md backdrop-blur-md"
+          className="z-10 shrink-0 grow-0 bg-zinc-500/20 shadow-md backdrop-blur-md"
           variant="ghost"
+          size="icon-lg"
         >
           <SendHorizontal strokeWidth="1" />
         </Button>

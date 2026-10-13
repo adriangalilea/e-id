@@ -1,20 +1,25 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { GUTTER } from "@/components/frame";
+import { cn } from "@/lib/utils";
 import { HelpCircle, Home } from "lucide-react";
 
 import FooterUser from "./footer_user";
 
 export default function Footer() {
   return (
-    <footer
-      className="shadow-top-light dark:shadow-top flex w-full justify-between bg-zinc-500/10
-        text-zinc-500 backdrop-blur-2xl dark:border-white/15"
-    >
-      <FooterUser />
-
-      <div className="flex gap-2">
-        <ButtonFAQ />
-        <ButtonHome />
+    <footer className="border-t border-border">
+      <div
+        className={cn(
+          "mx-auto flex h-16 w-full max-w-6xl items-center justify-between",
+          GUTTER,
+        )}
+      >
+        <FooterUser />
+        <div className="flex gap-1">
+          <ButtonFAQ />
+          <ButtonHome />
+        </div>
       </div>
     </footer>
   );
@@ -22,20 +27,24 @@ export default function Footer() {
 
 function ButtonHome() {
   return (
-    <Button asChild variant="ghost" size="icon">
-      <Link href="/" aria-label="home" prefetch={false}>
-        <Home strokeWidth={1} />
-      </Link>
+    <Button
+      variant="ghost"
+      size="icon-lg"
+      render={<Link href="/" aria-label="home" prefetch={false} />}
+    >
+      <Home strokeWidth={1} />
     </Button>
   );
 }
 
 function ButtonFAQ() {
   return (
-    <Button asChild variant="ghost" size="icon">
-      <Link href="/about" aria-label="about" prefetch={false}>
-        <HelpCircle strokeWidth={1} />
-      </Link>
+    <Button
+      variant="ghost"
+      size="icon-lg"
+      render={<Link href="/about" aria-label="about" prefetch={false} />}
+    >
+      <HelpCircle strokeWidth={1} />
     </Button>
   );
 }

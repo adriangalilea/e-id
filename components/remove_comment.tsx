@@ -36,9 +36,9 @@ export default function RemoveComment({
           <TooltipTrigger asChild>
             <AlertDialogTrigger asChild>
               <Button
-                variant="destructiveGhost"
-                size="icon"
-                className="border border-border hover:border-red-500/10"
+                variant="outline"
+                size="icon-lg"
+                className="hover:bg-tone-bad/15 hover:text-tone-bad"
               >
                 <Trash2 strokeWidth={1} />
               </Button>
@@ -58,20 +58,15 @@ export default function RemoveComment({
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <Button
-            asChild
-            className="border border-red-500/10 bg-red-500/20 text-red-500"
-            variant="destructiveGhost"
+          <AlertDialogAction
+            variant="destructive"
+            onClick={async () => {
+              await deleteComment(commentId);
+              onChange();
+            }}
           >
-            <AlertDialogAction
-              onClick={async () => {
-                await deleteComment(commentId);
-                onChange();
-              }}
-            >
-              Delete
-            </AlertDialogAction>
-          </Button>
+            Delete
+          </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

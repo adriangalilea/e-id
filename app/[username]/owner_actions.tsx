@@ -15,13 +15,15 @@ export function OwnerActions({ username }: { username: string }) {
   return (
     <div className="flex items-center justify-end gap-2 animate-fade-in">
       <ShareButton username={username} />
-      <Button asChild variant="outline">
-        <Link href={`/${username}/edit`} prefetch={false}>
-          <Pen strokeWidth={1} />
-          <span className="prose prose-zinc dark:prose-invert font-light">
-            edit
-          </span>
-        </Link>
+      <Button
+        variant="outline"
+        size="lg"
+        render={<Link href={`/${username}/edit`} prefetch={false} />}
+      >
+        <Pen strokeWidth={1} />
+        <span className="prose prose-zinc dark:prose-invert font-light">
+          edit
+        </span>
       </Button>
     </div>
   );

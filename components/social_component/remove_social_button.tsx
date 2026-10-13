@@ -35,9 +35,9 @@ export default function RemoveSocialButton({
             <AlertDialogTrigger asChild>
               <Button
                 key={platformId}
-                className="border border-border hover:border-red-500/10"
-                size="icon"
-                variant="destructiveGhost"
+                variant="outline"
+                size="icon-lg"
+                className="hover:bg-tone-bad/15 hover:text-tone-bad"
               >
                 <Trash2 strokeWidth={1} />
               </Button>
@@ -57,19 +57,14 @@ export default function RemoveSocialButton({
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <Button
-            asChild
-            className="border border-red-500/10 bg-red-500/20 text-red-500"
-            variant="destructiveGhost"
+          <AlertDialogAction
+            variant="destructive"
+            onClick={async () => {
+              await removeSocial(platformId);
+            }}
           >
-            <AlertDialogAction
-              onClick={async () => {
-                await removeSocial(platformId);
-              }}
-            >
-              Delete
-            </AlertDialogAction>
-          </Button>
+            Delete
+          </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

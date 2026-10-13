@@ -30,7 +30,7 @@ export default function PinComment({
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button variant="outline" size="icon">
+            <Button variant="outline" size="icon-lg">
               {pinned ? <PinOff strokeWidth={1} /> : <Pin strokeWidth={1} />}
             </Button>
           </TooltipTrigger>

@@ -6,6 +6,7 @@ import { Suspense } from "react";
 import { getSession } from "@/lib/session";
 import { ChipSync } from "@/components/session/chip-sync";
 import { chipOf } from "@/lib/chip";
+import { Column } from "@/components/frame";
 
 // Where a signed-in user without a username is sent (components/session/
 // session-chip) to choose one. Signed out, it says so and corrects the display
@@ -43,8 +44,10 @@ async function NullPageContent() {
 
 export default async function Page() {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
-      <NullPageContent />
-    </Suspense>
+    <Column>
+      <Suspense fallback={<div>Loading...</div>}>
+        <NullPageContent />
+      </Suspense>
+    </Column>
   );
 }

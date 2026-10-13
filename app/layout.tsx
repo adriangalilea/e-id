@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Space_Mono } from "next/font/google";
+import { Space_Grotesk, Space_Mono } from "next/font/google";
 import "./globals.css";
 import Footer from "@/components/footer/footer";
 import { Analytics } from "@vercel/analytics/react";
@@ -9,9 +9,9 @@ import { PROD_URL } from "@/lib/const";
 import { SitePageSensor } from "@/components/page-sensor";
 import { visitsEnabled } from "@/lib/visit-store";
 
-const inter = Inter({
+const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
-  variable: "--font-inter",
+  variable: "--font-space-grotesk",
   display: "swap",
 });
 
@@ -47,13 +47,10 @@ export default async function RootLayout({
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${spaceMono.variable} overflow-auto`}
+      className={`${spaceGrotesk.variable} ${spaceMono.variable} dark`}
     >
-      <body
-        className="font-inter mx-auto flex h-dvh max-h-full w-full max-w-2xl flex-col
-          justify-between px-6 antialiased"
-      >
-        {children}
+      <body className="flex min-h-dvh flex-col font-sans antialiased">
+        <div className="flex flex-1 flex-col">{children}</div>
         <Toaster />
         <Analytics />
         <SpeedInsights />

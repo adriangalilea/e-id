@@ -1,0 +1,50 @@
+@property --glass-rim {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 1;
+}
+
+/* A ghost, 0 to 1: a value that applies but is not set here (ui/setting). A glass
+   rim is light, not a line, so it cannot be dashed the way a plain face's edge is;
+   a ghost is the glass itself thinner, its light softer, its stain fainter
+   (`glassLight`, the body). Registered so it eases with the glass when a value is
+   set or cleared, and so its absence is 0. Not inherited: a ghost's thumb or a
+   field inside it is not a ghost of its own. */
+@property --glass-ghost {
+  syntax: "<number>";
+  inherits: false;
+  initial-value: 0;
+}
+
+/* The glass's corner radius, the one length its corners and its edge's light are
+   placed by (`glassLight`). Registered only to stop it inheriting: a glass inside
+   another that states no radius of its own must not wear the outer one's, it draws
+   square with its light a whole ring, which shows at once. Any value, no initial. */
+@property --glass-radius {
+  syntax: "*";
+  inherits: false;
+}
+
+/* How strongly the rim reads against what it stands on, a multiple of its light
+   (`--glass-rim`, the glass's own state, is the other). Worked out on each element
+   that wears the light (`glassLight`): the ground's (`--glass-ground-sheen`, a
+   picture's, from ui/backdrop) when there is one, else the face's own. Registered
+   so it eases with the glass when the ground or the face changes; not inherited,
+   since every element that reads it declares it, so its easing restyles only the
+   elements that draw with it. */
+@property --glass-sheen {
+  syntax: "<number>";
+  inherits: false;
+  initial-value: 1;
+}
+
+/* The light around a glass, the colour its rim catches (`glassLight`): white
+   leaning toward the picture under it. Registered for two reasons: so it eases
+   when what is under the glass changes colour, and so a glass over no picture
+   (its formula invalid without `--glass-ground`) falls back to white, this
+   property's own value. Not inherited, for the same reason as the sheen. */
+@property --glass-ground-light {
+  syntax: "<color>";
+  inherits: false;
+  initial-value: white;
+}

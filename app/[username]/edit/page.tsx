@@ -2,6 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import { getAllSocials, getProfile } from "@/lib/data";
 import { getContributions } from "@/lib/github";
 import { getSession } from "@/lib/session";
+import { Column } from "@/components/frame";
 import UserProfile from "../user_profile";
 
 // The one profile page that reads the session: only its owner edits it.
@@ -21,13 +22,13 @@ export default async function EditPage(props: {
   const githubData = github?.value ? await getContributions(github.value) : [];
 
   return (
-    <div className="flex flex-1 flex-col gap-4 sm:gap-6">
+    <Column>
       <UserProfile
         user={user}
         socials={socials}
         githubData={githubData}
         edit={true}
       />
-    </div>
+    </Column>
   );
 }

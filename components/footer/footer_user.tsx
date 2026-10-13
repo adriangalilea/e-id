@@ -30,13 +30,12 @@ export default function FooterUser() {
   if (!chip.u)
     return (
       <Button
-        asChild
         variant="ghost"
-        className="relative h-10! w-10! p-0! hover:bg-orange-500/10"
+        size="icon-lg"
+        className="hover:bg-tone-warn/15"
+        render={<Link href="/null" aria-label="fix profile null alert" />}
       >
-        <Link href="/null" aria-label="fix profile null alert">
-          <TriangleAlert strokeWidth={1.5} className="text-orange-500" />
-        </Link>
+        <TriangleAlert strokeWidth={1.5} className="text-tone-warn" />
       </Button>
     );
   return (

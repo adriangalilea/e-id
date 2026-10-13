@@ -44,16 +44,19 @@ export default function CountryPicker({
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          role="combobox"
-          aria-expanded={open}
-          className="w-[200px] justify-between "
-        >
-          {selectedCountryLabel || "Select country..."}
-          <ChevronsUpDown className="ml-2 size-4 shrink-0" />
-        </Button>
+      <PopoverTrigger
+        render={
+          <Button
+            variant="outline"
+            size="lg"
+            role="combobox"
+            aria-expanded={open}
+            className="w-[200px] justify-between"
+          />
+        }
+      >
+        {selectedCountryLabel || "Select country..."}
+        <ChevronsUpDown className="ml-2 size-4 shrink-0" />
       </PopoverTrigger>
       <PopoverContent className="w-[200px] p-0">
         <Command

@@ -17,13 +17,11 @@ export default function ShareButton({ username }: { username: string }) {
   const { toast } = useToast();
   return (
     <Popover>
-      <PopoverTrigger asChild>
-        <Button variant="outline">
-          <LinkIcon strokeWidth={1} />
-          <span className="prose prose-zinc dark:prose-invert font-light">
-            share
-          </span>
-        </Button>
+      <PopoverTrigger render={<Button variant="outline" size="lg" />}>
+        <LinkIcon strokeWidth={1} />
+        <span className="prose prose-zinc dark:prose-invert font-light">
+          share
+        </span>
       </PopoverTrigger>
       <PopoverContent className="w-min flex flex-col p-0">
         {/* The brand first: 👤.to opens everywhere (next.config sends every

@@ -51,7 +51,7 @@ export function Testimonial({
         </Link>
         <RelativeTime
           at={date.getTime()}
-          className="font-code px-1 py-0.5 text-xs font-normal opacity-50 hover:bg-zinc-500/20"
+          className="font-mono px-1 py-0.5 text-xs font-normal opacity-50 hover:bg-zinc-500/20"
         />
       </footer>
     </blockquote>

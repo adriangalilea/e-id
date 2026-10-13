@@ -5,6 +5,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 
+import { Column } from "@/components/frame";
 import type { Metadata } from "next";
 import Link from "next/link";
 
@@ -15,8 +16,8 @@ export const metadata: Metadata = {
 
 export default function Faq() {
   return (
-    <div className="prose prose-zinc items-start justify-center dark:prose-invert">
-      <h1 className="font-light">Frequently Asked Questions</h1>
+    <Column className="prose prose-zinc prose-invert">
+      <h1 className="font-light tracking-tight">Frequently Asked Questions</h1>
       <Accordion type="single" collapsible className="w-full">
         <AccordionItem value="item-1">
           <AccordionTrigger className="font-light">
@@ -85,6 +86,6 @@ export default function Faq() {
           </AccordionContent>
         </AccordionItem>
       </Accordion>
-    </div>
+    </Column>
   );
 }

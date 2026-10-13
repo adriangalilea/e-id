@@ -1,88 +1,45 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@import "./tokens.css";
 
 @plugin "@tailwindcss/typography";
 
+/* e-id is dark, always: the page wears `.dark` (app/layout), so `dark:` is the class's
+   and the registry's `scheme-dark:` and tones (tokens.css) read the same scheme. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
-  --background: hsl(0 0% 100%);
-  --foreground: hsl(240 10% 3.9%);
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.97 0 0);
 
-  --card: hsl(0 0% 100%);
-  --card-foreground: hsl(240 10% 3.9%);
+  --card: oklch(0.175 0 0);
+  --card-foreground: oklch(0.97 0 0);
 
-  --popover: hsl(0 0% 100%);
-  --popover-foreground: hsl(240 10% 3.9%);
+  --popover: oklch(0.175 0 0);
+  --popover-foreground: oklch(0.97 0 0);
 
-  --primary: hsl(240 5.9% 10%);
-  --primary-foreground: hsl(0 0% 98%);
+  --primary: oklch(0.97 0 0);
+  --primary-foreground: oklch(0.145 0 0);
 
-  --secondary: hsl(240 4.8% 95.9%);
-  --secondary-foreground: hsl(240 5.9% 10%);
+  --secondary: oklch(0.24 0 0);
+  --secondary-foreground: oklch(0.97 0 0);
 
-  --muted: hsl(240 4.8% 95.9%);
-  --muted-foreground: hsl(240 3.8% 40%);
+  --muted: oklch(0.24 0 0);
+  --muted-foreground: oklch(0.7 0 0);
 
-  --accent: hsl(240 4.8% 95.9%);
-  --accent-foreground: hsl(240 5.9% 10%);
+  --accent: oklch(0.24 0 0);
+  --accent-foreground: oklch(0.97 0 0);
 
-  --destructive: hsl(0 84.2% 60.2%);
-  --destructive-foreground: hsl(0 0% 98%);
+  --destructive: oklch(0.45 0.16 27);
+  --destructive-foreground: oklch(0.97 0 0);
 
-  --border: hsl(240 5.9% 90%);
-  --input: hsl(240 5.9% 90%);
-  --ring: hsl(240 10% 3.9%);
+  --border: oklch(1 0 0 / 0.12);
+  --input: oklch(1 0 0 / 0.16);
+  --ring: oklch(0.85 0 0);
 
-  --radius: 0.5rem;
-
-  --sidebar: hsl(0 0% 98%);
-  --sidebar-foreground: hsl(240 5.3% 26.1%);
-  --sidebar-primary: hsl(240 5.9% 10%);
-  --sidebar-primary-foreground: hsl(0 0% 98%);
-  --sidebar-accent: hsl(240 4.8% 95.9%);
-  --sidebar-accent-foreground: hsl(240 5.9% 10%);
-  --sidebar-border: hsl(220 13% 91%);
-  --sidebar-ring: hsl(217.2 91.2% 59.8%);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: hsl(240 10% 3.9%);
-    --foreground: hsl(0 0% 98%);
-
-    --card: hsl(240 10% 3.9%);
-    --card-foreground: hsl(0 0% 98%);
-
-    --popover: hsl(240 10% 3.9%);
-    --popover-foreground: hsl(0 0% 98%);
-
-    --primary: hsl(0 0% 98%);
-    --primary-foreground: hsl(240 5.9% 10%);
-
-    --secondary: hsl(240 3.7% 15.9%);
-    --secondary-foreground: hsl(0 0% 98%);
-
-    --muted: hsl(240 3.7% 15.9%);
-    --muted-foreground: hsl(240 5% 64.9%);
-
-    --accent: hsl(240 3.7% 15.9%);
-    --accent-foreground: hsl(0 0% 98%);
-
-    --destructive: hsl(0 62.8% 30.6%);
-    --destructive-foreground: hsl(0 0% 98%);
-
-    --border: hsl(240 3.7% 20%);
-    --input: hsl(240 3.7% 15.9%);
-    --ring: hsl(240 4.9% 83.9%);
-
-    --sidebar: hsl(240 5.9% 10%);
-    --sidebar-foreground: hsl(240 4.8% 95.9%);
-    --sidebar-primary: hsl(224.3 76.3% 48%);
-    --sidebar-primary-foreground: hsl(0 0% 100%);
-    --sidebar-accent: hsl(240 3.7% 15.9%);
-    --sidebar-accent-foreground: hsl(240 4.8% 95.9%);
-    --sidebar-border: hsl(240 3.7% 15.9%);
-    --sidebar-ring: hsl(217.2 91.2% 59.8%);
-  }
+  /* Square corners are e-id's: every `rounded-*` the theme names is zero, the
+     registry's items included. */
+  --radius: 0px;
 }
 
 @theme inline {
@@ -114,26 +71,19 @@
   --color-input: var(--input);
   --color-ring: var(--ring);
 
-  --color-sidebar: var(--sidebar);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-ring: var(--sidebar-ring);
-
+  --radius-xs: var(--radius);
+  --radius-sm: var(--radius);
+  --radius-md: var(--radius);
   --radius-lg: var(--radius);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-sm: calc(var(--radius) - 4px);
+  --radius-xl: var(--radius);
+  --radius-2xl: var(--radius);
+  --radius-3xl: var(--radius);
+  --radius-4xl: var(--radius);
 
-  --font-inter: var(--font-inter);
-  --font-code: var(--font-space-mono);
-
-  --shadow-top:
-    0 -5px 10px -5px rgba(0, 0, 0, 0.4), 0 -10px 10px -5px rgba(0, 0, 0, 0.4);
-  --shadow-top-light:
-    0 -5px 5px -5px rgba(0, 0, 0, 0.1), 0 -10px 10px -5px rgba(0, 0, 0, 0.1);
+  /* Two voices of one family: Space Grotesk for words, Space Mono for metadata
+     (dates, handles, codes, labels). */
+  --font-sans: var(--font-space-grotesk);
+  --font-mono: var(--font-space-mono);
 
   --animate-accordion-down: accordion-down 0.2s ease-out;
   --animate-accordion-up: accordion-up 0.2s ease-out;
@@ -176,21 +126,9 @@
     border-color: var(--color-border, currentcolor);
   }
 
-  * {
-    @apply outline-ring/50;
-  }
-
   body {
     @apply bg-background text-foreground;
   }
-}
-
-:root {
-  scrollbar-gutter: stable both-edges;
-}
-
-body[style] {
-  margin: 0 auto !important;
 }
 
 textarea,

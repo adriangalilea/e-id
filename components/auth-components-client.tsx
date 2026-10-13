@@ -5,13 +5,12 @@ import { LogOut, UserRound } from "lucide-react";
 import { signOut } from "@/lib/auth-client";
 import { startSignIn } from "@/lib/sign-in";
 
-export function SignIn(props: React.ComponentPropsWithRef<typeof Button>) {
+export function SignIn() {
   return (
     <Button
       aria-label="sign-in"
       variant="ghost"
-      size="icon"
-      {...props}
+      size="icon-lg"
       onClick={() => startSignIn()}
     >
       <UserRound strokeWidth={1} />
@@ -19,12 +18,12 @@ export function SignIn(props: React.ComponentPropsWithRef<typeof Button>) {
   );
 }
 
-export function SignOut(props: React.ComponentPropsWithRef<typeof Button>) {
+export function SignOut() {
   return (
     <Button
-      variant="destructiveGhost"
-      size="icon"
-      {...props}
+      variant="ghost"
+      size="icon-lg"
+      className="hover:bg-tone-bad/15 hover:text-tone-bad"
       aria-label="sign-out"
       onClick={async () => {
         await signOut({

@@ -1,0 +1,263 @@
+/* @ag/tokens: the studio's voice on top of shadcn's neutral theme. Additive: every
+   shadcn variable stays; these are the ones @ag items read. Consumers import this
+   file once from their globals.css.
+
+   Type: three voices, never mixed. --font-sans (Geist) is display and body;
+   --font-mono (Geist Mono) is metadata ONLY (labels, versions, dates, pills,
+   kickers; text-xs or smaller, lowercase); --font-typewriter (Cutive Mono) is the
+   studio's own voice (wordmark, taglines) and never bolds. The consumer's layout
+   defines the three variables with next/font; this file only maps them.
+
+   Rhythm: one 8px doubling scale, every gap a rung: 8 · 16 · 32 · 64 · 128
+   (Tailwind 2 · 4 · 8 · 16 · 32). Adjacent hierarchy levels are a clean 2x.
+
+   Monochrome cards: one color at alpha tiers (title 90, body 55, meta 40,
+   hairlines 7). A card that carries a color flare wears that ONE color everywhere;
+   alpha is the only variable. */
+
+@theme inline {
+  --font-typewriter: var(--font-typewriter);
+  /* The face somebody else's words are set in (quote). ITS OWN SLOT, not --font-serif:
+     a page's serif is usually its heading face, and a display serif drawn for 28px
+     headlines is illegible at reading size. Name a reading serif here (Tinos, Georgia,
+     Source Serif); unset, the stack every machine has. */
+  --font-quote: Georgia, "Times New Roman", Times, serif;
+  --color-brand: var(--brand);
+  --color-tone-ok: var(--tone-ok);
+  --color-tone-warn: var(--tone-warn);
+  --color-tone-bad: var(--tone-bad);
+  --color-tone-info: var(--tone-info);
+  --ease-out: var(--ease-out);
+}
+
+:root {
+  /* The studio's sage, constant everywhere. --accent is per project; --brand is not. */
+  --brand: oklch(63% 0.08 145);
+
+  /* Semantic tones: state, never decoration. The brand color is forbidden from
+     meaning status. */
+  --tone-ok: oklch(72% 0.17 155);
+  --tone-warn: oklch(80% 0.16 80);
+  --tone-bad: oklch(63% 0.22 27);
+  --tone-info: oklch(72% 0.13 230);
+
+  /* The alpha ladder for monochrome surfaces. */
+  --alpha-hairline: 0.07;
+  --alpha-wash: 0.05;
+  --alpha-meta: 0.4;
+  --alpha-body: 0.55;
+  --alpha-title: 0.9;
+
+  /* Motion: one easing, three durations. Nothing animates indefinitely; one-shot or
+     scroll-driven only. */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --dur-1: 150ms;
+  --dur-2: 300ms;
+  --dur-3: 500ms;
+
+  /* Focus: a fine line just off the shape's edge, in the content's own colour,
+     faint. Following the corner radius, it reads as the control's outline lit,
+     never the browser's heavy ring. */
+  --focus-ring-width: 1.5px;
+  --focus-ring-offset: 3px;
+  --focus-ring-alpha: 45%;
+}
+
+/* The one focus affordance. It answers the keyboard only (:focus-visible): a click
+   or a tap shows nothing, a Tab shows where you are. The base rule gives it to
+   every focusable thing, links in an embed included, so nothing falls back to the
+   browser's default. Where focus lands on one element but should be drawn on
+   another (a field's glass wrapper, a carousel's current card), that element
+   takes `focus-ring` under the matching variant. A composite control whose own
+   drawing can answer focus (a scrubber's bar) does that instead and sets
+   outline-none. */
+@utility focus-ring {
+  outline: var(--focus-ring-width) solid
+    color-mix(in oklab, currentColor var(--focus-ring-alpha), transparent);
+  outline-offset: var(--focus-ring-offset);
+}
+
+/* A rounded frame that cuts what it holds smoothly, whatever it holds. Chrome cuts a
+   child with a layer of its own (a video, a playing stage, anything transformed or
+   animating) to a parent's rounded corners WITHOUT anti-aliasing: the corner steps,
+   and the parent's ground shows round it as a light rim. Through a mask the same cut
+   is anti-aliased, and it is applied to the frame's content as one picture, so
+   nothing beneath leaks either. The mask is opaque everywhere: it hides nothing, it
+   exists for the path it sends the cut down. Use it with the frame's radius
+   (`rounded-xl clip-rounded`) on any frame holding media or moving content; a child
+   that rounds itself (ui/video) needs none. */
+@utility clip-rounded {
+  overflow: hidden;
+  -webkit-mask-image: -webkit-radial-gradient(white, black);
+  mask-image: radial-gradient(white, black);
+}
+
+/* Keyboard focus, as the ring means it: the browser's :focus-visible, less any element
+   whose focus came from a press (ui/focus-source marks it `data-focus-pointer`). The
+   browser alone rings the last thing clicked as soon as any key is pressed; with
+   focus-source mounted it never does, and focus the keyboard moved is always ringed.
+   Tailwind's own `focus-visible:` variant is redefined to the same selector, so every
+   `focus-visible:` utility anywhere means this too. */
+@custom-variant focus-visible (&:focus-visible:not([data-focus-pointer]));
+
+/* The scheme an element stands in is the NEAREST one named, on it or above it: a
+   control with no scheme of its own inside a light glass on a dark page is light, a
+   dark glass inside that is dark again. `.dark` and `.light` (the page's theme class,
+   or a surface's `scheme`) each set `--ag-scheme`, which every element inherits, so
+   the value an element sees from its parent is always the nearest surface's. A
+   selector cannot say "nearest": `.dark *` also matched everything inside a light
+   surface inside a dark page, and those faces drew dark on light glass.
+
+   `scheme-dark:` is the element's own class when it names one, else what its parent
+   holds (a container style query, which asks the nearest ancestor). Tailwind's
+   `dark:` asks only about ancestors and never about the element, so a surface that
+   is dark itself could not style its own face with it. `scheme-light:` is the same
+   question for light: a page with no theme class is in neither, its faces wear their
+   unprefixed (light) half. */
+@custom-variant scheme-dark {
+  &:where(.dark):not(.light) {
+    @slot;
+  }
+  @container style(--ag-scheme: dark) {
+    &:not(.light, .dark) {
+      @slot;
+    }
+  }
+}
+@custom-variant scheme-light {
+  &:where(.light):not(.dark) {
+    @slot;
+  }
+  @container style(--ag-scheme: light) {
+    &:not(.light, .dark) {
+      @slot;
+    }
+  }
+}
+
+@layer base {
+  /* The browser's scrollbar where one appears: thin, its thumb the words' colour at
+     the quiet tier on a clear track, so it follows the scheme of what it scrolls and
+     reads over a picture as on the page. A long scroller wears the registry's own
+     thumbs (scroll-thumb) and hides this one; this is the floor for every other, the
+     browser's grey bar and white track having read as broken (Adrian, 2026-10-11).
+     On every element, so each scroller mixes its own words' colour: set on the root
+     alone it resolved there, and a scroller in light glass on a dark page wore the
+     page's white. */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in oklab, currentColor 25%, transparent)
+      transparent;
+  }
+  :focus-visible:not([data-focus-pointer]) {
+    @apply focus-ring;
+  }
+  /* A press's focus is never ringed, the browser's own outline included: its default
+     `outline: auto` still draws on a marked element once a key (Escape closing a
+     popover) makes the browser call focus visible. */
+  [data-focus-pointer]:focus-visible {
+    outline: none;
+  }
+  /* tabindex=-1 on what is not a control is where a script puts focus (a dialog, a
+     stage, a scroller), not something a person chose: it is never ringed. A control
+     at -1 is a roving one the keys moved to (an option, a tree row, a tab, a radio),
+     which may hold -1 a frame after taking focus, or for good: it keeps its ring.
+     A menu's item shows focus by its highlight instead. */
+  [tabindex="-1"]:not(
+    :is(
+      button,
+      a[href],
+      input,
+      select,
+      textarea,
+      [role="option"],
+      [role="treeitem"],
+      [role="gridcell"],
+      [role="row"],
+      [role="tab"],
+      [role="radio"],
+      [role="button"],
+      [role="checkbox"],
+      [role="switch"],
+      [role="slider"],
+      [role="link"]
+    )
+  ):focus-visible {
+    outline: none;
+  }
+}
+
+/* Dark. The shadcn surface variables (--background, --border, --sidebar…) are the
+   consumer's own scaffold and already have a dark half; these are the studio's, and
+   without this block every @ag item reading them keeps its light values on a dark
+   page. An item that reads only these two sets never needs to know the theme.
+
+   Lightness moves, hue and chroma do not. A colour on a dark ground has to be
+   lighter to READ as the same colour; sage at 63% against near-black is the same
+   pigment going muddy, not a constant. --brand is still constant across projects,
+   which is what constant meant.
+
+   The alpha ladder rises. A 7% black hairline on white is a clear line; 7% white on
+   near-black is nothing, because the eye judges these against a much smaller range.
+   Keeping the numbers identical across themes is the mistake that makes a dark
+   design look flat and unstructured. */
+.dark {
+  /* The browser's own parts (scrollbars, a native select's list, a date field's
+     picker) in the dark scheme too, wherever a surface is dark. */
+  color-scheme: dark;
+  --ag-scheme: dark;
+
+  --brand: oklch(72% 0.09 145);
+
+  --tone-ok: oklch(78% 0.16 155);
+  --tone-warn: oklch(84% 0.15 80);
+  --tone-bad: oklch(70% 0.2 27);
+  --tone-info: oklch(78% 0.12 230);
+
+  --alpha-hairline: 0.12;
+  --alpha-wash: 0.09;
+  --alpha-meta: 0.45;
+  --alpha-body: 0.62;
+  --alpha-title: 0.92;
+}
+
+/* Light, as a surface's own scheme on any page (`scheme="light"`: light glass over a
+   picture on a dark page). It names the scheme for what is inside and the browser's
+   own parts. No colour variable flips back here (a consumer's globals have no light
+   block to flip to), so what is inside reads in `currentColor`. */
+.light {
+  color-scheme: light;
+  --ag-scheme: light;
+}
+
+/* An icon is dimmed as ONE shape. A translucent colour (`text-foreground/55` on the
+   icon, or inherited from a dimmed button or label) is painted stroke by stroke, so
+   where two strokes of an icon meet or cross the alpha stacks and the joints come out
+   brighter than the lines. Here its strokes (and a `fill-current` fill) are drawn in
+   that colour made opaque, and the colour's own alpha is laid over the whole icon as
+   a uniform mask: exactly as dim as it was asked to be, evenly. An opaque colour's
+   mask is whole, so an icon drawn opaque is untouched. Unlayered, above the
+   utilities: a `stroke-current` would otherwise put the alpha back on the strokes,
+   dimming the icon twice. A browser without relative colours ignores it and draws
+   as before. Which svgs are icons is read, not opted into one by one: lucide's
+   (`.lucide`), any drawn in the text's colour (`stroke="currentColor"`, the way a
+   hand-drawn icon is written), and any marked `ag-icon`. Inside one, a part painted
+   in the text's colour by its own attribute is made opaque too, or the mask would
+   dim it twice. */
+svg:is(.lucide, .ag-icon, [stroke="currentColor"]) {
+  stroke: rgb(from currentColor r g b);
+  mask-image: linear-gradient(
+    rgb(from currentColor 0 0 0 / alpha),
+    rgb(from currentColor 0 0 0 / alpha)
+  );
+}
+svg:is(.lucide, .ag-icon, [stroke="currentColor"]):is(
+  .fill-current,
+  [fill="currentColor"]
+),
+svg:is(.lucide, .ag-icon, [stroke="currentColor"]) [fill="currentColor"] {
+  fill: rgb(from currentColor r g b);
+}
+svg:is(.lucide, .ag-icon, [stroke="currentColor"]) [stroke="currentColor"] {
+  stroke: rgb(from currentColor r g b);
+}

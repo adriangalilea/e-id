@@ -1,4 +1,3 @@
-import { Button } from "./ui/button";
 import Link from "next/link";
 import CustomAvatar from "./custom_avatar";
 
@@ -10,16 +9,12 @@ export default function UserButton({
   image: string | null;
 }) {
   return (
-    <div className="flex items-center justify-around">
-      <Button
-        variant="ghost"
-        className="w-full p-0! transition-opacity ease-out hover:opacity-80"
-        asChild
-      >
-        <Link href={`/${username}`} className="p-0!">
-          <CustomAvatar username={username} image={image ?? ""} />
-        </Link>
-      </Button>
-    </div>
+    <Link
+      href={`/${username}`}
+      aria-label={`your page, @${username}`}
+      className="block transition-opacity ease-out hover:opacity-80"
+    >
+      <CustomAvatar username={username} image={image ?? ""} />
+    </Link>
   );
 }

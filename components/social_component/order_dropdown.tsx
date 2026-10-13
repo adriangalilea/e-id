@@ -37,7 +37,7 @@ export default function OrderDropdown({
                 className="justify-center border border-border transition-colors hover:bg-zinc-950/15
                   dark:hover:bg-zinc-50/15"
                 variant="outline"
-                size="icon"
+                size="icon-lg"
               >
                 {position}
               </Button>

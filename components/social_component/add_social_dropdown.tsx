@@ -20,6 +20,8 @@ export default function AddSocialDropdownMenu() {
             hover:border-none hover:bg-indigo-100 hover:text-indigo-700 dark:bg-zinc-950/60
             dark:hover:bg-indigo-950 dark:hover:text-indigo-300"
           variant="ghost"
+          size="lg"
+          aria-label="add a social"
         >
           <Plus strokeWidth={1} className="grow shrink-0" />
         </Button>

@@ -12,8 +12,8 @@ export function SaveButton() {
       disabled={pending}
       type="submit"
       variant="outline"
-      className="self-end hover:bg-emerald-500/10 hover:text-emerald-500
-        hover:border-emerald-500/10"
+      size="lg"
+      className="self-end hover:bg-tone-ok/15 hover:text-tone-ok"
     >
       {pending ? (
         <LoaderCircle strokeWidth={1} size="18" className="animate-spin" />

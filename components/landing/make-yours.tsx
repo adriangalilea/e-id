@@ -22,15 +22,17 @@ export function MakeYours() {
     );
   if (!chip.u)
     return (
-      <Button asChild variant="outline" className={LOOK}>
-        <Link href="/null">pick your username</Link>
+      <Button variant="outline" className={LOOK} render={<Link href="/null" />}>
+        pick your username
       </Button>
     );
   return (
-    <Button asChild variant="outline" className={LOOK}>
-      <Link href={`/${chip.u}`}>
-        go to {EMOJI_DOMAIN}/{chip.u}
-      </Link>
+    <Button
+      variant="outline"
+      className={LOOK}
+      render={<Link href={`/${chip.u}`} />}
+    >
+      go to {EMOJI_DOMAIN}/{chip.u}
     </Button>
   );
 }

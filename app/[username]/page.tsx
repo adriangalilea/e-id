@@ -14,6 +14,7 @@ import { inlineJson, profileJsonLd, profileUrl } from "@/lib/profile-ld";
 import { CommentInteraction, HiddenFromOwner } from "./comment_section";
 import { OwnerActions } from "./owner_actions";
 import UserProfile from "./user_profile";
+import { Column } from "@/components/frame";
 
 // A profile is a static page: prerendered for every username at build, rendered
 // once on its first visit for a username that came later, and rendered again
@@ -87,7 +88,7 @@ export default async function Page(props: {
   const githubData = github?.value ? await getContributions(github.value) : [];
 
   return (
-    <div className="flex flex-1 flex-col gap-4 sm:gap-6">
+    <Column className="gap-4 sm:gap-6">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
@@ -114,6 +115,6 @@ export default async function Page(props: {
       )}
       <CommentInteraction profileUserId={user.id} />
       <MakeYourOwn />
-    </div>
+    </Column>
   );
 }
