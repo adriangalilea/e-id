@@ -14,6 +14,7 @@ import { __iconNode as twitter } from "lucide-react/dist/esm/icons/twitter.js";
 import { __iconNode as youtube } from "lucide-react/dist/esm/icons/youtube.js";
 import type { Card } from "@/lib/card";
 import { EMOJI_DOMAIN } from "@/lib/const";
+import { FOIL as FOIL_SPEC } from "@/lib/foil";
 import { HOLO_ART, type HoloArt } from "@/lib/holo";
 import { MARK_BOX, MARK_PATH } from "@/lib/mark";
 
@@ -37,9 +38,9 @@ const MONO = "Space Mono";
 const PAGE = "#060606";
 const INK = "#f5f5f5";
 
-/** THE FOIL, `--foil` in globals.css: the same stops, one OKLCH lightness and chroma,
- *  only the hue turning, written here as sRGB since that is what an SVG takes. */
-const FOIL = [350, 250, 165, 90, 300, 350].map((hue) => oklchHex(0.78, 0.14, hue));
+/** THE FOIL, lib/foil's stops (one OKLCH lightness and chroma, only the hue
+ *  turning), written here as sRGB since that is what resvg takes. */
+const FOIL = FOIL_SPEC.hues.map((hue) => oklchHex(FOIL_SPEC.lightness, FOIL_SPEC.chroma, hue));
 
 /** Where the light lies across the card, as a hand tilting it would put it (`--px`):
  *  a third of the way in, on the photo's edge, so the band crosses the seal. */

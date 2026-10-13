@@ -7,7 +7,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Wide } from "@/components/frame";
 import { IdCard, type Holder, type HoloPrint } from "@/components/id-card";
-import { Tilt } from "@/components/landing/tilt";
+import { HoloLight } from "@/components/ui/holo";
 import { getProfile, getPublicSocials, placeOf } from "@/lib/data";
 
 export const metadata: Metadata = { title: "holos", robots: "noindex" };
@@ -53,17 +53,17 @@ export default async function Holos() {
             <h2 className="font-mono text-sm">{print}</h2>
             <p className="text-sm text-foreground/55">{note}</p>
           </div>
-          <Tilt className="w-full max-w-md">
+          <HoloLight className="w-full max-w-md">
             <IdCard holder={holder} heading="p" holo={print} />
-          </Tilt>
+          </HoloLight>
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-5">
             {LIGHT.map((x) => (
               <figure key={x} className="flex flex-col gap-2">
                 {/* Lit at the strength a hand brings it to, its light resting at x,
                     and following the hand while one is on it. */}
-                <Tilt rest={{ x, y: 0.4 }} lit>
+                <HoloLight rest={{ x, y: 0.4 }} lit>
                   <IdCard holder={holder} heading="p" holo={print} />
-                </Tilt>
+                </HoloLight>
                 <figcaption className="font-mono text-[11px] text-foreground/45">
                   light at {Math.round(x * 100)}%
                 </figcaption>

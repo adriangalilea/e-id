@@ -3,7 +3,7 @@ import { InputQuote } from "@/components/quote";
 import { IdCard, type Place } from "@/components/id-card";
 import { Image } from "@/components/ui/image";
 import { placeOf } from "@/lib/data";
-import { Tilt } from "@/components/landing/tilt";
+import { HoloLean, HoloLight } from "@/components/ui/holo";
 import { MaterialProvider } from "@/components/ui/material";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
@@ -51,8 +51,8 @@ function Identity({
     <header className="flex flex-col gap-5 max-lg:[grid-area:id]">
       {/* The same card as the home's: the laminate, a solid body, leaning to the
           hand, only resting flat, as the page's subject. */}
-      <Tilt pose="flat" className="lg:[perspective:2000px]">
-        <div data-slot="tilt-front">
+      <HoloLight>
+        <HoloLean pose="flat" className="max-lg:[transform:none]">
           <IdCard
             holder={{
               name: user.name,
@@ -65,8 +65,8 @@ function Identity({
             holo="laminate"
             className="[--id-card-thickness:1]"
           />
-        </div>
-      </Tilt>
+        </HoloLean>
+      </HoloLight>
       {user.bio && (
         <p className="px-1 text-[17px] leading-relaxed font-light text-pretty text-foreground/80">
           {user.bio}

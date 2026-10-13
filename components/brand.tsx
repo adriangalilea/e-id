@@ -1,7 +1,6 @@
-import { FoilEdge } from "@/components/foil-edge";
-import { Tilt } from "@/components/landing/tilt";
+import { FoilEdge, Holo, HoloLight } from "@/components/ui/holo";
 import { Glass } from "@/components/ui/material-glass";
-import { HOLO_PRINTS } from "@/lib/holo";
+import { MARK_EMBLEM } from "@/lib/holo";
 import { EMOJI_DOMAIN } from "@/lib/const";
 import { MARK_BOX, MARK_PATH } from "@/lib/mark";
 import { cn } from "@/lib/utils";
@@ -33,7 +32,7 @@ export function BrandLogo({
 }: {
   /** The card's craft on the logo where it is the brand at its largest (the
    *  hero): the seal printed faintly in foil behind the mark, a foil edge, both
-   *  lit where the hand is (`logo-holo`, `foil-edge` in globals.css). */
+   *  lit where the hand is (@ag/holo). */
   holo?: boolean;
   className?: string;
 }) {
@@ -46,9 +45,15 @@ export function BrandLogo({
         "inline-grid size-[1.2cap] place-items-center overflow-hidden align-baseline [--glass-radius:calc(1.2cap/2)]",
         className,
       )}
-      style={holo ? (HOLO_PRINTS as React.CSSProperties) : undefined}
     >
-      {holo && <span data-slot="logo-holo" />}
+      {holo && (
+        <Holo
+          print="none"
+          seal="inset-[6%]"
+          emblem={MARK_EMBLEM}
+          strength={{ rest: 0.12, lit: 0.5 }}
+        />
+      )}
       <svg viewBox="0 0 24 24" className="relative size-[62%] fill-white">
         <path d={MARK_PATH} />
       </svg>
@@ -59,9 +64,9 @@ export function BrandLogo({
   return (
     // inline-flex: the tile is its item, never an inline box on a line, so no
     // line's strut is added above it and its box is exactly the tile's.
-    <Tilt as="span" className="inline-flex align-baseline">
+    <HoloLight as="span" className="inline-flex align-baseline">
       {tile}
-    </Tilt>
+    </HoloLight>
   );
 }
 

@@ -7,7 +7,7 @@ import { getShowcase } from "@/lib/data";
 import { HOLO_PRINTS } from "@/lib/holo";
 import { cn } from "@/lib/utils";
 import { MakeYours } from "./make-yours";
-import { Tilt } from "./tilt";
+import { HoloLean, HoloLight } from "@/components/ui/holo";
 
 /** The card the landing hands its reader when there is nobody yet to show: theirs,
  *  not made yet. */
@@ -23,8 +23,8 @@ const YOU: Holder = {
  *  and dimmer with depth, so the stack reads as real cards dealt on the page. With
  *  a hand on the stack they spread a little further, as cards do when touched. */
 const BEHIND = [
-  "-rotate-[8deg] -translate-x-[9%] translate-y-[7%] scale-[0.93] opacity-60 group-data-hover/tilt:-rotate-[9.5deg] group-data-hover/tilt:-translate-x-[11.5%] group-data-hover/tilt:translate-y-[8%]",
-  "rotate-[7deg] translate-x-[10%] -translate-y-[8%] scale-[0.88] opacity-35 group-data-hover/tilt:rotate-[8.5deg] group-data-hover/tilt:translate-x-[12.5%] group-data-hover/tilt:-translate-y-[9.5%]",
+  "-rotate-[8deg] -translate-x-[9%] translate-y-[7%] scale-[0.93] opacity-60 group-data-hover/holo:-rotate-[9.5deg] group-data-hover/holo:-translate-x-[11.5%] group-data-hover/holo:translate-y-[8%]",
+  "rotate-[7deg] translate-x-[10%] -translate-y-[8%] scale-[0.88] opacity-35 group-data-hover/holo:rotate-[8.5deg] group-data-hover/holo:translate-x-[12.5%] group-data-hover/holo:-translate-y-[9.5%]",
 ];
 
 /** Real e-id cards, the maker's first and then the newest whole ones (a photo, a
@@ -36,7 +36,7 @@ function Stack({ people }: { people: Holder[] }) {
   return (
     // The page's centre of attention: as wide as its side of the split allows, less
     // the room the cards behind take when they spread (15% either way).
-    <Tilt className="relative mx-auto w-full max-w-[34rem] lg:[perspective:2000px]">
+    <HoloLight className="relative mx-auto w-full max-w-[34rem]">
       {behind.map((holder, i) => (
         <IdCard
           key={holder.username}
@@ -52,15 +52,17 @@ function Stack({ people }: { people: Holder[] }) {
       {/* Lying on the others, it hides them as a real card would: its body
           solid (a backdrop's blur does not reach through the card's 3D turn, so
           only opacity hides what is under it), its rim and light still glass's. */}
-      <div data-slot="tilt-front" className="relative">
+      {/* Turned toward the reader beside the words, leaning to the hand; on one
+          column, where it stands alone, straight. */}
+      <HoloLean pose="turned" className="relative max-lg:[transform:none]">
         <IdCard
           holder={front}
           heading="p"
           holo="laminate"
           className="[--id-card-thickness:1]"
         />
-      </div>
-    </Tilt>
+      </HoloLean>
+    </HoloLight>
   );
 }
 
@@ -115,9 +117,9 @@ export async function Hero() {
               style={HOLO_PRINTS as React.CSSProperties}
             >
               {/* Exactly the pill's size: the hand is measured across it. */}
-              <Tilt className="inline-flex">
+              <HoloLight className="inline-flex">
                 <MakeYours />
-              </Tilt>
+              </HoloLight>
             </h1>
             <p
               data-slot="hero-lead"

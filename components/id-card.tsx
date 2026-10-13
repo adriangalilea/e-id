@@ -1,11 +1,11 @@
 import { BrandMark } from "@/components/brand";
 import { CopyAddress } from "@/components/copy-address";
 import { CountryFlag } from "@/components/country";
-import { FoilEdge } from "@/components/foil-edge";
+import { FoilEdge, Holo } from "@/components/ui/holo";
 import { Image } from "@/components/ui/image";
 import { Glass } from "@/components/ui/material-glass";
 import type { SelectSocial } from "@/db/schema";
-import { HOLO_PRINTS, type HoloPrint } from "@/lib/holo";
+import { type HoloPrint, MARK_EMBLEM } from "@/lib/holo";
 import { getSocialIcon } from "@/lib/socials";
 import { cn } from "@/lib/utils";
 
@@ -91,37 +91,6 @@ function Ghost({ holder }: { holder: Holder }) {
   );
 }
 
-/** THE HOLOGRAM, as an ID card's security laminate: nearly invisible face on, a
- *  band of foil running through its print as the card turns (lib/holo draws the
- *  prints; `id-card-holo` in globals.css lights them). The seal bites the photo's
- *  corner, where a real one sits so the photo cannot be swapped (`SEAL`). */
-function Hologram({
-  print,
-  seal,
-}: {
-  print: HoloPrint;
-  seal: string;
-}) {
-  return (
-    <span
-      aria-hidden
-      data-slot="id-card-holo"
-      className="pointer-events-none absolute inset-0 rounded-[inherit]"
-      style={HOLO_PRINTS as React.CSSProperties}
-    >
-      <span
-        data-slot="id-card-holo-print"
-        data-print={print}
-        className="absolute inset-0"
-      />
-      <span
-        data-slot="id-card-holo-seal"
-        className={cn("absolute size-[14cqw]", seal)}
-      />
-    </span>
-  );
-}
-
 /** Where the person is, on the card itself: their places' marks in a row, as an ID
  *  carries its holder's entitlements, each one the way there. With the address,
  *  the card's only touchable parts are what it shows. `rel="me"`: the same person
@@ -159,7 +128,7 @@ function Flair({ places }: { places: Place[] }) {
  *  tall, 51 inside its padding; under the 4.5 of the head the body (the 30 square
  *  photo) is centred in the 46.5 left, so its foot is 8.25 above the padding's
  *  and its top 44.25 from the card's foot; its right edge 36 from the left. */
-const SEAL = "bottom-[37cqw] left-[29cqw]";
+const SEAL = "bottom-[37cqw] left-[29cqw] size-[14cqw]";
 
 export function IdCard({
   holder,
@@ -231,7 +200,11 @@ export function IdCard({
         {/* The prints lie in the card, under everything written on it: drawn
             first, and what is written is positioned so it paints over them. */}
         <Ghost holder={holder} />
-        {holo && <Hologram print={holo} seal={SEAL} />}
+        {/* THE HOLOGRAM, as an ID card's security laminate (@ag/holo): nearly
+            invisible face on, a band of foil running through its print as the
+            card turns. The seal bites the photo's corner, where a real one sits
+            so the photo cannot be swapped (`SEAL`). */}
+        {holo && <Holo print={holo} seal={SEAL} emblem={MARK_EMBLEM} />}
         {body}
         <FoilEdge />
       </Glass>
