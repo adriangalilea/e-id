@@ -1,6 +1,3 @@
-import { FoilEdge, Holo, HoloLight } from "@/components/ui/holo";
-import { Glass } from "@/components/ui/material-glass";
-import { MARK_EMBLEM } from "@/lib/holo";
 import { EMOJI_DOMAIN } from "@/lib/const";
 import { MARK_BOX, MARK_PATH } from "@/lib/mark";
 import { cn } from "@/lib/utils";
@@ -22,51 +19,37 @@ export function BrandMark({ className }: { className?: string }) {
   );
 }
 
-/** THE LOGO: the mark white on a disc of glass, the seal's own shape, as the
- *  favicon draws it (app/icon.svg). Set in a line it is a little
- *  taller than the capitals (1.2 cap), its foot on the baseline (an inline box that
- *  clips is aligned by its bottom edge), so it stands as the line's first letter. */
+/** THE LOGO: the mark on a disc, the seal's own shape, as the favicon draws it
+ *  (app/icon.svg). The disc is a step of light, not glass: it stands on glass (the
+ *  bar, the hero's pill), where glass on glass shows nothing, so it is drawn, lit
+ *  at its top, a highlight on its upper rim and a hairline round it. A little
+ *  taller than the capitals beside it (1.2 cap) and centred on them by whoever
+ *  sets it (`EmojiDomain`, the pill). What it holds under the mark (the pill's
+ *  print) is its children's. */
 export function BrandLogo({
-  holo,
+  children,
   className,
 }: {
-  /** The card's craft on the logo where it is the brand at its largest (the
-   *  hero): the seal printed faintly in foil behind the mark, a foil edge, both
-   *  lit where the hand is (@ag/holo). */
-  holo?: boolean;
+  children?: React.ReactNode;
   className?: string;
 }) {
-  const tile = (
-    <Glass
-      as="span"
-      shape="surface"
+  return (
+    <span
       aria-hidden
+      data-slot="brand-logo"
       className={cn(
-        "inline-grid size-[1.2cap] place-items-center overflow-hidden align-baseline [--glass-radius:calc(1.2cap/2)]",
+        // Its size `--logo-size` where a place sets one (the bar's wordmark),
+        // else 1.2 cap.
+        "relative isolate inline-grid size-[var(--logo-size,1.2cap)] place-items-center overflow-hidden rounded-full text-foreground/90",
+        "bg-[linear-gradient(to_bottom,rgb(255_255_255/0.13),rgb(255_255_255/0.06))] shadow-[inset_0_1px_0_rgb(255_255_255/0.16),inset_0_0_0_1px_rgb(255_255_255/0.05)]",
         className,
       )}
     >
-      {holo && (
-        <Holo
-          print="none"
-          seal="inset-[6%]"
-          emblem={MARK_EMBLEM}
-          strength={{ rest: 0.12, lit: 0.5 }}
-        />
-      )}
-      <svg viewBox="0 0 24 24" className="relative size-[62%] fill-white">
+      {children}
+      <svg viewBox="0 0 24 24" className="relative size-[62%] fill-current">
         <path d={MARK_PATH} />
       </svg>
-      {holo && <FoilEdge />}
-    </Glass>
-  );
-  if (!holo) return tile;
-  return (
-    // inline-flex: the tile is its item, never an inline box on a line, so no
-    // line's strut is added above it and its box is exactly the tile's.
-    <HoloLight as="span" className="inline-flex align-baseline">
-      {tile}
-    </HoloLight>
+    </span>
   );
 }
 
@@ -75,7 +58,7 @@ export function BrandLogo({
  *  reader reads it. In running text (an address, a line of copy) the mark is a
  *  letter: an inline SVG, its foot on the baseline, one `cap` tall. Where the brand
  *  itself is the subject (the hero's address, the bar's wordmark) it is the logo,
- *  the mark on its glass tile (`logo`). The emoji's own box is never the reference:
+ *  the mark on its disc (`logo`). The emoji's own box is never the reference:
  *  its font's ascent and descent are not the text's. */
 export function EmojiDomain({
   path,
@@ -84,24 +67,44 @@ export function EmojiDomain({
 }: {
   /** What follows the domain, "/you" or "/adriangalilea". */
   path?: string;
-  /** The logo where the mark stands: for the brand as the subject, not in text;
-   *  `holo` for the brand at its largest, carrying the card's craft. */
-  logo?: boolean | "holo";
+  /** The logo where the mark stands: for the brand as the subject, not in text. */
+  logo?: boolean;
   className?: string;
 }) {
+  // In the text for copying and reading, never in the hand's way: the pointer
+  // reaches the mark or the logo under it.
+  const emoji = (
+    <span className="pointer-events-none absolute inset-0 overflow-hidden leading-none text-transparent">
+      {EMOJI}
+    </span>
+  );
+  // The logo is centred on the words' capitals, as in the hero's pill: the words
+  // trimmed to them (`text-box`), so the disc and the caps share one centre line
+  // and the whole stands centred in whatever centres it (the bar), which a line
+  // box's uneven ascent and descent never allow.
+  if (logo)
+    return (
+      <span
+        className={cn(
+          "inline-flex items-center gap-[0.1em] whitespace-nowrap",
+          className,
+        )}
+      >
+        <span className="relative flex shrink-0">
+          <BrandLogo />
+          {emoji}
+        </span>
+        <span className="[text-box:trim-both_cap_alphabetic]">
+          {TLD}
+          {path}
+        </span>
+      </span>
+    );
   return (
     <span className={cn("whitespace-nowrap", className)}>
-      <span className={cn("relative", logo ? "mr-[0.1em]" : "mr-[0.08em]")}>
-        {logo ? (
-          <BrandLogo holo={logo === "holo"} />
-        ) : (
-          <BrandMark className="inline h-[1cap] align-baseline" />
-        )}
-        {/* In the text for copying and reading, never in the hand's way: the
-            pointer reaches the mark or the logo under it. */}
-        <span className="pointer-events-none absolute inset-0 overflow-hidden leading-none text-transparent">
-          {EMOJI}
-        </span>
+      <span className="relative mr-[0.08em]">
+        <BrandMark className="inline h-[1cap] align-baseline" />
+        {emoji}
       </span>
       {TLD}
       {path}

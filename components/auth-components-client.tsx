@@ -1,18 +1,17 @@
 "use client";
 
 import { Button } from "./ui/button";
-import { Github, LogOut } from "lucide-react";
+import { LogOut } from "lucide-react";
 import { signOut } from "@/lib/auth-client";
 import { startSignIn } from "@/lib/sign-in";
 
-/** The site bar's way in for a visitor who has no page: signing in with GitHub IS
- *  making one, so it says so, in the home's own words. The one place the site asks
- *  a visitor to join, in its own chrome rather than under somebody's profile. */
+/** The site bar's way in: plainly "sign in", for whoever comes back to their page
+ *  as much as for whoever makes one (the hero's address is the invitation to make
+ *  one). No provider's mark: how one signs in is the sign-in's business. */
 export function SignIn() {
   return (
-    <Button size="lg" className="gap-2 px-4" onClick={() => startSignIn()}>
-      <Github strokeWidth={1.5} aria-hidden />
-      make yours
+    <Button size="lg" className="px-4" onClick={() => startSignIn()}>
+      sign in
     </Button>
   );
 }

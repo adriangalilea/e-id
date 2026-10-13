@@ -1,9 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { BrandLogo, BrandMark } from "@/components/brand";
-import { MARK_PATH } from "@/lib/mark";
-import { cn } from "@/lib/utils";
+import { BrandLogo } from "@/components/brand";
 import { useChip } from "@/components/session/use-chip";
 import { EMOJI_DOMAIN } from "@/lib/const";
 import { startSignIn } from "@/lib/sign-in";
@@ -40,65 +38,27 @@ const GEOMETRY = {
 const [EMOJI, ...REST] = Array.from(EMOJI_DOMAIN);
 const TLD = REST.join("");
 
-/** What stands in the pill's left end (/dev/hero lays them side by side):
- *  `holo`: the logo, a disc of glass with the seal in foil (its own rim).
- *  `disc`: a flat disc a step of light off the pill, the mark on it, no rim of
- *  its own, so the pill's edge is the only edge.
- *  `solid`: a white disc, the mark cut in the pill's dark: the logo as a stamp.
- *  `mark`: the mark alone, a letter of the address, no disc. */
-export type PillLogo = "holo" | "disc" | "solid" | "mark";
-
-/** The pill's look: its left end, and whether the card's guilloché lights inside
- *  it under the hand (else the foil ring alone). */
-export type PillLook = { logo: PillLogo; print: boolean };
-
-/** Adrian's pick (/dev/hero): the flat disc, the ring and the print. */
-export const PILL_LOOK: PillLook = { logo: "disc", print: true };
-
-function Logo({ logo }: { logo: PillLogo }) {
-  if (logo === "holo") return <BrandLogo holo />;
-  if (logo === "mark")
-    return (
-      <span className="grid size-(--disc) place-items-center">
-        <BrandMark className="h-[1cap] text-foreground" />
-      </span>
-    );
+/** The logo in the pill's left end: the brand's disc (`BrandLogo`), frosted. A
+ *  backdrop blur cannot see through the pill's own (a blur nested in a blur sees
+ *  nothing behind it), so the disc holds a blurred copy of the pill's print
+ *  (`disc-print`, globals.css) under its mark. */
+function Logo() {
   return (
-    <span
-      className={cn(
-        "relative isolate grid size-(--disc) place-items-center overflow-hidden rounded-full",
-        // Frosted glass, drawn: a backdrop blur cannot see through the pill's
-        // own (a blur nested in a blur sees nothing behind it), so the disc
-        // holds a blurred copy of the pill's print (`disc-print`, globals.css)
-        // over a step of light lit at its top.
-        logo === "solid"
-          ? "bg-foreground text-background"
-          : "bg-[linear-gradient(to_bottom,rgb(255_255_255/0.13),rgb(255_255_255/0.06))] text-foreground/90 shadow-[inset_0_1px_0_rgb(255_255_255/0.16),inset_0_0_0_1px_rgb(255_255_255/0.05)]",
-      )}
-    >
-      {logo === "disc" && (
-        <span aria-hidden data-slot="disc-print">
-          <span />
-        </span>
-      )}
-      <svg
-        viewBox="0 0 24 24"
-        aria-hidden
-        className="relative size-[62%] fill-current"
-      >
-        <path d={MARK_PATH} />
-      </svg>
-    </span>
+    <BrandLogo className="grid size-(--disc)">
+      <span aria-hidden data-slot="disc-print">
+        <span />
+      </span>
+    </BrandLogo>
   );
 }
 
 /** The address, its parts as the pill's flex items: the logo (the emoji under it,
  *  transparent, so copying gives 👤.to), the words. */
-function Words({ path, logo }: { path: string; logo: PillLogo }) {
+function Words({ path }: { path: string }) {
   return (
     <>
       <span className="relative flex shrink-0">
-        <Logo logo={logo} />
+        <Logo />
         <span className="pointer-events-none absolute inset-0 overflow-hidden leading-none text-transparent">
           {EMOJI}
         </span>
@@ -118,11 +78,12 @@ function Words({ path, logo }: { path: string; logo: PillLogo }) {
 /** The address the visitor is making, and where it goes, from the display
  *  cookie: signed out, their page-to-be ("/you"), which signs in; signed in,
  *  their own address, which opens it; with no name yet, where to pick one. */
-export function MakeYours({ look = PILL_LOOK }: { look?: PillLook }) {
+export function MakeYours() {
   const chip = useChip();
   const pill = {
     "data-cta": "",
-    "data-print": look.print ? "" : undefined,
+    // The card's guilloché lights inside it under the hand (globals.css).
+    "data-print": "",
     className: PILL,
     style: GEOMETRY,
   };
@@ -133,13 +94,13 @@ export function MakeYours({ look = PILL_LOOK }: { look?: PillLook }) {
         {...pill}
         aria-label={`go to your page, ${EMOJI_DOMAIN}/${chip.u}`}
       >
-        <Words path={`/${chip.u}`} logo={look.logo} />
+        <Words path={`/${chip.u}`} />
       </Link>
     );
   if (chip)
     return (
       <Link href="/null" {...pill} aria-label="pick your username">
-        <Words path="/you" logo={look.logo} />
+        <Words path="/you" />
       </Link>
     );
   return (
@@ -149,7 +110,7 @@ export function MakeYours({ look = PILL_LOOK }: { look?: PillLook }) {
       onClick={() => startSignIn()}
       aria-label={`make yours: ${EMOJI_DOMAIN}/you`}
     >
-      <Words path="/you" logo={look.logo} />
+      <Words path="/you" />
     </button>
   );
 }

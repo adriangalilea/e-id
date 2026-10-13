@@ -27,7 +27,7 @@ export default function Footer() {
           aria-label="home"
           // The wordmark's size is the bar's one (`--wordmark`, globals.css),
           // which the home's hero closes into.
-          className="text-(length:--wordmark) font-light tracking-[-0.02em] transition-opacity hover:opacity-80"
+          className="flex items-center text-(length:--wordmark) font-light tracking-[-0.02em] transition-opacity [--logo-size:calc(var(--wordmark-logo)*1cap)] hover:opacity-80"
         >
           <EmojiDomain logo />
         </Link>
@@ -41,9 +41,10 @@ export default function Footer() {
  *  at its right end once it has become the bar. */
 export function NavActions() {
   return (
-    <div className="flex items-center gap-1">
+    // The faq a disc of the same glass and height as the account's pill beside
+    // it: two controls of one bar, not a bare glyph next to a button.
+    <div className="flex items-center gap-2">
       <Button
-        variant="ghost"
         size="icon-lg"
         render={<Link href="/about" aria-label="about" prefetch={false} />}
       >

@@ -52,6 +52,10 @@
   /* The bar's wordmark (components/footer) and the size the hero's address
      closes to in it: large enough that its logo reads as a logo. */
   --wordmark: 1.25rem;
+  /* The logo's disc in the wordmark, in caps of it: larger than the 1.2 it is in
+     a headline, since at the bar's size a disc only a little taller than the
+     capitals reads smaller than the words. */
+  --wordmark-logo: 1.45;
   @media (min-width: 64rem) {
     --hero-title: min(
       5.25rem,
@@ -381,10 +385,14 @@
     top: 10.5rem;
   }
   /* Ends with the pill's line centred in the bar: the pill at the wordmark's
-     size is about 1.55rem tall (1.2 cap + 0.4em at 1.25rem), measured below. */
+     size is its disc (`--wordmark-logo` caps, a cap 0.7 of Space Grotesk's em)
+     and its insets (0.2em each side) tall. */
   to {
     left: 1rem;
-    top: calc(var(--bar-h) / 2 - 0.775rem);
+    top: calc(
+      var(--bar-h) / 2 - (var(--wordmark-logo) * 0.7 + 0.4) * var(--wordmark) /
+        2
+    );
   }
 }
 
@@ -441,6 +449,17 @@
     padding-left: 0;
     padding-right: 0;
   }
+  /* Its disc grows to the wordmark's (`--disc` is registered, so it glides). */
+  100% {
+    --disc: calc(var(--wordmark-logo) * 1cap);
+  }
+}
+
+/* The pill's disc as a length the browser can interpolate (make-yours sets it). */
+@property --disc {
+  syntax: "<length>";
+  inherits: true;
+  initial-value: 0px;
 }
 
 @keyframes hero-pill-foil {
