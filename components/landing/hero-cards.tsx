@@ -132,8 +132,12 @@ export function YourCard() {
   return (
     // At rest its foil rim shows a band, not a faint whole ring, and the light
     // drifting across it (`IDLE`) moves that band: what draws the eye to the
-    // card before the hand comes.
-    <HoloLight className="w-full [&:not([data-hover])_[data-slot=foil-edge]]:opacity-45 [&:not([data-hover])_[data-slot=foil-edge]]:[--edge-floor:0.12]">
+    // card before the hand comes. Its print stays on the whole face outside the
+    // band (@ag/holo's floor), so where the light has passed the card is still
+    // printed, never a bare grey: much of it at rest, little under the hand,
+    // where the print is lit four times stronger and a whole face of it was
+    // loud; so it reads about as faint either way, the band alone standing out.
+    <HoloLight className="w-full [--holo-floor:0.15] [&:not([data-hover])]:[--holo-floor:0.6] [&:not([data-hover])_[data-slot=foil-edge]]:opacity-25 [&:not([data-hover])_[data-slot=foil-edge]]:[--edge-floor:0.12]">
       <Claim />
       {chip?.u ? (
         <Suspense

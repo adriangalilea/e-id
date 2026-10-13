@@ -2,9 +2,10 @@
 
 // A HOLOGRAM, as a security laminate is one: nearly invisible face on, and as the
 // surface turns a BAND of iridescent light runs across it, showing its print only
-// where the band is. The band is where the hand is, never a clock: `HoloLight`
+// where the band is. The band answers the hand, never a clock: `HoloLight`
 // measures the pointer over what it holds (`--px`, `--py` from 0 to 1, `--hx` in px,
-// `data-hover` while it is there) and everything inside reads that.
+// `data-hover` while it is there) and everything inside reads that; the band falls
+// by the hand's place and the tilt it gives, eased as the lean is (`AT`).
 //
 //   <HoloLight>                        the hand's light
 //     <HoloLean pose="flat">           a lean toward it
@@ -40,16 +41,42 @@ import {
  *  page's light comes from. */
 const REST = { x: 0.5, y: 0.35 }
 
-/** The band of light: a diagonal stripe at the hand, full within 8% of it and gone
- *  40% away (shares of the gradient's line), as a mask. */
-const BAND = `linear-gradient(115deg, transparent calc(var(--px, 0.5) * 100% - 40%), black calc(var(--px, 0.5) * 100% - 8%), black calc(var(--px, 0.5) * 100% + 8%), transparent calc(var(--px, 0.5) * 100% + 40%))`
+/** WHERE THE LIGHT FALLS across a surface, 0 to 1 along the band's diagonal: a
+ *  hologram shows what it does by the angle it is seen at, so the band answers
+ *  the surface's tilt as much as the hand's place. Part where the hand is across
+ *  (`--px`), part how far up or down (`--py`, which tilts it toward or away and
+ *  the hand's place across alone never moved), both about the light's rest, so
+ *  at rest it is the middle. Eased like the lean it goes with (`MOVES`), never a
+ *  snap to the pointer. A registered number, so the easing can run. */
+const AT =
+  "calc(0.5 + (var(--px, 0.5) - 0.5) * 0.65 + (var(--py, 0.35) - 0.35) * 0.4)"
+const MOVES = "--holo-at 600ms cubic-bezier(0.22, 1, 0.36, 1)"
+if (typeof CSS !== "undefined" && CSS.registerProperty)
+  try {
+    CSS.registerProperty({
+      name: "--holo-at",
+      syntax: "<number>",
+      inherits: true,
+      initialValue: "0.5",
+    })
+  } catch {
+    // Registered already: this module evaluated again (a reload in development).
+  }
 
-/** The foil under a print, four times its surface's width, slid across with the hand
- *  so its hue drifts as the angle changes. */
+/** The band of light: a diagonal stripe where the light falls (`AT`), full within
+ *  8% of it and down to the print's floor 40% away (shares of the gradient's
+ *  line), as a mask. The floor (`--holo-floor`, 0 to 1, none by default) is how
+ *  much of the print stays outside the band: a real card's print is on its whole
+ *  face, the light only makes it shine. */
+const OFF = "rgb(0 0 0 / var(--holo-floor, 0))"
+const BAND = `linear-gradient(115deg, ${OFF} calc(var(--holo-at) * 100% - 40%), black calc(var(--holo-at) * 100% - 8%), black calc(var(--holo-at) * 100% + 8%), ${OFF} calc(var(--holo-at) * 100% + 40%))`
+
+/** The foil under a print, four times its surface's width, slid across with the
+ *  light so its hue drifts as the angle changes. */
 const FOIL_UNDER: React.CSSProperties = {
   backgroundImage: foilGradient(),
   backgroundSize: "400% 100%",
-  backgroundPosition: "calc(var(--px, 0.5) * 100%) 0",
+  backgroundPosition: "calc(var(--holo-at) * 100%) 0",
 }
 
 /** How a lean follows the hand: about its rest, ±3° across and ±2° up and down when
@@ -200,6 +227,7 @@ export function Holo({
   seal,
   emblem = SPARK,
   strength = { rest: 0.06, lit: 0.26 },
+  floor,
   className,
 }: {
   print?: HoloPrint
@@ -211,6 +239,10 @@ export function Holo({
   emblem?: Emblem
   /** Its opacity with no hand on it and under the hand. */
   strength?: { rest: number; lit: number }
+  /** How much of the print stays outside the band of light, 0 to 1 (none by
+   *  default). Also inherited as `--holo-floor`, so a surface can set it for
+   *  the holograms on it. */
+  floor?: number
   className?: string
 }) {
   const art = printStyle(print, emblem)
@@ -220,13 +252,16 @@ export function Holo({
       data-slot="holo"
       className={cn(
         "pointer-events-none absolute inset-0 overflow-hidden rounded-[inherit] mix-blend-plus-lighter",
-        "opacity-(--holo-rest) transition-opacity duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-data-[hover]/holo:opacity-(--holo-lit)",
+        "opacity-(--holo-rest) group-data-[hover]/holo:opacity-(--holo-lit)",
         className,
       )}
       style={
         {
           "--holo-rest": strength.rest,
           "--holo-lit": strength.lit,
+          ...(floor !== undefined && { "--holo-floor": floor }),
+          "--holo-at": AT,
+          transition: `opacity 500ms cubic-bezier(0.22, 1, 0.36, 1), ${MOVES}`,
           maskImage: BAND,
         } as React.CSSProperties
       }
@@ -256,10 +291,11 @@ export function Holo({
 }
 
 /** A FOIL EDGE: a one-pixel ring of the foil over the rim of the positioned, rounded
- *  box it is placed in, the foil's own security feature. Barely there at rest (a
- *  tenth), its spectrum laid across the screen (`fixed`), so an edge's colour is where
- *  it stands and shifts as the page scrolls; inside a `HoloLight` under the hand it is
- *  lit in a band at the hand instead, brighter. Composed, not built in: the surface's
+ *  box it is placed in, the foil's own security feature. Barely there at rest (6%),
+ *  its spectrum laid across the screen (`fixed`), so an edge's colour is where it
+ *  stands and shifts as the page scrolls; inside a `HoloLight` under the hand it is
+ *  lit in a band where the light falls instead, at half (fuller, it outshone the
+ *  card it edges). Composed, not built in: the surface's
  *  own material is untouched. */
 export function FoilEdge({ className }: { className?: string }) {
   return (
@@ -268,18 +304,23 @@ export function FoilEdge({ className }: { className?: string }) {
       data-slot="foil-edge"
       className={cn(
         "pointer-events-none absolute inset-0 z-1 rounded-[inherit] p-px mix-blend-plus-lighter",
-        "opacity-10 transition-opacity duration-300 ease-out [--edge-floor:1] group-data-[hover]/holo:opacity-80 group-data-[hover]/holo:[--edge-floor:0]",
+        "opacity-[0.06] [--edge-floor:1] group-data-[hover]/holo:opacity-50 group-data-[hover]/holo:[--edge-floor:0]",
         className,
       )}
-      style={{
-        background: `${foilGradient()} fixed`,
-        // The band (its floor 1 at rest: the whole ring), intersected with the ring
-        // (the border box less the content box, one pixel in).
-        maskImage:
-          "linear-gradient(100deg, rgb(0 0 0 / var(--edge-floor)) calc(var(--px, 0.5) * 100% - 40%), black calc(var(--px, 0.5) * 100%), rgb(0 0 0 / var(--edge-floor)) calc(var(--px, 0.5) * 100% + 40%)), linear-gradient(#000 0 0), linear-gradient(#000 0 0)",
-        maskClip: "border-box, content-box, border-box",
-        maskComposite: "intersect, exclude, add",
-      }}
+      style={
+        {
+          background: `${foilGradient()} fixed`,
+          // Where the light falls, as the hologram's own (`AT`), eased with it.
+          "--holo-at": AT,
+          transition: `opacity 300ms ease-out, ${MOVES}`,
+          // The band (its floor 1 at rest: the whole ring), intersected with the
+          // ring (the border box less the content box, one pixel in).
+          maskImage:
+            "linear-gradient(100deg, rgb(0 0 0 / var(--edge-floor)) calc(var(--holo-at) * 100% - 40%), black calc(var(--holo-at) * 100%), rgb(0 0 0 / var(--edge-floor)) calc(var(--holo-at) * 100% + 40%)), linear-gradient(#000 0 0), linear-gradient(#000 0 0)",
+          maskClip: "border-box, content-box, border-box",
+          maskComposite: "intersect, exclude, add",
+        } as React.CSSProperties
+      }
     />
   )
 }
