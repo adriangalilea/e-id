@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AtSign } from "lucide-react";
-import CountryPicker from "@/components/country_picker";
+import EditCountry from "@/components/edit-country";
 import { SaveButton } from "@/components/save_button";
 import { DiscardButton } from "@/components/discard_button";
 import type { SelectSocial } from "@/db/schema";
@@ -153,8 +153,7 @@ function IdentityEdit({ user }: { user: Profile }) {
           placeholder="username"
         />
       </div>
-      <input type="hidden" name="country_code" defaultValue={user.country_code} />
-      <CountryPicker savedCountry={user.country_code} />
+      <EditCountry saved={user.country_code} />
       <InputQuote
         text={user.bio ?? ""}
         name="bio"
