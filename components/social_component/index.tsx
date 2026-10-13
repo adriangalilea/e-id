@@ -1,4 +1,4 @@
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsPanel, TabsTab } from "@/components/ui/tabs";
 import Link from "next/link";
 import type { SelectSocial } from "@/db/schema";
 import type { Presence } from "@/lib/presence";
@@ -12,8 +12,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { Copy } from "@/components/ui/copy";
 import { INSET } from "@/components/surface";
-import { glassVariants } from "@/components/ui/material-glass";
-import { cn } from "@/lib/utils";
 import RemoveSocialButton from "./remove_social_button";
 import { InputQuote, Quote } from "../quote";
 
@@ -104,10 +102,10 @@ function SocialLink({ social }: { social: SelectSocial }) {
   );
 }
 
-/** A profile's socials as tabs: a strip of square cells, the chosen one inverted,
- *  over a panel showing the person's presence there. `socials` arrive filtered and
- *  ordered by the caller (lib/data): the public ones on the profile, all of them on
- *  the edit form. */
+/** A profile's socials as @ag/tabs: their icons in a bar of glass, the chosen one
+ *  named (`labels="active"`), over the person's presence there. `socials` arrive
+ *  filtered and ordered by the caller (lib/data): the public ones on the profile,
+ *  all of them on the edit form. */
 export function SocialComponent({
   socials,
   edit,
@@ -120,30 +118,17 @@ export function SocialComponent({
   if (!edit && socials.length === 0) return null;
 
   return (
-    <Tabs defaultValue={socials[0]?.id} className="flex w-full flex-col gap-6">
-      <TabsList
-        className={cn(
-          glassVariants({ shape: "bar" }),
-          "max-w-full self-start overflow-x-auto bg-transparent text-foreground/45",
-        )}
-      >
+    <Tabs
+      defaultValue={socials[0]?.id}
+      size="lg"
+      labels="active"
+      className="w-full gap-6"
+    >
+      <TabsList className="max-w-full">
         {socials.map(({ id, platform }) => (
-          // Icons alone, the chosen one lit and named: the row stays short however
-          // many places a person has.
-          <TabsTrigger
-            key={id}
-            value={id}
-            aria-label={platform}
-            className="group h-full shrink-0 gap-2 rounded-full px-3.5 hover:text-foreground
-              data-[state=active]:bg-white/[0.12] data-[state=active]:text-foreground
-              data-[state=active]:shadow-[inset_0_1px_0_rgb(255_255_255/0.12)]
-              [&_svg]:size-[18px]"
-          >
-            {getSocialIcon(platform)}
-            <span className="hidden font-mono text-xs group-data-[state=active]:inline">
-              {platform}
-            </span>
-          </TabsTrigger>
+          <TabsTab key={id} value={id} icon={getSocialIcon(platform)}>
+            {platform}
+          </TabsTab>
         ))}
         {edit && <AddSocialDropdownMenu />}
       </TabsList>
@@ -151,10 +136,10 @@ export function SocialComponent({
         const value = social.value ?? "";
         const pretext = getSocialPretextIcon(social.platform);
         return (
-          <TabsContent
+          <TabsPanel
             key={social.id}
             value={social.id}
-            className="mt-0 flex flex-col gap-4"
+            className="flex flex-col gap-4"
           >
             {!edit && <SocialLink social={social} />}
             {edit && (
@@ -228,7 +213,7 @@ export function SocialComponent({
                 </div>
               )}
             <PresenceOf social={social} presence={presence} />
-          </TabsContent>
+          </TabsPanel>
         );
       })}
     </Tabs>

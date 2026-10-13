@@ -1,0 +1,289 @@
+@layer theme, base, components, utilities;
+
+@layer components {
+  /* scrims: viewport fogs that keep the section below from competing with the one on
+   screen. Masked backdrop-blur + gradient, no layout, no pointer. Their opacity is
+   scroll-LINKED, never transitioned: the top one fades in over the first 160px of
+   scroll, the bottom one fades out over the last 140px, and on a page that cannot
+   scroll the timeline is inactive so both rest at 0. A transitioned scrim (opacity
+   0→1 over 500ms) crossfades WHILE a smooth anchor scroll is flying; that was the
+   "weird effects" complaint. Linked to scroll it simply is where the scroll is. */
+
+  .ag-scrim {
+    position: fixed;
+    right: 0;
+    left: 0;
+    z-index: 20;
+    /* A margin on a fixed box is part of where it lands: `top + margin + height +
+     margin + bottom` has to equal the viewport, so a parent's `space-y-16` (which in
+     Tailwind v4 is a margin-block-end on every child but the last) pushed the bottom
+     fog 64px UP off the edge, with the page showing underneath it. The component
+     resets margin inline so parent spacing utilities cannot override it across
+     cascade layers. */
+    pointer-events: none;
+    opacity: 0;
+    -webkit-backdrop-filter: blur(var(--scrim-blur, 4px));
+    backdrop-filter: blur(var(--scrim-blur, 4px));
+  }
+  .ag-scrim[data-edge="top"] {
+    top: 0;
+    height: var(--scrim-top-height, 5rem);
+    background: linear-gradient(
+      to bottom,
+      color-mix(
+          in oklab,
+          var(--scrim-color, var(--background)) var(--scrim-strength, 90%),
+          transparent
+        )
+        var(--scrim-start-stop, 0%),
+      color-mix(
+          in oklab,
+          var(--scrim-color, var(--background)) var(--scrim-mid-strength, 35%),
+          transparent
+        )
+        var(--scrim-mid-stop, 50%),
+      transparent
+    );
+    mask-image: linear-gradient(
+      to bottom,
+      black var(--scrim-solid-stop, 25%),
+      transparent
+    );
+  }
+  .ag-scrim[data-edge="bottom"] {
+    bottom: 0;
+    height: var(--scrim-bottom-height, 7rem);
+    background: linear-gradient(
+      to top,
+      color-mix(
+        in oklab,
+        var(--scrim-color, var(--background)) var(--scrim-strength, 90%),
+        transparent
+      ),
+      color-mix(
+          in oklab,
+          var(--scrim-color, var(--background)) var(--scrim-mid-strength, 35%),
+          transparent
+        )
+        var(--scrim-mid-stop, 50%),
+      transparent
+    );
+    mask-image: linear-gradient(
+      to top,
+      black var(--scrim-solid-stop, 25%),
+      transparent
+    );
+  }
+
+  .ag-scrim[data-position="absolute"] {
+    position: absolute;
+  }
+  .ag-scrim[data-mode="static"] {
+    opacity: 1;
+  }
+
+  @keyframes ag-scrim-top {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  @keyframes ag-scrim-bottom {
+    from {
+      opacity: 1;
+    }
+    to {
+      opacity: 0;
+    }
+  }
+
+  @supports (animation-timeline: scroll()) {
+    .ag-scrim[data-mode="scroll"][data-edge="top"] {
+      animation: ag-scrim-top linear both;
+      animation-timeline: scroll(nearest);
+      animation-range: 0 160px;
+    }
+    .ag-scrim[data-mode="scroll"][data-edge="bottom"] {
+      animation: ag-scrim-bottom linear both;
+      animation-timeline: scroll(nearest);
+      animation-range: calc(100% - 140px) 100%;
+    }
+  }
+
+  /* The same idea for anything that scrolls sideways (a command, a row of
+   icons): `ag-edge-fade` on the scroller hides its scrollbar and fades the side
+   that has more to show, read from the scroll itself: at the start the end
+   fades, at the end the start, between them both (--edge-fade, 1.5rem). Nothing
+   scrolls, the timeline is inactive and nothing fades.
+
+   Each edge's fade grows over the first `--edge-fade` of scroll past it, in
+   pixels, never a share of the scroll: as a share (10% of it) the fade of a
+   5,000-line log reached its full length only thousands of pixels in, and was a
+   hard cut a few hundred from its end. An edge with less hidden than a fade's
+   length fades only as much as is hidden. Every fade below is two animations, one
+   per edge, each ranged on its own end of the scroll; `animation-range` follows
+   `animation`, whose shorthand resets it. */
+  .ag-edge-fade {
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .ag-edge-fade::-webkit-scrollbar {
+    display: none;
+  }
+  @supports (animation-timeline: scroll()) {
+    .ag-edge-fade {
+      mask-image: linear-gradient(
+        to right,
+        transparent,
+        #000 var(--ag-edge-fade-start),
+        #000 calc(100% - var(--ag-edge-fade-end)),
+        transparent
+      );
+      animation:
+        ag-edge-fade-start linear both,
+        ag-edge-fade-end linear both;
+      animation-timeline: scroll(self inline), scroll(self inline);
+      animation-range:
+        0 var(--edge-fade, 1.5rem),
+        calc(100% - var(--edge-fade, 1.5rem)) 100%;
+    }
+  }
+
+  /* `ag-edge-fade-y`: the same for anything that scrolls up and down (a
+     kanban column, a capped list): its top and foot fade to nothing as the
+     scroll says there is more, with no colour of its own, so it sits on any
+     surface (glass included) without a band. A scroller whose top is covered by
+     something pinned inside it (a box's head, a table's header row) says how much
+     (`--edge-cover`, a length): that much stays whole and the top's fade starts
+     below it, where the rows come out from under the cover. */
+  .ag-edge-fade-y {
+    overflow-y: auto;
+    scrollbar-width: none;
+  }
+  .ag-edge-fade-y::-webkit-scrollbar {
+    display: none;
+  }
+  @supports (animation-timeline: scroll()) {
+    .ag-edge-fade-y {
+      mask-image: linear-gradient(
+        to bottom,
+        #000 var(--edge-cover, 0px),
+        transparent var(--edge-cover, 0px),
+        #000 calc(var(--edge-cover, 0px) + var(--ag-edge-fade-start)),
+        #000 calc(100% - var(--ag-edge-fade-end)),
+        transparent
+      );
+      animation:
+        ag-edge-fade-start linear both,
+        ag-edge-fade-end linear both;
+      animation-timeline: scroll(self block), scroll(self block);
+      animation-range:
+        0 var(--edge-fade, 1.5rem),
+        calc(100% - var(--edge-fade, 1.5rem)) 100%;
+    }
+  }
+
+  /* `ag-edge-fade-xy`: both, for what scrolls both ways (a table, a tree, a wide
+     listing): the two fades multiplied (`intersect`), each read from its own axis
+     of the scroll. A covered top (`--edge-cover`, a pinned header row) and a
+     covered start (`--edge-cover-x`, a pinned first column) stay whole. */
+  .ag-edge-fade-xy {
+    overflow: auto;
+    scrollbar-width: none;
+  }
+  .ag-edge-fade-xy::-webkit-scrollbar {
+    display: none;
+  }
+  @supports (animation-timeline: scroll()) {
+    .ag-edge-fade-xy {
+      mask-image:
+        linear-gradient(
+          to bottom,
+          #000 var(--edge-cover, 0px),
+          transparent var(--edge-cover, 0px),
+          #000 calc(var(--edge-cover, 0px) + var(--ag-edge-fade-start)),
+          #000 calc(100% - var(--ag-edge-fade-end)),
+          transparent
+        ),
+        linear-gradient(
+          to right,
+          #000 var(--edge-cover-x, 0px),
+          transparent var(--edge-cover-x, 0px),
+          #000 calc(var(--edge-cover-x, 0px) + var(--ag-edge-fade-x-start)),
+          #000 calc(100% - var(--ag-edge-fade-x-end)),
+          transparent
+        );
+      mask-composite: intersect;
+      animation:
+        ag-edge-fade-start linear both,
+        ag-edge-fade-end linear both,
+        ag-edge-fade-x-start linear both,
+        ag-edge-fade-x-end linear both;
+      animation-timeline:
+        scroll(self block), scroll(self block), scroll(self inline),
+        scroll(self inline);
+      animation-range:
+        0 var(--edge-fade, 1.5rem),
+        calc(100% - var(--edge-fade, 1.5rem)) 100%,
+        0 var(--edge-fade, 1.5rem),
+        calc(100% - var(--edge-fade, 1.5rem)) 100%;
+    }
+  }
+}
+
+/* The fades are lengths the scroll moves: registered, so they interpolate, and 0
+   wherever there is no scroll. */
+@property --ag-edge-fade-x-start {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 0px;
+}
+@property --ag-edge-fade-x-end {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 0px;
+}
+@keyframes ag-edge-fade-x-start {
+  from {
+    --ag-edge-fade-x-start: 0px;
+  }
+  to {
+    --ag-edge-fade-x-start: var(--edge-fade, 1.5rem);
+  }
+}
+@keyframes ag-edge-fade-x-end {
+  from {
+    --ag-edge-fade-x-end: var(--edge-fade, 1.5rem);
+  }
+  to {
+    --ag-edge-fade-x-end: 0px;
+  }
+}
+@property --ag-edge-fade-start {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 0px;
+}
+@property --ag-edge-fade-end {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 0px;
+}
+@keyframes ag-edge-fade-start {
+  from {
+    --ag-edge-fade-start: 0px;
+  }
+  to {
+    --ag-edge-fade-start: var(--edge-fade, 1.5rem);
+  }
+}
+@keyframes ag-edge-fade-end {
+  from {
+    --ag-edge-fade-end: var(--edge-fade, 1.5rem);
+  }
+  to {
+    --ag-edge-fade-end: 0px;
+  }
+}
