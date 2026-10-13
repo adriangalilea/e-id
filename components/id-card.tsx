@@ -130,10 +130,24 @@ function Flair({ places }: { places: Place[] }) {
  *  and its top 44.25 from the card's foot; its right edge 36 from the left. */
 const SEAL = "bottom-[37cqw] left-[29cqw] size-[14cqw]";
 
+/** The name as the card sets it: what a field written in its place wears too. */
+export const NAME =
+  "line-clamp-2 text-[7cqw] leading-[1.02] font-medium tracking-[-0.03em] text-balance";
+
+/** What a card can be written on with: each field's own control, in the place
+ *  and at the size the written field takes (the home's blank card, filled in). */
+export type CardSlots = {
+  name?: React.ReactNode;
+  address?: React.ReactNode;
+  country?: React.ReactNode;
+  flair?: React.ReactNode;
+};
+
 export function IdCard({
   holder,
   heading = "h1",
   holo,
+  slots,
   className,
 }: {
   holder: Holder;
@@ -141,6 +155,8 @@ export function IdCard({
   heading?: "h1" | "p";
   /** The security print (`Hologram`), for a card someone can turn. */
   holo?: HoloPrint;
+  /** Fields to write in, in place of the holder's written ones. */
+  slots?: CardSlots;
   className?: string;
 }) {
   const Name = heading;
@@ -157,10 +173,12 @@ export function IdCard({
         <BrandMark className="h-[1cap] w-auto" />
         e-id
       </span>
-      <span className="flex items-center gap-[1.5cqw] font-mono">
-        {holder.country === "XX" ? "" : holder.country}
-        <CountryFlag country={holder.country} className="text-[4cqw]" />
-      </span>
+      {slots?.country ?? (
+        <span className="flex items-center gap-[1.5cqw] font-mono">
+          {holder.country === "XX" ? "" : holder.country}
+          <CountryFlag country={holder.country} className="text-[4cqw]" />
+        </span>
+      )}
     </header>
   );
   // The head alone above, and the body (the photo; the name, the address and the
@@ -174,11 +192,11 @@ export function IdCard({
         <div
           className={cn("flex min-w-0 flex-col gap-[1.5cqw] pb-[1cqw]", KNOCKOUT)}
         >
-          <Name className="line-clamp-2 text-[7cqw] leading-[1.02] font-medium tracking-[-0.03em] text-balance">
-            {name}
-          </Name>
-          <CopyAddress username={holder.username} />
-          <Flair places={places} />
+          {slots?.name ?? (
+            <Name className={NAME}>{name}</Name>
+          )}
+          {slots?.address ?? <CopyAddress username={holder.username} />}
+          {slots?.flair ?? <Flair places={places} />}
         </div>
       </div>
     </>
