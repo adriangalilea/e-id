@@ -772,7 +772,10 @@ function placed({ x, y, w, rz }: (typeof AROUND)[number]) {
  *  when the hand leaves. */
 const PICKED = cn(
   CORNER,
-  "brightness-(--dim) shadow-[0_0.75rem_1.5rem_-0.5rem_rgb(0_0_0/0.6)] transition-[filter,transform,box-shadow] duration-300 ease-out",
+  // Slow and soft both ways: it comes into the light over a second, and the
+  // tilt follows the hand over most of one, so it moves as a thing with weight
+  // and never snaps.
+  "brightness-(--dim) shadow-[0_0.75rem_1.5rem_-0.5rem_rgb(0_0_0/0.6)] [transition:filter_1s_cubic-bezier(0.22,1,0.36,1),box-shadow_1s_cubic-bezier(0.22,1,0.36,1),transform_0.7s_cubic-bezier(0.22,1,0.36,1)]",
   "group-data-[hover]/holo:brightness-100 group-data-[hover]/holo:shadow-[0_2rem_3.5rem_-0.75rem_rgb(0_0_0/0.7)] group-data-[hover]/holo:[transform:perspective(1200px)_translateY(-0.5rem)_rotateY(calc((var(--px,0.5)-0.5)*18deg))_rotateX(calc((var(--py,0.5)-0.5)*-14deg))]",
   "motion-reduce:transition-none motion-reduce:group-data-[hover]/holo:[transform:none]",
 );
@@ -829,9 +832,11 @@ export function Stage({
         return (
           <div
             key={holder.username}
-            // Under the hand it comes out from under the veil and over the
-            // visitor's card too, whole, to be looked at (`VEIL`).
-            className="absolute top-1/2 left-1/2 hover:z-30 max-lg:hidden"
+            // Under the hand it comes out from under the veil, whole, to be
+            // looked at (`VEIL`), still under the visitor's card. On leaving it
+            // stays out until it has dimmed again (`PICKED`'s second), then
+            // goes back under: nothing pops.
+            className="absolute top-1/2 left-1/2 z-0 transition-[z-index] delay-1000 duration-0 hover:z-[7] hover:delay-0 max-lg:hidden"
             style={placed(at)}
           >
             <div
