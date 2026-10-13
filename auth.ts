@@ -2,6 +2,7 @@ import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { nextCookies } from "better-auth/next-js";
 import { createAuthMiddleware } from "better-auth/api";
+import { oneTimeToken } from "better-auth/plugins";
 import { eq } from "drizzle-orm";
 import { revalidateTag } from "next/cache";
 import { db } from "./db";
@@ -116,7 +117,12 @@ export const auth = betterAuth({
   secret: process.env.BETTER_AUTH_SECRET!,
   session: { expiresIn: SESSION_MAX_AGE },
 
-  plugins: [nextCookies()],
+  plugins: [
+    // The session handed from e-id.to to 👤.to (lib/handoff). Tokens are made
+    // only by the server (app/api/handoff/issue) and stored hashed.
+    oneTimeToken({ disableClientRequest: true, storeToken: "hashed" }),
+    nextCookies(),
+  ],
 
   socialProviders: {
     github: {
@@ -181,14 +187,19 @@ export const auth = betterAuth({
   },
 
   hooks: {
-    // The display cookie (lib/chip) follows the session: written where a sign-in
-    // creates one, cleared on sign-out.
+    // The display cookie (lib/chip) follows the session on the host that holds
+    // it: written where a sign-in creates one (an OAuth callback on e-id.to, a
+    // handoff claimed on 👤.to), cleared on sign-out.
     after: createAuthMiddleware(async (ctx) => {
       if (ctx.path === "/sign-out") {
         ctx.setCookie(CHIP_COOKIE, "", { ...CHIP_COOKIE_OPTIONS, maxAge: 0 });
         return;
       }
-      if (!ctx.path.startsWith("/callback/") && !ctx.path.startsWith("/sign-in"))
+      if (
+        !ctx.path.startsWith("/callback/") &&
+        !ctx.path.startsWith("/sign-in") &&
+        ctx.path !== "/one-time-token/verify"
+      )
         return;
       const session = ctx.context.newSession;
       if (!session) return;

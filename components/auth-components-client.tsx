@@ -2,26 +2,17 @@
 
 import { Button } from "./ui/button";
 import { LogOut, UserRound } from "lucide-react";
-import { signIn, signOut } from "@/lib/auth-client";
+import { signOut } from "@/lib/auth-client";
+import { startSignIn } from "@/lib/sign-in";
 
-export function SignIn({
-  provider,
-  ...props
-}: { provider?: string } & React.ComponentPropsWithRef<typeof Button>) {
+export function SignIn(props: React.ComponentPropsWithRef<typeof Button>) {
   return (
     <Button
       aria-label="sign-in"
       variant="ghost"
       size="icon"
       {...props}
-      onClick={() =>
-        signIn.social({
-          provider: (provider || "github") as "github" | "google",
-          // Back to the page signed in from: signing in to comment on a profile
-          // lands on that profile.
-          callbackURL: window.location.pathname,
-        })
-      }
+      onClick={() => startSignIn()}
     >
       <UserRound strokeWidth={1} />
     </Button>
