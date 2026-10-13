@@ -46,25 +46,3 @@ export function MakeYours() {
     </Button>
   );
 }
-
-/** Under every profile, for a visitor who has none: where to get one, one line at
- *  the page's foot. */
-export function MakeYourOwn() {
-  const chip = useChip();
-  if (chip !== null) return null;
-  return (
-    <Link
-      href="/"
-      className="group flex items-center self-start gap-3 text-[15px] text-foreground/55 transition-colors hover:text-foreground"
-    >
-      <span>
-        make your own <EmojiDomain /> page
-      </span>
-      <ArrowRight
-        strokeWidth={1.5}
-        aria-hidden
-        className="size-5 transition-transform group-hover:translate-x-1"
-      />
-    </Link>
-  );
-}

@@ -9,7 +9,6 @@ import {
 } from "@/lib/data";
 import { getPresence } from "@/lib/presence";
 import { EMOJI_DOMAIN, PROD_URL } from "@/lib/const";
-import { MakeYourOwn } from "@/components/landing/make-yours";
 import { inlineJson, profileJsonLd, profileUrl } from "@/lib/profile-ld";
 import { CommentInteraction, HiddenFromOwner } from "./comment_section";
 import { OwnerActions } from "./owner_actions";
@@ -132,9 +131,7 @@ export default async function Page(props: {
             <CommentInteraction profileUserId={user.id} />
           </>
         }
-      >
-        <MakeYourOwn />
-      </UserProfile>
+      />
     </Wide>
   );
 }

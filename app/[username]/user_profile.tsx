@@ -154,8 +154,6 @@ type ProfileProps = {
   actions?: React.ReactNode;
   /** What others say of the person: the pinned testimonials and the comments. */
   vouches?: React.ReactNode;
-  /** What follows the places: the way to a page of one's own. */
-  children?: React.ReactNode;
 };
 
 /** A profile as a split view in the golden ratio, two different things. WHO, the
@@ -169,7 +167,6 @@ export default function UserProfile({
   edit,
   actions,
   vouches,
-  children,
 }: ProfileProps) {
   if (!edit)
     return (
@@ -177,7 +174,6 @@ export default function UserProfile({
         <Side user={user} actions={actions} vouches={vouches} />
         <main className="flex min-w-0 flex-col gap-16 [grid-area:places]">
           <SocialComponent socials={socials} presence={presence} />
-          {children}
         </main>
       </div>
     );
@@ -192,7 +188,6 @@ export default function UserProfile({
             <DiscardButton username={user.username} />
             <SaveButton />
           </div>
-          {children}
         </main>
       </div>
     </EditForm>
