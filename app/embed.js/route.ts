@@ -1,4 +1,5 @@
 import { LIGHT_HOOKS } from "@/lib/card-image";
+import { MARK_BOX, MARK_PATH } from "@/lib/mark";
 
 // THE EMBED: `<e-id-card handle="…">` on any page, one script, no framework.
 //
@@ -40,13 +41,21 @@ svg{display:block;width:100%;height:auto}
 a{cursor:pointer}a:focus-visible{outline:none}a:focus-visible rect{fill-opacity:.12}
 @media (prefers-reduced-motion:reduce){.card{transform:none}}\`;
 
+// Until the card arrives, and if it never does, what the host wrote inside the
+// element, worn as e-id's: a quiet pill in the text's own colour with the mark, so
+// it reads on any ground and never as the browser's bare blue link.
+const FALLBACK = \`<style>:host{display:block}
+.fallback{display:inline-flex;align-items:center;gap:.45em;padding:.4em .9em;border-radius:999px;border:1px solid color-mix(in srgb,currentColor 22%,transparent);background:color-mix(in srgb,currentColor 5%,transparent);font:500 .875rem/1.2 'Space Grotesk',system-ui,sans-serif;letter-spacing:-.01em}
+.fallback svg{height:1cap;width:auto;fill:currentColor;opacity:.75}
+::slotted(a){color:inherit;text-decoration:none}</style><span class="fallback"><svg viewBox="${MARK_BOX.x} ${MARK_BOX.y} ${MARK_BOX.w} ${MARK_BOX.h}" aria-hidden="true"><path d="${MARK_PATH}"/></svg><slot></slot></span>\`;
+
 class EIdCard extends HTMLElement {
   static observedAttributes = ["handle"];
   #root = this.attachShadow({ mode: "open" });
   #frame = 0;
 
   connectedCallback() {
-    if (!this.#root.firstChild) this.#root.innerHTML = "<slot></slot>";
+    if (!this.#root.firstChild) this.#root.innerHTML = FALLBACK;
     this.addEventListener("pointermove", this.#move);
     this.addEventListener("pointerleave", this.#leave);
   }
