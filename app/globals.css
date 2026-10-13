@@ -484,7 +484,7 @@
    quiet until a hand finds it, and only ever as PRINT, never as a wash (a faint
    smooth gradient over this dark bands into mud). At rest a neutral pill, a
    little light and a white hairline. Under the hand, in a band WHERE the hand is
-   (`--px` from the Tilt round it, so it follows the pointer, never a clock): its
+   (`--px` from the HoloLight round it, so it follows the pointer, never a clock): its
    edge turns to a one-pixel ring of foil, and the card's guilloché (lib/holo,
    worn by the hero round it) shows faintly through its body, lit the same.
    Only the coming and going is timed, and quickly. The pill is the hero's
@@ -532,7 +532,7 @@
   background-position: calc(var(--px, 0.5) * 100%) 0;
   opacity: 0;
   transition: opacity 200ms ease-out;
-  /* The light on the hand: centred exactly where it is (`--hx`, from the Tilt
+  /* The light on the hand: centred exactly where it is (`--hx`, from the HoloLight
      round the pill), the same width everywhere along the pill, running off its
      ends rather than shrinking toward them, so it is as strong at the disc as at
      the far end. In the pill's units: two disc-widths either side. */

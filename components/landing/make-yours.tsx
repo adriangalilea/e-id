@@ -18,7 +18,7 @@ import { startSignIn } from "@/lib/sign-in";
  *  - the words end where the right end's curve begins (the padding is the pill's
  *    radius), the mirror of the disc filling the left one.
  *  The foil (`data-cta`, globals.css) is a faint ring at rest, brighter and with
- *  the card's guilloché inside where the hand is; the Tilt round it gives it the
+ *  the card's guilloché inside where the hand is; the HoloLight round it gives it the
  *  hand. No arrow and no provider's mark: the pill is plainly pressable, and how
  *  one signs in is the sign-in's business. */
 const INSET = "0.2em";
