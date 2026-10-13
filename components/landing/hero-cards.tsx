@@ -766,12 +766,17 @@ const LARGE = 27;
 function placed({ x, y, w, rz }: (typeof AROUND)[number]) {
   const near = (w - SMALL) / (LARGE - SMALL);
   return {
-    width: `${w}rem`,
-    transform: `translate(-50%, -50%) translate(${x}cqw, ${y}rem) rotateY(${(-Math.sign(x) * (4 + 6 * near)).toFixed(1)}deg) rotateZ(${rz}deg)`,
-    "--dim": (0.4 + 0.3 * near).toFixed(2),
-    "--blur": `${(3 - 2 * near).toFixed(2)}px`,
+    width: `${(w * RECEDE).toFixed(2)}rem`,
+    transform: `translate(-50%, -50%) translate(${(x * RECEDE).toFixed(2)}cqw, ${(y * RECEDE).toFixed(2)}rem) rotateY(${(-Math.sign(x) * (4 + 6 * near)).toFixed(1)}deg) rotateZ(${rz}deg)`,
+    "--dim": (0.38 + 0.3 * near).toFixed(2),
+    "--blur": `${(3.5 - 2 * near).toFixed(2)}px`,
   } as React.CSSProperties;
 }
+
+/** How far the whole spread stands behind the visitor's card: every card a tenth
+ *  smaller and a tenth nearer the middle, as a step back in perspective takes
+ *  them, the composition (`AROUND`) unchanged. */
+const RECEDE = 0.9;
 
 /** A real card under the hand: in focus, lifted a little (up, never scaled: a
  *  scaled card is a stretched picture of itself), in full light, and tilted toward the hand,
