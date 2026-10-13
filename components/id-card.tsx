@@ -42,6 +42,12 @@ const KNOCKOUT =
 const ID1_RATIO = "85.6/53.98";
 const ID1_RADIUS = `${(3.18 / 85.6) * 100}cqw`;
 
+/** The hologram's print in the card's own unit (@ag/holo, `--holo-print-unit`):
+ *  its tiles keep the share of the card they have on a 34rem (544px) card, the
+ *  size they were drawn at, so the print grows and shrinks with the photo, the
+ *  name and every word on the card, one physical thing at any size. */
+const PRINT_UNIT = `${100 / 544}cqw`;
+
 /** The face, square: the avatar GitHub gave, or with none the mark itself, the
  *  empty photo slot it draws. */
 function Portrait({
@@ -229,6 +235,7 @@ export function IdCard({
           {
             "--id1-ratio": ID1_RATIO,
             "--id1-radius": ID1_RADIUS,
+            "--holo-print-unit": PRINT_UNIT,
           } as React.CSSProperties
         }
       >

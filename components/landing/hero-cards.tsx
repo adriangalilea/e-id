@@ -979,11 +979,6 @@ function under(depth: number, float: number) {
     "--dx": `${dx.toFixed(2)}%`,
     "--dy": `${dy.toFixed(2)}%`,
     "--r": `${r.toFixed(2)}deg`,
-    // Under the hand, a nudge further out, the way it already lies: the nearest
-    // the most, the deepest, already far out, hardly at all.
-    "--sx": `${(Math.sign(dx) * (4 - 0.4 * depth)).toFixed(1)}%`,
-    "--sy": `${(Math.sign(dy) * (4 - 0.4 * depth)).toFixed(1)}%`,
-    "--sr": `${Math.sign(r)}deg`,
     "--fade": (0.35 + 0.07 * (depth - 1)).toFixed(2),
     "--bl": `${(1.6 + 0.6 * (depth - 1)).toFixed(2)}px`,
     animationDuration: `${float}s`,
@@ -994,18 +989,17 @@ function under(depth: number, float: number) {
 /** Real e-id cards in one pile, the maker's on top and then the newest whole ones
  *  (a photo, a name, a country): the top one flat on the table as the rest are,
  *  leaning to the hand, its hologram showing as it turns, over the hero's
- *  shimmer; the rest under it, under the shimmer too (components/light, z-[5]),
- *  spreading under the hand. Nothing here makes a stacking context of its own
- *  (no transform, no filter on the pile), so each card's layer is the hero's:
- *  the shimmer lies between the top card and the rest. `away`, the whole pile
- *  under it. What a card is, shown whole. */
+ *  shimmer; the rest under it, under the shimmer too (components/light, z-[5]).
+ *  Each card answers the hand alone, with a light of its own: a hand on one
+ *  moves nothing else. Nothing here makes a stacking context of its own (no
+ *  transform, no filter on the pile), so each card's layer is the hero's: the
+ *  shimmer lies between the top card and the rest. `away`, the whole pile under
+ *  it. What a card is, shown whole. */
 function Pile({ people, away }: { people: Holder[]; away: boolean }) {
   const [top, ...rest] = people;
   if (!top) throw new Error("the home's pile has nobody to show");
   return (
-    // With a hand on it the pile spreads a little, as cards do when touched
-    // (`under`, `--sx`).
-    <HoloLight className="relative w-full data-[hover]:[--spread:1]">
+    <div className="relative w-full">
       {rest
         .map((holder, i) => ({ holder, depth: i + 1 }))
         .reverse()
@@ -1013,11 +1007,10 @@ function Pile({ people, away }: { people: Holder[]; away: boolean }) {
           <div
             key={holder.username}
             // Its middle placed from the top card's by left and top (shares of
-            // the top card's box), the nudge under the hand by translate (a
-            // share of its own). Under the hand it comes out of its fade, in
+            // the top card's box). Under the hand it comes out of its fade, in
             // focus, but keeps its place in the pile: never over a card that
             // lies above it.
-            className="group/card absolute top-[calc(50%+var(--dy))] left-[calc(50%+var(--dx))] z-0 w-(--lw) animate-[card-float_ease-in-out_infinite_alternate] blur-(--bl) [transition:transform_0.5s_cubic-bezier(0.22,1,0.36,1),filter_1s_cubic-bezier(0.22,1,0.36,1)] [transform:translate(-50%,-50%)_translate(calc(var(--sx)*var(--spread,0)),calc(var(--sy)*var(--spread,0)))_rotate(calc(var(--r)+var(--sr)*var(--spread,0)))] hover:blur-none motion-reduce:animate-none motion-reduce:transition-none"
+            className="group/card absolute top-[calc(50%+var(--dy))] left-[calc(50%+var(--dx))] z-0 w-(--lw) animate-[card-float_ease-in-out_infinite_alternate] blur-(--bl) [transform:translate(-50%,-50%)_rotate(var(--r))] [transition:filter_1s_cubic-bezier(0.22,1,0.36,1)] hover:blur-none motion-reduce:animate-none motion-reduce:transition-none"
             style={under(depth, UNDER[depth - 1] as number)}
           >
             {/* Its own light, so it alone tilts toward the hand on it, its
@@ -1057,20 +1050,27 @@ function Pile({ people, away }: { people: Holder[]; away: boolean }) {
       >
         {/* Its light, carried with it. */}
         {!away && <SubjectLight />}
-        {/* Flat on the table as the rest are; leaning to the hand only while
-            it is on it. */}
-        <HoloLean
-          pose="flat"
-          className="[transform:none] group-data-[hover]/holo:[transform:var(--holo-lean)] max-lg:group-data-[hover]/holo:[transform:none]"
-        >
-          {/* Dropped on the table a little askew, as the rest lie, never
-              square to the page. */}
-          <div className="[transform:rotate(3deg)]">
-            <IdCard holder={top} heading="p" holo="laminate" className={FRONT} />
-          </div>
-        </HoloLean>
+        {/* Flat on the table as the rest are; leaning to the hand, its own
+            light's, only while it is on it. */}
+        <HoloLight>
+          <HoloLean
+            pose="flat"
+            className="[transform:none] group-data-[hover]/holo:[transform:var(--holo-lean)] max-lg:group-data-[hover]/holo:[transform:none]"
+          >
+            {/* Dropped on the table a little askew, as the rest lie, never
+                square to the page. */}
+            <div className="[transform:rotate(3deg)]">
+              <IdCard
+                holder={top}
+                heading="p"
+                holo="laminate"
+                className={FRONT}
+              />
+            </div>
+          </HoloLean>
+        </HoloLight>
       </div>
-    </HoloLight>
+    </div>
   );
 }
 
@@ -1198,6 +1198,9 @@ export function Stage({
       }}
     >
       <div
+        // Said on the stage, for what lies round it to step back with the pile
+        // while the visitor writes (components/light, `HeroShimmer`).
+        data-writing={writing && !forming ? "" : undefined}
         className={cn(
           "relative w-full",
           forming

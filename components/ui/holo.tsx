@@ -199,6 +199,13 @@ export function HoloLight({
 
 export type HoloPrint = "laminate" | "web" | "none"
 
+/** One unit of the laminate's tiles: a pixel unless the surface says otherwise
+ *  (`--holo-print-unit`). A surface sized by its own width (a card in `cqw`) sets
+ *  it in that unit too, so the print grows and shrinks with everything printed
+ *  on it, as one physical thing; in pixels it stayed one size while the rest
+ *  grew. */
+const UNIT = "var(--holo-print-unit, 1px)"
+
 /** The print laid over a surface: the laminate (guilloché ribbons and the emblem
  *  repeated), the web (people linked, laid whole), or none (the seal alone). */
 function printStyle(
@@ -208,7 +215,7 @@ function printStyle(
   if (print === "laminate")
     return {
       maskImage: `${printUrl(guilloche())}, ${printUrl(emblems(emblem))}`,
-      maskSize: "160px 40px, 72px 72px",
+      maskSize: `calc(160 * ${UNIT}) calc(40 * ${UNIT}), calc(72 * ${UNIT}) calc(72 * ${UNIT})`,
     }
   if (print === "web")
     return {
