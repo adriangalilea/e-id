@@ -396,6 +396,62 @@
   }
 }
 
+/* CARDS SOMEONE CAN TURN (components/landing/tilt: `--px`, `--py` from 0 to 1 where
+   the hand is, `data-hover` while it is there). The front card leans toward the
+   hand, about its rest pose (turned 14° away, tipped 6° back, the light a little
+   above the middle), quickly under the hand and slowly home when it leaves. Only
+   on a wide screen, where the cards stand in perspective. */
+@media (min-width: 64rem) {
+  [data-slot="card-tilt"] [data-slot="tilt-front"] {
+    transform: rotateY(calc(-14deg + (var(--px, 0.5) - 0.5) * 24deg))
+      rotateX(calc(6deg - (var(--py, 0.35) - 0.35) * 18deg));
+    transition: transform 700ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  [data-slot="card-tilt"][data-hover] [data-slot="tilt-front"] {
+    transition-duration: 140ms;
+  }
+}
+
+/* THE SHIMMER (components/id-card, `Shimmer`): light catching in the card in
+   glints, skin in Twilight's sun, not a gloss. Two tiles of points, laid over the
+   card and added to its light (`plus-lighter`), seen only where the light falls: a
+   soft spot at the hand. The tiles drift against each other as the hand moves, so
+   different points catch and go out; a faint sheen of colder light sweeps with
+   them. At rest the spot sits where the page's beam comes from and the glints are
+   at a third; under the hand they come up to four fifths (full read as glitter,
+   not light). Nothing moves on its own. */
+[data-slot="id-card-shimmer"] {
+  background-image:
+    var(--glitter-a), var(--glitter-b),
+    linear-gradient(
+      115deg,
+      transparent 35%,
+      rgb(255 255 255 / 0.07) 47%,
+      rgb(214 232 255 / 0.06) 53%,
+      transparent 65%
+    );
+  background-size:
+    140px 140px,
+    97px 97px,
+    300% 100%;
+  background-position:
+    calc(var(--px, 0.5) * -40px) calc(var(--py, 0.35) * -40px),
+    calc(var(--px, 0.5) * 30px) calc(var(--py, 0.35) * 30px),
+    calc(var(--px, 0.5) * 100%) 0;
+  mix-blend-mode: plus-lighter;
+  mask-image: radial-gradient(
+    circle at calc(var(--px, 0.5) * 100%) calc(var(--py, 0.35) * 100%),
+    black,
+    rgb(0 0 0 / 0.4) 30%,
+    transparent 68%
+  );
+  opacity: 0.35;
+  transition: opacity 400ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+[data-hover] [data-slot="id-card-shimmer"] {
+  opacity: 0.8;
+}
+
 textarea,
 select,
 input {

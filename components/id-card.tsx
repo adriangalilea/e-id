@@ -60,6 +60,62 @@ function Ghost({ holder }: { holder: Holder }) {
   );
 }
 
+/** The SHIMMER: light catching in the card like skin in Twilight's sun, fine glints
+ *  rather than a gloss. Two tiles of points, each from a fixed seed (the same on
+ *  the server and in the browser, so nothing jumps when the page hydrates): most
+ *  white, a few faintly prismatic, a handful drawn as four-point glints. The tiles
+ *  are different sizes, so their overlap does not repeat across a card, and they
+ *  move against each other as the card turns, so different points catch.
+ *  Where the light falls and how strongly is the stylesheet's (`id-card-shimmer`
+ *  in globals.css), read from what tilts the card (`--px`, `--py`, `--shine`). */
+function glitter(seed: number, tile: number, points: number): string {
+  let s = seed >>> 0;
+  const random = () => {
+    s = (s + 0x6d2b79f5) >>> 0;
+    let t = s;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+  const TINTS = ["#ffffff", "#ffffff", "#ffffff", "#ffe4f4", "#ddf6ff", "#fff3d4"];
+  const marks: string[] = [];
+  for (let i = 0; i < points; i++) {
+    const x = (random() * tile).toFixed(1);
+    const y = (random() * tile).toFixed(1);
+    const fill = TINTS[Math.floor(random() * TINTS.length)];
+    const alpha = (0.35 + random() * 0.65).toFixed(2);
+    if (random() < 0.08) {
+      const arm = (1.6 + random() * 1.6).toFixed(1);
+      marks.push(
+        `<path d="M${x} ${y}m-${arm} 0h${+arm * 2}M${x} ${y}m0 -${arm}v${+arm * 2}" stroke="${fill}" stroke-opacity="${alpha}" stroke-width="0.5" stroke-linecap="round"/>`,
+      );
+    } else {
+      const r = (0.3 + random() * 0.8).toFixed(2);
+      marks.push(
+        `<circle cx="${x}" cy="${y}" r="${r}" fill="${fill}" fill-opacity="${alpha}"/>`,
+      );
+    }
+  }
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${tile}" height="${tile}">${marks.join("")}</svg>`;
+  return `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
+}
+
+const GLITTER = {
+  "--glitter-a": glitter(7, 140, 90),
+  "--glitter-b": glitter(23, 97, 50),
+} as React.CSSProperties;
+
+function Shimmer() {
+  return (
+    <span
+      aria-hidden
+      data-slot="id-card-shimmer"
+      className="pointer-events-none absolute inset-0 rounded-[inherit]"
+      style={GLITTER}
+    />
+  );
+}
+
 /** A person's e-id as the card it is named for, in glass: the mark and the country
  *  across its head, the portrait, the name and the handle, the address along its
  *  foot, the ghost image in its corner. What they say of themselves is the page's,
@@ -69,11 +125,14 @@ function Ghost({ holder }: { holder: Holder }) {
 export function IdCard({
   holder,
   heading = "h1",
+  shimmer,
   className,
 }: {
   holder: Holder;
   /** The name's element: the profile's h1, a sample's p. */
   heading?: "h1" | "p";
+  /** Light catching in the card (`Shimmer`), for a card someone can turn. */
+  shimmer?: boolean;
   className?: string;
 }) {
   const Name = heading;
@@ -117,6 +176,7 @@ export function IdCard({
           </div>
         </div>
         <Ghost holder={holder} />
+        {shimmer && <Shimmer />}
       </Glass>
     </div>
   );

@@ -1,6 +1,6 @@
 import "server-only";
 
-import { and, asc, desc, eq, isNotNull, ne } from "drizzle-orm";
+import { and, asc, desc, eq, isNotNull, ne, sql } from "drizzle-orm";
 import { cacheLife, cacheTag } from "next/cache";
 import { db } from "@/db";
 import { comments, socials, users, type SelectSocial } from "@/db/schema";
@@ -168,8 +168,12 @@ export async function getLatestUsers(): Promise<ListedUser[]> {
 /** How many real cards the home's hero fans out. */
 const SHOWCASE = 3;
 
-/** The people whose cards the home shows: the latest with a whole card to show (a
- *  photo, a name and a country), newest first. Expires with the sign-ups list. */
+/** Whose card leads the home's hero, when it exists: the maker's. */
+const SHOWCASE_LEAD = "adriangalilea";
+
+/** The people whose cards the home shows: the lead card first, then the latest
+ *  with a whole card to show (a photo, a name and a country), newest first.
+ *  Expires with the sign-ups list. */
 export async function getShowcase(): Promise<
   {
     name: string;
@@ -200,7 +204,10 @@ export async function getShowcase(): Promise<
         ne(users.country_code, "XX"),
       ),
     )
-    .orderBy(desc(users.createdAt))
+    .orderBy(
+      desc(sql`${users.username_normalized} = ${SHOWCASE_LEAD}`),
+      desc(users.createdAt),
+    )
     .limit(SHOWCASE);
 
   return rows.map(({ name, username, image, ...row }) => {

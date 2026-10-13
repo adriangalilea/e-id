@@ -7,6 +7,7 @@ import { Glass } from "@/components/ui/material-glass";
 import { getShowcase } from "@/lib/data";
 import { cn } from "@/lib/utils";
 import { MakeYours } from "./make-yours";
+import { Tilt } from "./tilt";
 
 /** The card the landing hands its reader when there is nobody yet to show: theirs,
  *  not made yet. */
@@ -19,36 +20,44 @@ const YOU: Holder = {
 };
 
 /** Where the cards behind the front one lie: turned out from under it, smaller
- *  and dimmer with depth, so the stack reads as real cards dealt on the page. */
+ *  and dimmer with depth, so the stack reads as real cards dealt on the page. With
+ *  a hand on the stack they spread a little further, as cards do when touched. */
 const BEHIND = [
-  "-rotate-[8deg] -translate-x-[9%] translate-y-[7%] scale-[0.93] opacity-60",
-  "rotate-[7deg] translate-x-[10%] -translate-y-[8%] scale-[0.88] opacity-35",
+  "-rotate-[8deg] -translate-x-[9%] translate-y-[7%] scale-[0.93] opacity-60 group-data-hover/tilt:-rotate-[11deg] group-data-hover/tilt:-translate-x-[14%] group-data-hover/tilt:translate-y-[9%]",
+  "rotate-[7deg] translate-x-[10%] -translate-y-[8%] scale-[0.88] opacity-35 group-data-hover/tilt:rotate-[10deg] group-data-hover/tilt:translate-x-[15%] group-data-hover/tilt:-translate-y-[11%]",
 ];
 
-/** Real e-id cards, the newest whole ones (a photo, a name, a country), fanned:
- *  the front one straight under the light, turned a little toward the reader, the
- *  others dealt out behind it. What a card is, shown, rather than an empty one. */
+/** Real e-id cards, the maker's first and then the newest whole ones (a photo, a
+ *  name, a country), fanned: the front one under the light, turned toward the
+ *  reader and following the hand, catching it in glints; the others dealt out
+ *  behind. What a card is, shown, rather than an empty one. */
 function Stack({ people }: { people: Holder[] }) {
   const [front = YOU, ...behind] = people;
   return (
-    <div className="relative mx-auto w-full max-w-sm lg:[perspective:1600px]">
+    <Tilt className="relative mx-auto w-full max-w-sm lg:[perspective:1600px]">
       {behind.map((holder, i) => (
         <IdCard
           key={holder.username}
           holder={holder}
           heading="p"
-          className={cn("absolute inset-0", BEHIND[i])}
+          className={cn(
+            "absolute inset-0 transition-[rotate,translate] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none",
+            BEHIND[i],
+          )}
         />
       ))}
       {/* Lying on the others, it hides them as a real card would: its body
           solid (a backdrop's blur does not reach through the card's 3D turn, so
           only opacity hides what is under it), its rim and light still glass's. */}
-      <IdCard
-        holder={front}
-        heading="p"
-        className="relative [--id-card-thickness:1] lg:[transform:rotateY(-14deg)_rotateX(6deg)]"
-      />
-    </div>
+      <div data-slot="tilt-front" className="relative">
+        <IdCard
+          holder={front}
+          heading="p"
+          shimmer
+          className="[--id-card-thickness:1]"
+        />
+      </div>
+    </Tilt>
   );
 }
 
