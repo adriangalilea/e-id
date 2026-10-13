@@ -317,8 +317,12 @@
     [data-slot="hero-lead"] {
       animation-name: hero-lead;
     }
+    /* Cut sideways only, as it narrows to nothing: the words are trimmed to
+       their capitals, so a descender (the y of "/you") hangs below the box, and
+       a cut on both axes took its tail. */
     [data-slot="hero-you"] {
-      overflow: hidden;
+      overflow-x: clip;
+      overflow-y: visible;
       vertical-align: bottom;
       animation-name: hero-you;
     }
