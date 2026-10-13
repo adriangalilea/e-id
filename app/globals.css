@@ -90,6 +90,9 @@
      (dates, handles, codes, labels). */
   --font-sans: var(--font-space-grotesk);
   --font-mono: var(--font-space-mono);
+  /* Somebody else's words (@ag/quote) in e-id's own voice, not the registry's
+     reading serif: on a profile a vouch is a line of the page, not an excerpt. */
+  --font-quote: var(--font-space-grotesk);
 
   --animate-accordion-down: accordion-down 0.2s ease-out;
   --animate-accordion-up: accordion-up 0.2s ease-out;

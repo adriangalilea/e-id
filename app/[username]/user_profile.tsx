@@ -46,8 +46,7 @@ function Backdrop({ username }: { username: string }) {
   );
 }
 
-/** Who this is: their e-id card, in the light, then what they say of themselves.
- *  Held still beside the places on a wide screen, the page's head on a phone. */
+/** Who this is: their e-id card, in the light, then what they say of themselves. */
 function Identity({
   user,
   actions,
@@ -56,7 +55,7 @@ function Identity({
   actions?: React.ReactNode;
 }) {
   return (
-    <aside className="flex flex-col gap-6 lg:sticky lg:top-10 lg:self-start">
+    <header className="flex flex-col gap-6 [grid-area:id]">
       <div className="relative isolate">
         <Backdrop username={user.username} />
         <IdCard
@@ -75,7 +74,7 @@ function Identity({
         </p>
       )}
       {actions}
-    </aside>
+    </header>
   );
 }
 
@@ -126,30 +125,37 @@ type ProfileProps = {
   edit?: boolean;
   /** Share and edit, for the owner: under the identity. */
   actions?: React.ReactNode;
-  /** What follows the places: testimonials, comments, the way to a page of one's own. */
+  /** What others say of the person: the pinned testimonials and the comments. */
+  vouches?: React.ReactNode;
+  /** What follows the places: the way to a page of one's own. */
   children?: React.ReactNode;
 };
 
-/** A profile is the person's card in the light, held still on the left of a wide
- *  screen, and their places beside it from the first line, so what they made is on
- *  the first screen; what others wrote of them follows the places. On a phone the
- *  card heads the page. The edit form keeps the same two columns. */
+/** A profile in two columns, each with one job. WHO on the left: the card, what the
+ *  person says of themselves, then what others say of them. WHERE on the right:
+ *  their places, from the first line, so what they made is on the first screen.
+ *  On a phone: the card, the places, then the vouches (grid areas, so the order is
+ *  the reading order on each). The edit form keeps its own two columns. */
 export default function UserProfile({
   user,
   socials,
   presence,
   edit,
   actions,
+  vouches,
   children,
 }: ProfileProps) {
   if (!edit)
     return (
-      <div className="grid animate-fade-in gap-12 lg:grid-cols-[minmax(0,26rem)_minmax(0,1fr)] lg:gap-16">
+      <div className="grid animate-fade-in gap-12 [grid-template-areas:'id'_'places'_'vouch'] lg:grid-cols-[minmax(0,26rem)_minmax(0,1fr)] lg:grid-rows-[auto_1fr] lg:gap-x-16 lg:[grid-template-areas:'id_places'_'vouch_places']">
         <Identity user={user} actions={actions} />
-        <main className="flex min-w-0 flex-col gap-16">
+        <main className="flex min-w-0 flex-col gap-16 [grid-area:places]">
           <SocialComponent socials={socials} presence={presence} />
           {children}
         </main>
+        <aside className="flex min-w-0 flex-col gap-4 text-sm [grid-area:vouch]">
+          {vouches}
+        </aside>
       </div>
     );
 

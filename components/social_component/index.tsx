@@ -67,13 +67,14 @@ function PresenceOf({
 }
 
 /** The way to a social, one quiet line over what it shows: the handle, opening it,
- *  and the registry's copy (@ag/copy) of what a reader takes away, the address for
- *  an email and the link for the rest. */
+ *  and right beside it the registry's copy (@ag/copy) of what a reader takes away,
+ *  the address for an email and the link for the rest. Beside, never across the
+ *  line: a copy button at the far end reads as nobody's. */
 function SocialLink({ social }: { social: SelectSocial }) {
   const value = social.value ?? "";
   const url = getSocialUrl(social.platform, value);
   return (
-    <div className="flex min-w-0 items-center justify-between gap-2 px-1">
+    <div className="flex min-w-0 items-center gap-1 self-start px-1">
       <Link
         href={url}
         // rel="me": this page and that profile are the same person, which
