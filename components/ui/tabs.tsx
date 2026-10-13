@@ -474,7 +474,11 @@ export function TabsPanel({
         // while its exit runs, `ending`).
         const active = !state.hidden && state.transitionStatus !== "ending"
         return (
-          <PanelFace attrs={attrs} active={active}>
+          <PanelFace
+            attrs={attrs}
+            active={active}
+            from={state.tabActivationDirection}
+          >
             <PanelActive.Provider value={active}>
               {mount === "seen" ? (
                 <Seen active={active}>{children}</Seen>
@@ -490,29 +494,39 @@ export function TabsPanel({
 }
 
 /** A panel's arrival: when it becomes the one shown (never on the page's first
- *  paint, where it simply is), it comes up from nothing and settles 4 px, over
- *  200 ms on the indicator's curve, so the content answers the same gesture the
- *  lift does instead of cutting in under it. Short on purpose: it confirms the
- *  switch, it does not perform it. Played with the Web Animations API on the
- *  panel's own element, so it needs no stylesheet and leaves no style behind; none
- *  under reduced motion. The panel that leaves is hidden at once: two panels
- *  cross-fading in one place would read as both. */
-const ARRIVE: Keyframe[] = [
-  { opacity: 0, transform: "translateY(4px)" },
-  { opacity: 1, transform: "none" },
-]
+ *  paint, where it simply is), it comes in from the side the indicator travelled
+ *  from, 16 px, and up from nothing, over 220 ms on the indicator's curve: a tab
+ *  to the right brings its panel in from the right, so the content moves the way
+ *  the lift did and the two read as one gesture (Base UI's
+ *  `tabActivationDirection`; vertical tabs move it vertically, `none` only fades).
+ *  Short on purpose: it confirms the switch, it does not perform it. Played with
+ *  the Web Animations API on the panel's own element, so it needs no stylesheet
+ *  and leaves no style behind; none under reduced motion. The panel that leaves is
+ *  hidden at once: two panels crossing in one place would read as both. */
+type TabsTabActivationDirection = BaseTabs.Tab.ActivationDirection
+const TRAVEL = 16
+const FROM: Record<TabsTabActivationDirection, string> = {
+  right: `translateX(${TRAVEL}px)`,
+  left: `translateX(${-TRAVEL}px)`,
+  down: `translateY(${TRAVEL}px)`,
+  up: `translateY(${-TRAVEL}px)`,
+  none: "none",
+}
 const ARRIVE_TIMING: KeyframeAnimationOptions = {
-  duration: 200,
+  duration: 220,
   easing: "cubic-bezier(0.22, 1, 0.36, 1)",
 }
 
 function PanelFace({
   attrs,
   active,
+  from,
   children,
 }: {
   attrs: React.ComponentProps<"div">
   active: boolean
+  /** The way the active tab moved, Base UI's `tabActivationDirection`. */
+  from: TabsTabActivationDirection
   children: React.ReactNode
 }) {
   const { ref, ...rest } = attrs
@@ -532,8 +546,14 @@ function PanelFace({
     const node = own.current
     if (!arrived || !node) return
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return
-    node.animate(ARRIVE, ARRIVE_TIMING)
-  }, [active])
+    node.animate(
+      [
+        { opacity: 0, transform: FROM[from] },
+        { opacity: 1, transform: "none" },
+      ],
+      ARRIVE_TIMING,
+    )
+  }, [active, from])
   return (
     <div ref={both} {...rest}>
       {children}
