@@ -36,11 +36,10 @@ export async function Hero() {
           GUTTER,
         )}
       >
-        <Stage people={people}>
+        <Stage people={people} preview={<Preview />}>
           <SubjectLight />
           <YourCard />
         </Stage>
-        <Preview />
       </div>
     </section>
   );

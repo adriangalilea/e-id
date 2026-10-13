@@ -1,8 +1,9 @@
 "use client";
 
-import { ArrowLeft, CornerDownLeft, Plus, Trash2 } from "lucide-react";
+import { ArrowLeft, CornerDownLeft, Plus, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { lazy, Suspense, use, useEffect, useRef, useState } from "react";
+import { flushSync } from "react-dom";
 import { EmojiDomain } from "@/components/brand";
 import { CountryFlag } from "@/components/country";
 import { type Holder, IdCard, NAME, type Place } from "@/components/id-card";
@@ -131,7 +132,7 @@ export function YourCard() {
             {!isBlank(draft) && (
               <button
                 type="button"
-                onClick={() => clearDraft()}
+                onClick={() => shape(false, clearDraft)}
                 className="font-mono text-[11px] text-foreground/40 transition-colors hover:text-foreground/80"
               >
                 start over
@@ -385,9 +386,11 @@ function Places({ places }: { places: DraftPlace[] }) {
     "rounded-[1.2cqw] p-[1.1cqw] transition-colors hover:bg-white/[0.08] hover:text-foreground data-[popup-open]:bg-white/[0.08] data-[popup-open]:text-foreground";
   const save = (platform: SocialPlatform, value: string) => {
     const others = readDraft().places.filter((p) => p.platform !== platform);
-    writeDraft({
-      places: value ? [...others, { platform, value }] : others,
-    });
+    const next = value ? [...others, { platform, value }] : others;
+    shape(
+      next.some((p) => p.value.trim() !== ""),
+      () => writeDraft({ places: next }),
+    );
   };
   return (
     <div
@@ -465,7 +468,7 @@ function PlacePopover({
       }}
     >
       <PopoverTrigger render={trigger} />
-      <PopoverContent align="start" className="w-72 gap-2 p-2">
+      <PopoverContent align="start" className="w-80 gap-3 p-3">
         {!chosen ? (
           <div role="listbox" aria-label="add a place" className="flex flex-col">
             {platforms.map((platform) => (
@@ -484,26 +487,46 @@ function PlacePopover({
           </div>
         ) : (
           <form
-            className="flex flex-col gap-2"
+            className="flex flex-col gap-3"
             onSubmit={(e) => {
               e.preventDefault();
               onSave(chosen, valueOf(chosen, typed));
               setOpen(false);
             }}
           >
-            <div className="flex items-center gap-2 px-1 pt-1 text-sm text-foreground/85 [&_svg]:size-4 [&_svg]:stroke-[1.5]">
+            {/* The place named, and at its other end the one thing to do with
+                it besides writing: back to the list while adding, × to take it
+                off the card once it is on it. */}
+            <div className="flex h-7 items-center gap-2 pl-1 text-sm text-foreground/85 [&_svg]:stroke-[1.5]">
               {!place && platforms.length > 1 && (
-                <button
+                <Button
                   type="button"
+                  variant="ghost"
+                  size="icon-sm"
                   aria-label="other places"
                   onClick={() => setChosen(null)}
-                  className="-ml-0.5 rounded-md p-0.5 text-foreground/50 hover:text-foreground"
+                  className="-ml-1.5 text-foreground/50"
                 >
                   <ArrowLeft />
-                </button>
+                </Button>
               )}
-              {getSocialIcon(chosen)}
+              <span className="[&_svg]:size-4">{getSocialIcon(chosen)}</span>
               {chosen}
+              {place && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon-sm"
+                  aria-label={`remove ${chosen}`}
+                  onClick={() => {
+                    onSave(place.platform, "");
+                    setOpen(false);
+                  }}
+                  className="ml-auto text-foreground/50"
+                >
+                  <X />
+                </Button>
+              )}
             </div>
             <InputGroup
               size="sm"
@@ -524,20 +547,6 @@ function PlacePopover({
               }
               end={<CornerDownLeft className="text-foreground/40" />}
             />
-            {place && (
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="self-start text-foreground/60"
-                onClick={() => {
-                  onSave(place.platform, "");
-                  setOpen(false);
-                }}
-              >
-                <Trash2 /> take off
-              </Button>
-            )}
           </form>
         )}
       </PopoverContent>
@@ -656,7 +665,7 @@ export function Preview() {
   return (
     <div
       key={read.key}
-      className="mx-auto w-full max-w-3xl animate-fade-in motion-reduce:animate-none"
+      className="w-full animate-fade-in motion-reduce:animate-none"
     >
       <SocialComponent
         socials={asSocials(JSON.parse(read.key))}
@@ -668,48 +677,43 @@ export function Preview() {
 
 // ── the stage ───────────────────────────────────────────────────────────────
 
-/** Where the real cards lie round the visitor's, in the stage's 3D: across in cqw
- *  of the stage from its centre, up and down in rem, how far back in px (all
- *  behind the visitor's card, which lies at 0), each turned a little, as cards
- *  dealt on a table, never twisted toward a vanishing point. Three each side,
- *  one near, one far, one low, so the spread reads as depth, not a row. `float`
- *  is how long one slow rise takes, each its own so no two move in step. */
+/** Where the real cards lie round the visitor's, composed rather than mirrored:
+ *  each card's centre across in cqw of the stage and up or down in rem from the
+ *  stage's centre, its width in rem, its turn on the table in degrees. Two large
+ *  ones on the diagonal (upper left, lower right) carry the weight; two peek out
+ *  from behind the visitor's card, one over its top edge and one under its foot,
+ *  so no side of it is bare; two small ones far out (right and high, left and
+ *  low) are the accents. The visitor's card is 42rem by 26.5, so ±31cqw by
+ *  ±13.2rem round the centre. `float` is how long one slow rise takes, each its
+ *  own so no two move in step. */
 const AROUND = [
-  { x: -38, y: -11, z: -220, ry: 10, rx: 3, rz: -6, float: 9 },
-  { x: -52, y: 3, z: -420, ry: 12, rx: 0, rz: 4, float: 11 },
-  { x: -38, y: 13, z: -160, ry: 8, rx: -3, rz: 3, float: 8 },
-  { x: 38, y: -12, z: -200, ry: -10, rx: 3, rz: 5, float: 10 },
-  { x: 53, y: 2, z: -400, ry: -12, rx: 0, rz: -3, float: 12 },
-  { x: 37, y: 13, z: -260, ry: -8, rx: -3, rz: -4, float: 9.5 },
+  { x: -41, y: -9, w: 27, rz: -7, float: 9 },
+  { x: 15, y: -18, w: 20, rz: 4, float: 11 },
+  { x: 55, y: -5, w: 19, rz: 9, float: 10 },
+  { x: 39, y: 11, w: 26, rz: -4, float: 9.5 },
+  { x: -14, y: 18.5, w: 23, rz: -3, float: 8 },
+  { x: -56, y: 10, w: 18, rz: 6, float: 12 },
 ] as const;
 
-/** The stage's perspective, in px: how far the eye stands from the visitor's
- *  card. */
-const EYE = 1600;
+/** The smallest and the largest card's widths, between which a card reads from
+ *  far back to near. */
+const SMALL = 18;
+const LARGE = 27;
 
-/** A card's width at the front, before its depth. */
-const CARD_REM = 20;
-
-/** One card's place, and how dim it is there. Its depth is drawn, not moved
- *  into: the card is given the width and place it has at that depth (seen from
- *  `EYE`, a card `z` back is EYE / (EYE − z) its size and as near the middle), so
- *  the browser paints it at the size it is seen. Pushed back with translateZ it
- *  was painted at the front size and shrunk as a picture, and while it drifted it
- *  was never painted again: soft, jagged words and edges. Dimmer the further
- *  back, as if the light were on the visitor's card (by brightness, never
- *  opacity: a see-through card shows the shimmer through it). Once the card
- *  becomes a profile, each slides out the way it faces and fades. */
-function placed(
-  { x, y, z, ry, rx, rz }: (typeof AROUND)[number],
-  gone: boolean,
-) {
-  const seen = EYE / (EYE - z);
+/** One card's place, and how it shows its depth. Its size is its own (`w`), so
+ *  the browser paints it at the size it is seen: pushed back with translateZ a
+ *  card was painted at the front size and shrunk as a picture, and while it
+ *  drifted it was never painted again (soft, jagged words and edges). A smaller
+ *  card reads as further back: dimmer (by brightness, never opacity: a
+ *  see-through card shows the shimmer through it) and turned a little less
+ *  toward the middle. Once the card becomes a profile, each slides away from the
+ *  middle the way it lies and fades. */
+function placed({ x, y, w, rz }: (typeof AROUND)[number]) {
+  const near = (w - SMALL) / (LARGE - SMALL);
   return {
-    width: `${(CARD_REM * seen).toFixed(2)}rem`,
-    transform: `translate(-50%, -50%) translate(${(x * seen).toFixed(2)}cqw, ${(y * seen).toFixed(2)}rem) rotateY(${ry}deg) rotateX(${rx}deg) rotateZ(${rz}deg)`,
-    translate: gone ? `${Math.sign(x) * 6}rem 0` : "0 0",
-    opacity: gone ? 0 : 1,
-    "--dim": (0.82 + z / 1400).toFixed(2),
+    width: `${w}rem`,
+    transform: `translate(-50%, -50%) translate(${x}cqw, ${y}rem) rotateY(${(-Math.sign(x) * (4 + 6 * near)).toFixed(1)}deg) rotateZ(${rz}deg)`,
+    "--dim": (0.45 + 0.37 * near).toFixed(2),
   } as React.CSSProperties;
 }
 
@@ -734,14 +738,19 @@ const PICKED = cn(
  *  only when the hand is on it, leaning to it with its hologram showing, as a
  *  card picked up would (its own HoloLight); nothing follows the hand across the
  *  hero. The visitor's card does neither: a card being written on lies still.
- *  Once it starts becoming a profile the others leave and the stage closes round
- *  it, the profile coming up under it (`Preview`). Under reduced motion nothing
- *  moves. On one column, their card alone. */
+ *  Once it starts becoming a profile the stage IS the profile page's layout (the
+ *  golden split, app/[username]/user_profile): the card held in the left column,
+ *  the places it makes on the right (`Preview`), the others gone. The card moves
+ *  there as one thing (a view transition, `shape`), never a jump. Under reduced
+ *  motion nothing moves. On one column, their card alone. */
 export function Stage({
   people,
+  preview,
   children,
 }: {
   people: Holder[];
+  /** the profile the card makes, beside it once it forms */
+  preview: React.ReactNode;
   /** what stands in the middle: the visitor's card and its light */
   children: React.ReactNode;
 }) {
@@ -753,18 +762,20 @@ export function Stage({
   return (
     <div
       className={cn(
-        "@container relative grid w-full place-items-center [perspective:1600px] [interpolate-size:allow-keywords] transition-[height] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none",
-        forming ? "lg:h-auto lg:py-6" : "lg:h-[42rem]",
+        "relative grid w-full",
+        forming
+          ? "items-start gap-10 lg:grid-cols-[minmax(0,38.2fr)_minmax(0,61.8fr)] lg:py-6"
+          : "@container place-items-center [perspective:1600px] lg:h-[50rem]",
       )}
     >
-      {around.map((holder, i) => {
+      {!forming &&
+        around.map((holder, i) => {
         const at = AROUND[i] as (typeof AROUND)[number];
         return (
           <div
             key={holder.username}
-            inert={forming}
-            className="absolute top-1/2 left-1/2 transition-[opacity,translate] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] max-lg:hidden motion-reduce:transition-none"
-            style={placed(at, forming)}
+            className="absolute top-1/2 left-1/2 max-lg:hidden"
+            style={placed(at)}
           >
             <div
               className="animate-[card-float_ease-in-out_infinite_alternate] motion-reduce:animate-none"
@@ -787,7 +798,33 @@ export function Stage({
           </div>
         );
       })}
-      <div className="relative z-10 w-full max-w-[42rem]">{children}</div>
+      {/* One element in both layouts, so the card is never remounted; named, so
+          the view transition carries it from the middle to its column. */}
+      <div
+        className={cn(
+          "relative z-10 w-full [view-transition-name:your-card]",
+          forming ? "lg:sticky lg:top-24 lg:self-start" : "max-w-[42rem]",
+        )}
+      >
+        {children}
+      </div>
+      {forming && <div className="min-w-0">{preview}</div>}
     </div>
   );
+}
+
+/** A change to the card that may turn it into a profile or back (`forming`
+ *  after it): when it does, made inside a view transition, so the browser
+ *  carries the card from the middle to its column (or back) and fades the rest
+ *  across; React draws the change inside it (`flushSync`). Otherwise, and under
+ *  reduced motion or where there are no view transitions, just made. */
+function shape(forming: boolean, change: () => void) {
+  const was = filledPlaces(readDraft()).length > 0;
+  if (
+    was === forming ||
+    !document.startViewTransition ||
+    matchMedia("(prefers-reduced-motion: reduce)").matches
+  )
+    return change();
+  document.startViewTransition(() => flushSync(change));
 }

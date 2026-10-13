@@ -159,6 +159,19 @@
 /* The card's hologram, its foil edge, the logo's seal and the lean toward the hand
    are @ag/holo's (components/ui/holo), which carries its own styles. */
 
+/* The visitor's card carried from the middle of the home to its column as it
+   becomes a profile (components/landing/hero-cards, `shape`): long enough to be
+   followed, settling at the end; the rest of the page crossfades quicker. A
+   view transition's pseudo-elements, which no utility reaches. */
+::view-transition-group(your-card) {
+  animation-duration: 700ms;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 350ms;
+}
+
 /* A real card's slow drift round the home's (components/landing/hero-cards,
    `Stage`): up a little and turned a hair, then back. Keyframes, which no utility
    can write; on `translate` and `rotate`, so it adds to the card's placed
