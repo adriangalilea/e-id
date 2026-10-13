@@ -194,8 +194,13 @@ export function AmbientLight({
         // The inline script below sets its pixel size and `data-painted`
         // before React hydrates it.
         suppressHydrationWarning
+        // Enlarged pixel for pixel, never smoothed: it is painted at half its
+        // box (four device pixels a side on a retina screen), and a smooth
+        // enlargement averaged the dither's one level of noise away, so the
+        // light fell in rings again. Unsmoothed, the noise stays, in blocks a
+        // level apart that no eye reads as grain.
         className={cn(
-          "pointer-events-none absolute inset-0 size-full",
+          "pointer-events-none absolute inset-0 size-full [image-rendering:pixelated]",
           className,
         )}
       />
