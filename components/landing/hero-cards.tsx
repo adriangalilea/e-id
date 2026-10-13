@@ -409,7 +409,9 @@ function Address({
         material="plain"
         className={cn(
           WELL_ON_CARD,
-          "w-fit min-w-0 max-w-full text-[1em] [&_input]:flex-none [&_input]:[field-sizing:fixed] [&_svg]:h-[1cap] [&_svg]:w-auto",
+          // No gap between the domain and the handle: one address, read as
+          // one word ("👤.to/you").
+          "w-fit min-w-0 max-w-full gap-0 text-[1em] [&_input]:flex-none [&_input]:[field-sizing:fixed] [&_svg]:h-[1cap] [&_svg]:w-auto",
         )}
         start={<EmojiDomain path="/" className="text-foreground/60" />}
       />
