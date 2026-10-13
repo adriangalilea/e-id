@@ -4,21 +4,27 @@ import { cn } from "@/lib/utils";
 const [EMOJI, ...REST] = Array.from(EMOJI_DOMAIN);
 const TLD = REST.join("");
 
-/** The mark's drawing on a 24 grid: a solid square, the ID card's photo slot, with
- *  a person cut out of it, a square head over chamfered shoulders. The same path is
- *  the favicon (app/icon.svg). */
+/** The mark's drawing on a 24 grid: 👤 as Apple draws it, flat, a round head over
+ *  one wide dome of shoulders (the top half of an ellipse, cut flat at the foot).
+ *  The same path is the favicon's, white on its glass tile (app/icon.svg). */
 export const MARK_PATH =
-  "M0 0h24v24H0z M9 4.5h6v6.5H9z M4.5 24v-4.5l3.5-3.5h8l3.5 3.5V24z";
+  "M7.5 7.5a4.5 4.5 0 1 1 9 0a4.5 4.5 0 1 1 -9 0z M3 22A9 8.5 0 0 1 21 22z";
 
-/** The mark, in the text's colour, one em square. */
+/** The mark's own bounds on that grid, head to foot and shoulder to shoulder: the
+ *  box it is drawn in wherever it stands as a letter, so its height is the glyph's
+ *  and not the grid's padding. */
+const MARK_BOX = { x: 3, y: 3, w: 18, h: 19 };
+
+/** The mark, in the text's colour. Its box is the glyph's bounds, so a height set
+ *  on it is the silhouette's height; its width follows (`w-auto` keeps the ratio). */
 export function BrandMark({ className }: { className?: string }) {
   return (
     <svg
-      viewBox="0 0 24 24"
+      viewBox={`${MARK_BOX.x} ${MARK_BOX.y} ${MARK_BOX.w} ${MARK_BOX.h}`}
       aria-hidden
-      className={cn("size-[1em] fill-current", className)}
+      className={cn("h-[1em] w-auto fill-current", className)}
     >
-      <path fillRule="evenodd" d={MARK_PATH} />
+      <path d={MARK_PATH} />
     </svg>
   );
 }
@@ -40,7 +46,7 @@ export function EmojiDomain({
   return (
     <span className={cn("whitespace-nowrap", className)}>
       <span className="relative mr-[0.08em]">
-        <BrandMark className="inline size-[1cap] align-baseline" />
+        <BrandMark className="inline h-[1cap] align-baseline" />
         <span className="absolute inset-0 overflow-hidden leading-none text-transparent">
           {EMOJI}
         </span>
