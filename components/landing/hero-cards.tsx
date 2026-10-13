@@ -732,12 +732,12 @@ export function Preview() {
 // ── the stage ───────────────────────────────────────────────────────────────
 
 /** Where the real cards lie round the visitor's, composed rather than mirrored:
- *  each card's centre across in cqw of the stage and up or down in rem from the
+ *  each card's centre across in % of the stage's width and up or down in rem from the
  *  stage's centre, its width in rem, its turn on the table in degrees. Two large
  *  ones on the diagonal (upper left, lower right) carry the weight; two peek out
  *  from behind the visitor's card, one over its top edge and one under its foot,
  *  so no side of it is bare; two small ones far out (right and high, left and
- *  low) are the accents. The visitor's card is 42rem by 26.5, so ±31cqw by
+ *  low) are the accents. The visitor's card is 42rem by 26.5, so ±31% by
  *  ±13.2rem round the centre. `float` is how long one slow rise takes, each its
  *  own so no two move in step. */
 const AROUND = [
@@ -765,9 +765,15 @@ const LARGE = 27;
  *  in its fade), and turned a little less toward the middle. */
 function placed({ x, y, w, rz }: (typeof AROUND)[number]) {
   const near = (w - SMALL) / (LARGE - SMALL);
+  // Placed by left and top in the stage (a share of its width across, rem down),
+  // each card carrying its own perspective: neither a container query nor a
+  // perspective on the stage, either of which makes the stage one flat layer
+  // and leaves the hero's shimmer nothing to lie between (components/light).
   return {
     width: `${(w * RECEDE).toFixed(2)}rem`,
-    transform: `translate(-50%, -50%) translate(${(x * RECEDE).toFixed(2)}cqw, ${(y * RECEDE).toFixed(2)}rem) rotateY(${(-Math.sign(x) * (4 + 6 * near)).toFixed(1)}deg) rotateZ(${rz}deg)`,
+    left: `calc(50% + ${(x * RECEDE).toFixed(2)}%)`,
+    top: `calc(50% + ${(y * RECEDE).toFixed(2)}rem)`,
+    transform: `translate(-50%, -50%) perspective(${EYE}px) rotateY(${(-Math.sign(x) * (4 + 6 * near)).toFixed(1)}deg) rotateZ(${rz}deg)`,
     "--dim": (0.38 + 0.3 * near).toFixed(2),
     "--blur": `${(3.5 - 2 * near).toFixed(2)}px`,
   } as React.CSSProperties;
@@ -777,6 +783,9 @@ function placed({ x, y, w, rz }: (typeof AROUND)[number]) {
  *  smaller and a tenth nearer the middle, as a step back in perspective takes
  *  them, the composition (`AROUND`) unchanged. */
 const RECEDE = 0.9;
+
+/** How far the eye stands from the cards, in px: the perspective each turns in. */
+const EYE = 1600;
 
 /** A real card under the hand: in focus, lifted a little (up, never scaled: a
  *  scaled card is a stretched picture of itself), in full light, and tilted toward the hand,
@@ -829,7 +838,7 @@ export function Stage({
         "relative w-full",
         forming
           ? cn(PROFILE.grid, PROFILE.frame)
-          : "@container grid place-items-center py-16 [perspective:1600px] sm:py-20 lg:h-[50rem] lg:py-8",
+          : "grid place-items-center py-16 sm:py-20 lg:h-[50rem] lg:py-8",
       )}
     >
       {!forming &&
@@ -838,7 +847,12 @@ export function Stage({
         return (
           <div
             key={holder.username}
-            className="absolute top-1/2 left-1/2 max-lg:hidden"
+            // Under the hero's shimmer (components/light, z-[5]); under the hand
+            // it comes up through it, in front, still under the visitor's card
+            // (10). On leaving it goes back under a moment later, dimming on
+            // under the shimmer: the shimmer is back at once, not after the
+            // card's whole second (`PICKED`).
+            className="absolute z-0 transition-[z-index] delay-200 duration-0 hover:z-[7] hover:delay-0 max-lg:hidden"
             style={placed(at)}
           >
             <div
@@ -878,7 +892,10 @@ export function Stage({
       >
         {children}
       </div>
-      {forming && <main className={PROFILE.places}>{preview}</main>}
+      {forming && (
+        // Over the hero's shimmer, as the card is: it is the page's subject.
+        <main className={cn(PROFILE.places, "relative z-10")}>{preview}</main>
+      )}
     </div>
   );
 }

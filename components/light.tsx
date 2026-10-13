@@ -76,14 +76,20 @@ export function SubjectLight() {
  *  gather under the hand, faint, for visual interest in the hero. It decays
  *  outward, so it has no edge: a soft ellipse, cut with a fall to nothing well
  *  before the hero's foot, where the page goes on with no line between them. At
- *  its top it runs on under the bar (hero.tsx). The cards lie over it and hide it, the ones under the top one too
- *  (their bodies are dimmed, not made see-through: hero-cards, `UNDER`). */
+ *  its top it runs on under the bar (hero.tsx). It lies between the real cards
+ *  round the visitor's and the visitor's own (`z-[5]`: the cards round it sit
+ *  at 0, theirs and the profile it becomes at 10, hero-cards): part of what sets
+ *  the others back, sparkling over them; one under the hand comes up through it
+ *  (hero-cards, `Stage`). It takes no pointer, so the hand reaches them. */
 export function HeroShimmer() {
   return (
     <div
       data-slot="hero-shimmer"
       aria-hidden
-      className="pointer-events-none absolute inset-0 -z-10 [mask-composite:intersect] [mask-image:radial-gradient(ellipse_70%_80%_at_45%_45%,black_30%,transparent_100%),linear-gradient(to_bottom,black_55%,transparent)]"
+      // Nearer than the cards it lies over and further than the visitor's: out
+      // of focus by a hair (the cards behind it are by 1.5 to 3.5px), so it is
+      // of that depth without being seen blurred.
+      className="pointer-events-none absolute inset-0 z-[5] blur-[0.4px] [mask-composite:intersect] [mask-image:radial-gradient(ellipse_70%_80%_at_45%_45%,black_30%,transparent_100%),linear-gradient(to_bottom,black_55%,transparent)]"
     >
       <Grain look="shimmer" strength={0.55} density={0.35} frost={0.01} />
     </div>
