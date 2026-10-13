@@ -156,53 +156,13 @@
     border-color: var(--color-border, currentcolor);
   }
 
-  /* The page is lit by one white beam from above its top: a narrow bright core in
-     a wider, fainter cone, both falling to the dark ground before the middle of the
-     screen. Colourless: white light on black, what it lights keeps its own colour.
-     Fixed, so the light stays where it is while the page scrolls under it. The
-     body clips sideways for what runs off the screen's edges on purpose (a
-     profile's handle behind its card); `clip` makes no scroller, so sticky holds. */
+  /* The page's light and grain are layers of their own (app/layout: `Light`,
+     @ag/ambient-light and @ag/grain). The body clips sideways for what runs off the
+     screen's edges on purpose (a profile's handle behind its card); `clip` makes
+     no scroller, so sticky holds. */
   body {
     @apply bg-background text-foreground;
-    background-image:
-      radial-gradient(
-        12% 55% at 50% -6%,
-        rgb(255 255 255 / 0.09),
-        transparent 100%
-      ),
-      radial-gradient(
-        42% 75% at 50% -12%,
-        rgb(255 255 255 / 0.055),
-        transparent 100%
-      );
-    background-attachment: fixed;
     overflow-x: clip;
-  }
-
-  /* THE GRAIN: a screen of fine noise over the whole page, everything included, so
-     the translucent layers, the beam's falloff and the glass read as one material
-     and never as smooth bands. Grey noise (an feTurbulence tile, desaturated) at a
-     few percent, fixed to the screen. A DIGITAL shimmer, not a film loop: the tile
-     jumps to a new place in steps as the page scrolls (the root's scroll timeline),
-     so it twinkles only while the page moves and stands still otherwise; under
-     reduced motion it only stands. */
-  body::after {
-    content: "";
-    position: fixed;
-    inset: 0;
-    z-index: 100;
-    pointer-events: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1.4 -0.45'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
-    background-size: 160px 160px;
-    opacity: 0.045;
-  }
-  @supports (animation-timeline: scroll()) {
-    @media (prefers-reduced-motion: no-preference) {
-      body::after {
-        animation: grain steps(24) both;
-        animation-timeline: scroll(root);
-      }
-    }
   }
 }
 
@@ -345,14 +305,6 @@
       align-items: center;
       animation-name: hero-actions;
     }
-  }
-}
-
-/* The grain's jumps: a long diagonal through the tile, which `steps()` cuts into
-   unrelated places. */
-@keyframes grain {
-  to {
-    background-position: 1213px 857px;
   }
 }
 
