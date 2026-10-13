@@ -53,7 +53,11 @@ export async function generateMetadata(props: {
     alternates: {
       canonical: profileUrl(user.username),
       // The card as data (lib/card), so a reader finds it from the page alone.
-      types: { [CARD_TYPE]: `/${user.username}/card.json` },
+      // And the card as an embed, for an oEmbed reader (app/api/oembed).
+      types: {
+        [CARD_TYPE]: `/${user.username}/card.json`,
+        "application/json+oembed": `/api/oembed?format=json&url=${encodeURIComponent(profileUrl(user.username))}`,
+      },
     },
     openGraph: {
       title,

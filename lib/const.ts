@@ -3,6 +3,9 @@ export const forbiddenUsernames: string[] = [
   "null",
   "",
   "about",
+  // The site's own routes beside the profiles (app/api, app/dev).
+  "api",
+  "dev",
 ] as const;
 
 export const PROD_URL = "https://e-id.to";
