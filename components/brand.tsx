@@ -57,7 +57,7 @@ export function BrandLogo({
  *  text under it, so selecting and copying the address gives 👤.to and a screen
  *  reader reads it. In running text (an address, a line of copy) the mark is a
  *  letter: an inline SVG, its foot on the baseline, one `cap` tall. Where the brand
- *  itself is the subject (the hero's address, the bar's wordmark) it is the logo,
+ *  itself is the subject (the bar's wordmark) it is the logo,
  *  the mark on its disc (`logo`). The emoji's own box is never the reference:
  *  its font's ascent and descent are not the text's. */
 export function EmojiDomain({
@@ -72,13 +72,15 @@ export function EmojiDomain({
   className?: string;
 }) {
   // In the text for copying and reading, never in the hand's way: the pointer
-  // reaches the mark or the logo under it.
+  // reaches the mark or the logo under it. Unseen by opacity, not a transparent
+  // colour: a colour emoji paints in its own colours whatever the text's, and
+  // a text shadow round it (the card's knockout) drew it over the mark.
   const emoji = (
-    <span className="pointer-events-none absolute inset-0 overflow-hidden leading-none text-transparent">
+    <span className="pointer-events-none absolute inset-0 overflow-hidden leading-none opacity-0">
       {EMOJI}
     </span>
   );
-  // The logo is centred on the words' capitals, as in the hero's pill: the words
+  // The logo is centred on the words' capitals: the words
   // trimmed to them (`text-box`), so the disc and the caps share one centre line
   // and the whole stands centred in whatever centres it (the bar), which a line
   // box's uneven ascent and descent never allow.
