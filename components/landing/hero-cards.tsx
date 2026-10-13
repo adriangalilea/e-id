@@ -12,7 +12,7 @@ import { PROFILE } from "@/components/profile-layout";
 import { useChip } from "@/components/session/use-chip";
 import { SocialComponent } from "@/components/social_component";
 import { Button } from "@/components/ui/button";
-import { HoloLight } from "@/components/ui/holo";
+import { HoloLean, HoloLight } from "@/components/ui/holo";
 import { Input, InputGroup } from "@/components/ui/input";
 import {
   Popover,
@@ -139,11 +139,17 @@ export function YourCard() {
             />
           }
         >
-          <OwnCard username={chip.u} />
+          <HoloLean pose="flat" className="max-lg:[transform:none]">
+            <OwnCard username={chip.u} />
+          </HoloLean>
         </Suspense>
       ) : (
         <>
-          <FillCard />
+          {/* Leaning to the hand as a profile's card does (user_profile), by
+              no more than a few degrees: alive, and still to write on. */}
+          <HoloLean pose="flat" className="max-lg:[transform:none]">
+            <FillCard />
+          </HoloLean>
           {/* Room kept whether it shows or not: the card never moves. */}
           <div className="mt-4 flex h-9 justify-end">
             {!isBlank(draft) && (
