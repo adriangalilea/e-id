@@ -1,6 +1,5 @@
 import "server-only";
 
-import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { Resvg } from "@resvg/resvg-js";
 import * as FLAGS from "country-flag-icons/string/3x2";

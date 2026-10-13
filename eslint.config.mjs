@@ -13,43 +13,18 @@ export default defineConfig([
     },
   },
   {
-    // Installed from the @ag registry (ui.adriangalilea.com) and refreshed with
-    // `shadcn add --overwrite`, so it is linted where it is written, not here.
-    files: [
-      "components/ui/use-on-screen.ts",
-      "components/ui/relative-time.tsx",
-      "components/ui/backdrop.tsx",
-      "components/ui/button.tsx",
-      "components/ui/card-link.tsx",
-      "components/ui/github.tsx",
-      "components/ui/image.tsx",
-      "components/ui/image-animation.tsx",
-      "components/ui/image-intent.tsx",
-      "components/ui/key-router.tsx",
-      "components/ui/machine-pressure.ts",
-      "components/ui/material.tsx",
-      "components/ui/material-glass.tsx",
-      "components/ui/media-captions.tsx",
-      "components/ui/media-timebase.tsx",
-      "components/ui/pinch-input.ts",
-      "components/ui/playback.tsx",
-      "components/ui/popover.tsx",
-      "components/ui/portal.tsx",
-      "components/ui/reactions.tsx",
-      "components/ui/remembered.tsx",
-      "components/ui/sound-source.tsx",
-      "components/ui/spinner.tsx",
-      "components/ui/tweet.tsx",
-      "components/ui/use-audible.ts",
-      "components/ui/video.tsx",
-      "components/ui/video-playback.tsx",
-      "components/ui/water.tsx",
-      "components/ui/web-preview.tsx",
-    ],
+    // Every file in components/ui is installed from a registry (@ag,
+    // ui.adriangalilea.com, and shadcn's) and refreshed with `shadcn add
+    // --overwrite`, so it is linted where it is written, not here: the React
+    // Compiler's rules, which that source is not written to (it writes to refs
+    // and the DOM in handlers on purpose), are off for it. A whole folder, so a
+    // new install needs no line here.
+    files: ["components/ui/**"],
     rules: {
       "react-hooks/set-state-in-effect": "off",
       "react-hooks/immutability": "off",
       "react-hooks/refs": "off",
+      "react-hooks/preserve-manual-memoization": "off",
     },
   },
   globalIgnores([".next/**", "next-env.d.ts"]),

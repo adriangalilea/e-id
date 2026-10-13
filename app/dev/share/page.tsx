@@ -4,6 +4,7 @@
 
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { Image } from "@/components/ui/image";
 import { getUsernames } from "@/lib/data";
 
 export const metadata: Metadata = { title: "share images", robots: "noindex" };
@@ -15,14 +16,14 @@ export default async function ShareImages() {
     <main className="mx-auto grid w-full max-w-[1240px] gap-10 px-5 py-10">
       {usernames.map((username) => (
         <figure key={username} className="grid gap-2">
-          {/* biome-ignore lint/performance/noImgElement: the PNG as a preview shows it, untouched */}
-          <img
+          {/* The PNG as a preview shows it, untouched. */}
+          <Image
             src={`/${username}/opengraph-image`}
             alt={`${username}'s share image`}
             width={1200}
             height={630}
-            loading="lazy"
-            className="h-auto w-full rounded-xl"
+            unoptimized
+            className="w-full rounded-xl"
           />
           <figcaption className="font-mono text-sm text-foreground/50">
             {username}
