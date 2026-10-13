@@ -164,6 +164,32 @@
     background-attachment: fixed;
     overflow-x: clip;
   }
+
+  /* THE GRAIN: a screen of fine noise over the whole page, everything included, so
+     the translucent layers, the beam's falloff and the glass read as one material
+     and never as smooth bands. Grey noise (an feTurbulence tile, desaturated) at a
+     few percent, fixed to the screen. A DIGITAL shimmer, not a film loop: the tile
+     jumps to a new place in steps as the page scrolls (the root's scroll timeline),
+     so it twinkles only while the page moves and stands still otherwise; under
+     reduced motion it only stands. */
+  body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1.4 -0.45'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size: 160px 160px;
+    opacity: 0.045;
+  }
+  @supports (animation-timeline: scroll()) {
+    @media (prefers-reduced-motion: no-preference) {
+      body::after {
+        animation: grain steps(24) both;
+        animation-timeline: scroll(root);
+      }
+    }
+  }
 }
 
 /* THE HOME'S HERO IS THE SITE'S BAR, on a wide screen. It is fixed at the top at
@@ -295,6 +321,14 @@
       align-items: center;
       animation-name: hero-actions;
     }
+  }
+}
+
+/* The grain's jumps: a long diagonal through the tile, which `steps()` cuts into
+   unrelated places. */
+@keyframes grain {
+  to {
+    background-position: 1213px 857px;
   }
 }
 
@@ -478,11 +512,13 @@
 }
 
 /* THE WAY IN (components/landing/make-yours) holds the foil as the card does:
-   quiet until a hand finds it. At rest a neutral pill, a little light and a white
-   hairline, no colour. Under the hand a band of foil lights inside it, WHERE the
-   hand is (`--px` from the Tilt round it, so it follows the pointer itself, never
-   a clock), faint, added to the light; the hairline brightens. Only the band's
-   coming and going is timed, and quickly. */
+   quiet until a hand finds it, and only ever as PRINT, never as a wash (a faint
+   smooth gradient over this dark bands into mud). At rest a neutral pill, a
+   little light and a white hairline. Under the hand, in a band WHERE the hand is
+   (`--px` from the Tilt round it, so it follows the pointer, never a clock): its
+   edge turns to a one-pixel ring of foil, and the card's guilloché (lib/holo,
+   worn by the hero round it) shows faintly through its body, lit the same.
+   Only the coming and going is timed, and quickly. */
 [data-cta] {
   position: relative;
   isolation: isolate;
@@ -498,27 +534,50 @@
   border-color: rgb(255 255 255 / 0.32);
   background: rgb(255 255 255 / 0.09);
 }
+/* Both layers are the foil under a mask: the band at the hand, intersected with
+   what is lit there (the ring; the print). */
+[data-cta]::before,
 [data-cta]::after {
   content: "";
   position: absolute;
   inset: 0;
-  z-index: -1;
+  border-radius: inherit;
   pointer-events: none;
   background: linear-gradient(115deg, var(--foil));
   background-size: 300% 100%;
   background-position: calc(var(--px, 0.5) * 100%) 0;
-  mask-image: linear-gradient(
-    115deg,
-    transparent calc(var(--px, 0.5) * 100% - 35%),
-    black calc(var(--px, 0.5) * 100%),
-    transparent calc(var(--px, 0.5) * 100% + 35%)
-  );
-  mix-blend-mode: plus-lighter;
   opacity: 0;
   transition: opacity 200ms ease-out;
+  --band: linear-gradient(
+    100deg,
+    transparent calc(var(--px, 0.5) * 100% - 45%),
+    black calc(var(--px, 0.5) * 100%),
+    transparent calc(var(--px, 0.5) * 100% + 45%)
+  );
+}
+/* The ring: the border box less the content box, one pixel in, then the band. */
+[data-cta]::before {
+  padding: 1px;
+  mask-image: var(--band), linear-gradient(#000 0 0), linear-gradient(#000 0 0);
+  mask-clip: border-box, content-box, border-box;
+  mask-composite: intersect, exclude, add;
+}
+/* The print: the guilloché tile, then the band. */
+[data-cta]::after {
+  z-index: -1;
+  mask-image: var(--band), var(--holo-guilloche);
+  mask-size:
+    100% 100%,
+    160px 40px;
+  mask-repeat: no-repeat, repeat;
+  mask-composite: intersect, add;
+  mix-blend-mode: plus-lighter;
+}
+[data-cta]:hover::before {
+  opacity: 0.9;
 }
 [data-cta]:hover::after {
-  opacity: 0.2;
+  opacity: 0.35;
 }
 
 textarea,

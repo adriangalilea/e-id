@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <!-- e-id's app icon: the mark (components/brand, MARK_PATH, on its 24 grid) white
+  <!-- e-id's app icon: the mark (lib/mark, MARK_PATH, on its 24 grid) white
        on a tile of glass. A favicon blurs nothing behind it, so the glass is drawn
        as its parts: a dark body lit from the top left, and the rim catching that
        light at the corner facing it and fading along the sides. The corner is an

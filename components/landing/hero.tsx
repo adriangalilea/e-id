@@ -5,6 +5,7 @@ import { IdCard, type Holder } from "@/components/id-card";
 import { HeroShown } from "@/components/presence";
 import { Glass } from "@/components/ui/material-glass";
 import { getShowcase } from "@/lib/data";
+import { HOLO_PRINTS } from "@/lib/holo";
 import { cn } from "@/lib/utils";
 import { MakeYours } from "./make-yours";
 import { Tilt } from "./tilt";
@@ -120,8 +121,12 @@ export async function Hero() {
                 one link for every place you are online.
               </p>
             </div>
-            <div data-slot="hero-cta">
-              {/* The hand's place over the way in lights its band of foil. */}
+            {/* The way in carries the card's prints, and the hand's place over it
+                lights them (globals.css, `data-cta`). */}
+            <div
+              data-slot="hero-cta"
+              style={HOLO_PRINTS as React.CSSProperties}
+            >
               <Tilt className="flex">
                 <MakeYours />
               </Tilt>
