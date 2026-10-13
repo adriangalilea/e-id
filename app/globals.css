@@ -156,6 +156,234 @@
   }
 }
 
+/* THE HOME'S HERO IS THE SITE'S BAR, on a wide screen. It is fixed at the top at
+   its full height, `hero-space` holding that height in the page, and over the first
+   (hero height − bar's foot) of scroll it closes into the glass pill every other
+   page wears (`site-nav`): its box takes the bar's inset, height and round ends,
+   its foot riding exactly on the content under it the whole way (the box loses one
+   pixel of height per pixel scrolled, the content rises one). Inside it the
+   address travels into the bar's wordmark while "your page at", the way in and the
+   card leave, the glass comes up under it and the bar's right end arrives. One
+   timeline, the root's scroll, one range: every part is choreographed by its
+   keyframes' percentages, so nothing can drift and nothing runs in script. Where
+   scroll-driven animations do not exist, the hero is the page's head and the bar
+   stands at the top as on every page. A phone keeps both apart: the hero in the
+   page, the bar at the foot. */
+@media (min-width: 48rem) {
+  @supports (animation-timeline: scroll()) {
+    body:has([data-slot="hero"]) {
+      --hero-h: 40rem;
+      --bar-h: 3.25rem;
+      --bar-top: 1rem;
+      /* The bar's sides: the content column's edges, 72rem wide, or 2rem in. */
+      --bar-inset: max(2rem, calc((100vw - 72rem) / 2));
+      /* Where the content column's words start at the hero's full width: the
+         column's edge plus its gutter (components/frame, px-8). */
+      --content-left: max(2rem, calc((100vw - 72rem) / 2 + 2rem));
+      --hero-range: 0px calc(var(--hero-h) - var(--bar-h) - var(--bar-top));
+    }
+    body:has([data-slot="hero"]) [data-slot="site-nav"] {
+      display: none;
+    }
+    body:has([data-slot="hero"]) [data-slot="page"] {
+      padding-top: 0;
+    }
+    [data-slot="hero-space"] {
+      display: block;
+      height: var(--hero-h);
+    }
+    [data-slot="hero"] {
+      position: fixed;
+      z-index: 40;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: var(--hero-h);
+      border-bottom-width: 0;
+      overflow: hidden;
+      animation: hero-close linear both;
+      animation-timeline: scroll(root);
+      animation-range: var(--hero-range);
+    }
+    [data-slot="hero"] > * {
+      animation-timeline: scroll(root);
+      animation-range: var(--hero-range);
+      animation-fill-mode: both;
+      animation-timing-function: linear;
+    }
+    [data-slot="hero-glass"] {
+      display: block;
+      animation-name: hero-glass;
+    }
+    [data-slot="hero-grid"] {
+      display: block;
+      position: absolute;
+      inset: 0;
+      max-width: none;
+      padding: 0;
+    }
+    [data-slot="hero-grid"] > * {
+      animation-timeline: scroll(root);
+      animation-range: var(--hero-range);
+      animation-fill-mode: both;
+      animation-timing-function: linear;
+    }
+    [data-slot="hero-words"] {
+      position: absolute;
+      gap: 3rem;
+      animation-name: hero-words;
+    }
+    [data-slot="hero-words"] * {
+      animation-timeline: scroll(root);
+      animation-range: var(--hero-range);
+      animation-fill-mode: both;
+      animation-timing-function: linear;
+    }
+    [data-slot="hero-title"] {
+      animation-name: hero-title;
+    }
+    [data-slot="hero-lead"] {
+      animation-name: hero-lead;
+    }
+    [data-slot="hero-you"] {
+      overflow: hidden;
+      vertical-align: bottom;
+      animation-name: hero-you;
+    }
+    [data-slot="hero-cta"] {
+      animation-name: hero-leave;
+    }
+    [data-slot="hero-card"] {
+      position: absolute;
+      top: 7.5rem;
+      right: calc(var(--bar-inset) + 2rem);
+      width: 24rem;
+      animation-name: hero-card;
+    }
+    [data-slot="hero-actions"] {
+      display: flex;
+      position: absolute;
+      top: 0;
+      right: 0.375rem;
+      height: var(--bar-h);
+      align-items: center;
+      animation-name: hero-actions;
+    }
+  }
+}
+
+@keyframes hero-close {
+  to {
+    top: var(--bar-top);
+    left: var(--bar-inset);
+    right: var(--bar-inset);
+    height: var(--bar-h);
+    border-radius: calc(var(--bar-h) / 2);
+  }
+}
+
+@keyframes hero-glass {
+  0%,
+  55% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+/* The address's block: from where the column's words start to the bar's left end,
+   its foot on the bar's centre line at the end. */
+@keyframes hero-words {
+  from {
+    left: var(--content-left);
+    top: 8rem;
+  }
+  to {
+    left: 1.25rem;
+    top: calc(var(--bar-h) / 2 - 0.55rem);
+  }
+}
+
+@keyframes hero-title {
+  from {
+    font-size: clamp(3rem, 7vw, 6rem);
+    letter-spacing: -0.045em;
+  }
+  to {
+    font-size: 1.0625rem;
+    letter-spacing: -0.02em;
+  }
+}
+
+@keyframes hero-lead {
+  0% {
+    font-size: 1em;
+    opacity: 1;
+  }
+  40% {
+    opacity: 0;
+  }
+  70%,
+  100% {
+    font-size: 0em;
+    opacity: 0;
+  }
+}
+
+@keyframes hero-you {
+  0%,
+  60% {
+    max-width: 3em;
+    opacity: 1;
+  }
+  90%,
+  100% {
+    max-width: 0em;
+    opacity: 0;
+  }
+}
+
+@keyframes hero-leave {
+  0% {
+    opacity: 1;
+    translate: 0 0;
+  }
+  30%,
+  100% {
+    opacity: 0;
+    translate: 0 -1.5rem;
+    visibility: hidden;
+  }
+}
+
+@keyframes hero-card {
+  0% {
+    opacity: 1;
+    translate: 0 0;
+    scale: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+    translate: 0 -4rem;
+    scale: 0.9;
+    visibility: hidden;
+  }
+}
+
+@keyframes hero-actions {
+  0%,
+  70% {
+    opacity: 0;
+    visibility: hidden;
+  }
+  100% {
+    opacity: 1;
+    visibility: visible;
+  }
+}
+
 textarea,
 select,
 input {

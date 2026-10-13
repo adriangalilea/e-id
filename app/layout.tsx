@@ -53,7 +53,14 @@ export default async function RootLayout({
       <body className="flex min-h-dvh flex-col font-sans antialiased">
         {/* Every control on e-id wears its glass face. */}
         <MaterialProvider material="glass">
-          <div className="flex flex-1 flex-col">{children}</div>
+          {/* Room for the site's bar: under it at the top of a wide screen, over it
+              at the foot of a phone. */}
+          <div
+            data-slot="page"
+            className="flex flex-1 flex-col pb-24 md:pt-20 md:pb-12"
+          >
+            {children}
+          </div>
           <Toaster />
           <Footer />
         </MaterialProvider>
