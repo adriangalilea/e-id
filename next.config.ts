@@ -31,7 +31,10 @@ const nextConfig: NextConfig = {
   // A person's contact (app/[username]/card.vcf) at the address people share
   // with `.vcf` on it, and at the profile's own address when what is asked for
   // is a vCard (`Accept: text/vcard`): one address, its HTML or its contact.
-  // Before the file system, so the profile's page never answers either.
+  // Before the file system, so the profile's page never answers either; in
+  // Vercel's router, before its cache, so the contact is cached as its own path
+  // and never served for the page (a page's `Vary` is Next's own: one set here
+  // is dropped).
   async rewrites() {
     return {
       beforeFiles: [
@@ -46,16 +49,6 @@ const nextConfig: NextConfig = {
         },
       ],
     };
-  },
-  // A profile answers by what is asked for (`rewrites`): a cache keeps its HTML
-  // and its contact apart.
-  async headers() {
-    return [
-      {
-        source: "/:username([A-Za-z0-9_-]+)",
-        headers: [{ key: "vary", value: "accept" }],
-      },
-    ];
   },
   async redirects() {
     return [
