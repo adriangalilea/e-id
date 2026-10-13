@@ -604,14 +604,15 @@
   mask-clip: border-box, content-box, border-box;
   mask-composite: intersect, exclude, add;
 }
-/* The print: one ribbon of guilloché along the pill's middle line, repeated only
-   across (a second ribbon, cut by the edge, read as off centre), then the band. */
+/* The print: one ribbon of guilloché along the pill's middle line, as tall as the
+   pill (its waves keeping their proportion), repeated only across (a second
+   ribbon, cut by the edge, read as off centre), then the band. */
 [data-cta]::after {
   z-index: -1;
   mask-image: var(--band), var(--holo-guilloche);
   mask-size:
     100% 100%,
-    160px 40px;
+    auto 100%;
   mask-position:
     0 0,
     center;
