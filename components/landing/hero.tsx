@@ -23,8 +23,8 @@ const YOU: Holder = {
  *  and dimmer with depth, so the stack reads as real cards dealt on the page. With
  *  a hand on the stack they spread a little further, as cards do when touched. */
 const BEHIND = [
-  "-rotate-[8deg] -translate-x-[9%] translate-y-[7%] scale-[0.93] opacity-60 group-data-hover/tilt:-rotate-[11deg] group-data-hover/tilt:-translate-x-[14%] group-data-hover/tilt:translate-y-[9%]",
-  "rotate-[7deg] translate-x-[10%] -translate-y-[8%] scale-[0.88] opacity-35 group-data-hover/tilt:rotate-[10deg] group-data-hover/tilt:translate-x-[15%] group-data-hover/tilt:-translate-y-[11%]",
+  "-rotate-[8deg] -translate-x-[9%] translate-y-[7%] scale-[0.93] opacity-60 group-data-hover/tilt:-rotate-[9.5deg] group-data-hover/tilt:-translate-x-[11.5%] group-data-hover/tilt:translate-y-[8%]",
+  "rotate-[7deg] translate-x-[10%] -translate-y-[8%] scale-[0.88] opacity-35 group-data-hover/tilt:rotate-[8.5deg] group-data-hover/tilt:translate-x-[12.5%] group-data-hover/tilt:-translate-y-[9.5%]",
 ];
 
 /** Real e-id cards, the maker's first and then the newest whole ones (a photo, a
