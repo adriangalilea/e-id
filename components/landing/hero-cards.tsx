@@ -877,7 +877,7 @@ const WOBBLE = [
 /** One card's width under the top, a share of the top card's: smaller with
  *  depth, as it is further away. */
 function widthAt(depth: number) {
-  return 0.72 - 0.05 * depth;
+  return 0.78 - 0.05 * depth;
 }
 
 /** A card under the top, in the funnel: its middle from the top card's, as
@@ -908,6 +908,10 @@ const ROOM = { left: -0.05, right: 0.45, top: -0.85, bottom: 0.3 };
 /** How much more room what holds still claims than one card under the top: the
  *  top card the most, the visitor's card's room less. */
 const CLAIM = { top: 0.2, visitor: 0.08 };
+
+/** How much further up the cards above the top card lie than where they
+ *  settle: the pile reaching toward the window's top. */
+const UPWARD = 1.25;
 
 /** The cards' places: the room shared out evenly among them, each card at the
  *  middle of its own share (a centroidal Voronoi tessellation, by Lloyd's
@@ -984,7 +988,9 @@ function settled() {
     .toSorted((a, b) => Math.hypot(a.u, a.v) - Math.hypot(b.u, b.v))
     .map((card, i) => ({
       dx: card.u * 100,
-      dy: card.v * 100,
+      // The grouping as settled, stretched upward toward the window's top (the
+      // cards above the top card a quarter further up), never further down.
+      dy: card.v * (card.v < 0 ? UPWARD : 1) * 100,
       r: (WOBBLE[i] as (typeof WOBBLE)[number]).turn * 1.5,
     }));
   return settledPlaces;
