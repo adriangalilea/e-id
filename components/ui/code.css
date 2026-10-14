@@ -1,6 +1,12 @@
 @layer components {
   .ag-code {
     overflow: hidden;
+  }
+  /* The plain face's frame. The glass face is the glass's own (material-glass),
+     its edge and body; a border or ground here would be a second frame. A
+     selector on state, which a utility merged with the glass's could not keep
+     apart. */
+  .ag-code[data-material="plain"] {
     border: 1px solid var(--border);
     border-radius: 0.75rem;
     background: var(--sidebar);

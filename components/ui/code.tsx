@@ -8,6 +8,7 @@ import {
 } from "@shikijs/transformers"
 import { type BundledLanguage, codeToHtml } from "shiki"
 import { Copy } from "@/components/ui/copy"
+import { Glass } from "@/components/ui/material-glass"
 import "./code.css"
 import "./edge-fade"
 
@@ -36,6 +37,10 @@ export interface CodeProps {
    *  ITSELF: a file that writes those comments inside a string would have them eaten
    *  out of its own listing, and a block promising verbatim would be quietly lying. */
   notations?: boolean
+  /** Its face: `plain`, the page's frame (default), or `glass`, the one glass
+   *  material (`material-glass`), its own border and ground dropped for it. Set
+   *  here rather than read from a provider: the block renders on the server. */
+  material?: "plain" | "glass"
   className?: string
 }
 
@@ -76,6 +81,7 @@ export async function Code({
   highlight,
   lines,
   notations = true,
+  material = "plain",
   className,
 }: CodeProps) {
   const source = dedent(children)
@@ -106,12 +112,8 @@ export async function Code({
       },
     ],
   })
-  return (
-    <div
-      data-slot="code"
-      data-compact={compact || undefined}
-      className={`ag-code${lines ? " ag-code-numbered" : ""}${className ? ` ${className}` : ""}`}
-    >
+  const body = (
+    <>
       {!compact && (
         <div className="ag-code-bar">
           <span className="ag-code-name">{filename ?? lang}</span>
@@ -128,6 +130,28 @@ export async function Code({
         dangerouslySetInnerHTML={{ __html: html }}
       />
       {compact && copy && <Copy value={source} className="mr-2" />}
+    </>
+  )
+  const frame = `ag-code${lines ? " ag-code-numbered" : ""}${className ? ` ${className}` : ""}`
+  if (material === "glass")
+    return (
+      <Glass
+        shape="surface"
+        data-slot="code"
+        data-compact={compact || undefined}
+        className={`${frame} [--glass-radius:0.75rem]`}
+      >
+        {body}
+      </Glass>
+    )
+  return (
+    <div
+      data-slot="code"
+      data-material="plain"
+      data-compact={compact || undefined}
+      className={frame}
+    >
+      {body}
     </div>
   )
 }

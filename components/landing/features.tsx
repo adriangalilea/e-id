@@ -62,14 +62,9 @@ export async function Features({ holder }: { holder: Holder }) {
         title="on your website"
         body="Your card on any page with two lines: it draws itself, and its hologram answers the hand."
       >
-        <Glass
-          shape="surface"
-          className="overflow-hidden p-1 [--glass-radius:1.25rem]"
-        >
-          <Code lang="html" copy>
-            {embed}
-          </Code>
-        </Glass>
+        <Code lang="html" copy material="glass">
+          {embed}
+        </Code>
       </Row>
     </section>
   );
