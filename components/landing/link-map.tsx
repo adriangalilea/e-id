@@ -43,33 +43,43 @@ export function LinkMap({
   ] as (typeof DOMAINS)[number];
   const landing = landings[step % landings.length];
   if (!landing) throw new Error(`${username} has nowhere to land`);
+  // Every part in a room of its own size, so nothing moves as the steps turn:
+  // the domain right-aligned in the longer domain's width (e-id.to, 7ch, the
+  // type being mono), the end in the longest end's, what is there in a fixed
+  // box, centred in it.
+  const endRoom = Math.max(...landings.map((l) => (l.end ? l.end.length + 1 : 0)));
   return (
-    <div className="grid grid-cols-1 items-center justify-items-center gap-8 lg:grid-cols-[1fr_auto_1fr] lg:gap-6">
+    <div className="flex flex-col items-center gap-8 lg:flex-row lg:justify-center lg:gap-6">
       <a
         href={`https://${domain.host}/${username}${landing.end ? `/${landing.end}` : ""}`}
-        className="font-mono text-xl whitespace-nowrap text-foreground sm:text-2xl lg:justify-self-end"
+        className="flex font-mono text-xl whitespace-nowrap text-foreground sm:text-2xl"
       >
-        {domain.shown}/{username}
-        {landing.end && (
-          <span
-            key={step}
-            className="inline-block animate-[link-type_450ms_steps(4,end)_both]"
-          >
-            /{landing.end}
-          </span>
-        )}
+        <span className="inline-block w-[7ch] text-right">{domain.shown}</span>
+        <span>/{username}</span>
+        <span className="inline-block text-left" style={{ width: `${endRoom}ch` }}>
+          {landing.end && (
+            <span
+              key={step}
+              className="inline-block animate-[link-type_450ms_steps(4,end)_both]"
+            >
+              /{landing.end}
+            </span>
+          )}
+        </span>
       </a>
       {/* The line from the address to where it lands, drawn from its start. */}
       <span
         key={`line-${step}`}
         aria-hidden
-        className="h-px w-20 origin-left animate-[link-draw_600ms_cubic-bezier(0.22,1,0.36,1)_450ms_both] bg-foreground/40 max-lg:hidden"
+        className="h-px w-20 shrink-0 origin-left animate-[link-draw_600ms_cubic-bezier(0.22,1,0.36,1)_450ms_both] bg-foreground/40 max-lg:hidden"
       />
-      <div
-        key={`there-${step}`}
-        className="w-full max-w-[22rem] animate-[link-arrive_600ms_cubic-bezier(0.22,1,0.36,1)_900ms_both] lg:justify-self-start"
-      >
-        {landing.there}
+      <div className="grid h-[20rem] w-full max-w-[22rem] shrink-0 place-items-center">
+        <div
+          key={`there-${step}`}
+          className="w-full animate-[link-arrive_600ms_cubic-bezier(0.22,1,0.36,1)_900ms_both]"
+        >
+          {landing.there}
+        </div>
       </div>
     </div>
   );
