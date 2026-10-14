@@ -1,4 +1,5 @@
 import { ContactRound } from "lucide-react";
+import { Addresses } from "@/components/addresses";
 import { IdCard, type Holder } from "@/components/id-card";
 import { Button } from "@/components/ui/button";
 import { Code } from "@/components/ui/code";
@@ -22,11 +23,9 @@ export function Features({ holder }: { holder: Holder }) {
       <Row
         side="left"
         title="one link"
-        body="Every place you are online, under one address: 👤.to/you. Put it in any bio."
+        body="Every place you are online, under one address. Each of these opens the same page."
       >
-        <HoloLight>
-          <IdCard holder={holder} heading="p" holo="laminate" className="[--id-card-thickness:1]" />
-        </HoloLight>
+        <Addresses username={holder.username} size="lg" />
       </Row>
       <Row
         side="right"
@@ -89,7 +88,7 @@ function Row({
         <h2 className="text-3xl font-light tracking-[-0.02em] text-foreground/90">
           {title}
         </h2>
-        <p className="text-lg leading-relaxed font-light text-pretty text-foreground/55">
+        <p className="text-lg leading-relaxed font-light text-balance text-foreground/55">
           {body}
         </p>
       </div>

@@ -9,8 +9,8 @@ import {
 } from "@/components/ui/popover";
 import { Link as LinkIcon } from "lucide-react";
 import Link from "next/link";
-import { PROD_URL, EMOJI_DOMAIN, EMOJI_DOMAIN_PUNYCODE } from "@/lib/const";
-import { EmojiDomain } from "@/components/brand";
+import { Addresses } from "@/components/addresses";
+import { PROD_URL } from "@/lib/const";
 
 /** One address to share: what it is, the address itself, and the registry's copy
  *  (@ag/copy), which says it copied in place. */
@@ -36,17 +36,9 @@ export default function ShareButton({ username }: { username: string }) {
         share
       </PopoverTrigger>
       <PopoverContent align="end" className="w-80 gap-0 p-0">
-        {/* The brand first: 👤.to opens everywhere (next.config sends every
-            browser but Safari on to e-id.to). */}
-        <Row
-          name={<EmojiDomain />}
-          value={`https://${EMOJI_DOMAIN}/${username}`}
-        />
-        <Row name="e-id.to" value={`${PROD_URL}/${username}`} />
-        <Row
-          name="twitter/instagram bio"
-          value={`https://${EMOJI_DOMAIN_PUNYCODE}/${username}`}
-        />
+        <div className="border-b border-border px-3">
+          <Addresses username={username} />
+        </div>
         {/* The card as a contact (lib/vcard): opened on a phone, it adds you. */}
         <Row name="contact card" value={`${PROD_URL}/${username}.vcf`} />
         {/* The card on your own site (app/embed.js): one script, one tag, the
