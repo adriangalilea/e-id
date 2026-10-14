@@ -52,7 +52,10 @@ export function LinkMap({
   // box, centred in it.
   const endRoom = Math.max(...landings.map((l) => (l.end ? l.end.length + 1 : 0)));
   return (
-    <div className="flex flex-col items-center gap-8 lg:flex-row lg:justify-center lg:gap-6">
+    // Top-aligned: the bar's top and what it lands on's top on one line, which
+    // stays put whatever is there (centred, each landing's own height moved
+    // its top).
+    <div className="flex flex-col items-center gap-8 lg:flex-row lg:items-start lg:justify-center lg:gap-6">
       {/* The address as a browser's address bar draws one, the shape read as a
           link to open: a glass pill, a link's mark before it, the domain
           quieter than the handle, the end it lands on brightest. */}
@@ -88,17 +91,19 @@ export function LinkMap({
       </Glass>
       </a>
       {/* Where it goes: a quiet arrow, still. */}
-      <ArrowRight
-        aria-hidden
-        className="size-5 shrink-0 text-foreground/30 max-lg:rotate-90"
-        strokeWidth={1.5}
-      />
+      <span className="flex shrink-0 items-center lg:h-14">
+        <ArrowRight
+          aria-hidden
+          className="size-5 text-foreground/30 max-lg:rotate-90"
+          strokeWidth={1.5}
+        />
+      </span>
       {/* One room, the same size every step, so nothing round it moves; what
           is there stands in it whole, centred, its own object (a card is
           never boxed; a preview wears its own glass, `Landing`). The last
           one leaves as the next arrives, in the same place: one gives way to
           the other, never a pop. */}
-      <div className="grid h-[18rem] w-full max-w-[22rem] shrink-0 place-items-center *:[grid-area:1/1]">
+      <div className="grid h-[18rem] w-full max-w-[22rem] shrink-0 content-start justify-items-center *:[grid-area:1/1]">
         {previous && (
           <div
             key={`gone-${step}`}
