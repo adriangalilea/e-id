@@ -147,8 +147,8 @@ function IdentityEdit({ user }: { user: Profile }) {
         placeholder="username"
         material="plain"
         size="lg"
-        className="min-w-0 gap-0 font-mono"
-        start={<EmojiDomain path="/" />}
+        className="min-w-0 font-mono"
+        prefix={<EmojiDomain path="/" />}
       />
       <EditCountry saved={user.country_code} />
       <InputQuote

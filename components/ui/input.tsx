@@ -164,16 +164,24 @@ export function Input({
 }
 
 /** A field with things in the well beside the text: `start` before it (an icon), `end`
- *  after it (a unit, a key, a clear button). They sit quiet, in the field's height. */
+ *  after it (a unit, a key, a clear button), set a little apart; `prefix`, text the
+ *  value continues (`github.com/`, `@`), joined to it with no gap at all, so the two
+ *  read as one address. They sit quiet, in the field's height. */
 export function InputGroup({
   size = "md",
   material,
   scheme,
   start,
+  prefix,
   end,
   className,
   ...props
-}: InputProps & { start?: React.ReactNode; end?: React.ReactNode }) {
+}: Omit<InputProps, "prefix"> & {
+  start?: React.ReactNode
+  /** Text the value continues, joined to it: never a gap between them. */
+  prefix?: React.ReactNode
+  end?: React.ReactNode
+}) {
   const m = useMaterial(material)
   const [s, here] = useSurfaceScheme<HTMLSpanElement>(scheme)
   const setting = useSettingInput(props)
@@ -204,7 +212,21 @@ export function InputGroup({
             {start}
           </span>
         )}
-        <input className={FIELD} {...props} {...setting.props} />
+        {prefix ? (
+          // The prefix and the value in one run of text: the group's gap is
+          // between things beside the text, never inside it.
+          <span className="flex min-w-0 flex-1 items-center">
+            <span
+              data-slot="input-prefix"
+              className={cn("shrink-0 whitespace-pre", quiet)}
+            >
+              {prefix}
+            </span>
+            <input className={FIELD} {...props} {...setting.props} />
+          </span>
+        ) : (
+          <input className={FIELD} {...props} {...setting.props} />
+        )}
         {end && (
           <span
             data-slot="input-end"

@@ -433,11 +433,10 @@ function Address({
         material="plain"
         className={cn(
           WELL_ON_CARD,
-          // No gap between the domain and the handle: one address, read as
-          // one word ("👤.to/you").
-          "w-fit min-w-0 max-w-full gap-0 text-[1em] [&_input]:flex-none [&_input]:[field-sizing:fixed] [&_svg]:h-[1cap] [&_svg]:w-auto",
+          "w-fit min-w-0 max-w-full text-[1em] [&_input]:flex-none [&_input]:[field-sizing:fixed] [&_svg]:h-[1cap] [&_svg]:w-auto",
         )}
-        start={<EmojiDomain path="/" className="text-foreground/60" />}
+        // The domain the handle continues: one address, one word.
+        prefix={<EmojiDomain path="/" />}
       />
       <span id="handle-state" aria-live="polite" className="shrink-0">
         {free ? (
@@ -681,13 +680,9 @@ function PlacePopover({
               autoCapitalize="none"
               value={typed}
               onChange={(e) => setTyped(e.target.value)}
-              start={
-                prefixOf(chosen) ? (
-                  <span className="font-mono text-xs text-foreground/50">
-                    {prefixOf(chosen)}
-                  </span>
-                ) : undefined
-              }
+              // The platform's address the username continues, in the same
+              // type: "github.com/adriangalilea", one address.
+              prefix={prefixOf(chosen) || undefined}
               end={<CornerDownLeft className="text-foreground/40" />}
             />
           </form>
@@ -1131,7 +1126,7 @@ type Slot = { x: number; y: number; w: number; rz: number };
 /** The middle: the pile's top card at rest, right of centre, the pile spread
  *  from it leftward toward the visitor's card (`UNDER`), so the two stand
  *  centred as one group; the visitor's card once taken up. */
-const MIDDLE = { x: 31, y: 9, w: 34, rz: 0 } as const;
+const MIDDLE = { x: 34, y: 9, w: 34, rz: 0 } as const;
 
 /** Where the visitor's blank card waits: on the left where the eye starts, a
  *  little above the pile's middle, lying over the pile's deepest cards (they are

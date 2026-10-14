@@ -181,7 +181,7 @@ export function SocialComponent({
                 placeholder={getSocialPlaceholder(social.platform)}
                 material="plain"
                 size="lg"
-                start={pretext}
+                prefix={pretext}
               />
             )}
             {(social.platform === "youtube" || social.platform === "twitter") &&

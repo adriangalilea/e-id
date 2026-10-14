@@ -37,8 +37,8 @@ export function ClientForm() {
           required
           material="plain"
           size="lg"
-          className="min-w-0 grow gap-0 font-mono"
-          start={<EmojiDomain path="/" />}
+          className="min-w-0 grow font-mono"
+          prefix={<EmojiDomain path="/" />}
         />
         <Button
           variant="outline"
