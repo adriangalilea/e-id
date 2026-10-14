@@ -1004,7 +1004,7 @@ function settled() {
  *  than the ground it fades onto, as dimming made it, and never see-through,
  *  which showed the shimmer through it), and out of focus the way a lens sets
  *  what lies behind its subject, plainly from the first card under the top
- *  (2.4px; the top card itself 2px) to the deepest (7.3px). Each drifts on its
+ *  (3.2px; the top card itself 2.6px) to the deepest (9.15px). Each drifts on its
  *  own
  *  (globals.css, `card-float`). */
 function under(depth: number, float: number) {
@@ -1017,7 +1017,7 @@ function under(depth: number, float: number) {
     "--dy": `${dy.toFixed(2)}%`,
     "--r": `${r.toFixed(2)}deg`,
     "--fade": (0.35 + 0.07 * (depth - 1)).toFixed(2),
-    "--bl": `${(2.4 + 0.7 * (depth - 1)).toFixed(2)}px`,
+    "--bl": `${(3.2 + 0.85 * (depth - 1)).toFixed(2)}px`,
     animationDuration: `${float}s`,
     animationDelay: `-${(float * depth) / UNDER.length}s`,
   } as React.CSSProperties;
@@ -1106,7 +1106,7 @@ function Pile({ people, away }: { people: Holder[]; away: boolean }) {
           <HoloLight>
             <div
               {...PARTS}
-              className="group/card blur-[2px] transition-[filter] duration-1000 ease-[cubic-bezier(0.22,1,0.36,1)] hover:blur-none motion-reduce:transition-none">
+              className="group/card blur-[2.6px] transition-[filter] duration-1000 ease-[cubic-bezier(0.22,1,0.36,1)] hover:blur-none motion-reduce:transition-none">
               <div className={cn(CORNER, PICKED)}>
                 <IdCard
                   holder={top}
