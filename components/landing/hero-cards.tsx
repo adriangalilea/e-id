@@ -99,22 +99,11 @@ const WRITTEN_HERE = {
 
 /** The heading's letters as brushed steel: a cool neutral grey lit along a band
  *  across its upper half and falling dark under it, as a bevelled metal edge
- *  catches a light from above, crossed by a fine grain of brushing; cut into
- *  the page by a hairline of shadow under each letter. No hue: steel, not
- *  chrome's rainbow. */
+ *  catches a light from above, crossed by a fine grain of brushing. No outline
+ *  and no hue: the letters alone, steel, not chrome's rainbow. */
 const STEEL = cn(
   "bg-clip-text text-transparent [-webkit-background-clip:text]",
   "bg-[repeating-linear-gradient(90deg,rgb(255_255_255/0.05)_0_1px,transparent_1px_3px),linear-gradient(180deg,#f4f5f7_0%,#d5d7db_30%,#9a9da2_48%,#6f7277_52%,#c3c6ca_68%,#eceef0_84%,#a7aaaf_100%)]",
-  "[filter:drop-shadow(0_1px_0_rgb(0_0_0/0.7))_drop-shadow(0_-1px_0_rgb(255_255_255/0.06))]",
-);
-
-/** The logo's disc in the same steel, the mark struck into it: a turned metal
- *  face (a conic light, as a disc catches it all round), its rim bevelled, the
- *  mark a dark recess. As tall as the words' capitals and a little more. */
-const STEEL_DISC = cn(
-  "size-[0.95em] text-[#1d1e21]/85",
-  "bg-[conic-gradient(from_200deg,#e3e5e8,#8d9095,#f3f4f6,#7c7f84,#d9dbdf,#6f7277,#e3e5e8)]",
-  "shadow-[inset_0_1px_0_rgb(255_255_255/0.55),inset_0_-1px_1px_rgb(0_0_0/0.45),0_0_0_1px_rgb(0_0_0/0.5),0_6px_16px_-6px_rgb(0_0_0/0.8)]",
 );
 
 /** Solid: a card hides what is behind it, as a real one does, so its glass
@@ -1262,9 +1251,9 @@ export function Stage({
           style={at(WAITING)}
         >
           <span className={STEEL}>your digital ID</span>
-          {/* The logo beside it, struck in the same steel: the seal the words
-              are about. */}
-          <BrandLogo className={STEEL_DISC} />
+          {/* The logo beside it, as the bar draws it: the seal the words are
+              about. A little taller than the words' capitals. */}
+          <BrandLogo className="size-[0.95em]" />
         </h1>
         {!forming && (
           // In the middle at rest; once the visitor's card is taken up and
