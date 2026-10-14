@@ -1145,7 +1145,7 @@ const STAGE = 72;
  *  little above the pile's middle, lying over the pile's deepest cards (they are
  *  under the shimmer, it over), so it reads as the nearest card on the table.
  *  Taken up, the pile goes to lie where it lay: the two trade places. */
-const WAITING = { x: -34, y: -2, w: 29, rz: 0 } as const;
+const WAITING = { x: -34, y: 0, w: 29, rz: 0 } as const;
 
 /** Where the pile goes once the visitor's card is taken up: pushed back from
  *  the middle the visitor's card grows into, further right and a little down,
@@ -1266,12 +1266,12 @@ export function Stage({
             writes, and is only read aloud once the card is a profile. */}
         <h1
           className={cn(
-            "pointer-events-none text-[clamp(1.5rem,2.4vw,2.25rem)] leading-tight font-light tracking-[-0.02em] text-balance text-foreground/85 transition-opacity duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] max-lg:text-center lg:absolute lg:bottom-[calc(100%-var(--t)+var(--w)/3.172+2rem)] lg:left-[calc(var(--l)-var(--w)/2)] lg:z-20 lg:w-(--w)",
+            "pointer-events-none text-[clamp(2.5rem,4.5vw,4.25rem)] leading-none font-light tracking-[-0.03em] text-foreground/90 transition-opacity duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] max-lg:text-center lg:absolute lg:bottom-[calc(100%-var(--t)+var(--w)/3.172+3.5rem)] lg:left-[calc(var(--l)-var(--w)/2)] lg:z-20 lg:w-(--w)",
             forming ? "sr-only" : writing && "opacity-0",
           )}
           style={at(WAITING)}
         >
-          one link for every place you are online.
+          your digital id
         </h1>
         {!forming && (
           // In the middle at rest; once the visitor's card is taken up and
