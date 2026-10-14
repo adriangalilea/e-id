@@ -983,6 +983,35 @@ function under(depth: number, float: number) {
   } as React.CSSProperties;
 }
 
+/** The hero's shimmer parted round `card` as it comes forward, or closed again
+ *  with no card (components/light, `HeroShimmer`): the card's middle and size,
+ *  from the shimmer's corner, and the parting opened. Closing keeps the place,
+ *  so it closes where it opened. */
+function partShimmer(card: Element | null) {
+  const shimmer = document.querySelector<HTMLElement>(
+    "[data-slot=hero-shimmer]",
+  );
+  if (!shimmer) return;
+  if (!card) {
+    shimmer.style.setProperty("--part", "0");
+    return;
+  }
+  const at = shimmer.getBoundingClientRect();
+  const box = card.getBoundingClientRect();
+  shimmer.style.setProperty("--part-x", `${box.left - at.left + box.width / 2}px`);
+  shimmer.style.setProperty("--part-y", `${box.top - at.top + box.height / 2}px`);
+  shimmer.style.setProperty("--part-w", `${box.width}px`);
+  shimmer.style.setProperty("--part-h", `${box.height}px`);
+  shimmer.style.setProperty("--part", "1");
+}
+
+/** What a card of the pile wears to part the shimmer under the hand. */
+const PARTS = {
+  onPointerEnter: (e: React.PointerEvent<HTMLElement>) =>
+    partShimmer(e.currentTarget),
+  onPointerLeave: () => partShimmer(null),
+};
+
 /** A card of the pile under the hand, every one alike, the top one too: it comes
  *  toward the reader (nearer in depth, never up the page, so it never rises over
  *  a card lying above it) and tilts toward the hand, its near edge going down
@@ -1012,6 +1041,7 @@ function Pile({ people, away }: { people: Holder[]; away: boolean }) {
         .map(({ holder, depth }) => (
           <div
             key={holder.username}
+            {...PARTS}
             // Its middle placed from the top card's by left and top (shares of
             // the top card's box). Under the hand it comes out of its fade, in
             // focus, but keeps its place in the pile: never over a card that
@@ -1060,7 +1090,9 @@ function Pile({ people, away }: { people: Holder[]; away: boolean }) {
             pile does (`PICKED`), with a light of its own. */}
         <div className="[transform:rotate(3deg)]">
           <HoloLight>
-            <div className="group/card blur-[0.6px] transition-[filter] duration-1000 ease-[cubic-bezier(0.22,1,0.36,1)] hover:blur-none motion-reduce:transition-none">
+            <div
+              {...PARTS}
+              className="group/card blur-[0.6px] transition-[filter] duration-1000 ease-[cubic-bezier(0.22,1,0.36,1)] hover:blur-none motion-reduce:transition-none">
               <div className={cn(CORNER, PICKED)}>
                 <IdCard
                   holder={top}

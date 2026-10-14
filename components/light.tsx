@@ -73,6 +73,19 @@ export function SubjectLight() {
   );
 }
 
+/** Where the hero's shimmer shows, three masks laid together (intersected): a
+ *  soft ellipse, a fall to nothing toward the hero's foot, and the parting round
+ *  a card come forward. The parting is a clearing at the card's middle
+ *  (`--part-x`, `--part-y`, from the shimmer's corner), clear to a little past
+ *  its edges and falling off softly beyond (from its size, `--part-w`,
+ *  `--part-h`), opened by `--part` (0 to 1, registered in
+ *  globals.css, so it eases): at 0 its ellipse is nothing and clears nothing. */
+const SHIMMER_MASK = [
+  "radial-gradient(ellipse 70% 80% at 45% 45%, black 30%, transparent 100%)",
+  "linear-gradient(to bottom, black 55%, transparent)",
+  "radial-gradient(ellipse calc(var(--part-w, 0px) * 1.1 * var(--part)) calc(var(--part-h, 0px) * 1.15 * var(--part)) at var(--part-x, 0px) var(--part-y, 0px), transparent 55%, black 100%)",
+].join(", ");
+
 /** THE HERO'S SHIMMER (@ag/grain): a surface of facets that flash at rest and
  *  gather under the hand, faint, for visual interest in the hero. It decays
  *  outward, so it has no edge: a soft ellipse, cut with a fall to nothing well
@@ -80,8 +93,11 @@ export function SubjectLight() {
  *  its top it runs on under the bar (hero.tsx). It lies between the real cards
  *  round the visitor's and the visitor's own (`z-[5]`: the cards round it sit
  *  at 0, theirs and the profile it becomes at 10, hero-cards): part of what sets
- *  the others back, sparkling over them; one under the hand comes up through it
- *  (hero-cards, `Stage`). It takes no pointer, so the hand reaches them. */
+ *  the others back, sparkling over them. A card come forward under the hand
+ *  parts it (hero-cards, `partShimmer`): a soft clearing the card's shape and a
+ *  little more, so it stands clear of the shimmer on every edge; the shimmer
+ *  closes again as the card settles back. It takes no pointer, so the hand
+ *  reaches them. */
 export function HeroShimmer() {
   return (
     <div
@@ -93,7 +109,8 @@ export function HeroShimmer() {
       // While the visitor writes on their card (hero-cards, `data-writing`) it
       // steps back with the pile: out of focus and fainter, eased as the cards
       // move.
-      className="pointer-events-none absolute inset-0 z-[5] blur-[0.4px] transition-[filter,opacity] duration-[900ms] ease-[cubic-bezier(0.22,1,0.36,1)] [mask-composite:intersect] [mask-image:radial-gradient(ellipse_70%_80%_at_45%_45%,black_30%,transparent_100%),linear-gradient(to_bottom,black_55%,transparent)] [[data-slot=hero]:has([data-writing])_&]:opacity-40 [[data-slot=hero]:has([data-writing])_&]:blur-[3px] motion-reduce:transition-none"
+      className="pointer-events-none absolute inset-0 z-[5] blur-[0.4px] [transition:filter_900ms_cubic-bezier(0.22,1,0.36,1),opacity_900ms_cubic-bezier(0.22,1,0.36,1),--part_700ms_cubic-bezier(0.22,1,0.36,1)] [mask-composite:intersect] [[data-slot=hero]:has([data-writing])_&]:opacity-40 [[data-slot=hero]:has([data-writing])_&]:blur-[3px] motion-reduce:transition-none"
+      style={{ maskImage: SHIMMER_MASK }}
     >
       {/* Swaying as the cards it lies among float (hero-cards, `card-float`:
           ±0.4rem), so it moves as one of them. */}
