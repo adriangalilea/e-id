@@ -18,7 +18,7 @@ import {
   useState,
 } from "react";
 import { flushSync } from "react-dom";
-import { EmojiDomain } from "@/components/brand";
+import { BrandLogo, EmojiDomain } from "@/components/brand";
 import { CountryFlag } from "@/components/country";
 import { type Holder, IdCard, type Place } from "@/components/id-card";
 import { ON_CARD } from "@/components/card-shape";
@@ -96,6 +96,26 @@ const WRITTEN_HERE = {
   "data-bwignore": true,
   "data-form-type": "other",
 } as const;
+
+/** The heading's letters as brushed steel: a cool neutral grey lit along a band
+ *  across its upper half and falling dark under it, as a bevelled metal edge
+ *  catches a light from above, crossed by a fine grain of brushing; cut into
+ *  the page by a hairline of shadow under each letter. No hue: steel, not
+ *  chrome's rainbow. */
+const STEEL = cn(
+  "bg-clip-text text-transparent [-webkit-background-clip:text]",
+  "bg-[repeating-linear-gradient(90deg,rgb(255_255_255/0.05)_0_1px,transparent_1px_3px),linear-gradient(180deg,#f4f5f7_0%,#d5d7db_30%,#9a9da2_48%,#6f7277_52%,#c3c6ca_68%,#eceef0_84%,#a7aaaf_100%)]",
+  "[filter:drop-shadow(0_1px_0_rgb(0_0_0/0.7))_drop-shadow(0_-1px_0_rgb(255_255_255/0.06))]",
+);
+
+/** The logo's disc in the same steel, the mark struck into it: a turned metal
+ *  face (a conic light, as a disc catches it all round), its rim bevelled, the
+ *  mark a dark recess. As tall as the words' capitals and a little more. */
+const STEEL_DISC = cn(
+  "size-[0.95em] text-[#1d1e21]/85",
+  "bg-[conic-gradient(from_200deg,#e3e5e8,#8d9095,#f3f4f6,#7c7f84,#d9dbdf,#6f7277,#e3e5e8)]",
+  "shadow-[inset_0_1px_0_rgb(255_255_255/0.55),inset_0_-1px_1px_rgb(0_0_0/0.45),0_0_0_1px_rgb(0_0_0/0.5),0_6px_16px_-6px_rgb(0_0_0/0.8)]",
+);
 
 /** Solid: a card hides what is behind it, as a real one does, so its glass
  *  blurs nothing behind it (id-card, `--id-card-backdrop`). */
@@ -1115,7 +1135,7 @@ const MIDDLE = { x: 31, y: 13, w: 34, rz: 0 } as const;
  *  little above the pile's middle, lying over the pile's deepest cards (they are
  *  under the shimmer, it over), so it reads as the nearest card on the table.
  *  Taken up, the pile goes to lie where it lay: the two trade places. */
-const WAITING = { x: -34, y: 0, w: 29, rz: 0 } as const;
+const WAITING = { x: -32, y: 2, w: 33, rz: 0 } as const;
 
 /** Where the pile goes once the visitor's card is taken up: pushed back from
  *  the middle the visitor's card grows into, further right and a little down,
@@ -1236,12 +1256,15 @@ export function Stage({
             writes, and is only read aloud once the card is a profile. */}
         <h1
           className={cn(
-            "pointer-events-none text-[clamp(2.5rem,4.5vw,4.25rem)] leading-none font-light tracking-[-0.03em] text-foreground/90 transition-opacity duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] max-lg:text-center lg:absolute lg:bottom-[calc(100%-var(--t)+var(--w)/3.172+3.5rem)] lg:left-[calc(var(--l)-var(--w)/2)] lg:z-20 lg:w-(--w)",
+            "pointer-events-none flex items-center gap-[0.3em] text-[clamp(2.75rem,5vw,4.75rem)] leading-none font-normal tracking-[-0.035em] transition-opacity duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] max-lg:justify-center lg:absolute lg:bottom-[calc(100%-var(--t)+var(--w)/3.172+3.5rem)] lg:left-[calc(var(--l)-var(--w)/2)] lg:z-20 lg:w-max",
             forming ? "sr-only" : writing && "opacity-0",
           )}
           style={at(WAITING)}
         >
-          your digital ID
+          <span className={STEEL}>your digital ID</span>
+          {/* The logo beside it, struck in the same steel: the seal the words
+              are about. */}
+          <BrandLogo className={STEEL_DISC} />
         </h1>
         {!forming && (
           // In the middle at rest; once the visitor's card is taken up and
