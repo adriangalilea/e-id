@@ -1245,21 +1245,26 @@ export function Stage({
             : "flex flex-col items-center gap-12 py-16 sm:py-20 lg:block lg:h-[50rem] lg:py-0",
         )}
       >
-        {/* The page's heading: what the card waiting under it is for, standing
-            over it, flush with its left edge. It gives way while the visitor
-            writes, and is only read aloud once the card is a profile. */}
-        <h1
+        {/* The page's heading over the card waiting under it, flush with its
+            left edge: the name, and under it what it is. It gives way while the
+            visitor writes, and is only read aloud once the card is a profile. */}
+        <div
           className={cn(
-            "pointer-events-none flex items-center gap-[0.3em] text-[clamp(2.75rem,5vw,4.75rem)] leading-none font-normal tracking-[-0.035em] transition-opacity duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] max-lg:justify-center lg:absolute lg:bottom-[calc(100%-var(--t)+var(--w)/3.172+3.5rem)] lg:left-[calc(var(--l)-var(--w)/2)] lg:z-20 lg:w-max",
+            "pointer-events-none flex flex-col gap-[0.9rem] transition-opacity duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] max-lg:items-center lg:absolute lg:bottom-[calc(100%-var(--t)+var(--w)/3.172+3.5rem)] lg:left-[calc(var(--l)-var(--w)/2)] lg:z-20 lg:w-max",
             forming ? "sr-only" : writing && "opacity-0",
           )}
           style={at(WAITING)}
         >
-          {/* The logo before the words, as the bar draws it: the seal they are
-              about. A little taller than their capitals. */}
-          <BrandLogo className="size-[0.95em]" />
-          <span className={STEEL}>your digital ID</span>
-        </h1>
+          <h1 className="flex items-center gap-[0.3em] text-[clamp(2.75rem,5vw,4.75rem)] leading-none font-normal tracking-[-0.035em]">
+            {/* The logo before the name, as the bar draws it. A little taller
+                than its capitals. */}
+            <BrandLogo className="size-[0.95em]" />
+            <span className={STEEL}>e-ID</span>
+          </h1>
+          <p className="text-[clamp(1.125rem,1.6vw,1.5rem)] leading-snug font-light tracking-[-0.01em] text-foreground/60">
+            your digital identity
+          </p>
+        </div>
         {!forming && (
           // In the middle at rest; once the visitor's card is taken up and
           // grows into the middle, pushed back where it lay (`PUSHED`), smaller
