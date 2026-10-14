@@ -90,20 +90,28 @@ async function landingsOf(holder: Holder): Promise<Landing[]> {
         place.platform === "email" ? null : await getWebsite(place.url);
       return {
         end: shortName(place.platform),
-        // Each fills the frame it lands in (link-map), its own frame dropped.
-        there: facts ? (
-          <WebPreview
-            facts={facts}
-            className="rounded-none border-0 bg-transparent shadow-none"
-          />
-        ) : (
-          <a
-            href={place.url}
-            className="flex items-center justify-center gap-3 px-6 py-10 font-mono text-sm text-foreground/70 hover:text-foreground [&_svg]:size-5"
+        // In glass, as every container on the page: the preview's own frame
+        // dropped for it.
+        there: (
+          <Glass
+            shape="surface"
+            className="overflow-hidden [--glass-radius:1.25rem]"
           >
-            {getSocialIcon(place.platform)}
-            {place.url.replace(/^(https?:\/\/|mailto:)(www\.)?/, "")}
-          </a>
+            {facts ? (
+              <WebPreview
+                facts={facts}
+                className="rounded-none border-0 bg-transparent shadow-none"
+              />
+            ) : (
+              <a
+                href={place.url}
+                className="flex items-center justify-center gap-3 px-6 py-10 font-mono text-sm text-foreground/70 hover:text-foreground [&_svg]:size-5"
+              >
+                {getSocialIcon(place.platform)}
+                {place.url.replace(/^(https?:\/\/|mailto:)(www\.)?/, "")}
+              </a>
+            )}
+          </Glass>
         ),
       };
     }),

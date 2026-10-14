@@ -1,6 +1,6 @@
 "use client";
 
-import { Link2 } from "lucide-react";
+import { ArrowRight, Link2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { EmojiDomain } from "@/components/brand";
 import { Glass } from "@/components/ui/material-glass";
@@ -44,6 +44,8 @@ export function LinkMap({
   ] as (typeof DOMAINS)[number];
   const landing = landings[step % landings.length];
   if (!landing) throw new Error(`${username} has nowhere to land`);
+  const previous =
+    step > 0 ? landings[(step - 1) % landings.length] : undefined;
   // Every part in a room of its own size, so nothing moves as the steps turn:
   // the domain right-aligned in the longer domain's width (e-id.to, 7ch, the
   // type being mono), the end in the longest end's, what is there in a fixed
@@ -85,19 +87,30 @@ export function LinkMap({
         </span>
       </Glass>
       </a>
-      {/* The line from the address to where it lands, drawn from its start. */}
-      <span
-        key={`line-${step}`}
+      {/* Where it goes: a quiet arrow, still. */}
+      <ArrowRight
         aria-hidden
-        className="h-px w-20 shrink-0 origin-left animate-[link-draw_600ms_cubic-bezier(0.22,1,0.36,1)_450ms_both] bg-foreground/40 max-lg:hidden"
+        className="size-5 shrink-0 text-foreground/30 max-lg:rotate-90"
+        strokeWidth={1.5}
       />
       {/* One room, the same size every step, so nothing round it moves; what
           is there stands in it whole, centred, its own object (a card is
-          never boxed; a preview wears its own glass, `Landing`). */}
-      <div className="grid h-[18rem] w-full max-w-[22rem] shrink-0 place-items-center">
+          never boxed; a preview wears its own glass, `Landing`). The last
+          one leaves as the next arrives, in the same place: one gives way to
+          the other, never a pop. */}
+      <div className="grid h-[18rem] w-full max-w-[22rem] shrink-0 place-items-center *:[grid-area:1/1]">
+        {previous && (
+          <div
+            key={`gone-${step}`}
+            aria-hidden
+            className="pointer-events-none w-full animate-[link-leave_500ms_cubic-bezier(0.22,1,0.36,1)_both]"
+          >
+            {previous.there}
+          </div>
+        )}
         <div
           key={`there-${step}`}
-          className="w-full animate-[link-arrive_600ms_cubic-bezier(0.22,1,0.36,1)_900ms_both]"
+          className="w-full animate-[link-arrive_700ms_cubic-bezier(0.22,1,0.36,1)_250ms_both]"
         >
           {landing.there}
         </div>

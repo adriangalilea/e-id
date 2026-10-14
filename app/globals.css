@@ -223,10 +223,10 @@
   }
 }
 
-/* One link shown working (components/landing/link-map): a part of the address
-   arriving, a place's name typed onto its end (revealed left to right in a few
-   steps, as typed), and the line drawn out from it to where it lands. Keyframes,
-   which no utility can write. */
+/* One link shown working (components/landing/link-map): a place's name typed
+   onto the address's end (revealed left to right in a few steps, as typed),
+   and where it lands arriving as the last one leaves. Keyframes, which no
+   utility can write. */
 @keyframes link-arrive {
   from {
     opacity: 0;
@@ -241,9 +241,10 @@
     clip-path: inset(0 0 0 0);
   }
 }
-@keyframes link-draw {
-  from {
-    scale: 0 1;
+@keyframes link-leave {
+  to {
+    opacity: 0;
+    translate: 0 -0.25em;
   }
 }
 
