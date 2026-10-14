@@ -1,5 +1,6 @@
 "use client";
 
+import { Link2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { EmojiDomain } from "@/components/brand";
 import { Glass } from "@/components/ui/material-glass";
@@ -7,12 +8,11 @@ import { Glass } from "@/components/ui/material-glass";
 /** How long each landing is shown: typed, drawn to and arrived at. */
 const STEP_MS = 3600;
 
-/** The domain an address is written on, a whole round on each: the brand, then
- *  the plain one, where an emoji is not welcome. Each opens the same page. */
-const DOMAINS = [
-  { shown: <EmojiDomain />, host: "👤.to" },
-  { shown: "e-id.to", host: "e-id.to" },
-] as const;
+/** The domain the address is written on: the brand, the one people share
+ *  (e-id.to and the rest are the share menu's, components/addresses). One, so
+ *  the address never changes width: a second, of another width, either moved
+ *  the handle or left a gap in the bar. */
+const DOMAINS = [{ shown: <EmojiDomain />, host: "👤.to" }] as const;
 
 /** Where an address lands: the end typed onto it (none for the profile
  *  itself), and what is there, drawn (lib: `Features` builds them on the
@@ -51,22 +51,39 @@ export function LinkMap({
   const endRoom = Math.max(...landings.map((l) => (l.end ? l.end.length + 1 : 0)));
   return (
     <div className="flex flex-col items-center gap-8 lg:flex-row lg:justify-center lg:gap-6">
+      {/* The address as a browser's address bar draws one, the shape read as a
+          link to open: a glass pill, a link's mark before it, the domain
+          quieter than the handle, the end it lands on brightest. */}
       <a
         href={`https://${domain.host}/${username}${landing.end ? `/${landing.end}` : ""}`}
-        className="flex font-mono text-xl whitespace-nowrap text-foreground sm:text-2xl"
+        className="group/link shrink-0"
       >
-        <span className="inline-block w-[7ch] text-right">{domain.shown}</span>
-        <span>/{username}</span>
-        <span className="inline-block text-left" style={{ width: `${endRoom}ch` }}>
-          {landing.end && (
+      <Glass shape="bar" className="[--glass-size:3.5rem]">
+        <span className="flex items-center gap-3 px-5 font-mono text-lg whitespace-nowrap sm:text-xl">
+          <Link2
+            aria-hidden
+            className="size-5 shrink-0 text-foreground/40"
+            strokeWidth={1.5}
+          />
+          <span className="flex underline decoration-transparent underline-offset-[0.3em] transition-colors group-hover/link:decoration-foreground/50">
+            <span className="text-foreground/50">{domain.shown}</span>
+            <span className="text-foreground/85">/{username}</span>
             <span
-              key={step}
-              className="inline-block animate-[link-type_450ms_steps(4,end)_both]"
+              className="inline-block text-left text-foreground"
+              style={{ width: `${endRoom}ch` }}
             >
-              /{landing.end}
+              {landing.end && (
+                <span
+                  key={step}
+                  className="inline-block animate-[link-type_450ms_steps(4,end)_both]"
+                >
+                  /{landing.end}
+                </span>
+              )}
             </span>
-          )}
+          </span>
         </span>
+      </Glass>
       </a>
       {/* The line from the address to where it lands, drawn from its start. */}
       <span
@@ -74,19 +91,17 @@ export function LinkMap({
         aria-hidden
         className="h-px w-20 shrink-0 origin-left animate-[link-draw_600ms_cubic-bezier(0.22,1,0.36,1)_450ms_both] bg-foreground/40 max-lg:hidden"
       />
-      {/* One frame, the same size every step: what is there fills it (its
-          own frame dropped, `Landing`), so the box itself never changes. */}
-      <Glass
-        shape="surface"
-        className="h-[18rem] w-full max-w-[22rem] shrink-0 overflow-hidden [--glass-radius:1.25rem]"
-      >
+      {/* One room, the same size every step, so nothing round it moves; what
+          is there stands in it whole, centred, its own object (a card is
+          never boxed; a preview wears its own glass, `Landing`). */}
+      <div className="grid h-[18rem] w-full max-w-[22rem] shrink-0 place-items-center">
         <div
           key={`there-${step}`}
-          className="size-full animate-[link-arrive_600ms_cubic-bezier(0.22,1,0.36,1)_900ms_both]"
+          className="w-full animate-[link-arrive_600ms_cubic-bezier(0.22,1,0.36,1)_900ms_both]"
         >
           {landing.there}
         </div>
-      </Glass>
+      </div>
     </div>
   );
 }

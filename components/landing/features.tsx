@@ -94,12 +94,12 @@ async function landingsOf(holder: Holder): Promise<Landing[]> {
         there: facts ? (
           <WebPreview
             facts={facts}
-            className="size-full rounded-none border-0 shadow-none"
+            className="rounded-none border-0 bg-transparent shadow-none"
           />
         ) : (
           <a
             href={place.url}
-            className="flex size-full items-center justify-center gap-3 font-mono text-sm text-foreground/70 hover:text-foreground [&_svg]:size-5"
+            className="flex items-center justify-center gap-3 px-6 py-10 font-mono text-sm text-foreground/70 hover:text-foreground [&_svg]:size-5"
           >
             {getSocialIcon(place.platform)}
             {place.url.replace(/^(https?:\/\/|mailto:)(www\.)?/, "")}
@@ -112,16 +112,14 @@ async function landingsOf(holder: Holder): Promise<Landing[]> {
     {
       end: null,
       there: (
-        <div className="grid size-full place-items-center p-5">
-          <HoloLight className="w-full">
-            <IdCard
-              holder={holder}
-              heading="p"
-              holo="laminate"
-              className="[--id-card-thickness:1]"
-            />
-          </HoloLight>
-        </div>
+        <HoloLight className="w-full">
+          <IdCard
+            holder={holder}
+            heading="p"
+            holo="laminate"
+            className="[--id-card-thickness:1]"
+          />
+        </HoloLight>
       ),
     },
     ...there,
