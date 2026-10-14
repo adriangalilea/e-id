@@ -76,7 +76,7 @@ function Identity({
       {/* For whoever is looking: this card as a contact (lib/vcard), their
           photo, name, address and every place, saved on a phone in one tap. */}
       <Button
-        variant="outline"
+        material="glass"
         size="lg"
         className="self-start"
         render={
