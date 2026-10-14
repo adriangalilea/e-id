@@ -7,8 +7,7 @@ import { HoloLean, HoloLight } from "@/components/ui/holo";
 import { SubjectLight } from "@/components/light";
 import { MaterialProvider } from "@/components/ui/material";
 import { cn } from "@/lib/utils";
-import { ContactRound } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { SaveContact } from "@/components/save-contact";
 import { Input, InputGroup } from "@/components/ui/input";
 import { EmojiDomain } from "@/components/brand";
 import EditCountry from "@/components/edit-country";
@@ -75,18 +74,7 @@ function Identity({
       )}
       {/* For whoever is looking: this card as a contact (lib/vcard), their
           photo, name, address and every place, saved on a phone in one tap. */}
-      <Button
-        material="glass"
-        size="lg"
-        className="self-start"
-        render={
-          // biome-ignore lint/a11y/useAnchorContent: the Button draws the label
-          <a href={`/${user.username}.vcf`} download={`${user.username}.vcf`} />
-        }
-      >
-        <ContactRound strokeWidth={1.5} />
-        save contact
-      </Button>
+      <SaveContact username={user.username} className="self-start" />
       {actions}
     </header>
   );

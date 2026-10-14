@@ -1,11 +1,12 @@
-import { ContactRound } from "lucide-react";
+import { SaveContact } from "@/components/save-contact";
 import { type Landing, LinkMap } from "@/components/landing/link-map";
 import { WebPreview } from "@/components/ui/web-preview";
 import { shortName } from "@/lib/place-names";
+import { cacheLife } from "next/cache";
+import { getShowcase } from "@/lib/data";
 import { getWebsite } from "@/lib/presence";
 import { getSocialIcon } from "@/lib/socials";
 import { IdCard, type Holder } from "@/components/id-card";
-import { Button } from "@/components/ui/button";
 import { Code } from "@/components/ui/code";
 import { Glass } from "@/components/ui/material-glass";
 import { HoloLight } from "@/components/ui/holo";
@@ -18,8 +19,18 @@ import { cn } from "@/lib/utils";
  *  of it), the sides alternating down the page, each arriving as it scrolls in
  *  (@ag/reveal). One column on a phone: the words, then the thing. The card
  *  shown is a real one, the hero's lead (lib/data, `getShowcase`). */
-export async function Features({ holder }: { holder: Holder }) {
-  const embed = `<script type="module" src="${PROD_URL}/embed.js"></script>\n<e-id-card handle="${holder.username}"></e-id-card>`;
+export async function Features() {
+  // The card the features show: the hero's lead, a real one.
+  const [first] = await getShowcase();
+  if (!first) throw new Error("the home has no card to show");
+  const holder: Holder = {
+    name: first.name,
+    username: first.username,
+    image: first.image,
+    country: first.country_code,
+    bio: first.bio,
+    places: first.places,
+  };
   const landings = await landingsOf(holder);
   return (
     <section
@@ -44,17 +55,7 @@ export async function Features({ holder }: { holder: Holder }) {
           <HoloLight className="w-full">
             <IdCard holder={holder} heading="p" holo="laminate" className="[--id-card-thickness:1]" />
           </HoloLight>
-          <Button
-            material="glass"
-            size="lg"
-            render={
-              // biome-ignore lint/a11y/useAnchorContent: the Button draws the label
-              <a href={`/${holder.username}.vcf`} download={`${holder.username}.vcf`} />
-            }
-          >
-            <ContactRound strokeWidth={1.5} />
-            save contact
-          </Button>
+          <SaveContact username={holder.username} />
         </div>
       </Row>
       <Row
@@ -62,9 +63,7 @@ export async function Features({ holder }: { holder: Holder }) {
         title="on your website"
         body="Your card on any page with two lines: it draws itself, and its hologram answers the hand."
       >
-        <Code lang="html" copy material="glass">
-          {embed}
-        </Code>
+        <EmbedSnippet username={holder.username} />
       </Row>
     </section>
   );
@@ -81,8 +80,13 @@ async function landingsOf(holder: Holder): Promise<Landing[]> {
   );
   const there = await Promise.all(
     first.map(async (place): Promise<Landing> => {
-      const facts =
-        place.platform === "email" ? null : await getWebsite(place.url);
+      // An email has no page to unfurl, and a YouTube channel none YouTube will
+      // describe (its oEmbed is for videos only): both the plain panel.
+      const plain =
+        place.platform === "email" ||
+        (place.platform === "youtube" &&
+          !/youtu\.be\/|\/watch\?|\/shorts\//.test(place.url));
+      const facts = plain ? null : await getWebsite(place.url);
       return {
         end: shortName(place.platform),
         // In glass, as every container on the page: the preview's own frame
@@ -127,6 +131,20 @@ async function landingsOf(holder: Holder): Promise<Landing[]> {
     },
     ...there,
   ];
+}
+
+/** The embed's two lines for `username`, highlighted (@ag/code, in glass).
+ *  Cached: the highlighter reads the clock as it works, which a page being
+ *  prerendered may not, and the snippet only changes with the handle. */
+async function EmbedSnippet({ username }: { username: string }) {
+  "use cache";
+  cacheLife("max");
+  const embed = `<script type="module" src="${PROD_URL}/embed.js"></script>\n<e-id-card handle="${username}"></e-id-card>`;
+  return (
+    <Code lang="html" copy material="glass">
+      {embed}
+    </Code>
+  );
 }
 
 /** One feature: its title and words on one side, the thing on the other. */
