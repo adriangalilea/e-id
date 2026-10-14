@@ -47,11 +47,32 @@ const nextConfig: NextConfig = {
           has: [{ type: "header", key: "accept", value: ".*text/(?:x-)?vcard.*" }],
           destination: "/:username/card.vcf",
         },
+        // The card as data (lib/card-schema) at `/json` after the address, as
+        // each link is at its route (`/gh`), and at the address itself
+        // when JSON is what is asked for first (a browser asks for HTML first,
+        // so it never gets this).
+        {
+          source: "/:username([A-Za-z0-9_-]+)/json",
+          destination: "/:username/card.json",
+        },
+        {
+          source: "/:username([A-Za-z0-9_-]+)",
+          has: [
+            {
+              type: "header",
+              key: "accept",
+              value: "(?:application/json|application/vnd\\.e-id\\.card\\+json).*",
+            },
+          ],
+          destination: "/:username/card.json",
+        },
       ],
     };
   },
   async redirects() {
     return [
+      // What the faq said, the home says now (components/landing/features).
+      { source: "/about", destination: "/", permanent: true },
       {
         source: PAGES,
         has: [

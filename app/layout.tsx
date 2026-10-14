@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Space_Grotesk, Space_Mono } from "next/font/google";
+import { FONT_VARIABLES } from "./fonts";
 import "./globals.css";
 import Footer from "@/components/footer/footer";
 import { Analytics } from "@vercel/analytics/react";
@@ -13,26 +13,13 @@ import { PROD_URL } from "@/lib/const";
 import { SitePageSensor } from "@/components/page-sensor";
 import { visitsEnabled } from "@/lib/visit-store";
 
-const spaceGrotesk = Space_Grotesk({
-  subsets: ["latin"],
-  variable: "--font-space-grotesk",
-  display: "swap",
-});
-
-const spaceMono = Space_Mono({
-  weight: ["400", "700"],
-  subsets: ["latin"],
-  variable: "--font-space-mono",
-  display: "swap",
-});
-
 export const metadata: Metadata = {
   title: {
     template: "%s · e-ID",
     default: "your page at 👤.to/you",
   },
   description:
-    "one link for every place you are online. sign in with github and your page fills itself.",
+    "one link for everywhere you are online. sign in with github and your page fills itself.",
   authors: [{ name: "Adrian Galilea" }],
   keywords: ["link in bio", "emoji domain", "developer profile", "github", "profile"],
   creator: "Adrian Galilea",
@@ -51,7 +38,7 @@ export default async function RootLayout({
   return (
     <html
       lang="en"
-      className={`${spaceGrotesk.variable} ${spaceMono.variable} dark`}
+      className={`${FONT_VARIABLES} dark`}
     >
       <body className="flex min-h-dvh flex-col font-sans antialiased">
         <PageLight />

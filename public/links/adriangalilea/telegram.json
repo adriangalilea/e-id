@@ -1,0 +1,25 @@
+{
+  "url": "https://t.me/adriangalilea",
+  "dark": {
+    "kind": "image",
+    "width": 2560,
+    "height": 1600,
+    "mime": "image/webp",
+    "bytes": 260546,
+    "blurDataURL": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAKCAIAAAAy3EnLAAAACXBIWXMAAAPoAAAD6AG1e1JrAAAA8UlEQVQYlXVPPUsEMRANOx9RSJEQcC12J6CLlWhxWK0uelgoaKHF+R/k/n8tM9kN1zgMk8y8vPcyTm4fpmm6+Cf6vq/18ub+6vNXXn4cEAEAekbPRBRjHIZheXx63T+P45hSIiLviZlrdR1Ch6A0y5SSiLzt378+vkUkpcQWAGAnqkMjdAiVMM/zsiwiknMmUmFmJAt1QM/NIcZYStkdjrvDsZRiDlhzJQCs8mQ1hJBzztd3mjmHEHSugroqELnKq/02bAorsqFane3eTPXp2TmrqE0AwFuLHtHrr1zFvDdn4zRyk9guKu0qfOpzmo3f2j8gehixAAxl6QAAAABJRU5ErkJggg==",
+    "average": "#0c0e0e",
+    "src": "telegram.dark.webp",
+    "poster": "telegram.dark.webp"
+  },
+  "light": {
+    "kind": "image",
+    "width": 2560,
+    "height": 1600,
+    "mime": "image/webp",
+    "bytes": 172208,
+    "blurDataURL": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAKCAIAAAAy3EnLAAAACXBIWXMAAAPoAAAD6AG1e1JrAAAByUlEQVQYlSXLa0/aUACA4f7iJRLCEpfNQHvOaVmbwqYg4NBkgOVanBhtKZVigdJSKQiGESgGL4vT7PNMSM8yTZ6P70uIttkad52b0Xg1/nk/WTxMl4+z26fZr+fF72f36c/ijbOcJrVB3hwSHyrclsiTRzxz/PXLWdyY9V7Wf9357Hblrtcvd4+Ty+sj67pqTMT2qHg+zBMbAu0XmEDx82aZ/SSy2rSLMU5sJzPpLMZ4+TDWnKLqCI3BoWRnatY+8S4HNnLIJ0B/Hr0vMMpExxi7rjufzzHGVyu71E2XunvFTkroJDN6nPAJ0CdQ/jwIFGCgAJWJ7nneyeCuZt97nmctjYTKJ1Q+eR5JqFxMZYnNEvWxTG6JMCSiUBXkOoeWa1bslnip9296JUvgZMjJMCKjiIw4GRLhGuRP0c4Z2JXpZB2lFHpXQfE63FFgVAa8RLESYCXyFWAlQKTqINNE+QtY6dA/jP/Kbaqgo+8a2FNBrAGicjBSJzkp+LYR5TZ90mMUi27ajD5g2k5YG9ByHx6bqNSBWR2kNTKhhmIqud2gonKQkEzmNUXGEJkjxroKmyPGGDIth2nY9GkfVQ1QaJNZHRxo5Lcm9Q8sI01e8AT6MwAAAABJRU5ErkJggg==",
+    "average": "#adc8a1",
+    "src": "telegram.light.webp",
+    "poster": "telegram.light.webp"
+  }
+}

@@ -38,7 +38,7 @@ export function BrandLogo({
       aria-hidden
       data-slot="brand-logo"
       className={cn(
-        // Its size `--logo-size` where a place sets one (the bar's wordmark),
+        // Its size `--logo-size` where its holder sets one (the bar's wordmark),
         // else 1.2 cap.
         "relative isolate inline-grid size-[var(--logo-size,1.2cap)] place-items-center overflow-hidden rounded-full text-foreground/90",
         "bg-[linear-gradient(to_bottom,rgb(255_255_255/0.13),rgb(255_255_255/0.06))] shadow-[inset_0_1px_0_rgb(255_255_255/0.16),inset_0_0_0_1px_rgb(255_255_255/0.05)]",

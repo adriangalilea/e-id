@@ -6,7 +6,7 @@
 //
 // The layout, top to bottom: the head (the address on the left, where the eye
 // starts; the country's code and flag on the right); under it, centred in the
-// room left, the photo, and beside it the name over the places.
+// room left, the photo, and beside it the name over the links.
 
 export const CARD_LAYOUT = {
   /** The card's inner margin, every side. */
@@ -21,7 +21,7 @@ export const CARD_LAYOUT = {
   gap: 5,
   /** The name's type. */
   name: 7,
-  /** A place's icon, and the step from one to the next. */
+  /** A link's icon, and the step from one to the next. */
   icon: 4.6,
   iconStep: 7.4,
 } as const;

@@ -157,7 +157,8 @@
      surface (glass included) without a band. A scroller whose top is covered by
      something pinned inside it (a box's head, a table's header row) says how much
      (`--edge-cover`, a length): that much stays whole and the top's fade starts
-     below it, where the rows come out from under the cover. */
+     below it, where the rows come out from under the cover. A foot laid over its
+     bottom (a panel's foot) is `--edge-cover-end`, the same at the other end. */
   .ag-edge-fade-y {
     overflow-y: auto;
     scrollbar-width: none;
@@ -172,8 +173,9 @@
         #000 var(--edge-cover, 0px),
         transparent var(--edge-cover, 0px),
         #000 calc(var(--edge-cover, 0px) + var(--ag-edge-fade-start)),
-        #000 calc(100% - var(--ag-edge-fade-end)),
-        transparent
+        #000 calc(100% - var(--edge-cover-end, 0px) - var(--ag-edge-fade-end)),
+        transparent calc(100% - var(--edge-cover-end, 0px)),
+        #000 calc(100% - var(--edge-cover-end, 0px))
       );
       animation:
         ag-edge-fade-start linear both,

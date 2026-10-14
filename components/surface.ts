@@ -13,7 +13,7 @@ export const SURFACE = cn(
   "border-transparent [--glass-radius:var(--radius-2xl)]",
 );
 
-/** What stands inside a glass (the places' box): a registry card, a post, a
+/** What stands inside a glass (the links' box): a registry card, a post, a
  *  profile, a preview. A step of light off the glass under it, no rim, no blur. A
  *  registry card handed it keeps its layout and trades its own fill and border
  *  for this. */

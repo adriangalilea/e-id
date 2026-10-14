@@ -41,6 +41,11 @@ export interface CodeProps {
    *  material (`material-glass`), its own border and ground dropped for it. Set
    *  here rather than read from a provider: the block renders on the server. */
   material?: "plain" | "glass"
+  /** No frame, no bar and no copy of its own: for a frame that holds it (a
+   *  tab of a `Panel` with an example's code, its copy in the panel's head), so a
+   *  block in a frame is never a frame in a frame. `material` is then the
+   *  holder's. */
+  bare?: boolean
   className?: string
 }
 
@@ -82,6 +87,7 @@ export async function Code({
   lines,
   notations = true,
   material = "plain",
+  bare = false,
   className,
 }: CodeProps) {
   const source = dedent(children)
@@ -133,6 +139,16 @@ export async function Code({
     </>
   )
   const frame = `ag-code${lines ? " ag-code-numbered" : ""}${className ? ` ${className}` : ""}`
+  if (bare)
+    return (
+      <div data-slot="code" data-bare className={frame}>
+        <div
+          className="ag-code-scroll ag-edge-fade-xy"
+          // biome-ignore lint/security/noDangerouslySetInnerHtml: shiki's own output, built on the server from a string prop, never from anything a reader can reach
+          dangerouslySetInnerHTML={{ __html: html }}
+        />
+      </div>
+    )
   if (material === "glass")
     return (
       <Glass

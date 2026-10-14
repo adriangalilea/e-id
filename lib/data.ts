@@ -3,9 +3,16 @@ import "server-only";
 import { and, asc, desc, eq, isNotNull, ne, sql } from "drizzle-orm";
 import { cacheLife, cacheTag } from "next/cache";
 import { db } from "@/db";
-import { comments, socials, users, type SelectSocial } from "@/db/schema";
+import {
+  comments,
+  type LinkPlatform,
+  links,
+  type SelectLink,
+  users,
+} from "@/db/schema";
+import { linkName } from "@/lib/link-names";
+import { getLinkUrl } from "@/lib/links";
 import { SHOWCASE_EXAMPLES, type ShowcaseCard } from "@/lib/showcase-examples";
-import { getSocialUrl } from "@/lib/socials";
 import { USERS_TAG, profileTag, usernameTag } from "@/lib/tags";
 
 // The reads public pages are prerendered from. Each is cached for good ("max")
@@ -54,33 +61,28 @@ export async function getProfile(username: string): Promise<Profile | null> {
   return { ...row, username: name, username_normalized };
 }
 
-/** Socials in the order their owner gave them, unordered ones last. */
-export function bySocialOrder(a: SelectSocial, b: SelectSocial) {
+/** Links in the order their owner gave them, unordered ones last. */
+export function byLinkOrder(a: SelectLink, b: SelectLink) {
   return (a.order ?? Infinity) - (b.order ?? Infinity);
 }
 
-/** What a visitor sees: public socials that carry a value, in order. */
-export async function getPublicSocials(
-  userId: string,
-): Promise<SelectSocial[]> {
+/** What a visitor sees: public links that carry a value, in order. */
+export async function getPublicLinks(userId: string): Promise<SelectLink[]> {
   "use cache";
   cacheLife("max");
   cacheTag(profileTag(userId));
 
   const rows = await db
     .select()
-    .from(socials)
-    .where(and(eq(socials.user_id, userId), eq(socials.public, true)));
-  return rows.filter((social) => social.value).sort(bySocialOrder);
+    .from(links)
+    .where(and(eq(links.user_id, userId), eq(links.public, true)));
+  return rows.filter((link) => link.value).sort(byLinkOrder);
 }
 
-/** Every social of a user, private and empty ones included: the edit form's. */
-export async function getAllSocials(userId: string): Promise<SelectSocial[]> {
-  const rows = await db
-    .select()
-    .from(socials)
-    .where(eq(socials.user_id, userId));
-  return rows.sort(bySocialOrder);
+/** Every link of a user, private and empty ones included: the editor's. */
+export async function getAllLinks(userId: string): Promise<SelectLink[]> {
+  const rows = await db.select().from(links).where(eq(links.user_id, userId));
+  return rows.sort(byLinkOrder);
 }
 
 export type Testimonial = {
@@ -167,17 +169,19 @@ export async function getLatestUsers(): Promise<ListedUser[]> {
   return [...withFlag, ...withoutFlag].slice(0, LATEST_USERS);
 }
 
-/** A public social as the card shows it: its platform and the address that opens
- *  it. Public socials have a value (getPublicSocials keeps only those). */
-export function placeOf(social: SelectSocial): {
-  platform: SelectSocial["platform"];
+/** A public link as the card shows it: its platform, its name and the address
+ *  that opens it. Public links have a value (getPublicLinks keeps only those). */
+export function cardLinkOf(link: SelectLink): {
+  platform: LinkPlatform;
+  name: string;
   url: string;
 } {
-  if (!social.value)
-    throw new Error(`social ${social.id} is shown on a card with no value`);
+  if (!link.value)
+    throw new Error(`link ${link.id} is shown on a card with no value`);
   return {
-    platform: social.platform,
-    url: getSocialUrl(social.platform, social.value),
+    platform: link.platform,
+    name: linkName(link.platform, link.label),
+    url: getLinkUrl(link.platform, link.value),
   };
 }
 
@@ -192,7 +196,7 @@ const SHOWCASE_LEAD = "adriangalilea";
 /** The people whose cards the home shows: the lead card first, then the latest
  *  with a whole card to show (a photo, a name and a country), newest first,
  *  and where too few have one yet, the pile filled with examples
- *  (lib/showcase-examples), never in a real card's place. Expires with the
+ *  (lib/showcase-examples), never instead of a real card. Expires with the
  *  sign-ups list. */
 export async function getShowcase(): Promise<ShowcaseCard[]> {
   "use cache";
@@ -229,8 +233,8 @@ export async function getShowcase(): Promise<ShowcaseCard[]> {
         throw new Error(
           `showcase row for @${username} lacks what it was chosen for`,
         );
-      const places = (await getPublicSocials(id)).map(placeOf);
-      return { ...row, name, username, image, places };
+      const links = (await getPublicLinks(id)).map(cardLinkOf);
+      return { ...row, name, username, image, links };
     }),
   );
   return [...real, ...SHOWCASE_EXAMPLES].slice(0, SHOWCASE);

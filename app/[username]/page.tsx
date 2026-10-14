@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { Testimonial } from "@/components/quote";
 import {
   getProfile,
-  getPublicSocials,
+  getPublicLinks,
   getTestimonials,
   getUsernames,
 } from "@/lib/data";
@@ -38,15 +38,17 @@ export async function generateMetadata(props: {
   const user = await getProfile(username);
   if (!user) notFound();
 
-  const socials = await getPublicSocials(user.id);
-  const platforms = [...new Set(socials.map((social) => social.platform))];
+  const links = await getPublicLinks(user.id);
+  // Each link as the profile's tabs name it: a platform by its id, a link of
+  // their own by its label.
+  const named = [...new Set(links.map((link) => link.label ?? link.platform))];
   const title = user.name
     ? `${user.name} (@${user.username})`
     : `@${user.username}`;
   const description =
     user.bio ||
-    (platforms.length > 0
-      ? `@${user.username} on ${EMOJI_DOMAIN}: ${platforms.join(", ")}`
+    (named.length > 0
+      ? `@${user.username} on ${EMOJI_DOMAIN}: ${named.join(", ")}`
       : `@${user.username} on ${EMOJI_DOMAIN}`);
 
   return {
@@ -82,11 +84,11 @@ export default async function Page(props: {
   const user = await getProfile(username);
   if (!user) notFound();
 
-  const [socials, testimonials] = await Promise.all([
-    getPublicSocials(user.id),
+  const [links, testimonials] = await Promise.all([
+    getPublicLinks(user.id),
     getTestimonials(user.id),
   ]);
-  const presence = await getPresence(socials);
+  const presence = await getPresence(links);
 
   return (
     // Framed as every profile is (components/profile-layout).
@@ -94,12 +96,12 @@ export default async function Page(props: {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: inlineJson(profileJsonLd(user, socials)),
+          __html: inlineJson(profileJsonLd(user, links)),
         }}
       />
       <UserProfile
         user={user}
-        socials={socials}
+        links={links}
         presence={presence}
         actions={<OwnerActions username={user.username} />}
         vouches={

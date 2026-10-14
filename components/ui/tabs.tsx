@@ -11,19 +11,11 @@ import {
   useSurfaceScheme,
 } from "@/components/ui/material"
 import {
-  GlassEdge,
-  type GlassStyle,
-  glassFront,
   glassLift,
   glassVariants,
   schemeOf,
 } from "@/components/ui/material-glass"
-import { InFrame, Panel } from "@/components/ui/panel"
-import "./edge-fade"
-import {
-  NO_SCROLLBAR,
-  ScrollThumbs,
-} from "@/components/ui/scroll-thumb"
+import { usePanelBody, usePanelHead } from "@/components/ui/panel"
 
 // Views of one thing, one shown at a time (Base UI's tabs: the arrow keys move
 // between tabs, Home and End to the ends, one Tab stop for the list; each panel is
@@ -49,8 +41,20 @@ import {
 // link (`render={<Link href="?view=files" />} nativeButton={false}`) with the
 // active tab read back from the URL into `value`.
 //
-// Most tabs want a container: `TabsBox` is one surface, the tab list in its head
-// pinned while the panels scroll under it, against the page or inside the box.
+// In a box, the tabs own no container: the box is a `Panel`, the list its head.
+//
+//   <Tabs defaultValue="ops" material="glass">
+//     <Panel head={<TabsList>…</TabsList>} action={<Button>refresh</Button>} maxHeight="30rem">
+//       <TabsPanel value="ops">…</TabsPanel>
+//     </Panel>
+//   </Tabs>
+//
+// The list fits itself into the head (`usePanelHead`): a segment stands as far from
+// the panel's side as from the strip's top, so its round end follows the corner; a
+// line fills the strip, its active stretch on the strip's rule; plain, a line's
+// chosen tab is cut from the body, a folder's tab. The panel pins the head, scrolls
+// the body, glides it to a tab of another length (`glide`), and in a panel of a set
+// height each tab's panel fills it and keeps its own place in the scroll.
 
 export type TabsSize = "sm" | "md" | "lg"
 export type TabsVariant = "segment" | "line"
@@ -94,6 +98,54 @@ const LINE_TAB: Record<TabsSize, string> = {
   md: "h-8 px-2.5",
   lg: "h-10 px-3",
 }
+
+/** A segment list in a panel's head (px-5, `--panel-head` tall) stands as far from
+ *  the panel's side as from the strip's top: the strip's height less the well's (28,
+ *  32, 40), halved, less the head's own inset. So the well sits in the panel's
+ *  corner and its round end follows the corner's; at the head's 20 px it stood
+ *  twice as far from the side as from the top, off the corner (Adrian, 2026-10-12). */
+const SEGMENT_IN_HEAD: Record<TabsSize, string> = {
+  sm: "-ml-[calc(1.25rem-(var(--panel-head)-28px)/2)]",
+  md: "-ml-[calc(1.25rem-(var(--panel-head)-32px)/2)]",
+  lg: "-ml-[calc(1.25rem-(var(--panel-head)-40px)/2)]",
+}
+
+/** A line list in a head fills the strip, its own rule dropped (the strip's edge is
+ *  the rule), its tabs as tall as the strip; pulled left by its first tab's padding
+ *  so that label starts where the body does. */
+const LINE_IN_HEAD = cn(
+  "self-stretch items-stretch after:hidden [&>[data-slot=tabs-tab]]:h-auto",
+)
+const LINE_PULL: Record<TabsSize, string> = {
+  sm: "-ml-2",
+  md: "-ml-2.5",
+  lg: "-ml-3",
+}
+
+/** A folder list's start (plain line in a head): its first label where the body's
+ *  text starts (20 px) less a tab's padding (8, 10, 12) and its edge (1), so the
+ *  chosen tab's edge stands well in from the panel's. Pulled like a line list,
+ *  that edge stood a sliver from the panel's border (Adrian, 2026-10-12). Its tabs
+ *  stand from a little below the strip's top, told by their shape alone (no lit
+ *  stretch of rule). */
+const FOLDER_IN_HEAD: Record<TabsSize, string> = {
+  sm: "-ml-[9px]",
+  md: "-ml-[11px]",
+  lg: "-ml-[13px]",
+}
+const FOLDER = "pt-2 [&>[data-slot=tabs-indicator]]:hidden"
+
+/** The line look in a plain head: the chosen tab is cut from the body, a folder's
+ *  tab. It wears the body's colour as it is seen, solid (the card over the page's
+ *  ground) and a hairline round its top, and stands a pixel over the head's rule, so
+ *  it opens into what it shows; the rest sit in the head. Every tab keeps the edge,
+ *  transparent, so choosing one moves nothing. Read by the tabs inside a list marked
+ *  `data-folder`. */
+const FOLDER_TAB = cn(
+  "in-data-folder:rounded-t-lg in-data-folder:border in-data-folder:border-transparent in-data-folder:border-b-0",
+  "in-data-folder:data-active:relative in-data-folder:data-active:top-px in-data-folder:data-active:border-border",
+  "in-data-folder:data-active:bg-background in-data-folder:data-active:bg-[linear-gradient(var(--color-card),var(--color-card))]",
+)
 
 /** The tabs' size and variant, for the list inside (material and scheme ride the
  *  MaterialProvider the tabs set). */
@@ -259,7 +311,8 @@ function useRestingBox(list: HTMLElement | null, on: boolean) {
   return { box, moving }
 }
 
-/** The tabs, and the indicator that slides between them. */
+/** The tabs, and the indicator that slides between them. In a panel's head it fits
+ *  the strip (`usePanelHead`). */
 export function TabsList({
   className,
   children,
@@ -269,8 +322,11 @@ export function TabsList({
   const m = useMaterial()
   const [s, here] = useSurfaceScheme<HTMLDivElement>(undefined, ref)
   const { size, variant, labels } = React.useContext(Look)
+  const inHead = usePanelHead() !== null
   const glass = m === "glass"
   const folded = labels === "active"
+  // Plain, in a head, the line look is a folder's tabs (FOLDER_TAB).
+  const folder = inHead && !glass && variant === "line"
   const [list, setList] = React.useState<HTMLDivElement | null>(null)
   const both = React.useCallback(
     (node: HTMLDivElement | null) => {
@@ -304,6 +360,7 @@ export function TabsList({
     <BaseTabs.List
       ref={both}
       data-slot="tabs-list"
+      data-folder={folder ? "" : undefined}
       className={cn(
         "relative z-0 flex w-fit items-center",
         LIST[size],
@@ -321,6 +378,15 @@ export function TabsList({
               "after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0 after:-z-10 after:h-px after:content-['']",
               glass ? "after:bg-current/15" : "after:bg-foreground/10",
             ],
+        inHead && [
+          "min-w-0",
+          variant === "segment"
+            ? SEGMENT_IN_HEAD[size]
+            : [
+                LINE_IN_HEAD,
+                folder ? [FOLDER_IN_HEAD[size], FOLDER] : LINE_PULL[size],
+              ],
+        ],
         className,
       )}
       {...props}
@@ -452,21 +518,48 @@ function Seen({
   return seen || active ? children : null
 }
 
+/** A tab's place in the scroll of the panel round the tabs, when that panel
+ *  scrolls (`Panel` `maxHeight`, `height`): the tabs share its one scroller, so
+ *  each remembers where it was while shown and is put back there when shown again
+ *  (a tab never shown starts at the top). Restored before paint, so a switch never
+ *  shows the old place first. */
+function useKeptScroll(active: boolean) {
+  const body = usePanelBody()
+  const kept = React.useRef(0)
+  React.useLayoutEffect(() => {
+    const el = body?.scroller.current
+    if (!active || !el) return
+    el.scrollTop = kept.current
+    const keep = () => {
+      kept.current = el.scrollTop
+    }
+    el.addEventListener("scroll", keep, { passive: true })
+    return () => el.removeEventListener("scroll", keep)
+  }, [active, body])
+}
+
 /** What one tab shows. Base UI's panel either mounts only while shown or from the
  *  start (`keepMounted`); `seen` is the third way, built here: Base keeps the
  *  panel's element, `Seen` holds its content back until the first show. Hidden
  *  is the `hidden` attribute, which wins over a `flex` or `grid` on the panel
- *  (Tailwind's preflight makes it important). */
+ *  (Tailwind's preflight makes it important). In a panel of a set height (`Panel`
+ *  `height`) it fills the body, and what it holds fills it: a log scrolls itself,
+ *  never scrolled twice. */
 export function TabsPanel({
   mount = "seen",
   className,
   children,
   ...props
 }: TabsPanelProps) {
+  const filled = usePanelBody()?.filled === true
   return (
     <BaseTabs.Panel
       data-slot="tabs-panel"
-      className={cn("rounded-md", className)}
+      className={cn(
+        "rounded-md",
+        filled && "flex flex-1 flex-col [&>*]:min-h-0 [&>*]:flex-1",
+        className,
+      )}
       {...props}
       keepMounted={mount !== "active"}
       render={(attrs, state) => {
@@ -532,6 +625,7 @@ function PanelFace({
   const { ref, ...rest } = attrs
   const own = React.useRef<HTMLDivElement | null>(null)
   const was = React.useRef(active)
+  useKeptScroll(active)
   const both = React.useCallback(
     (node: HTMLDivElement | null) => {
       own.current = node
@@ -558,431 +652,5 @@ function PanelFace({
     <div ref={both} {...rest}>
       {children}
     </div>
-  )
-}
-
-/** The box's body follows its panel's height rather than jumping to it: a switch
- *  between a short panel and a tall one resized the box in one frame and moved
- *  everything under it (Adrian, 2026-10-13: "layout shifting with tabs too
- *  harsh"). The panels' own height is read (a ResizeObserver on what holds them,
- *  so a panel that grows by itself, a calendar arriving, glides too) and the body
- *  is given it as a length, eased on the indicator's curve (`GLIDE`) so the box
- *  and the lift move as one. The glide turns on after the first reading: the page
- *  opens at its height, never growing from nothing. */
-function useBodyHeight(on: boolean) {
-  const [inner, setInner] = React.useState<HTMLDivElement | null>(null)
-  const [height, setHeight] = React.useState<number | null>(null)
-  const [moving, setMoving] = React.useState(false)
-  React.useLayoutEffect(() => {
-    if (!on || !inner) return
-    const read = () => setHeight(inner.getBoundingClientRect().height)
-    read()
-    const frame = requestAnimationFrame(() => setMoving(true))
-    const sizes = new ResizeObserver(read)
-    sizes.observe(inner)
-    return () => {
-      cancelAnimationFrame(frame)
-      sizes.disconnect()
-    }
-  }, [on, inner])
-  return { setInner, height, moving }
-}
-
-/** The box's title: a heading OUTSIDE the box, above it, where a page's sections are
- *  named (Adrian, 2026-10-12: "what I always do everywhere"). In the strip it read
- *  as one more tab, and inside the box above the strip as loose words on it. The
- *  box is then the strip and what it shows, and stays named by the title. */
-const BOX_TITLE = "font-medium text-sm leading-tight"
-
-/** The strip's height: the list (28, 32, 40) with the strip's air either side,
- *  every item on its one centre line. A line list fills it, so its labels sit on
- *  that centre line and its active stretch on the strip's rule. */
-const BOX_HEAD: Record<TabsSize, string> = {
-  sm: "40px",
-  md: "48px",
-  lg: "56px",
-}
-
-/** A line list pulled left by its first tab's padding, so that label starts where
- *  the body does. */
-const LINE_PULL: Record<TabsSize, string> = {
-  sm: "[&>[data-slot=tabs-list]]:-ml-2",
-  md: "[&>[data-slot=tabs-list]]:-ml-2.5",
-  lg: "[&>[data-slot=tabs-list]]:-ml-3",
-}
-
-/** A segment strip's inset at its ends: what it is at its top and foot, the strip's
- *  height less the well's (BOX_HEAD 40, 48, 56 less 28, 32, 40, halved), so the
- *  well sits in the box's corner as far from its side as from its top and its round
- *  end follows the corner's. At the body's 20 px it stood twice as far from the
- *  side as from the top, off the corner (Adrian, 2026-10-12). */
-const SEGMENT_INSET: Record<TabsSize, string> = {
-  sm: "px-1.5",
-  md: "px-2",
-  lg: "px-2",
-}
-
-/** A folder strip's start: the body's inset (20 px) less a tab's padding (LINE_TAB:
- *  8, 10, 12) and its edge (1), so the first label starts where the body does while
- *  the chosen tab's edge stands well in from the box's. Pulled like a line list,
- *  that edge stood a sliver from the box's border (Adrian, 2026-10-12). */
-const FOLDER_START: Record<TabsSize, string> = {
-  sm: "pl-[11px]",
-  md: "pl-[9px]",
-  lg: "pl-[7px]",
-}
-
-/** The plain head's face, the strip's: recessed, a step darker than the body in
- *  both schemes (black over the card: 4% on a light one, 25% on a dark one, where
- *  steps must be wider apart to read), solid, so what scrolls under the strip stays
- *  hidden. The chosen tab is the body's colour, so it rises out of the strip as a
- *  browser's tab does. A head of the body's own colour read as one flat box with a
- *  line in it, and a head lighter than the body made the chosen tab a dark hole in
- *  it (Adrian, 2026-10-12). */
-const PLAIN_HEAD = cn(
-  "border-border bg-background bg-[linear-gradient(rgb(0_0_0/0.04),rgb(0_0_0/0.04)),linear-gradient(var(--color-card),var(--color-card))]",
-  "scheme-dark:bg-[linear-gradient(rgb(0_0_0/0.25),rgb(0_0_0/0.25)),linear-gradient(var(--color-card),var(--color-card))]",
-)
-
-/** The plain box's frame is drawn by its two parts, never by the panel round them:
- *  the head is the box's TOP (its top and side edges, the panel's top corners) and
- *  the body the rest (its sides, its foot, the bottom corners, the card's colour).
- *  So the head pinned mid-box is still the box's rounded top, with the body's sides
- *  running on below it; drawn by the panel, the pinned head was a square strip
- *  between two straight edges, the box's corners gone (Adrian, 2026-10-12). The
- *  corners are one length, `--ag-tabs-box-radius` (BOX_RADIUS), worn by the panel,
- *  the head's top and the body's foot. */
-const PLAIN_HEAD_EDGE =
-  "border-x border-t border-b rounded-t-(--ag-tabs-box-radius)"
-const PLAIN_BODY_EDGE =
-  "border-border border-x border-b bg-background bg-[linear-gradient(var(--color-card),var(--color-card))] rounded-b-(--ag-tabs-box-radius)"
-
-/** A filled box's body (`height`): the rest of the box below the head, the shown
- *  panel filling it and what the panel holds filling the panel, edge to edge, to
- *  scroll itself. A hidden panel stays hidden: preflight's `[hidden]` is important. */
-const FILLED_BODY = cn(
-  "flex min-h-0 flex-1 flex-col",
-  "[&>[data-slot=tabs-panel]]:flex [&>[data-slot=tabs-panel]]:min-h-0 [&>[data-slot=tabs-panel]]:flex-1 [&>[data-slot=tabs-panel]]:flex-col",
-  "[&>[data-slot=tabs-panel]>*]:min-h-0 [&>[data-slot=tabs-panel]>*]:flex-1",
-)
-
-/** The plain box's corner, the panel's own (rounded-xl). */
-const BOX_RADIUS = "[--ag-tabs-box-radius:var(--radius-xl)]"
-
-/** What a plain head pins in: a square of the page's ground, the head (rounded)
- *  inside it, so behind the head's corners the rows passing under a pinned head do
- *  not show; at rest, the page is what is there anyway. Its own element, under the
- *  head: a ground drawn by the head itself (a pseudo-element under it) painted over
- *  the head's face and its curved corners. */
-const PLAIN_PIN = "sticky top-(--ag-tabs-box-top) z-10 bg-background"
-
-/** The line look in a plain box: the chosen tab is cut from the body, a folder's
- *  tab. It wears the body's colour as it is seen, solid (the card over the page's
- *  ground, as the head's base is) and a hairline round its top, and stands a pixel
- *  over the head's rule, so it opens into what it shows; the rest sit in the head.
- *  Every tab keeps the edge, transparent, so choosing one moves nothing. Read by the
- *  tabs inside a head marked `data-folder`. */
-const FOLDER_TAB = cn(
-  "in-data-folder:rounded-t-lg in-data-folder:border in-data-folder:border-transparent in-data-folder:border-b-0",
-  "in-data-folder:data-active:relative in-data-folder:data-active:top-px in-data-folder:data-active:border-border",
-  "in-data-folder:data-active:bg-background in-data-folder:data-active:bg-[linear-gradient(var(--color-card),var(--color-card))]",
-)
-
-/** The glass head's face: the material's front surface (`glassFront.top`, what
- *  GlassPane and the glass group-box wear: its own blur and face, one lit hairline
- *  as its inner edge), placed by the head itself (`sticky`). Square: it lies under
- *  the title, or pinned mid-box, never along the box's rounded top; at rest at the
- *  very top the scroller's corners cut it. */
-const GLASS_HEAD = cn(glassFront.top, "rounded-none")
-
-/** The glass box's corners, a glass card's as the panel's are: one length for its
- *  body, its clip and its edge. */
-const PANE_RADIUS = "var(--radius-3xl)"
-
-/** The glass box's root: no glass of its own (its body is a back layer), only its
- *  corners and the words a glass's body gives what it holds. */
-const GLASS_PANE =
-  "relative isolate rounded-(--glass-radius) text-foreground scheme-light:text-zinc-950"
-
-export type TabsBoxProps = Omit<
-  TabsProps,
-  "children" | "title" | "orientation"
-> & {
-  /** The tabs (`TabsTab`s, links included), drawn in the head's list. */
-  tabs: React.ReactNode
-  /** What the box holds, in a few words: a heading above the box, which names it.
-   *  With a title, `className` places the two together. */
-  title?: React.ReactNode
-  /** Something at the head's end: a button, a count. */
-  action?: React.ReactNode
-  /** Where the head pins in a page that scrolls, a CSS length: below a site
-   *  header, `"var(--header-height)"`. Default the page's top. */
-  top?: string
-  /** A cap on the box's height, a CSS length: past it the box scrolls itself, its
-   *  head pinned at its own top. Unset, the box grows with what it holds and its
-   *  head pins to the page (`top`). */
-  maxHeight?: string
-  /** The box's height, a CSS length, for panels whose content scrolls itself (a
-   *  log, a trace, a list with its own scroller): what a panel holds fills the
-   *  body, edge to edge, and the box itself never scrolls. */
-  height?: string
-  /** The `TabsPanel`s. */
-  children: React.ReactNode
-}
-
-/** A box of tabs, its title a heading above it: one surface, the strip (the tab
- *  list, an action at its end), then the panels. The strip PINS while the body
- *  scrolls under it, against the page (`top`) or inside the box (`maxHeight`);
- *  given a `height`, the box stays still and what a panel holds fills it and
- *  scrolls itself (a log, a trace). The box is the frame: what draws a box of its
- *  own when alone draws none inside it (`InFrame`, panel's).
- *  Plain, the box is a `Panel` drawn as the tabs' root, and the strip a solid head
- *  a step off the card's colour, so what passes under it is hidden; in the line
- *  look the chosen tab is cut from the body, a folder's tab. Glass, the box is
- *  built as GlassPane is, of the material's parts (a body on a back layer, the
- *  front surface as the pinned strip, the edge over both), so what passes under the
- *  strip is seen through it only as light. What a panel pins of its own (a table's
- *  header row) pins under the head at `top-(--ag-tabs-box-under)`, on a ground of
- *  its own (plain, the card's colour).
- *
- *    <TabsBox defaultValue="ops" title="fleet" action={<Button>refresh</Button>}
- *      tabs={<><TabsTab value="ops">ops</TabsTab><TabsTab value="perf">perf</TabsTab></>}>
- *      <TabsPanel value="ops">…</TabsPanel>
- *      <TabsPanel value="perf">…</TabsPanel>
- *    </TabsBox>
- *
- *  Nothing in it is `overflow: hidden`, which makes a scroller and would end the
- *  pinning against the page; the body is cut to the box's corners with
- *  `overflow: clip`, which is no scroller. Capped, the scroller is an element
- *  inside the surface, never the surface: a scrolling surface would carry its
- *  glass rim away with the content, its rim being positioned pseudo-elements. */
-export function TabsBox({
-  tabs,
-  title,
-  action,
-  top,
-  maxHeight,
-  height,
-  material,
-  scheme,
-  size = "md",
-  variant = "segment",
-  className,
-  children,
-  ref,
-  ...props
-}: TabsBoxProps) {
-  if ([top, maxHeight, height].filter((v) => v !== undefined).length > 1)
-    throw new Error(
-      "TabsBox: `top` pins the head to the page, `maxHeight` makes the box its own scroller and `height` gives it a height its panels fill; give one",
-    )
-  const filled = height !== undefined
-  // The body glides to its panel's height when the box grows with what it holds;
-  // a filled box has its height, and a capped one scrolls instead of growing.
-  const glides = !filled && maxHeight === undefined
-  const body = useBodyHeight(glides)
-  const m = useMaterial(material)
-  const titleId = React.useId()
-  const scroller = React.useRef<HTMLDivElement>(null)
-  // What is inside stands on the box: the panel and the tabs wear the one scheme
-  // read here, whatever decided it.
-  const [s, here] = useSurfaceScheme<HTMLElement>(scheme, ref)
-  const glass = m === "glass"
-  // Plain and pinned to the page: the head and the body draw the frame, so a head
-  // pinned mid-box is still the box's rounded top. Capped or filled, the head never
-  // leaves the box's top, and the frame stays the panel's, outside the scroller,
-  // whose edges fade (a frame drawn inside it faded with the rows).
-  const partsFrame = !glass && maxHeight === undefined && !filled
-  const head = (
-    <div
-      data-slot="tabs-box-head"
-      // Plain, the line look's chosen tab is a folder's tab (FOLDER_TAB).
-      data-folder={!glass && variant === "line" ? "" : undefined}
-      className={cn(
-        "flex h-(--ag-tabs-box-head) items-center gap-4",
-        variant === "segment" ? SEGMENT_INSET[size] : "px-5",
-        glass
-          ? GLASS_HEAD
-          : [PLAIN_HEAD, partsFrame ? PLAIN_HEAD_EDGE : "border-b"],
-        variant === "line" &&
-          // The strip's rule is the line: the list fills the strip, its own
-          // rule dropped, its tabs as tall as the strip.
-          "[&>[data-slot=tabs-list]]:self-stretch [&>[data-slot=tabs-list]]:items-stretch [&>[data-slot=tabs-list]]:after:hidden [&_[data-slot=tabs-tab]]:h-auto",
-        variant === "line" &&
-          (glass
-            ? LINE_PULL[size]
-            : // A folder's tabs stand in the strip from a little below its
-              // top, and the chosen one is told by its shape: no lit stretch
-              // of rule. The action stands as low, on the labels' centre line.
-              [
-                FOLDER_START[size],
-                "[&>[data-slot=tabs-list]]:pt-2 [&_[data-slot=tabs-indicator]]:hidden",
-                "[&>[data-slot=tabs-box-action]]:self-stretch [&>[data-slot=tabs-box-action]]:pt-2",
-              ]),
-        // Glass pins itself, over the body: after the glass's `relative`, so it
-        // wins. Plain pins in its ground (PLAIN_PIN).
-        glass && "sticky top-(--ag-tabs-box-top) z-10",
-      )}
-    >
-      <TabsList className="min-w-0">{tabs}</TabsList>
-      {action && (
-        <div
-          data-slot="tabs-box-action"
-          className="ml-auto flex shrink-0 items-center gap-2"
-        >
-          {action}
-        </div>
-      )}
-    </div>
-  )
-  const inner = (
-    <div
-      ref={scroller}
-      data-slot="tabs-box-scroller"
-      className={cn(
-        "rounded-[inherit]",
-        filled
-          ? // The box's height, the head and then the body taking the rest.
-            "flex h-(--ag-tabs-box-height) flex-col overflow-clip"
-          : maxHeight === undefined
-            ? // Clips to the box's corners (glass's square head is rounded there at
-              // rest; plain's head is rounded itself, PLAIN_HEAD_EDGE); `clip` is no
-              // scroller, so the head pins on.
-              "overflow-clip"
-            : [
-                // Its top is covered by the pinned strip: said as scroll padding,
-                // so a focused row stops below it and the thumb's track starts there.
-                // No bounce at its ends (`overscroll-none`, which also keeps the
-                // scroll from chaining to the page): a rubber-band past the top
-                // dragged the pinned head down with the rows and showed the box's
-                // empty glass above it.
-                "relative max-h-(--ag-tabs-box-max) scroll-pt-(--ag-tabs-box-head) overflow-y-auto overscroll-none",
-                NO_SCROLLBAR,
-                // Never a hard cut: the rows fade where there is more, at the
-                // foot and where they come out from under the head (scrims'
-                // `ag-edge-fade-y`, the head its cover).
-                "ag-edge-fade-y [--edge-cover:var(--ag-tabs-box-head)]",
-              ],
-      )}
-      style={
-        {
-          "--ag-tabs-box-max": maxHeight,
-          "--ag-tabs-box-height": height,
-          "--ag-tabs-box-head": BOX_HEAD[size],
-          // Capped, it pins at the box's own top; else where the page says.
-          "--ag-tabs-box-top": maxHeight === undefined ? (top ?? "0px") : "0px",
-          // Where the pinned head ends: what a panel pins of its own (a table's
-          // header row) sticks here, `sticky top-(--ag-tabs-box-under)`, under
-          // the head rather than behind it.
-          "--ag-tabs-box-under":
-            "calc(var(--ag-tabs-box-top) + var(--ag-tabs-box-head))",
-        } as React.CSSProperties
-      }
-    >
-      {maxHeight !== undefined && <ScrollThumbs scroller={scroller} />}
-      {glass ? head : <div className={cn(PLAIN_PIN, "shrink-0")}>{head}</div>}
-      <div
-        data-slot="tabs-box-body"
-        // In glass what it holds lies on the back layer, a sibling and no
-        // ancestor, so it is told it stands on glass, as GlassPane's content is.
-        className={cn(
-          filled && FILLED_BODY,
-          glides && "overflow-clip",
-          glides && body.moving && ["transition-[height]", GLIDE],
-          glass ? "[--glass-body:1]" : partsFrame && PLAIN_BODY_EDGE,
-        )}
-        style={
-          glides && body.height !== null
-            ? { height: `${body.height}px` }
-            : undefined
-        }
-      >
-        {filled ? (
-          // The box is the frame: what draws a box of its own draws none here.
-          <InFrame>{children}</InFrame>
-        ) : (
-          <div ref={body.setInner} data-slot="tabs-box-panels" className="p-5">
-            <InFrame>{children}</InFrame>
-          </div>
-        )}
-      </div>
-    </div>
-  )
-  // With a title, `className` places the section (the title and the box); without,
-  // the box itself.
-  const boxClass = title === undefined ? className : undefined
-  const box = !glass ? (
-    <Panel
-      ref={here}
-      material={m}
-      scheme={s}
-      data-slot="tabs-box"
-      // Pinned to the page, the frame is drawn by the head and the body
-      // (PLAIN_HEAD_EDGE, PLAIN_BODY_EDGE) and the panel keeps its corners and its
-      // shadow; capped, the panel draws it, outside the scroller's fade.
-      className={cn(
-        "gap-0 rounded-(--ag-tabs-box-radius) p-0",
-        partsFrame && "border-0 bg-transparent",
-        BOX_RADIUS,
-        boxClass,
-      )}
-      render={
-        <Tabs
-          material={m}
-          scheme={s}
-          size={size}
-          variant={variant}
-          {...props}
-        />
-      }
-    >
-      {inner}
-    </Panel>
-  ) : (
-    // Glass is GlassPane's build from the material's parts: the body on a back
-    // layer, the front surface pinned over what scrolls, the edge over both. The
-    // root itself never blurs, the material's rule for a front: inside a blurring
-    // element it may blur nothing that passes under it. So in glass the box is not
-    // the panel's glass (which blurs on its root), only the panel's corners.
-    <Tabs
-      ref={here}
-      data-slot="tabs-box"
-      material={m}
-      scheme={s}
-      size={size}
-      variant={variant}
-      className={cn("gap-0", GLASS_PANE, boxClass)}
-      {...props}
-      // The consumer's style and the corners the back layer and the edge share.
-      style={{
-        ...props.style,
-        ...({ "--glass-radius": PANE_RADIUS } satisfies GlassStyle),
-      }}
-    >
-      <div
-        aria-hidden
-        data-slot="tabs-box-back"
-        className={cn(
-          glassVariants({ shape: "surface", edge: false }),
-          "pointer-events-none absolute inset-0 -z-10 [--glass-radius:inherit]",
-        )}
-      />
-      {inner}
-      <GlassEdge radius={PANE_RADIUS} />
-    </Tabs>
-  )
-  if (title === undefined) return box
-  // The title above the box, the two one section named by it.
-  return (
-    <section
-      data-slot="tabs-box-section"
-      aria-labelledby={titleId}
-      className={cn("flex min-w-0 flex-col gap-2.5", className)}
-    >
-      <h3 id={titleId} data-slot="tabs-box-title" className={BOX_TITLE}>
-        {title}
-      </h3>
-      {box}
-    </section>
   )
 }

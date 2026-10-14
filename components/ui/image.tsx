@@ -8,7 +8,14 @@
 // Without one the source loads as it is. Every `<img>` in this registry is this.
 
 import type * as React from "react"
-import { createContext, type Ref, use, useState } from "react"
+import {
+  createContext,
+  type Ref,
+  use,
+  useEffect,
+  useRef,
+  useState,
+} from "react"
 import { preload } from "react-dom"
 import { cn } from "@/lib/utils"
 
@@ -120,6 +127,12 @@ export type ImageProps = Omit<
    *  host that answers a missing size with a stand-in (YouTube's 120 px grey for a
    *  maxres it never made) is told apart by this, and the next source is tried. */
   minWidth?: number
+  /** How long a source may take to arrive once it is asked for, ms, before the next
+   *  in `fallbacks` is tried: a host that hangs rather than fails (a CDN whose
+   *  network is blocked holds the connection open until the browser gives up, a
+   *  minute or more) then degrades to the next copy as an error would. Unset, a
+   *  source is waited for. The last source is always waited for. */
+  patience?: number
   ref?: Ref<HTMLImageElement>
 }
 
@@ -217,6 +230,7 @@ function ImageSources({
   blurDataURL,
   fallbacks = [],
   minWidth = 0,
+  patience,
   loading,
   className,
   style,
@@ -255,7 +269,32 @@ function ImageSources({
     setAt(at + 1)
     setState("loading")
   }
+  // Patience: the clock starts when the source is asked for (near the viewport, as
+  // a lazy picture is), and a source still loading when it runs out is let go.
+  const own = useRef<HTMLImageElement | null>(null)
+  // biome-ignore lint/correctness/useExhaustiveDependencies: a new source or state is a new wait; `settle` reads the render's own `at`
+  useEffect(() => {
+    const element = own.current
+    if (patience === undefined || last || state !== "loading" || !element)
+      return
+    let timer = 0
+    const watch = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry?.isIntersecting || timer) return
+        timer = window.setTimeout(() => {
+          if (!element.complete) settle("missing")
+        }, patience)
+      },
+      { rootMargin: "800px" },
+    )
+    watch.observe(element)
+    return () => {
+      watch.disconnect()
+      window.clearTimeout(timer)
+    }
+  }, [patience, last, state, at])
   const attach = (el: HTMLImageElement | null) => {
+    own.current = el
     if (el) {
       if (!el.complete) setState("loading")
       else settle(judge(el, minWidth))

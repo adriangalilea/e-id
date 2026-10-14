@@ -1,25 +1,24 @@
 "use server";
 
-import { and, desc, eq, not } from "drizzle-orm";
-import { refresh, updateTag } from "next/cache";
-import { redirect } from "next/navigation";
+import { and, desc, eq, inArray, not } from "drizzle-orm";
+import { updateTag } from "next/cache";
 import { db } from "@/db";
+import { comments, links, users, type SelectComment } from "@/db/schema";
+import { asLinks, type Written } from "@/lib/card-draft";
 import {
-  comments,
-  socials,
-  users,
-  type SelectComment,
-  type SelectSocial,
-  type SocialPlatform,
-  socialPlatforms,
-} from "@/db/schema";
-import { asSocials, type Written } from "@/lib/card-draft";
+  type CardEdit,
+  cardEditSchema,
+  errorsOf,
+  OFFERED,
+  type SaveResult,
+} from "@/lib/card-edit";
 import { hasFlag } from "@/components/ui/flag";
 import { type Chip, chipOf } from "@/lib/chip";
 import { writeChip } from "@/lib/chip-server";
 import { getSession } from "@/lib/session";
 import { USERS_TAG, profileTag, usernameTag } from "@/lib/tags";
-import { claimUsername, usernameSchema } from "@/lib/username";
+import { claimUsername } from "@/lib/username";
+import { usernameSchema } from "@/lib/username-rules";
 import { getGithubProfile } from "@/lib/github";
 import { getPresence } from "@/lib/presence";
 import { countryOf } from "@/lib/country-of";
@@ -160,8 +159,6 @@ export async function pinCommentToggle(id: SelectComment["id"]) {
 
 // ── profile ─────────────────────────────────────────────────────────────────
 
-export type FormState = { message: string; error: boolean };
-
 /** Claims a username for the signed-in user and points every cache and the
  *  display cookie at it. */
 async function renameTo(
@@ -176,96 +173,125 @@ async function renameTo(
   return valid;
 }
 
-function renameError(error: unknown): FormState {
+/** Why a rename failed, said to the person: taken, or the rule it breaks. */
+function renameError(error: unknown): string {
   const message = error instanceof Error ? error.message : String(error);
-  if (/unique/i.test(message))
-    return { message: "The username is taken", error: true };
-  return { message, error: true };
+  return /unique/i.test(message) ? "The username is taken" : message;
 }
 
-type SocialFields = {
-  platform: SocialPlatform;
-  value?: string;
-  public?: boolean;
-  contextmessage?: string;
-  highlight?: string;
-};
-
-/** The edit form's socials, keyed `<platform>_<socialId>_<field>`. */
-function socialsOf(formData: FormData) {
-  const entries = new Map<string, SocialFields>();
-  for (const [key, value] of formData.entries()) {
-    const [platform, socialId, field] = key.split("_");
-    if (!platform || !socialId || !field) continue;
-    const entry = entries.get(socialId) ?? {
-      platform: platform as SocialPlatform,
-    };
-    entries.set(socialId, entry);
-    if (field === "value") entry.value = value.toString();
-    else if (field === "public") entry.public = Boolean(value);
-    else if (field === "contextmessage") entry.contextmessage = value.toString();
-    else if (field === "highlight") entry.highlight = value.toString();
-  }
-  return entries;
-}
-
-export async function updateUserAndSocials(
-  _prevState: FormState,
-  formData: FormData,
-): Promise<FormState> {
+/** The signed-in user's card as they edit it in place (lib/card-edit): every
+ *  link they have, the hidden ones too, which the public page never carries, so
+ *  they are read only here, when the owner opens their card. */
+export async function cardToEdit(): Promise<CardEdit> {
   const user = await requireUser();
-  const name = String(formData.get("name"));
-  const username = String(formData.get("username"));
-  const bio = String(formData.get("bio"));
-  const country_code = String(formData.get("country_code"));
+  const [row] = await db
+    .select({
+      name: users.name,
+      username: users.username,
+      country: users.country_code,
+      bio: users.bio,
+    })
+    .from(users)
+    .where(eq(users.id, user.id));
+  if (!row?.username) throw new Error(`cardToEdit: no user ${user.id}`);
+  const owned = await db
+    .select()
+    .from(links)
+    .where(eq(links.user_id, user.id))
+    .orderBy(links.order);
+  return {
+    name: row.name ?? "",
+    handle: row.username,
+    country: row.country ?? "XX",
+    bio: row.bio ?? "",
+    links: owned.map((link) => ({
+      id: link.id,
+      platform: link.platform,
+      value: link.value ?? "",
+      label: link.label ?? "",
+      note: link.note ?? "",
+      highlight: link.custom_data?.highlight ?? "",
+      public: link.public,
+    })),
+  };
+}
 
-  const [updated] = await db
-    .update(users)
-    .set({ name, bio, country_code })
-    .where(eq(users.id, user.id))
-    .returning({ username: users.username });
-  if (!updated) throw new Error(`no user ${user.id}`);
+/** Writes the signed-in user's card whole, as edited in place, or nothing: the
+ *  card parsed with the schema both sides share (lib/card-edit), every link it
+ *  names checked as theirs, then one transaction (name, country, bio; links in
+ *  the card's order, one gone from it deleted, a new one made; the handle). A
+ *  taken handle undoes the lot and comes back as the handle's error. The page
+ *  re-renders with the write in the same response (`updateTag`). */
+export async function saveCard(input: unknown): Promise<SaveResult> {
+  const user = await requireUser();
+  const parsed = cardEditSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, errors: errorsOf(parsed.error) };
+  const card = parsed.data;
 
-  // Only the signed-in user's own socials are written: a social id from the form
-  // that is not theirs matches no row.
-  for (const [socialId, social] of socialsOf(formData)) {
-    await db
-      .update(socials)
-      .set({
-        value: social.value ?? "",
-        public: social.public ?? false,
-        context_message: social.contextmessage || null,
-        custom_data: social.highlight ? { highlight: social.highlight } : {},
-      })
-      .where(and(eq(socials.id, socialId), eq(socials.user_id, user.id)));
+  const [row] = await db
+    .select({ username: users.username })
+    .from(users)
+    .where(eq(users.id, user.id));
+  if (!row?.username) throw new Error(`saveCard: no user ${user.id}`);
+  const owned = await db
+    .select({ id: links.id, custom_data: links.custom_data })
+    .from(links)
+    .where(eq(links.user_id, user.id));
+  const named = new Set(card.links.flatMap((l) => (l.id ? [l.id] : [])));
+  for (const id of named)
+    if (!owned.some((l) => l.id === id))
+      throw new Error(`saveCard: link ${id} is not ${user.id}'s`);
+  const renamed = card.handle !== row.username;
+
+  try {
+    await db.transaction(async (tx) => {
+      await tx
+        .update(users)
+        .set({
+          name: card.name || null,
+          bio: card.bio || null,
+          country_code: card.country.toUpperCase(),
+        })
+        .where(eq(users.id, user.id));
+      const gone = owned.filter((l) => !named.has(l.id)).map((l) => l.id);
+      if (gone.length > 0) await tx.delete(links).where(inArray(links.id, gone));
+      for (const [order, link] of card.links.entries()) {
+        // What was read from the platform stays; the highlight is the owner's
+        // (none is left out of the stored JSON).
+        const read = owned.find((l) => l.id === link.id)?.custom_data ?? {};
+        const fields = {
+          value: link.value,
+          label: link.label || null,
+          public: link.public,
+          order,
+          note: link.note || null,
+          custom_data: { ...read, highlight: link.highlight || undefined },
+        };
+        if (link.id)
+          await tx.update(links).set(fields).where(eq(links.id, link.id));
+        else
+          await tx.insert(links).values({
+            id: crypto.randomUUID(),
+            user_id: user.id,
+            platform: link.platform,
+            ...fields,
+          });
+      }
+      if (renamed) await claimUsername(user.id, card.handle, tx);
+    });
+  } catch (error) {
+    if (renamed && /unique/i.test(String(error)))
+      return { ok: false, errors: { handle: "That username is taken." } };
+    throw error;
   }
 
   updateTag(USERS_TAG);
   updateTag(profileTag(user.id));
-
-  let finalUsername = updated.username;
-  if (username !== updated.username) {
-    try {
-      finalUsername = await renameTo(user, username);
-    } catch (error) {
-      return renameError(error);
-    }
+  if (renamed) {
+    updateTag(usernameTag(card.handle));
+    await writeChip(chipOf({ username: card.handle, image: user.image }));
   }
-  if (!finalUsername) throw new Error(`user ${user.id} edited without a username`);
-  redirect(`/${finalUsername}`);
-}
-
-export async function setUsernameFromForm(
-  _prevState: FormState,
-  formData: FormData,
-): Promise<FormState> {
-  const user = await requireUser();
-  try {
-    await renameTo(user, String(formData.get("username")));
-  } catch (error) {
-    return renameError(error);
-  }
-  return { message: "Username updated.", error: false };
+  return { ok: true, username: card.handle };
 }
 
 export type HandleState = "free" | "taken" | "invalid";
@@ -315,12 +341,12 @@ export async function githubCard(login: string): Promise<{
   };
 }
 
-/** What the profile would show of each place on the home's card, before there
- *  is an account: the same reads a profile makes (lib/presence), from the card's
- *  places instead of stored socials. Public reads of public pages, cached as a
- *  profile's are. */
-export async function previewPresence(places: Written["places"]) {
-  return getPresence(asSocials(places));
+/** What the profile would show behind each link on the home's card, before
+ *  there is an account: the same reads a profile makes (lib/presence), from the
+ *  card's links instead of stored ones. Public reads of public pages, cached as
+ *  a profile's are. */
+export async function previewPresence(drafted: Written["links"]) {
+  return getPresence(asLinks(drafted));
 }
 
 /** How new an account must be to take a card filled on the home: the sign-in
@@ -329,26 +355,48 @@ export async function previewPresence(places: Written["places"]) {
 const FRESH_MS = 10 * 60 * 1000;
 
 export type Claimed = {
-  /** null: none could be given (the drafted one and the provider's both taken). */
+  /** Theirs now: the drafted handle, or the one they had; null while they have
+   *  none (their provider's was taken and the drafted one was refused). */
   username: string | null;
-  /** The account was not new, so nothing was written. */
+  /** The account was not new and had an address, so nothing was written. */
   stale: boolean;
   /** Why the drafted handle could not be the username (taken, too short). */
   refused: string | null;
 };
 
+/** The drafted handle as the user's username, or why it cannot be. */
+async function takeHandle(
+  user: { id: string; image?: string | null; username?: string | null },
+  handle: string,
+): Promise<Claimed> {
+  if (!handle || handle === user.username)
+    return { username: user.username ?? null, stale: false, refused: null };
+  try {
+    return { username: await renameTo(user, handle), stale: false, refused: null };
+  } catch (error) {
+    return {
+      username: user.username ?? null,
+      stale: false,
+      refused: renameError(error),
+    };
+  }
+}
+
 /** The card a visitor filled on the home (lib/draft), written onto the account
- *  they just signed up with: the name, the country, its places (public, as they
- *  were on the card) and the handle as the username. */
+ *  they just signed up with: the name, the country, its links (public, as they
+ *  were on the card) and the handle as the username. An older account with no
+ *  address yet takes the handle alone; one with an address is left as it is. */
 export async function claimDraft(draft: Written): Promise<Claimed> {
   const user = await requireUser();
   const [row] = await db
-    .select({ createdAt: users.createdAt, username: users.username })
+    .select({ createdAt: users.createdAt })
     .from(users)
     .where(eq(users.id, user.id));
   if (!row) throw new Error(`claimDraft: no user ${user.id}`);
   if (Date.now() - row.createdAt.getTime() > FRESH_MS)
-    return { username: row.username, stale: true, refused: null };
+    return user.username
+      ? { username: user.username, stale: true, refused: null }
+      : takeHandle(user, draft.handle);
 
   const name = draft.name.trim();
   // Any country the picker offers (@ag/country-picker draws the flag set's); "XX"
@@ -359,82 +407,36 @@ export async function claimDraft(draft: Written): Promise<Claimed> {
     .set({ ...(name && { name }), country_code: country })
     .where(eq(users.id, user.id));
 
-  // Sign-up already made a place for the provider (github, email): one the card
+  // Sign-up already made a link for the provider (github, email): one the card
   // has too is made public, as it was on the card; the rest are made as written.
   const owned = await db
-    .select({ id: socials.id, platform: socials.platform })
-    .from(socials)
-    .where(eq(socials.user_id, user.id));
-  const places = draft.places.filter(
-    (p) => socialPlatforms.includes(p.platform) && p.value.trim() !== "",
+    .select({ id: links.id, platform: links.platform })
+    .from(links)
+    .where(eq(links.user_id, user.id));
+  const drafted = draft.links.filter(
+    (l) => OFFERED.includes(l.platform) && l.value.trim() !== "",
   );
-  for (const place of places) {
-    const had = owned.find((s) => s.platform === place.platform);
+  for (const link of drafted) {
+    const had = owned.find((o) => o.platform === link.platform);
     if (had)
-      await db.update(socials).set({ public: true }).where(eq(socials.id, had.id));
+      await db.update(links).set({ public: true }).where(eq(links.id, had.id));
   }
-  const added = places.filter(
-    (p) => !owned.some((s) => s.platform === p.platform),
+  const added = drafted.filter(
+    (l) => !owned.some((o) => o.platform === l.platform),
   );
   if (added.length > 0)
-    await db.insert(socials).values(
-      added.map((place, i) => ({
+    await db.insert(links).values(
+      added.map((link, i) => ({
         id: crypto.randomUUID(),
         user_id: user.id,
-        platform: place.platform,
-        value: place.value.trim(),
+        platform: link.platform,
+        value: link.value.trim(),
         public: true,
         order: owned.length + i,
       })),
     );
   updateTag(USERS_TAG);
   updateTag(profileTag(user.id));
-
-  if (!draft.handle || draft.handle === row.username)
-    return { username: row.username, stale: false, refused: null };
-  try {
-    return {
-      username: await renameTo(user, draft.handle),
-      stale: false,
-      refused: null,
-    };
-  } catch (error) {
-    return {
-      username: row.username,
-      stale: false,
-      refused: renameError(error).message,
-    };
-  }
+  return takeHandle(user, draft.handle);
 }
 
-// ── socials ─────────────────────────────────────────────────────────────────
-
-/** A new social starts private and empty: the public page does not change, the
- *  edit page is refreshed to show it. */
-export async function addSocial(platform: SocialPlatform) {
-  const user = await requireUser();
-  await db
-    .insert(socials)
-    .values({ id: crypto.randomUUID(), user_id: user.id, platform });
-  refresh();
-}
-
-export async function removeSocial(socialId: SelectSocial["id"]) {
-  const user = await requireUser();
-  await db
-    .delete(socials)
-    .where(and(eq(socials.id, socialId), eq(socials.user_id, user.id)));
-  updateTag(profileTag(user.id));
-}
-
-export async function orderSocial(
-  socialId: SelectSocial["id"],
-  order: SelectSocial["order"],
-) {
-  const user = await requireUser();
-  await db
-    .update(socials)
-    .set({ order })
-    .where(and(eq(socials.id, socialId), eq(socials.user_id, user.id)));
-  updateTag(profileTag(user.id));
-}

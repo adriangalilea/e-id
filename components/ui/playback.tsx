@@ -739,7 +739,16 @@ export function usePlayback(
     },
     [store],
   )
-  React.useEffect(() => () => cancelAnimationFrame(frame.current), [])
+  // Its handle cleared with it: a loop cancelled but still named here (React mounts
+  // an effect twice in development) kept `go` from ever starting another, and a
+  // clock told to play stood still at 0.
+  React.useEffect(
+    () => () => {
+      cancelAnimationFrame(frame.current)
+      frame.current = 0
+    },
+    [],
+  )
 
   const timebase = React.useMemo<Timebase>(() => {
     const at = () => store.get().at

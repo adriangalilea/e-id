@@ -37,7 +37,7 @@ import {
 } from "@/components/ui/material"
 import { glassVariants, schemeOf } from "@/components/ui/material-glass"
 import { usePortalTarget } from "@/components/ui/portal"
-import "./edge-fade"
+import { ScrollArea } from "@/components/ui/scroll-area"
 
 export type DialogPlace = "center" | "side"
 
@@ -83,11 +83,11 @@ const DIALOG_FRAME =
   "flex flex-col outline-none data-[ending-style]:opacity-0 data-[starting-style]:opacity-0"
 
 /** What the frame holds: it fills the frame and scrolls there, its cut edges fading
- *  where there is more (scrims' `ag-edge-fade-y`); the room round the content is
- *  inside it, so nothing at its edge (a focus ring) is cut. A dialog scrolling as
- *  its frame faded its own surface, or showed a hard cut. */
-const DIALOG_BODY =
-  "ag-edge-fade-y flex min-h-0 flex-1 flex-col gap-4 overscroll-contain p-5"
+ *  where there is more (scroll-area); the room round the content is inside it, so
+ *  nothing at its edge (a focus ring) is cut. A dialog scrolling as its frame
+ *  faded its own surface, or showed a hard cut. An overlay, so its scroll stops at
+ *  its ends rather than moving the page behind it. */
+const DIALOG_BODY = "flex flex-1 flex-col gap-4 overscroll-contain p-5"
 
 /** The popup's motion, one per face: the plain face's own transition, the glass
  *  face's through the material, which owns its transition (`--glass-moves`). */
@@ -116,14 +116,24 @@ const GLASS_FACE = cn(
   "fixed border-0 [--glass-blur:28px] [--glass-radius:20px]",
 )
 
+/** A bare dialog's frame: no surface, no room round what it holds, and no motion
+ *  of its own, so what it holds is the object and a view transition can carry it
+ *  in from where it lay on the page (its snapshot taken whole, never mid-fade). */
+const BARE_FRAME =
+  "flex flex-col outline-none data-[ending-style]:scale-100 data-[starting-style]:scale-100"
+
 /** The popup, portalled, at the dialog's place: dimming the page behind it only
  *  when it stands in the center. `container`: where it portals (a player's own
  *  layer, so it shows in fullscreen). In its material, and so is everything inside
- *  it. */
+ *  it. `bare`: no face at all, for an object lifted off the page to be worked on
+ *  (a card written on where it lies): still a dialog, focus held, Esc and a press
+ *  outside closing it; `backdrop` adds to the dim behind it. */
 export function DialogContent({
   container,
   material,
   scheme,
+  bare = false,
+  backdrop,
   className,
   children,
   ref,
@@ -133,6 +143,10 @@ export function DialogContent({
   material?: Material
   /** The colour scheme it stands in (material): default the nearest provider's. */
   scheme?: Scheme
+  /** No surface and no motion: what it holds is the object. */
+  bare?: boolean
+  /** Classes added to the dim behind a centred one (a stronger dim, a blur). */
+  backdrop?: string
 }) {
   const place = useDialogPlace()
   const m = useMaterial(material)
@@ -146,30 +160,44 @@ export function DialogContent({
       {place === "center" && (
         <Base.Backdrop
           data-slot="dialog-backdrop"
-          className={DIALOG_BACKDROP}
+          className={cn(DIALOG_BACKDROP, backdrop)}
         />
       )}
       <Base.Popup
         ref={here}
         data-slot="dialog-content"
         data-place={place}
-        data-material={m}
+        data-material={bare ? undefined : m}
+        data-bare={bare || undefined}
         className={cn(
           DIALOG_PLACE[place],
-          DIALOG_FRAME,
           "z-50",
           schemeOf(s),
-          m === "glass" ? GLASS_FACE : PLAIN_FACE,
-          DIALOG_MOTION[m],
+          bare
+            ? BARE_FRAME
+            : cn(
+                DIALOG_FRAME,
+                m === "glass" ? GLASS_FACE : PLAIN_FACE,
+                DIALOG_MOTION[m],
+              ),
           className,
         )}
         {...props}
       >
-        <div data-slot="dialog-body" className={DIALOG_BODY}>
-          <MaterialProvider material={m} scheme={s}>
-            {children}
-          </MaterialProvider>
-        </div>
+        <MaterialProvider material={m} scheme={s}>
+          {bare ? (
+            children
+          ) : (
+            // Its slot rides on `render`: the scroller's own props name it
+            // scroll-area.
+            <ScrollArea
+              render={<div data-slot="dialog-body" />}
+              className={DIALOG_BODY}
+            >
+              {children}
+            </ScrollArea>
+          )}
+        </MaterialProvider>
       </Base.Popup>
     </Base.Portal>
   )

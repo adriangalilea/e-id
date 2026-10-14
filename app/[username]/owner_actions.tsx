@@ -1,16 +1,16 @@
 "use client";
 
-import Link from "next/link";
 import { Pen } from "lucide-react";
+import { useOwnCard } from "@/components/profile-card";
 import { Button } from "@/components/ui/button";
-import { useChip } from "@/components/session/use-chip";
 import ShareButton from "./share_button";
 
-/** Share and edit, for the profile's owner as the display cookie remembers them.
- *  The edit page checks the real session. */
+/** Share and edit, for the profile's owner as the display cookie remembers them
+ *  (components/profile-card, `useOwnCard`). Edit takes up the card itself; saving
+ *  checks the real session. */
 export function OwnerActions({ username }: { username: string }) {
-  const chip = useChip();
-  if (chip?.u?.toLowerCase() !== username.toLowerCase()) return null;
+  const own = useOwnCard();
+  if (!own) return null;
 
   return (
     <div className="flex animate-fade-in gap-2">
@@ -18,9 +18,10 @@ export function OwnerActions({ username }: { username: string }) {
       <Button
         variant="outline"
         size="lg"
-        render={<Link href={`/${username}/edit`} prefetch={false} />}
+        loading={own.opening}
+        onClick={own.open}
+        icon={<Pen strokeWidth={1.5} />}
       >
-        <Pen strokeWidth={1} />
         edit
       </Button>
     </div>

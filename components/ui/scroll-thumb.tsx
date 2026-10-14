@@ -6,17 +6,20 @@
 // scrollbars); the thumbs take no room, show while the scroller scrolls and for a
 // moment after, or while the pointer comes near the edge they sit on, and they drag.
 // A long scroller has to say where in it you are, which an edge fade alone does not.
-// A short, capped one ends in a fade instead (scroll-fade) and wears no thumb.
-// Between them they are this registry's scroll area: shadcn's ScrollArea, a scroller
-// with bars of its own, is a scroller wearing these. In either material: plain, or a
-// sliver of glass (`material`, or a MaterialProvider round it).
+// A short, capped one ends in a fade instead and wears no thumb. `ScrollArea`
+// (scroll-area) is the scroller that wears them (`thumb`); place them by hand only
+// in a scroller that cannot be one. In either material: plain, or a sliver of glass
+// (`material`, or a MaterialProvider round it).
 //
-// It measures its own scroller, so a consumer only places it: the scroller's first
-// child, a box of no height pinned to the view's top-left corner, the thumbs hanging
-// in it at the right edge (rows) and the bottom (columns), whichever way it overflows.
-// A scroller whose top is covered (a pinned head over what scrolls) says so the CSS
-// way, `scroll-padding-top`, which also keeps a focused row out from under the head;
-// the vertical thumb's track starts below it.
+// It measures its own scroller, so a consumer only places it: right AFTER the
+// scroller, its sibling, where it lays itself over the scroller's box (outside it,
+// so a fade on the scroller, a mask, never fades the thumbs); or, in a scroller with
+// no fade, as its first child, a box of no height pinned to the view's top-left
+// corner. The thumbs hang at the right edge (rows) and the bottom (columns),
+// whichever way it overflows.
+// A scroller whose top or foot is covered (a head or a foot laid over what scrolls)
+// says so the CSS way, `scroll-padding-top` and `-bottom`, which also keep a focused
+// row out from under them; the vertical thumb's track runs between them.
 
 import * as React from "react"
 import { cn } from "@/lib/utils"
@@ -47,19 +50,70 @@ interface Measure {
   width: number
   scrollHeight: number
   scrollWidth: number
-  /** The view's top the scroller says is covered (its `scroll-padding-top`: a
-   *  pinned head over what scrolls), where the vertical thumb never goes. */
-  covered: number
+  /** The view's top and foot the scroller says are covered (its
+   *  `scroll-padding-top` and `-bottom`: a head or a foot laid over what scrolls),
+   *  where the vertical thumb never goes. */
+  covered: { top: number; bottom: number }
+  /** The scroller's own corners, px (its border radius, along each axis): a track
+   *  ends where a corner's curve begins, never runs through it and out past the
+   *  rounded edge. */
+  corners: { topRight: number; bottomRight: number; bottomLeft: number }
+  /** Where the box the thumbs hang in really is, px from the view's top and
+   *  start edge: a padded scroller (content under a head laid over it) rests it
+   *  below its padding, and the thumbs are placed from the view's edge, so this is
+   *  taken back. Measured, never moved: a negative margin on the box pulled the
+   *  content up under the head with it. */
+  hang: { top: number; left: number }
+  /** The scroller stands on glass (a glass body says so, `--glass-body`): its
+   *  thumbs take the plain face, a quiet line, by default, since glass on glass
+   *  nearly always looks bad (Adrian, 2026-10-14). A `material` given by the
+   *  caller still wins: the deliberate exception, made with care. */
+  onGlass: boolean
 }
 
-/** A scroller's `scroll-padding-top` in px; `auto` (the default) covers nothing. Its
- *  computed value keeps a percentage as one, a share of the scrollport's height. */
-function coveredTop(el: HTMLElement): number {
-  const value = getComputedStyle(el).scrollPaddingTop
+/** Where `box` (the thumbs' own) lies inside `view`'s visible area, px from its
+ *  top and start edge (its border taken off): zero when it hangs at the view's
+ *  edge, the padding when a padded view rests it below. */
+function hangOf(
+  view: HTMLElement,
+  box: HTMLElement | null,
+): { top: number; left: number } {
+  if (!box) return { top: 0, left: 0 }
+  const v = view.getBoundingClientRect()
+  const b = box.getBoundingClientRect()
+  return {
+    top: b.top - v.top - view.clientTop,
+    left: b.left - v.left - view.clientLeft,
+  }
+}
+
+/** A corner's radius along one axis, px, from a computed `border-*-radius` ("24px",
+ *  or "24px 12px" when the corner is an ellipse: horizontal, then vertical); a
+ *  percentage is a share of the box along that axis. */
+function cornerOf(el: HTMLElement, value: string, axis: "x" | "y"): number {
+  const [h = "0px", v = h] = value.split(" ")
+  const part = axis === "x" ? h : v
+  const n = Number.parseFloat(part)
+  if (Number.isNaN(n))
+    throw new Error(`scroll-thumb: border radius "${value}" is no length`)
+  return part.endsWith("%")
+    ? (n / 100) * (axis === "x" ? el.clientWidth : el.clientHeight)
+    : n
+}
+
+/** A scroller's `scroll-padding-top` or `-bottom` in px; `auto` (the default)
+ *  covers nothing. Its computed value keeps a percentage as one, a share of the
+ *  scrollport's height. */
+function covered(el: HTMLElement, side: "top" | "bottom"): number {
+  const style = getComputedStyle(el)
+  const value =
+    side === "top" ? style.scrollPaddingTop : style.scrollPaddingBottom
   if (value === "auto") return 0
   const n = Number.parseFloat(value)
   if (Number.isNaN(n))
-    throw new Error(`scroll-thumb: scroll-padding-top "${value}" is no length`)
+    throw new Error(
+      `scroll-thumb: scroll-padding-${side} "${value}" is no length`,
+    )
   return value.endsWith("%") ? (n / 100) * el.clientHeight : n
 }
 
@@ -78,6 +132,8 @@ export function ScrollThumbs({
   className?: string
 }) {
   const look = useMaterial(material)
+  // The box the thumbs hang in, measured where it really lies (`hangOf`).
+  const own = React.useRef<HTMLDivElement>(null)
   const [m, setM] = React.useState<Measure>({
     top: 0,
     left: 0,
@@ -85,16 +141,37 @@ export function ScrollThumbs({
     width: 0,
     scrollHeight: 0,
     scrollWidth: 0,
-    covered: 0,
+    covered: { top: 0, bottom: 0 },
+    corners: { topRight: 0, bottomRight: 0, bottomLeft: 0 },
+    hang: { top: 0, left: 0 },
+    onGlass: false,
   })
   const [scrolling, setScrolling] = React.useState(false)
   const [near, setNear] = React.useState({ y: false, x: false })
+  // Beside the scroller (its sibling), where it lies over it: the scroller's box in
+  // the parent they share, null while inside it.
+  const [over, setOver] = React.useState<{
+    top: number
+    left: number
+    width: number
+  } | null>(null)
   React.useEffect(() => {
     const el = scroller.current
     if (!el) return
+    const beside = own.current?.parentElement !== el
     let frame = 0
     let still = 0
-    const measure = () =>
+    const measure = () => {
+      const style = getComputedStyle(el)
+      if (beside)
+        setOver((o) =>
+          o &&
+          o.top === el.offsetTop &&
+          o.left === el.offsetLeft &&
+          o.width === el.offsetWidth
+            ? o
+            : { top: el.offsetTop, left: el.offsetLeft, width: el.offsetWidth },
+        )
       setM({
         top: el.scrollTop,
         left: el.scrollLeft,
@@ -102,8 +179,19 @@ export function ScrollThumbs({
         width: el.clientWidth,
         scrollHeight: el.scrollHeight,
         scrollWidth: el.scrollWidth,
-        covered: coveredTop(el),
+        covered: { top: covered(el, "top"), bottom: covered(el, "bottom") },
+        corners: {
+          topRight: cornerOf(el, style.borderTopRightRadius, "y"),
+          bottomRight: cornerOf(el, style.borderBottomRightRadius, "y"),
+          bottomLeft: cornerOf(el, style.borderBottomLeftRadius, "x"),
+        },
+        // Beside it the box lies at the scroller's border edge, by construction.
+        hang: beside
+          ? { top: -el.clientTop, left: -el.clientLeft }
+          : hangOf(el, own.current),
+        onGlass: style.getPropertyValue("--glass-body").trim() === "1",
       })
+    }
     const onScroll = () => {
       setScrolling(true)
       if (!frame)
@@ -128,6 +216,8 @@ export function ScrollThumbs({
       sizes.disconnect()
       sizes.observe(el)
       for (const child of el.children) sizes.observe(child)
+      // Beside it, the parent's size moves where the scroller lies.
+      if (beside && el.parentElement) sizes.observe(el.parentElement)
     }
     const children = new MutationObserver(watch)
     watch()
@@ -151,21 +241,39 @@ export function ScrollThumbs({
       aria-hidden="true"
       data-slot="scroll-thumbs"
       className={cn(
-        "pointer-events-none sticky top-0 left-0 z-40 h-0 w-(--ag-thumbs-w) shrink-0",
+        "pointer-events-none z-40 h-0 w-(--ag-thumbs-w) shrink-0",
+        // Inside the scroller, pinned to its view's corner; beside it, laid over
+        // it where it lies, outside its fade (a mask fades everything inside).
+        over === null
+          ? "sticky top-0 left-0"
+          : "absolute top-(--ag-thumbs-top) left-(--ag-thumbs-left)",
         className,
       )}
-      style={{ "--ag-thumbs-w": `${m.width}px` } as React.CSSProperties}
+      ref={own}
+      style={
+        {
+          "--ag-thumbs-w": `${m.width}px`,
+          ...(over === null
+            ? {}
+            : {
+                "--ag-thumbs-top": `${over.top}px`,
+                "--ag-thumbs-left": `${over.left}px`,
+              }),
+        } as React.CSSProperties
+      }
     >
       <Thumb
         axis="y"
         scroller={scroller}
         at={m.top}
         view={m.height}
-        start={m.covered}
+        start={Math.max(m.covered.top, m.corners.topRight)}
+        end={Math.max(m.covered.bottom, m.corners.bottomRight)}
+        hang={m.hang}
         content={m.scrollHeight}
         across={m.width}
         shown={scrolling || near.y}
-        material={look}
+        material={m.onGlass && material === undefined ? "plain" : look}
         scheme={scheme}
       />
       <Thumb
@@ -173,11 +281,13 @@ export function ScrollThumbs({
         scroller={scroller}
         at={m.left}
         view={m.width}
-        start={0}
+        start={m.corners.bottomLeft}
+        end={m.corners.bottomRight}
+        hang={m.hang}
         content={m.scrollWidth}
         across={m.height}
         shown={scrolling || near.x}
-        material={look}
+        material={m.onGlass && material === undefined ? "plain" : look}
         scheme={scheme}
       />
     </div>
@@ -195,6 +305,8 @@ function Thumb({
   at,
   view,
   start,
+  end,
+  hang,
   content,
   across,
   shown,
@@ -205,8 +317,14 @@ function Thumb({
   scroller: React.RefObject<HTMLElement | null>
   at: number
   view: number
-  /** Where along the view its track begins (past what covers the view's top). */
+  /** Where along the view its track begins (past what covers the view's top, and
+   *  past the corner's curve). */
   start: number
+  /** How far before the view's end its track stops (before the corner's curve). */
+  end: number
+  /** Where the box it hangs in lies from the view's top and start edge: every
+   *  place, measured from the view, is taken back by it. */
+  hang: { top: number; left: number }
   content: number
   across: number
   shown: boolean
@@ -217,18 +335,20 @@ function Thumb({
   const [held, setHeld] = React.useState(false)
   const drag = React.useRef({ from: 0, at: 0 })
   if (content <= view + 1 || view === 0) return null
-  const track = view - start - 2 * INSET_PX
+  const track = view - start - end - 2 * INSET_PX
   const size = Math.max(MIN_PX, (track * view) / content)
   const travel = track - size
   // A view too short for a thumb past what covers its top (a box shorter than its
   // head, a window dragged small) has no thumb: one drawn there would sit on the
   // cover and run backwards.
   if (travel <= 0) return null
+  const y = axis === "y"
+  // Placed from the view's edges, then taken back by where the box hangs.
   const offset =
     start +
     INSET_PX +
-    (travel * Math.min(at, content - view)) / (content - view)
-  const y = axis === "y"
+    (travel * Math.min(at, content - view)) / (content - view) -
+    (y ? hang.top : hang.left)
   return (
     <div
       ref={here}
@@ -261,14 +381,18 @@ function Thumb({
         schemeOf(s),
         "group/thumb pointer-events-auto absolute flex cursor-default opacity-0 transition-opacity duration-300 hover:opacity-100 data-shown:opacity-100 data-shown:duration-100 motion-reduce:transition-none",
         y
-          ? "top-0 right-0.5 h-(--ag-thumb-size) w-3 translate-y-(--ag-thumb-at) justify-center"
+          ? "top-0 right-(--ag-thumb-edge) h-(--ag-thumb-size) w-3 translate-y-(--ag-thumb-at) justify-center"
           : "top-(--ag-thumb-edge) left-0 h-3 w-(--ag-thumb-size) translate-x-(--ag-thumb-at) items-center",
       )}
       style={
         {
           "--ag-thumb-at": `${offset}px`,
           "--ag-thumb-size": `${size}px`,
-          "--ag-thumb-edge": `${across - 14}px`,
+          // Across: 2 px in from the view's right edge (along y), 14 up from its
+          // foot (along x), from the box's own edge less where it hangs.
+          "--ag-thumb-edge": y
+            ? `${2 + hang.left}px`
+            : `${across - 14 - hang.top}px`,
         } as React.CSSProperties
       }
     >

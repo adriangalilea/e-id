@@ -47,7 +47,16 @@ export type ButtonVariant =
   | "ghost"
   | "destructive"
   | "link"
-export type ButtonSize = "sm" | "md" | "lg" | "icon-sm" | "icon" | "icon-lg"
+export type ButtonSize =
+  | "sm"
+  | "md"
+  | "lg"
+  | "xl"
+  | "2xl"
+  | "3xl"
+  | "icon-sm"
+  | "icon"
+  | "icon-lg"
 export type ButtonCorners = "pill" | "soft"
 
 /** Every button, whatever it wears. An icon inside takes the size's icon size unless
@@ -55,10 +64,22 @@ export type ButtonCorners = "pill" | "soft"
 const BASE =
   "relative inline-flex shrink-0 cursor-pointer items-center justify-center gap-1.5 whitespace-nowrap font-medium select-none data-disabled:cursor-not-allowed data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0"
 
+/** Beside words the icon (`icon`, `iconEnd`) is a step dimmer than them, so the
+ *  words lead and the icon only says what kind of press it is; brighter with the
+ *  words under the hand. An icon alone is the label and stays whole (the `icon-*`
+ *  sizes). */
+const WORDS =
+  "[&>[data-slot=button-icon]]:opacity-60 [&>[data-slot=button-icon]]:transition-opacity hover:[&>[data-slot=button-icon]]:opacity-90"
+
 const SIZE: Record<ButtonSize, string> = {
-  sm: "h-7 px-2.5 text-xs [&_svg:not([class*='size-'])]:size-3.5",
-  md: "h-8 px-3 text-[13px] [&_svg:not([class*='size-'])]:size-4",
-  lg: "h-10 px-4 text-sm [&_svg:not([class*='size-'])]:size-4",
+  sm: `h-7 px-2.5 text-xs [&_svg:not([class*='size-'])]:size-3.5 ${WORDS}`,
+  md: `h-8 px-3 text-[13px] [&_svg:not([class*='size-'])]:size-4 ${WORDS}`,
+  lg: `h-10 px-4 text-sm [&_svg:not([class*='size-'])]:size-4 ${WORDS}`,
+  // Past the input's heights: the one press a section is about (save a contact,
+  // start), a call to action, in Tailwind's steps.
+  xl: `h-12 gap-2 px-5 text-base [&_svg:not([class*='size-'])]:size-5 ${WORDS}`,
+  "2xl": `h-14 gap-2.5 px-6 text-lg [&_svg:not([class*='size-'])]:size-5 ${WORDS}`,
+  "3xl": `h-16 gap-3 px-8 text-xl [&_svg:not([class*='size-'])]:size-6 ${WORDS}`,
   "icon-sm": "size-7 [&_svg:not([class*='size-'])]:size-3.5",
   icon: "size-8 [&_svg:not([class*='size-'])]:size-4",
   "icon-lg": "size-10 [&_svg:not([class*='size-'])]:size-[18px]",
@@ -69,6 +90,9 @@ const GLASS_PILL: Record<ButtonSize, string> = {
   sm: "[--glass-radius:14px]",
   md: "[--glass-radius:16px]",
   lg: "[--glass-radius:20px]",
+  xl: "[--glass-radius:24px]",
+  "2xl": "[--glass-radius:28px]",
+  "3xl": "[--glass-radius:32px]",
   "icon-sm": "[--glass-radius:14px]",
   icon: "[--glass-radius:16px]",
   "icon-lg": "[--glass-radius:20px]",
@@ -78,6 +102,9 @@ const SPINNER: Record<ButtonSize, SpinnerSize> = {
   sm: "sm",
   md: "md",
   lg: "md",
+  xl: "lg",
+  "2xl": "lg",
+  "3xl": "lg",
   "icon-sm": "sm",
   icon: "md",
   "icon-lg": "lg",
@@ -169,6 +196,12 @@ export type ButtonProps = Omit<
   /** The press is being answered: a spinner in its middle, its width kept, no
    *  second press. */
   loading?: boolean
+  /** What kind of press it is, before the words (`<Download />`): sized by the
+   *  button, a step dimmer than the words. With no words, at an `icon-*` size, it
+   *  is the label and stays whole (give it an `aria-label`). */
+  icon?: React.ReactNode
+  /** After the words: where the press leads (an arrow, a chevron). */
+  iconEnd?: React.ReactNode
   className?: string
 }
 
@@ -253,6 +286,8 @@ export function Button({
   on,
   off,
   loading = false,
+  icon,
+  iconEnd,
   disabled,
   render,
   nativeButton,
@@ -277,13 +312,30 @@ export function Button({
       {node}
     </span>
   )
-  const children = worded ? (
+  const label = worded ? (
     <span className="grid gap-[inherit]">
       {face(on, pressed === true)}
       {face(off, pressed !== true)}
     </span>
   ) : (
     words
+  )
+  // The icons in their slots, so what dims (`WORDS`) is the icon and never an
+  // image that is part of the words.
+  const children = (
+    <>
+      {icon && (
+        <span data-slot="button-icon" className="inline-flex">
+          {icon}
+        </span>
+      )}
+      {label}
+      {iconEnd && (
+        <span data-slot="button-icon" className="inline-flex">
+          {iconEnd}
+        </span>
+      )}
+    </>
   )
   const part = React.useContext(InGlassGroup)
   const glass =

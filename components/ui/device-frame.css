@@ -1,0 +1,634 @@
+@property --device-lid {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 0;
+}
+
+@layer components {
+  .device-desktop {
+    position: relative;
+    width: 100%;
+    container-type: inline-size;
+  }
+  .device-desktop .device-lid {
+    position: relative;
+    padding: 1.2% 1.2% 2.8%;
+    border: 0.15cqw solid #28292b;
+    border-radius: 2.7cqw 2.7cqw 0.8cqw 0.8cqw;
+    background: linear-gradient(#08090a, #080809 95%, #030304);
+    box-shadow:
+      0 12px 28px #0004,
+      inset 0 0 0 0.15cqw #494b4e50,
+      inset 0 0 0.45cqw #6b6d7030;
+  }
+  .device-desktop .device-display {
+    position: relative;
+    overflow: hidden;
+    aspect-ratio: 16 / 10;
+    border-radius: 1cqw 1cqw 0.2cqw 0.2cqw;
+    background: #15191d;
+    color: #eee;
+  }
+  .device-desktop .device-camera {
+    position: absolute;
+    z-index: 3;
+    top: 1.45cqw;
+    left: 50%;
+    width: 0.45cqw;
+    height: 0.45cqw;
+    border-radius: 50%;
+    background: radial-gradient(
+      circle at 40% 35%,
+      #294254,
+      #0b0f16 45%,
+      #030404 70%
+    );
+    box-shadow: 0 0 0 0.18cqw #0a0b0d;
+    transform: translateX(-50%);
+  }
+  .device-desktop[data-device="macbook"] .device-lid {
+    width: 84%;
+    margin-inline: auto;
+  }
+  /* The hinge (MacbookFrame `lid`, 0 open .. 1 shut, as --device-lid). Only set up
+     when hinged.
+     lid="open" | "closed": the frame owns the motion. --device-lid is a registered
+     number (below), so it interpolates, and everything that reads it (the angle,
+     the shut slab) moves together on one curve. A numeric lid is the caller's time
+     and never transitions. */
+  .device-desktop[data-lid-motion] {
+    transition: --device-lid 1.1s cubic-bezier(0.65, 0, 0.35, 1);
+  }
+  /* One camera for the whole hinge, in cqw as bare numbers (CSS cannot divide a
+     length by a length): the lid's border box W = 84 by H = 55.1125 (84% of the
+     frame; padding 1.2 / 2.8, border 0.15, a 16:10 display), its top corner radius
+     R = 2.7, thickness T = 1, and the eye at the hinge at distance P = 6.25 H, the
+     distance at which the lid, swung flat toward the viewer, spans exactly the
+     base's width (W P / (P - H) = 100). For the lid at angle θ:
+       top    the lid's top edge, height above the hinge: H cos θ · P / (P - H sin θ)
+       back   the back edge of its thickness: (H cos θ + T sin θ) · P / (P - H sin θ + T cos θ)
+       band   back - top, the rim as the eye sees it (0 open, T P / (P - H) shut)
+       ry     the top corners' projected height: R cos θ · P / (P - H sin θ) */
+  .device-desktop[data-hinged] {
+    --lid-sin: sin(calc(var(--device-lid, 0) * 90deg));
+    --lid-cos: cos(calc(var(--device-lid, 0) * 90deg));
+    --lid-scale: calc(344.45 / (344.45 - 55.1125 * var(--lid-sin)));
+    --lid-top: calc(55.1125 * var(--lid-cos) * var(--lid-scale));
+    --lid-back: calc(
+      (55.1125 * var(--lid-cos) + var(--lid-sin)) *
+      344.45 /
+      (344.45 - 55.1125 * var(--lid-sin) + var(--lid-cos))
+    );
+    --lid-band: max(0, calc(var(--lid-back) - var(--lid-top)));
+    --lid-ry: calc(2.7 * var(--lid-cos) * var(--lid-scale));
+  }
+  /* The lid's face turns in true perspective: the eye at the hinge (perspective()
+     in the lid's own transform puts it at the transform origin), at distance P. */
+  /* Open, the lid stands BEHIND the base, as the flat frame's does: the base's
+     top edge covers the lid's foot and the shadow it casts, so an open hinged
+     MacBook and a flat one are the same drawing. The moment it starts to close
+     it comes in front, where a lid swinging toward the eye belongs (z 1 at
+     --device-lid 0, z 3 above it). */
+  .device-desktop[data-hinged] .device-lid {
+    z-index: calc(1 + 2 * round(up, var(--device-lid, 0), 1));
+    transform-origin: 50% 100%;
+    transform: perspective(344.45cqw)
+      rotateX(calc(var(--device-lid, 0) * -90deg));
+  }
+  /* The lid's thickness, painted where the camera puts it: the lid's own outline
+     (projected width, projected corner radii) raised by the band and set just behind
+     the face, so what shows is the rim above the lid's top edge and around its
+     corners, and nothing past them. Open, the band is zero and the rim hides behind
+     the face; closing, it grows; shut, the face is edge-on and the rim is the closed
+     laptop's front: the base's width, lit along its top, the dark seam at its foot.
+     Its paint is the base's own: the same end shading, the same aluminium. */
+  .device-lid-rim {
+    position: absolute;
+    z-index: 2;
+    left: 50%;
+    bottom: calc((3.55 + var(--lid-top) - var(--lid-ry)) * 1cqw);
+    width: calc(84cqw * var(--lid-scale));
+    height: calc((var(--lid-band) + var(--lid-ry)) * 1cqw);
+    translate: -50% 0;
+    /* The lid's projected top corners, unchanged: the rim is the outline shifted
+       up, not grown. As the lid comes down the corner's height (ry) flattens and a
+       corner that wide and that flat is visually square, so its width follows it
+       down; both floor at the edge's own rounding (0.45cqw), which is all a shut
+       lid's corner shows from the front: its plan-view curve lies flat in depth. */
+    border-radius:
+      calc(min(2.7 * var(--lid-scale), max(0.45, 4 * var(--lid-ry))) * 1cqw)
+      calc(min(2.7 * var(--lid-scale), max(0.45, 4 * var(--lid-ry))) * 1cqw) 0 0
+      / calc(max(0.45, var(--lid-ry)) * 1cqw)
+      calc(max(0.45, var(--lid-ry)) * 1cqw) 0 0;
+    background:
+      linear-gradient(
+        90deg,
+        #141416,
+        #505054 0.6%,
+        #202023 2%,
+        transparent 7%,
+        transparent 93%,
+        #202023 98%,
+        #505054 99.4%,
+        #141416
+      ),
+      linear-gradient(#5a5a5f, #2e2e32 22%, #36363a 72%, #1a1a1d 90%, #0b0b0c);
+    box-shadow: 0 0.14cqw 0 #060607;
+    /* Below a tenth of a cqw of band there is nothing to see, and the rim's
+       antialiased corners would fringe the face's. */
+    opacity: clamp(0, var(--lid-band) * 10, 1);
+  }
+  .device-base {
+    position: relative;
+    z-index: 2;
+    height: 3.7cqw;
+    margin-top: -0.15cqw;
+    background:
+      linear-gradient(
+        90deg,
+        #141416,
+        #505054 0.6%,
+        #202023 2%,
+        transparent 7%,
+        transparent 93%,
+        #202023 98%,
+        #505054 99.4%,
+        #141416
+      ),
+      linear-gradient(
+        #424245,
+        #27272b 18%,
+        #1c1c20 62%,
+        #101013 84%,
+        #39393c 93%,
+        #131315
+      );
+    border-radius: 0.12cqw 0.12cqw 2.5cqw 2.5cqw;
+    box-shadow:
+      inset 0 0.12cqw #80808550,
+      0 0.5cqw 0.8cqw #0005;
+  }
+  .device-base::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 42%;
+    width: 16%;
+    height: 1.3cqw;
+    border-radius: 0 0 1.4cqw 1.4cqw;
+    background: linear-gradient(
+      90deg,
+      #080809,
+      #55555a 7%,
+      #46464c 50%,
+      #55555a 93%,
+      #080809
+    );
+    box-shadow: 0 0.15cqw 0.2cqw #0008;
+  }
+
+  /* The insides (MacbookInternals): the base's face as a strip of its parts.
+     Parts are hairlines in one neutral, crisp at any size (non-scaling
+     strokes); heat carries the only colour. The fans and the heat pipes move
+     at the fans' pace; held (`data-held`, a caller's `t`), each sits at that
+     instant: a paused animation with a negative delay is a pure function of
+     time. */
+  .device-internals {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+  /* The parts (svg) and the air (canvas, device-airflow) share the base's
+     box, the air on top. */
+  .device-skin,
+  .device-internals-art,
+  .device-airflow {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+  /* Parts are thinner and quieter than the air, so the flow reads first. */
+  .device-parts {
+    fill: none;
+    stroke: rgb(255 255 255 / 0.24);
+    stroke-width: 0.35px;
+    vector-effect: non-scaling-stroke;
+  }
+  .device-parts * {
+    vector-effect: non-scaling-stroke;
+  }
+  .device-labels text {
+    fill: rgb(255 255 255 / 0.45);
+    font-family: var(--font-mono, ui-monospace, monospace);
+    font-size: 7px;
+    text-anchor: middle;
+    dominant-baseline: middle;
+  }
+  /* One turn per --pace (--rate is fanTurnRate, turns per second). Held, a
+     slat sits at the fan's --turns so far, so a fan speeding up mid-film
+     never jumps. --dir is the way the near slats travel (the two fans
+     mirror). */
+  .device-blade {
+    --pace: calc(1s / var(--rate));
+  }
+  /* A blower's impeller seen edge-on: a ring of vertical slats, each sliding
+     across the drum on a cosine (ease-in-out halves), so they bunch at its
+     ends where they turn away; the near half bright, the far half faint
+     through the housing. `--k` spreads them round the ring; a stopped fan
+     keeps its slats where they stand. */
+  .device-blade {
+    stroke: rgb(255 255 255 / 0.6);
+    animation: device-blade var(--pace) linear infinite;
+    animation-delay: calc(var(--k) * var(--pace) * -1);
+  }
+  .device-fan[data-still] .device-blade {
+    animation-play-state: paused;
+  }
+  @keyframes device-blade {
+    0% {
+      translate: calc(var(--dir, 1) * -56px) 0;
+      opacity: 0.9;
+      animation-timing-function: ease-in-out;
+    }
+    50% {
+      translate: calc(var(--dir, 1) * 56px) 0;
+      opacity: 0.9;
+    }
+    50.001% {
+      translate: calc(var(--dir, 1) * 56px) 0;
+      opacity: 0.22;
+      animation-timing-function: ease-in-out;
+    }
+    100% {
+      translate: calc(var(--dir, 1) * -56px) 0;
+      opacity: 0.22;
+    }
+  }
+  .device-internals[data-held] .device-blade {
+    animation-play-state: paused;
+    animation-duration: 1s;
+    animation-delay: calc((var(--turns) + var(--k)) * -1s);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .device-blade {
+      animation-play-state: paused;
+    }
+  }
+  .device-cell {
+    fill: rgb(255 255 255 / 0.04);
+    stroke: rgb(255 255 255 / 0.22);
+  }
+  .device-skin {
+    pointer-events: none;
+  }
+  /* A shut lid's face, warm with the same skin, laid over the rim's aluminium. */
+  .device-lid-skin {
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+  }
+  /* The heat is the fill; the edge is only a hairline catching it. */
+  .device-skin path {
+    stroke-width: 0.5px;
+    stroke-opacity: 0.5;
+    vector-effect: non-scaling-stroke;
+  }
+  .device-desktop[data-device="studio"] .device-lid {
+    z-index: 2;
+    border-radius: 1cqw;
+    padding: 2%;
+    border-color: #232426;
+    background: linear-gradient(135deg, #1b1b1c, #111112);
+  }
+  .device-desktop[data-device="studio"] .device-display {
+    aspect-ratio: 16 / 9;
+    border-radius: 0;
+  }
+  .device-stand {
+    position: relative;
+    margin-inline: auto;
+    width: 24%;
+    height: 18cqw;
+    background:
+      radial-gradient(
+        circle at 50% -1.4cqw,
+        transparent 3.35cqw,
+        #dedfe0 3.4cqw,
+        #c4c6c7 3.85cqw,
+        transparent 3.9cqw
+      ),
+      linear-gradient(115deg, #a9abad, #d0d2d3 48%, #b8babc 90%), #bfc1c3;
+    mask-image: radial-gradient(
+      circle at 50% -1.4cqw,
+      transparent 3.35cqw,
+      #000 3.4cqw
+    );
+  }
+  .device-stand::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(transparent 89%, #f0f1f1 96%, #95989a 99%);
+    pointer-events: none;
+  }
+  .device-foot {
+    position: relative;
+    margin-inline: auto;
+    width: 24%;
+    height: 1.3cqw;
+    border-radius: 0.15cqw;
+    background: linear-gradient(
+      90deg,
+      #77797b,
+      #b2b4b5 2%,
+      #d1d2d3 50%,
+      #b2b4b5 98%,
+      #77797b
+    );
+    box-shadow:
+      inset 0 0.2cqw #55575b,
+      0 0.2cqw 0.1cqw #0008;
+  }
+  .device-foot::before,
+  .device-foot::after {
+    content: "";
+    position: absolute;
+    bottom: -0.25cqw;
+    width: 9%;
+    height: 0.3cqw;
+    background: #242527;
+    border-radius: 0 0 0.1cqw 0.1cqw;
+  }
+  .device-foot::before {
+    left: 2%;
+  }
+  .device-foot::after {
+    right: 2%;
+  }
+  .device-desktop[data-device="studio"] .device-camera {
+    top: 0.75cqw;
+  }
+  .device-notch {
+    position: absolute;
+    z-index: 2;
+    top: 1.1cqw;
+    left: 44%;
+    width: 12%;
+    height: 1.9cqw;
+    border-radius: 0 0 0.6cqw 0.6cqw;
+    background: #030404;
+  }
+  .device-rubber {
+    position: absolute;
+    bottom: -0.45cqw;
+    width: 6%;
+    height: 0.7cqw;
+    border-radius: 0 0 0.6cqw 0.6cqw;
+    background: linear-gradient(#111113, #202023, #080809);
+  }
+  .device-rubber.left {
+    left: 7%;
+  }
+  .device-rubber.right {
+    right: 7%;
+  }
+  .device-frame[data-device="iphone"] {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 356 / 730;
+    padding: 2%;
+    container-type: inline-size;
+    background: #030404;
+    border-radius: 16% / 7.8%;
+    box-shadow: 0 16px 32px #0006;
+  }
+
+  /* The metal is an actual rounded ring, not a diagonal gradient visible
+     through mismatched corners. The mask also confines its grain to the rim. */
+  .device-frame[data-device="iphone"]::before {
+    position: absolute;
+    z-index: 8;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1.1cqw;
+    background-image:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Cpath fill='%23888' filter='url(%23n)' opacity='.28' d='M0 0h160v160H0z'/%3E%3C/svg%3E"),
+      conic-gradient(
+        from 0deg,
+        #898b8a,
+        #434544 12%,
+        #757776 25%,
+        #353736 37%,
+        #8b8d8c 50%,
+        #484a49 62%,
+        #8e908f 75%,
+        #454746 87%,
+        #898b8a
+      );
+    background-blend-mode: soft-light, normal;
+    filter: blur(0.09cqw);
+    mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+    content: "";
+    pointer-events: none;
+  }
+  .device-frame[data-device="iphone"]::after {
+    position: absolute;
+    z-index: 8;
+    inset: 0;
+    border-radius: inherit;
+    box-shadow:
+      inset 0 0 0.28cqw 0.18cqw #050707c0,
+      inset 0 0 0.28cqw 0.9cqw #06080870;
+    content: "";
+    pointer-events: none;
+  }
+
+  .device-button {
+    position: absolute;
+    z-index: 0;
+    width: 0.7cqw;
+    background-image:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Cpath fill='%23888' filter='url(%23n)' opacity='.28' d='M0 0h160v160H0z'/%3E%3C/svg%3E"),
+      linear-gradient(180deg, #161818, transparent 8%, transparent 90%, #151717),
+      linear-gradient(90deg, #242626, #858887 35%, #5b5e5d 65%, #171919);
+    background-blend-mode: soft-light, normal, normal;
+    box-shadow:
+      0 0 0.18cqw #0009,
+      inset 0.08cqw 0 0.15cqw #c5c7c650;
+    border-radius: 0.5cqw;
+  }
+
+  /* Hardware above the display, outside its clipping/compositing group. The
+     extra pixel hides the antialiased edge of backdrop-filter layers beneath. */
+  .device-glass-edge {
+    position: absolute;
+    z-index: 7;
+    inset: 0;
+    padding: calc(2% + 1px);
+    border-radius: inherit;
+    background: #030404;
+    mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+  .device-button.action {
+    top: 20.5%;
+    left: -0.65cqw;
+    height: 4.5%;
+    border-radius: 0.5cqw 0 0 0.5cqw;
+  }
+  .device-button.vol-up {
+    top: 28.5%;
+    left: -0.65cqw;
+    height: 7.2%;
+    border-radius: 0.5cqw 0 0 0.5cqw;
+  }
+  .device-button.vol-down {
+    top: 37.8%;
+    left: -0.65cqw;
+    height: 7.2%;
+    border-radius: 0.5cqw 0 0 0.5cqw;
+  }
+  .device-button.power {
+    top: 31%;
+    right: -0.65cqw;
+    height: 12%;
+    border-radius: 0 0.5cqw 0.5cqw 0;
+  }
+
+  .device-frame[data-device="iphone"] > .device-screen {
+    --device-safe-gap: 4cqw;
+    --device-island-height: 7.6cqw;
+    position: relative;
+    height: 100%;
+    overflow: hidden;
+    border-radius: 14.7cqw;
+    /* Clip backdrop-filter descendants and the screen background together.
+       Overflow's rounded antialiasing alone can leave an unfiltered bright rim. */
+    clip-path: inset(0 round 14.7cqw);
+    background: var(--device-screen-background, #101214);
+    color: var(--device-screen-ink, #eee);
+  }
+  .device-island {
+    position: absolute;
+    z-index: 5;
+    top: var(--device-safe-gap);
+    left: 50%;
+    width: 28cqw;
+    height: var(--device-island-height);
+    background: #000;
+    border-radius: 4cqw;
+    transform: translateX(-50%);
+  }
+
+  .device-earpiece {
+    position: absolute;
+    z-index: 9;
+    top: 1.25cqw;
+    left: 33%;
+    width: 34%;
+    height: 0.35cqw;
+    border-radius: 0 0 1.5cqw 1.5cqw;
+    background: linear-gradient(#020303, #0d0f0f);
+    box-shadow: 0 0.1cqw 0.16cqw #777b7a25;
+  }
+  .device-antenna {
+    position: absolute;
+    z-index: 9;
+    width: 0.9cqw;
+    height: 0.65cqw;
+    background: #252727;
+    box-shadow:
+      0 0.15cqw #8d909040,
+      0 -0.1cqw #99999930;
+  }
+  .device-antenna.left {
+    left: 0.05cqw;
+  }
+  .device-antenna.right {
+    right: 0.05cqw;
+  }
+  .device-antenna.top {
+    top: 10%;
+  }
+  .device-antenna.bottom {
+    bottom: 11%;
+  }
+  .device-lens {
+    position: absolute;
+    right: 1.6cqw;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 3.1cqw;
+    height: 3.1cqw;
+    border-radius: 50%;
+    background: radial-gradient(
+      circle at 40% 35%,
+      #25304a 0%,
+      #0c1020 24%,
+      #15152b 39%,
+      #050609 60%
+    );
+    box-shadow: 0 0 0 0.35cqw #07080a;
+    opacity: 0.65;
+  }
+
+  .device-status {
+    position: absolute;
+    z-index: 4;
+    top: var(--device-safe-gap);
+    right: 0;
+    left: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: var(--device-island-height);
+    padding: 0 9.8cqw 0 11.8cqw;
+    color: var(--device-status-ink, #eee);
+    font-size: 3.65cqw;
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+  }
+  .device-status svg {
+    display: block;
+    height: 3.1cqw;
+    width: auto;
+  }
+  .device-status .radios {
+    display: flex;
+    align-items: center;
+    gap: 1.4cqw;
+  }
+
+  /* The thermal depth (MacbookThermal.depth): --device-skin and --device-xray,
+     each 0..1. Last so it overrides what it dims: as the insides come in the
+     skin and the body's outer details (the lid notch, the feet) recede, so the
+     inside reads first. Live, a change fades; held, the number is exact. */
+  .device-desktop[data-thermal] .device-skin,
+  .device-desktop[data-thermal] .device-lid-skin {
+    opacity: var(--device-skin);
+  }
+  .device-desktop[data-thermal] .device-internals {
+    opacity: var(--device-xray);
+  }
+  .device-desktop[data-thermal] .device-base::before,
+  .device-desktop[data-thermal] .device-rubber {
+    opacity: calc(1 - var(--device-xray) * 0.7);
+  }
+  .device-desktop[data-thermal="live"] .device-skin,
+  .device-desktop[data-thermal="live"] .device-lid-skin,
+  .device-desktop[data-thermal="live"] .device-internals,
+  .device-desktop[data-thermal="live"] .device-base::before,
+  .device-desktop[data-thermal="live"] .device-rubber {
+    transition: opacity 0.8s cubic-bezier(0.65, 0, 0.35, 1);
+  }
+}

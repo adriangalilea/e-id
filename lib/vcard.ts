@@ -1,6 +1,6 @@
 import "server-only";
 
-import type { Card } from "@/lib/card";
+import type { Card } from "@/lib/card-schema";
 import { fetchPhoto } from "@/lib/photo";
 
 // A PERSON'S CARD AS A CONTACT: the same card (lib/card) in vCard, so a phone adds
@@ -48,8 +48,8 @@ function fold(line: string): string {
 const countryName = (code: string) =>
   new Intl.DisplayNames(["en"], { type: "region" }).of(code) ?? code;
 
-/** `card` as a vCard: name, handle, photo, their e-id, every place labelled by
- *  where it is, their country and bio. */
+/** `card` as a vCard: name, handle, photo, their e-id, every link labelled by
+ *  its name, their country and bio. */
 export async function vcardOf(card: Card): Promise<string> {
   const photo = await fetchPhoto(card.photo, "contact");
   const lines = [
@@ -67,18 +67,18 @@ export async function vcardOf(card: Card): Promise<string> {
           `PHOTO;ENCODING=b;TYPE=${photo.mime.split("/")[1]?.toUpperCase()}:${Buffer.from(photo.bytes).toString("base64")}`,
         ]
       : []),
-    // Their e-id first, then each place, each labelled (Apple's grouped label,
-    // which other readers ignore and keep the link).
+    // Their e-id first, then each link, each labelled by its name (Apple's
+    // grouped label, which other readers ignore and keep the URL).
     "item1.URL:" + card.id,
     "item1.X-ABLabel:e-ID",
-    // An email place is their address, as a contact's email; every other place
-    // a link.
-    ...card.places.flatMap((place, i) =>
-      place.url.startsWith("mailto:")
-        ? [`EMAIL;TYPE=INTERNET:${text(place.url.slice("mailto:".length))}`]
+    // An email link is their address, as a contact's email; every other link a
+    // URL.
+    ...card.links.flatMap((link, i) =>
+      link.url.startsWith("mailto:")
+        ? [`EMAIL;TYPE=INTERNET:${text(link.url.slice("mailto:".length))}`]
         : [
-            `item${i + 2}.URL:${place.url}`,
-            `item${i + 2}.X-ABLabel:${text(place.platform)}`,
+            `item${i + 2}.URL:${link.url}`,
+            `item${i + 2}.X-ABLabel:${text(link.name)}`,
           ],
     ),
     ...(card.country ? [`ADR;TYPE=HOME:;;;;;;${text(countryName(card.country))}`] : []),

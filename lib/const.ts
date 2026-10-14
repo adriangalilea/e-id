@@ -6,6 +6,8 @@ export const forbiddenUsernames: string[] = [
   // The site's own routes beside the profiles (app/api, app/dev).
   "api",
   "dev",
+  // The address the error page's card reads (components/notice).
+  "error",
 ] as const;
 
 export const PROD_URL = "https://e-id.to";

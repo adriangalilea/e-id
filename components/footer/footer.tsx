@@ -1,13 +1,11 @@
 import Link from "next/link";
 import { EmojiDomain } from "@/components/brand";
-import { QuestionMark } from "@/components/icons";
-import { Button } from "@/components/ui/button";
 import { Glass } from "@/components/ui/material-glass";
 
 import FooterUser from "./footer_user";
 
 /** The site's one bar, a pill of glass floating over the page: the wordmark home on
- *  its left, the faq and the account on its right. At the foot of a phone, where
+ *  its left, the account on its right. At the foot of a phone, where
  *  the thumb is; at the top of a wide screen, where the eye starts. */
 export default function Footer() {
   return (
@@ -28,25 +26,10 @@ export default function Footer() {
         >
           <EmojiDomain logo />
         </Link>
-        <NavActions />
+        {/* The bar's right end: the account alone. What e-ID is and does is
+            the home's to say, never a page of questions. */}
+        <FooterUser />
       </Glass>
     </nav>
-  );
-}
-
-/** The bar's right end: the faq and the account. */
-function NavActions() {
-  return (
-    // The faq a disc of the same glass and height as the account's pill beside
-    // it: two controls of one bar, not a bare glyph next to a button.
-    <div className="flex items-center gap-2">
-      <Button
-        size="icon-lg"
-        render={<Link href="/about" aria-label="about" prefetch={false} />}
-      >
-        <QuestionMark strokeWidth={1.5} />
-      </Button>
-      <FooterUser />
-    </div>
   );
 }

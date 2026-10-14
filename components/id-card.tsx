@@ -3,12 +3,19 @@ import { ON_CARD } from "@/components/card-shape";
 import { CopyAddress } from "@/components/copy-address";
 import { CountryFlag } from "@/components/country";
 import { FoilEdge, Holo } from "@/components/ui/holo";
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card";
 import { Image } from "@/components/ui/image";
 import { Glass } from "@/components/ui/material-glass";
-import type { SelectSocial } from "@/db/schema";
+import { SocialProfile } from "@/components/ui/social-profile";
+import type { ProfileFacts } from "@/lib/social-profile-core";
 import { CARD_LAYOUT, cqw } from "@/lib/card-layout";
 import { type HoloPrint, MARK_EMBLEM } from "@/lib/holo";
-import { getSocialIcon } from "@/lib/socials";
+import type { CardLink } from "@/lib/link-names";
+import { getLinkIcon } from "@/lib/links";
 import { cn } from "@/lib/utils";
 
 export type { HoloPrint };
@@ -20,14 +27,14 @@ export type Holder = {
   image: string | null;
   country: string;
   bio: string | null;
-  /** Their public places, the card's flair. */
-  places?: Place[];
+  /** Their public links, the card's flair. */
+  links?: HolderLink[];
 };
 
-/** A place a person is: the platform, and the address that opens it. */
-export type Place = { platform: SocialPlatform; url: string };
-
-type SocialPlatform = SelectSocial["platform"];
+/** A link as the card draws it (lib/link-names, `CardLink`), and who they are
+ *  behind it where it was read as a profile (lib/presence `profiles`), shown
+ *  behind its mark. */
+export type HolderLink = CardLink & { profile?: ProfileFacts };
 
 /** THE KNOCKOUT: what is written on the card stays readable over its print, as a
  *  real ID clears its security print around the holder's data. Every glyph and
@@ -53,9 +60,12 @@ const PRINT_UNIT = `${100 / 544}cqw`;
  *  empty photo slot it draws. */
 function Portrait({
   holder,
+  stand,
   className,
 }: {
   holder: Holder;
+  /** Drawn where there is no photo, instead of the mark (`CardSlots.photo`). */
+  stand?: React.ReactNode;
   /** Its size and shape where a layout wants another than 30 cqw square. */
   className?: string;
 }) {
@@ -70,7 +80,7 @@ function Portrait({
       {holder.image ? (
         <Image src={holder.image} alt="" className="size-full object-cover" />
       ) : (
-        <BrandMark className="h-1/2 text-white/30" />
+        (stand ?? <BrandMark className="h-1/2 text-white/30" />)
       )}
     </div>
   );
@@ -100,34 +110,43 @@ function Ghost({ holder }: { holder: Holder }) {
   );
 }
 
-/** Where the person is, on the card itself: their places' marks in a row, as an ID
+/** Where the person is, on the card itself: their links' marks in a row, as an ID
  *  carries its holder's entitlements, each one the way there. With the address,
  *  the card's only touchable parts are what it shows. `rel="me"`: the same person
  *  on both ends, which IndieWeb readers check. */
-function Flair({ places }: { places: Place[] }) {
-  if (places.length === 0) return null;
+function Flair({ links }: { links: HolderLink[] }) {
+  if (links.length === 0) return null;
   return (
     <nav
-      aria-label="places"
+      aria-label="links"
       // Each icon's padding (its hit area) taken back on every side, so the
       // glyphs, not their boxes, meet the photo's foot and the words' edge.
       className="-m-[1.1cqw] flex items-center gap-[0.6cqw] text-foreground/70 [&_svg]:size-(--card-icon) [&_svg]:stroke-[1.4]"
     >
-      {places.map(({ platform, url }) => (
-        <a
-          key={url}
-          href={url}
-          rel="me noopener"
-          target="_blank"
-          aria-label={platform}
-          className={cn(
+      {links.map(({ platform, name, url, profile }) => {
+        const mark = {
+          href: url,
+          rel: "me noopener",
+          target: "_blank",
+          "aria-label": name,
+          className: cn(
             ON_CARD,
             "p-[1.1cqw] transition-colors hover:bg-white/[0.08] hover:text-foreground",
-          )}
-        >
-          {getSocialIcon(platform)}
-        </a>
-      ))}
+          ),
+          children: getLinkIcon(platform),
+        };
+        // Who they are there, behind the mark while the hand rests on it.
+        return profile ? (
+          <HoverCard key={url}>
+            <HoverCardTrigger {...mark} />
+            <HoverCardContent material="glass" className="w-80 p-3">
+              <SocialProfile facts={profile} form="compact" />
+            </HoverCardContent>
+          </HoverCard>
+        ) : (
+          <a key={url} {...mark} />
+        );
+      })}
     </nav>
   );
 }
@@ -148,14 +167,17 @@ const SEAL = "bottom-[37cqw] left-[29cqw] size-[14cqw]";
 const NAME =
   "line-clamp-2 text-(length:--card-name) leading-[1.02] font-medium tracking-[-0.03em] text-balance [text-box:trim-start_cap_alphabetic]";
 
-/** What a card can be written on with: each field's own control, in the place
- *  and at the size the written field takes (the home's blank card, filled in).
+/** What a card can be written on with: each field's own control, where and at
+ *  the size the written field takes (the home's blank card, filled in).
  *  `head` stands where the address does, across the head's left. */
 export type CardSlots = {
   head?: React.ReactNode;
   name?: React.ReactNode;
   country?: React.ReactNode;
   flair?: React.ReactNode;
+  /** What stands in the photo's frame when there is no photo: a glyph saying what
+   *  the card is (a notice's), else the e-ID mark. */
+  photo?: React.ReactNode;
 };
 
 export function IdCard({
@@ -170,13 +192,13 @@ export function IdCard({
   heading?: "h1" | "p";
   /** The security print (`Hologram`), for a card someone can turn. */
   holo?: HoloPrint;
-  /** Fields to write in, in place of the holder's written ones. */
+  /** Fields to write in, instead of the holder's written ones. */
   slots?: CardSlots;
   className?: string;
 }) {
   const Name = heading;
   const name = holder.name || `@${holder.username}`;
-  const places = holder.places ?? [];
+  const links = holder.links ?? [];
   const head = (
     <header
       className={cn(
@@ -199,17 +221,17 @@ export function IdCard({
     </header>
   );
   // The head alone above, and the body (the photo; the name, the address and the
-  // places beside it) centred in the room under it, the air shared above and
+  // links beside it) centred in the room under it, the air shared above and
   // below rather than left as one empty band.
   const body = (
     <>
       {head}
       <div className="relative my-auto flex items-stretch gap-(--card-gap)">
-        <Portrait holder={holder} />
+        <Portrait holder={holder} stand={slots?.photo} />
         <div
           // The rest of the card's width beside the photo, so a field written in
-          // its place has the room the written line would; as tall as the
-          // photo, the name from its top edge and the places to its foot, so
+          // its stead has the room the written line would; as tall as the
+          // photo, the name from its top edge and the links to its foot, so
           // the words and the photo make one block with no stray air.
           className={cn(
             "flex min-w-0 flex-1 flex-col justify-between gap-[1.5cqw]",
@@ -219,7 +241,7 @@ export function IdCard({
           {slots?.name ?? (
             <Name className={NAME}>{name}</Name>
           )}
-          {slots?.flair ?? <Flair places={places} />}
+          {slots?.flair ?? <Flair links={links} />}
         </div>
       </div>
     </>

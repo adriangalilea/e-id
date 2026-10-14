@@ -36,7 +36,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
-import { ScrollFade } from "@/components/ui/scroll-fade"
+import { ScrollArea } from "@/components/ui/scroll-area"
 import { Highlight } from "@/components/ui/search"
 
 export interface Country {
@@ -344,7 +344,7 @@ export function CountryPicker({
             }
           }}
         />
-        <ScrollFade className="max-h-[min(20rem,50dvh)] min-h-0 pt-2 pb-2">
+        <ScrollArea className="max-h-[min(20rem,50dvh)] min-h-0 pt-2 pb-2">
           <Autocomplete.Empty
             data-slot="country-picker-empty"
             className="px-2 py-6 text-center text-[13px] text-current/50 empty:hidden"
@@ -416,7 +416,7 @@ export function CountryPicker({
               </Autocomplete.Group>
             )}
           </Autocomplete.List>
-        </ScrollFade>
+        </ScrollArea>
       </Autocomplete.Root>
     </div>
   )

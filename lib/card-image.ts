@@ -8,12 +8,14 @@ import * as FLAGS from "country-flag-icons/string/3x2";
 import { __iconNode as circleDotDashed } from "lucide-react/dist/esm/icons/circle-dot-dashed.js";
 import { __iconNode as github } from "lucide-react/dist/esm/icons/github.js";
 import { __iconNode as instagram } from "lucide-react/dist/esm/icons/instagram.js";
-import { __iconNode as link } from "lucide-react/dist/esm/icons/link.js";
+import { __iconNode as linkIcon } from "lucide-react/dist/esm/icons/link.js";
+import { __iconNode as link2 } from "lucide-react/dist/esm/icons/link-2.js";
 import { __iconNode as mail } from "lucide-react/dist/esm/icons/mail.js";
 import { __iconNode as send } from "lucide-react/dist/esm/icons/send.js";
 import { __iconNode as twitter } from "lucide-react/dist/esm/icons/twitter.js";
 import { __iconNode as youtube } from "lucide-react/dist/esm/icons/youtube.js";
-import type { Card } from "@/lib/card";
+import type { LinkPlatform } from "@/db/schema";
+import { type Card, knownPlatform } from "@/lib/card-schema";
 import { EMOJI_DOMAIN } from "@/lib/const";
 import { FOIL as FOIL_SPEC } from "@/lib/foil";
 import { HOLO_ART, type HoloArt } from "@/lib/holo";
@@ -48,8 +50,10 @@ const FOIL = FOIL_SPEC.hues.map((hue) => oklchHex(FOIL_SPEC.lightness, FOIL_SPEC
 const LIGHT = 0.36;
 
 type IconNode = [string, Record<string, string>][];
-const ICONS: Record<string, IconNode> = {
-  website: link,
+/** Each platform's glyph, as the site draws it (lib/links, `getLinkIcon`). */
+const ICONS: Record<LinkPlatform, IconNode> = {
+  website: linkIcon,
+  link: link2,
   email: mail,
   github,
   twitter,
@@ -169,7 +173,8 @@ function pattern(id: string, a: HoloArt): string {
 /** Where the card is drawn: `share`, the share image (1200 by 630, the card on the
  *  page's ground, its light still); `card`, the card alone, its box the drawing's,
  *  for the embed (public/embed.js) to set on any page and light by the hand: its
- *  places and its name are links, and what the hand moves is named (`LIGHT_HOOKS`). */
+ *  links' glyphs and its name are anchors, and what the hand moves is named
+ *  (`LIGHT_HOOKS`). */
 export type CardFrame = "share" | "card";
 
 /** The card's width in the drawing, the unit everything on it is a share of. */
@@ -199,10 +204,12 @@ export async function cardSvg(card: Card, frame: CardFrame = "share"): Promise<s
   const u = cw / 100;
   const cx = (W - cw) / 2;
   const cy = (H - ch) / 2;
-  const link = (href: string, body: string, label?: string) =>
+  const anchor = (href: string, body: string, link?: { name: string; at: number }) =>
     share
       ? body
-      : `<a href="${esc(href)}" target="_blank" rel="me noopener"${label ? ` aria-label="${esc(label)}"` : ""}>${body}</a>`;
+      : // `data-link`: the link's index in `card.links`, whose profile the embed
+        // shows.
+        `<a href="${esc(href)}" target="_blank" rel="me noopener"${link ? ` aria-label="${esc(link.name)}" data-link="${link.at}"` : ""}>${body}</a>`;
   const radius = (3.18 / 85.6) * cw;
   const L = CARD_LAYOUT;
   const pad = L.pad * u;
@@ -221,17 +228,21 @@ export async function cardSvg(card: Card, frame: CardFrame = "share"): Promise<s
   const photo = await photoOf(card.photo);
 
   // The words beside the photo, as tall as it (components/id-card): the name
-  // from its top edge, the places' glyphs ending at its foot.
-  const places = card.places.filter((p) => ICONS[p.platform]);
-  const flair = places.length
-    ? places
+  // from its top edge, the links' glyphs ending at its foot.
+  // A card this site wrote: every platform on it is one it draws.
+  const links = card.links.map((l, at) => ({ ...l, at, platform: knownPlatform(l.platform) }));
+  const flair = links.length
+    ? links
         .slice(0, Math.floor((textWidth + 0.6 * u) / (L.iconStep * u)))
-        .map((p, i) => {
+        .map((l, i) => {
           const x = cx + textX * u + i * L.iconStep * u;
           const y = cy + (bodyFoot - L.icon) * u;
           // The hit area is the icon's padded square, as on the site.
           const hit = `<rect x="${f(x - 1.1 * u)}" y="${f(y - 1.1 * u)}" width="${f((L.icon + 2.2) * u)}" height="${f((L.icon + 2.2) * u)}" rx="${f(1.2 * u)}" fill="#fff" fill-opacity="0"/>`;
-          return link(p.url, hit + icon(ICONS[p.platform] as IconNode, x, y, L.icon * u), p.platform);
+          return anchor(l.url, hit + icon(ICONS[l.platform], x, y, L.icon * u), {
+            name: l.name,
+            at: l.at,
+          });
         })
         .join("")
     : "";
@@ -262,7 +273,7 @@ export async function cardSvg(card: Card, frame: CardFrame = "share"): Promise<s
     (100 - 2 * L.pad) * u - markSize - 0.15 * headSize - (flag ? flagW + 9 * u : 0);
   const tailFits = (s: string) => measure(s, MONO, 400, headSize) <= tailRoom;
   const tailText = tailFits(tail) ? tail : cut(tail, tailFits);
-  const address = link(
+  const address = anchor(
     card.id,
     mark(cx + pad, hy, markSize, INK) +
       `<text x="${f(cx + pad + markSize + 0.15 * headSize)}" y="${f(hy)}" font-family="${MONO}" font-size="${f(headSize)}" fill="${INK}" fill-opacity="0.6">${esc(tailText)}</text>`,
@@ -344,7 +355,7 @@ ${page}
   <rect x="${f(px)}" y="${f(py)}" width="${f(ps)}" height="${f(ps)}" rx="${f(1.4 * u)}" fill="#fff" fill-opacity="0.05" stroke="#fff" stroke-opacity="0.08"/>
   ${portrait}
   ${head}
-  ${link(card.id, name)}
+  ${anchor(card.id, name)}
   ${flair}
 </g>
 <rect x="${f(cx + 0.5)}" y="${f(cy + 0.5)}" width="${f(cw - 1)}" height="${f(ch - 1)}" rx="${f(radius - 0.5)}" fill="none" stroke="url(#rim)" pointer-events="none"/>

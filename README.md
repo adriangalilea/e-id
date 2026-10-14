@@ -29,18 +29,19 @@ A constant pointer to your ever-changing web presence.
 - [ ] feat: display status on opengraph image optionally
 - [ ] feat: display testimonial on opengraph image optionally(?)
 - [ ] feat: preserve state when switching tabs using [zustand](https://github.com/pmndrs/zustand/blob/main/docs/guides/nextjs.md)
-- [ ] feat: every social component integration should be a component that handles if it's editing or visualising, if visualising is where I'll add analytics
+- [ ] feat: every link's integration should be a component that handles if it's editing or visualising, if visualising is where I'll add analytics
 - [ ] feat: instead of /about do about.e-id.to
   - [ ] [branch](https://github.com/adriangalilea/e-id/tree/edit-tabs-preserve-state)
 - [ ] feat: github, youtube, twitter, ... followers/subs
-- [ ] feat: opengraph on custom website for social component
+- [ ] feat: opengraph on custom website for a link
   - [ ] [fetch-opengraph node](https://github.com/purphoros/fetch-opengraph)
   - [ ] https://metascraper.js.org/
 - [ ] feat: curl
   - [ ] /adriangalilea
   - [ ] /adriangalilea/x
-- [ ] feat: /username/[social_media_name]
-  - [ ] if exists: redirects to said social media and log.
+- [ ] feat: /username/[link] (the route; built: app/[username]/[link])
+  - [x] if exists: redirects to said link.
+  - [ ] log the visit.
   - [ ] if not exists: redirects to e-id profile and log user demand.
 - [ ] feat: custom auth login window
   - [ ] https://authjs.dev/guides/basics/pages#theming
@@ -61,11 +62,11 @@ A constant pointer to your ever-changing web presence.
 - [ ] feat: premium claimable username
   - [ ] prevents squatting
   - [ ] allows speculation (?)
-- [ ] tracking every social media / blog rss
+- [ ] tracking every link / blog rss
   - [ ] default being only the last element
   - [ ] aliveness score
 - [ ] feat: friends / followers
-  - [ ] notify when friends make new places
+  - [ ] notify when friends add new links
 - [ ] feat: create a widget, similar to those that can be embedded in github.
 - [ ] feat: optimizations
   - [ ] cache github activity component
@@ -77,7 +78,7 @@ A constant pointer to your ever-changing web presence.
 - [ ] style: ensure name and username inputs are similar in size to regular profile
 - [ ] style: country display flag at rest
 - [ ] feat: basic user info (birthdate/languages/skills)
-- [ ] style: test (add metadata to all socials and divide in half to show a square button on the right and info on the left, username/followers/...)
+- [ ] style: test (add metadata to all links and divide in half to show a square button on the right and info on the left, username/followers/...)
 - [ ] style: add alt to highlights
 - [ ] feat: instant changelog from github
 

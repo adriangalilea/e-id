@@ -33,7 +33,9 @@ export default function CommentForm({
       <div className="flex items-center gap-2">
         <Textarea
           name="body"
-          className="border-border border bg-zinc-200/10 text-[16px] shadow-md backdrop-blur-md"
+          material="glass"
+          size="lg"
+          aria-label="vouch"
           placeholder="I want everyone to know..."
         />
         <Button

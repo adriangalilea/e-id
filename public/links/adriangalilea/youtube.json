@@ -1,0 +1,25 @@
+{
+  "url": "https://youtube.com/@Adrian_Galilea",
+  "dark": {
+    "kind": "image",
+    "width": 2560,
+    "height": 2176,
+    "mime": "image/webp",
+    "bytes": 149466,
+    "blurDataURL": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAOCAIAAACpTQvdAAAACXBIWXMAAAPoAAAD6AG1e1JrAAABk0lEQVQokWOQEBbVV1QWFBTk5+cXERERRAUiIiKysrLCwsL8/PxCYpJCIhIMEhISoqLiXu6FZkZerq6uFhYWZmZmEP1YAYOEhISetkFLzcTq/Ho1LV0JGXkRERFcqvn5+RkgNioo60rJyBUWFsrJyeFRzc/PzyAmJiYFBvz8/AJEAAZ+fn5bc73WCv26Ik91ZQX8xvPz84M02Fgap0abx/hay8rKEqVBTFBYWlqaGPcIQJykoKSWFhOSGuzk4ezqYuNspW9uLc1vJylhpakcE2KTHGKspiSPYkOAn8/6GZ1regryExNr8qtCnX0D5QXm1BcEWpseWhdaGqtjbWuPoiEi1P/ElkW7Z5QVx/qdPrK9ubLYUUHSXlEh1MNj3wrfjR0mgSYGKBpCfew3TyudU5naVpbZnur14vE5OxX5dFtNXXnZpRNs2lPYXYzEUDQY66kHelj72Rpb2jq6OjsVRgYaqCqZyEkZKcs4efu42SvqqSFCD6RBVFRURkZGUFAQEoPCwsIyMjKQhCgrKysuLo4crABodmj3gHtoKwAAAABJRU5ErkJggg==",
+    "average": "#2d2823",
+    "src": "youtube.dark.webp",
+    "poster": "youtube.dark.webp"
+  },
+  "light": {
+    "kind": "image",
+    "width": 2560,
+    "height": 2176,
+    "mime": "image/webp",
+    "bytes": 161552,
+    "blurDataURL": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAOCAIAAACpTQvdAAAACXBIWXMAAAPoAAAD6AG1e1JrAAABqklEQVQokZWQyS8DYRiH5+bf4OAgEadKSIgTNy6Wm6QHS+IgHBARWyR2SkSLVpW0Qa1FQ1GCttQSYikTSxeTltDofO18Zqbz9RNcTILwXN/f875vfoQQevU73QghjDHHcRExCCGGYT6nITYMeURACHleUA1Zjg/u7Xa7w+EgSfIz8S0EhDBEw+a6vp3lXY/36SXI8jz/UxpjTNA0LYQFm/2c8vrUanUgEPgljTEmWJZlPoj8DQJj7CRPVLKM/nap8/rq9/UY43fh+eF+SlM7r5FRFPUnIcLxwWDwHy/d3Lo3jTOHq3rLhmlzUmHVy+dkTbrGBoNmyGrWHpqV15dnoguPPu/cQNt0Z9nR+vjdxZ65tbxIEquqLyvJydqeza3Ij9+22EQC7fftLY2tDVS+eE+fn1wrso68xIS0mOhSqXRjItPQKrlaWxEJfupyUV6hqi6c18mV/d2Gkb7sZElxalx6UqKuJ6WlIOrANCxuyeea0SpsxinLlslkXNi3WXubm3prqmZHBhWaUYO+69FDigSO4wAACCEIIcMwQlgAAAhhASEEAGBZ9mutb7kFRzCM2iHgAAAAAElFTkSuQmCC",
+    "average": "#e3ded9",
+    "src": "youtube.light.webp",
+    "poster": "youtube.light.webp"
+  }
+}

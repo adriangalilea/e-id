@@ -1,0 +1,28 @@
+@layer theme, base, components, utilities;
+
+@layer components {
+  /* The sheet's compact title (the name in its bar) shows only while the card
+     overflows the sheet, as iOS shows it once the header has scrolled under the
+     bar. CSS reads the overflow itself: the scroller's timeline is active only
+     when it has something to scroll, and an animation on an inactive timeline has
+     no effect, so a constant keyframe on it is an "overflowing" switch. Keyframes,
+     and an `animation-timeline` that must follow the `animation` shorthand (which
+     resets it), are what no utility orders reliably. */
+  @keyframes ag-contacts-overflowing {
+    from,
+    to {
+      opacity: 1;
+    }
+  }
+  [data-slot="contacts-app-sheet"] {
+    timeline-scope: --ag-contacts-sheet;
+  }
+  [data-slot="contacts-app-scroller"] {
+    scroll-timeline: --ag-contacts-sheet y;
+  }
+  [data-slot="contacts-app-title"] {
+    opacity: 0;
+    animation: ag-contacts-overflowing linear both;
+    animation-timeline: --ag-contacts-sheet;
+  }
+}

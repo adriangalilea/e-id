@@ -128,7 +128,9 @@ export const comments = sqliteTable(
   },
 );
 
-export const socialPlatforms = [
+/** Where a link can go: a platform e-ID knows, or `link`, anywhere at all (its
+ *  `label` names it). */
+export const linkPlatforms = [
   "email",
   "youtube",
   "github",
@@ -137,24 +139,29 @@ export const socialPlatforms = [
   "self",
   "instagram",
   "telegram",
+  "link",
 ] as const;
 
-export type SocialPlatform = (typeof socialPlatforms)[number];
+export type LinkPlatform = (typeof linkPlatforms)[number];
 
-export const socials = sqliteTable(
-  "social",
+/** A person's links, one row each, in their order (`order`). `value` is the
+ *  username there, or the whole address where the platform takes none; `label`
+ *  their own name for it, a `link`'s only name. Migrations: db/migrations. */
+export const links = sqliteTable(
+  "link",
   {
     id: text("id").notNull().primaryKey(),
     user_id: text("user_id").references(() => users.id, {
       onDelete: "cascade",
     }),
     platform: text("platform", {
-      enum: socialPlatforms,
+      enum: linkPlatforms,
     }).notNull(),
     value: text("value"),
+    label: text("label"),
     image: text("image"),
     order: integer("order"),
-    context_message: text("context_message"),
+    note: text("note"),
     public: integer("public", { mode: "boolean" }).notNull().default(false),
     custom_data: text("custom_data", { mode: "json" }).$type<{
       highlight?: string;
@@ -177,5 +184,5 @@ export type SelectUser = typeof users.$inferSelect;
 export type InsertComment = typeof comments.$inferSelect;
 export type SelectComment = typeof comments.$inferSelect;
 
-export type InsertSocial = typeof socials.$inferInsert;
-export type SelectSocial = typeof socials.$inferSelect;
+export type InsertLink = typeof links.$inferInsert;
+export type SelectLink = typeof links.$inferSelect;

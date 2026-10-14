@@ -1,0 +1,105 @@
+@property --stage-p {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 0;
+}
+
+@layer components {
+  @keyframes ag-stage-p {
+    from {
+      --stage-p: 0;
+    }
+    to {
+      --stage-p: 1;
+    }
+  }
+
+  .ag-stage-track {
+    position: relative;
+    --stage-p: 1;
+    --pace: 100svh;
+    --tail: 40svh;
+  }
+
+  /* One unit of pace, measurable: the act clock divides the track's travel by it. */
+  .ag-stage-pace {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 0;
+    height: var(--pace);
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  @media (min-width: 64rem) and (prefers-reduced-motion: no-preference) {
+    .ag-stage-track {
+      --stage-p: 0;
+      height: calc(var(--acts) * var(--pace) + var(--tail));
+    }
+    .ag-stage-track[data-engine="css"] {
+      animation: ag-stage-p linear both;
+      animation-timeline: view();
+      animation-range: contain 0% contain 100%;
+    }
+    .ag-stage {
+      position: sticky;
+      top: var(--stage-top, 0px);
+      display: flex;
+      min-height: var(--stage-min-height, 100svh);
+      align-items: center;
+    }
+    .ag-stage-track[data-stacked] > .ag-stage-stacked {
+      display: none;
+    }
+  }
+
+  @media not ((min-width: 64rem) and (prefers-reduced-motion: no-preference)) {
+    .ag-stage-track[data-stacked] > .ag-stage {
+      display: none;
+    }
+  }
+
+  /* Small-screen pinning is explicit: the consumer must supply a scene that fits. */
+  @media (width < 64rem) and (min-height: 36rem) and (
+      prefers-reduced-motion: no-preference
+    ) {
+    .ag-stage-track[data-pin="all"] {
+      --stage-p: 0;
+      height: calc(var(--acts) * var(--pace) + var(--tail));
+    }
+    .ag-stage-track[data-pin="all"][data-engine="css"] {
+      animation: ag-stage-p linear both;
+      animation-timeline: view();
+      animation-range: contain 0% contain 100%;
+    }
+    .ag-stage-track[data-pin="all"] > .ag-stage {
+      position: sticky;
+      top: var(--stage-top, 0px);
+      display: flex;
+      min-height: var(--stage-min-height, 100svh);
+      align-items: center;
+    }
+    .ag-stage-track[data-pin="all"] > .ag-stage-stacked {
+      display: none;
+    }
+  }
+
+  @media (height < 36rem) {
+    .ag-stage-track[data-pin="all"] {
+      height: auto;
+      animation: none;
+      --stage-p: 1;
+    }
+    .ag-stage-track[data-pin="all"] > .ag-stage {
+      position: static;
+      min-height: 0;
+    }
+    .ag-stage-track[data-pin="all"][data-stacked] > .ag-stage {
+      display: none;
+    }
+    .ag-stage-track[data-pin="all"] > .ag-stage-stacked {
+      display: block;
+    }
+  }
+}

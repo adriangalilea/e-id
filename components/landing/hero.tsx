@@ -17,7 +17,7 @@ export async function Hero() {
       image: p.image,
       country: p.country_code,
       bio: p.bio,
-      places: p.places,
+      links: p.links,
     }),
   );
   return (

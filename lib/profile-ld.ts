@@ -1,7 +1,7 @@
-import type { SelectSocial } from "@/db/schema";
+import type { SelectLink } from "@/db/schema";
 import { PROD_URL } from "@/lib/const";
 import type { Profile } from "@/lib/data";
-import { getSocialUrl } from "@/lib/socials";
+import { getLinkUrl } from "@/lib/links";
 
 /** A profile's canonical address: e-id.to, where crawlers land. */
 export function profileUrl(username: string) {
@@ -9,11 +9,11 @@ export function profileUrl(username: string) {
 }
 
 /** schema.org ProfilePage for a profile: the person, their handle, and every
- *  public social as sameAs, so a search engine ties the accounts to one person. */
-export function profileJsonLd(user: Profile, socials: SelectSocial[]) {
-  const sameAs = socials
-    .filter((social) => social.platform !== "email" && social.value)
-    .map((social) => getSocialUrl(social.platform, social.value ?? ""));
+ *  public link as sameAs, so a search engine ties the accounts to one person. */
+export function profileJsonLd(user: Profile, links: SelectLink[]) {
+  const sameAs = links
+    .filter((link) => link.platform !== "email" && link.value)
+    .map((link) => getLinkUrl(link.platform, link.value ?? ""));
   return {
     "@context": "https://schema.org",
     "@type": "ProfilePage",

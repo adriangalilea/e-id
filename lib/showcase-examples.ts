@@ -1,11 +1,11 @@
-import type { SelectSocial } from "@/db/schema";
+import type { CardLink } from "@/lib/link-names";
 
 // THE HOME'S EXAMPLE CARDS: historical figures who fill the hero's pile where
 // too few real people have a whole card yet (a photo, a name, a country). Real
 // cards always come first (lib/data, `getShowcase`); these only fill what is
 // left, and never stand for an account: there is no profile at their address.
 // Their portraits are Wikipedia's page images, free to reuse, kept in
-// public/showcase (where each came from, below); their one place is their
+// public/showcase (where each came from, below); their one link is their
 // Wikipedia page.
 
 export type ShowcaseCard = {
@@ -14,7 +14,7 @@ export type ShowcaseCard = {
   image: string;
   country_code: string;
   bio: string | null;
-  places: { platform: SelectSocial["platform"]; url: string }[];
+  links: CardLink[];
 };
 
 const example = (
@@ -29,8 +29,12 @@ const example = (
   image: `/showcase/${image}`,
   country_code,
   bio: null,
-  places: [
-    { platform: "website", url: `https://en.wikipedia.org/wiki/${wikipedia}` },
+  links: [
+    {
+      platform: "link",
+      name: "Wikipedia",
+      url: `https://en.wikipedia.org/wiki/${wikipedia}`,
+    },
   ],
 });
 

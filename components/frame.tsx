@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
  *  footer, so their edges line up. */
 export const GUTTER = "px-5 sm:px-8";
 
-/** A page laid out on the site's full width (a profile's card and its places). */
+/** A page laid out on the site's full width (a profile's card and its links). */
 export function Wide({
   children,
   className,

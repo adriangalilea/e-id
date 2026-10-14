@@ -499,7 +499,7 @@ export function Glass<T extends React.ElementType = "div">({
  *  placed in (absolute, inset 0), at that box's `radius`. The one edge for glass round
  *  media, a display's frame (glass-display) and anything small that frames a picture
  *  in glass (the player's zoom finder), and for a pane whose edge lies over what it
- *  holds (GlassPane). `scheme` is the face it shows, as a surface's: unset, the
+ *  holds (a glass Panel). `scheme` is the face it shows, as a surface's: unset, the
  *  page's. Its brightness is `--glass-rim`, set on it or above it. */
 export function GlassEdge({
   radius,
@@ -550,7 +550,7 @@ export type GlassFrontAt = "top" | "bottom"
  *  that scrolls wears the classes on its own element (`sticky top-0`). Its glass must
  *  not blur on the element that holds it: a backdrop blur inside another sees only
  *  what is between the two, so a front inside a blurring body blurs nothing that
- *  passes under it (GlassPane blurs on a back layer for that reason). */
+ *  passes under it (a glass Panel blurs on a back layer for that reason). */
 const GLASS_FRONT = [
   "backdrop-blur-[var(--glass-front-blur,12px)] backdrop-saturate-125",
   glassLight,
@@ -650,14 +650,28 @@ export const GLASS_BEND =
  *  into the edge's fine line by a share of that line's own strength. A `lit` layer
  *  (the softening and the crest, which lift the picture by the light) wears
  *  `glassLight`; the others only bend. */
+/** A mask of a box's own rounded outline (corner `radius`, a CSS length the SVG
+ *  reads, px or rem, never a percentage, which an SVG reads against itself),
+ *  stroked `stroke` px wide (half of it inside the box) and blurred by `blur` px: a
+ *  band that follows the edge round every corner, fading inward. An SVG with no
+ *  size of its own, drawn at the size of the box it masks. What the bend and the
+ *  spill are shaped by. */
+function edgeOutline(radius: string, stroke: number, blur: number): string {
+  if (radius.includes("%"))
+    throw new Error(
+      `glass: an edge's radius is a length, never a percentage (got ${radius})`,
+    )
+  return `url("data:image/svg+xml,${encodeURIComponent(
+    `<svg xmlns='http://www.w3.org/2000/svg'><filter id='b' x='-20%' y='-20%' width='140%' height='140%'><feGaussianBlur stdDeviation='${blur}'/></filter><rect width='100%' height='100%' rx='${radius}' fill='none' stroke='white' stroke-width='${stroke}' filter='url(#b)'/></svg>`,
+  )}")`
+}
+
 export function bendLayers(
   radius: number,
   bend: number,
 ): { slot: string; filter: string; mask: string; lit: boolean }[] {
   const outline = (stroke: number, blur: number) =>
-    `url("data:image/svg+xml,${encodeURIComponent(
-      `<svg xmlns='http://www.w3.org/2000/svg'><filter id='b' x='-20%' y='-20%' width='140%' height='140%'><feGaussianBlur stdDeviation='${blur}'/></filter><rect width='100%' height='100%' rx='${radius}' fill='none' stroke='white' stroke-width='${stroke}' filter='url(#b)'/></svg>`,
-    )}")`
+    edgeOutline(`${radius}px`, stroke, blur)
   return [
     {
       slot: "soften",
@@ -684,4 +698,63 @@ export function bendLayers(
       lit: true,
     },
   ]
+}
+
+/** THE SPILL at a glass container's edge, over what it holds: a band of glass
+ *  along the inside of its edge that blurs what lies under it, so what runs near
+ *  the edge (rows scrolling, a picture) spills its light into the band and round
+ *  the corners, as glass carries what is behind it; a box's padding between its
+ *  content and its edge is then lit by that content, never a flat strip. No face,
+ *  no line: the band is the blur alone, deepest at the edge and gone `width` in,
+ *  following the rounded outline (`edgeOutline`). Subtle by default (4px, 10px
+ *  in; 12px and 28 spread deep into a picture and ate it, Adrian 2026-10-14).
+ *  Never a fade or a strip painted on.
+ *
+ *  A blur mixes both ways: at a corner where content meets the bare glass, the
+ *  glass's own tone also reaches a little into the content. A one-way spill (the
+ *  content's light out, never the glass's in) needs the content's light drawn
+ *  under it, which no backdrop can do; until then it stays this subtle.
+ *
+ *  A glass CONTAINER wears it by default (`Panel material="glass"`), so nothing
+ *  places it by hand. Placing one: inside the container, over
+ *  what it holds and under its front surface and edge (absolute, inset 0, its
+ *  corners the container's), with the same `radius` its `GlassEdge` takes. What it
+ *  blurs must not be inside a backdrop root of its own (a masked scroller): it lies
+ *  beside it, and nothing between it and the container may be one, or its blur
+ *  reads nothing. `--glass-spill-blur` sets the blur. Server-safe. */
+export function GlassSpill({
+  radius,
+  width = 10,
+  className,
+}: {
+  /** The container's corner, a CSS length (never a percentage): the outline the
+   *  band follows, the one its `GlassEdge` takes. */
+  radius: string
+  /** How far in the band reaches, px: the last stretch of what nears the edge,
+   *  never into what is being read. */
+  width?: number
+  className?: string
+}) {
+  if (!(width > 0))
+    throw new Error(`GlassSpill: width is px, more than 0 (got ${width})`)
+  // The outline stroked twice the band's width (half of it lies outside the box
+  // and is cut there), its inner edge blurred so the blur eases in.
+  const mask = edgeOutline(radius, width * 2, width / 3)
+  return (
+    <div
+      aria-hidden
+      data-slot="glass-spill"
+      className={cn(
+        "pointer-events-none absolute inset-0 rounded-[inherit]",
+        "[backdrop-filter:blur(var(--glass-spill-blur,4px))_saturate(1.2)] [-webkit-backdrop-filter:blur(var(--glass-spill-blur,4px))_saturate(1.2)]",
+        className,
+      )}
+      style={{
+        maskImage: mask,
+        WebkitMaskImage: mask,
+        maskSize: "100% 100%",
+        WebkitMaskSize: "100% 100%",
+      }}
+    />
+  )
 }

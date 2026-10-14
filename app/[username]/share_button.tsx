@@ -8,8 +8,8 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Link as LinkIcon } from "lucide-react";
-import Link from "next/link";
 import { Addresses } from "@/components/addresses";
+import { embedOf } from "@/lib/card-schema";
 import { PROD_URL } from "@/lib/const";
 
 /** One address to share: what it is, the address itself, and the registry's copy
@@ -31,8 +31,15 @@ function Row({ name, value }: { name: React.ReactNode; value: string }) {
 export default function ShareButton({ username }: { username: string }) {
   return (
     <Popover>
-      <PopoverTrigger render={<Button variant="outline" size="lg" />}>
-        <LinkIcon strokeWidth={1} />
+      <PopoverTrigger
+        render={
+          <Button
+            variant="outline"
+            size="lg"
+            icon={<LinkIcon strokeWidth={1.5} />}
+          />
+        }
+      >
         share
       </PopoverTrigger>
       <PopoverContent align="end" className="w-80 gap-0 p-0">
@@ -45,14 +52,10 @@ export default function ShareButton({ username }: { username: string }) {
             card drawn there and lit by the hand. */}
         <Row
           name="on your website"
-          value={`<script type="module" src="${PROD_URL}/embed.js"></script><e-id-card handle="${username}"></e-id-card>`}
+          value={embedOf(username)}
         />
-        <Link
-          href="/about"
-          className="px-3 py-2.5 font-mono text-[11px] text-foreground/55 hover:text-foreground"
-        >
-          Emoji URL?
-        </Link>
+        {/* The card as data (lib/card-schema), for a program. */}
+        <Row name="as data" value={`${PROD_URL}/${username}/json`} />
       </PopoverContent>
     </Popover>
   );

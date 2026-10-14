@@ -1,26 +1,28 @@
 import { SaveContact } from "@/components/save-contact";
-import { type Landing, LinkMap } from "@/components/landing/link-map";
-import { WebPreview } from "@/components/ui/web-preview";
-import { shortName } from "@/lib/place-names";
+import type { Landing, Shot } from "@/components/landing/link-map";
+import { Story } from "@/components/landing/story";
+import { shortName } from "@/lib/link-names";
 import { cacheLife } from "next/cache";
 import { getShowcase } from "@/lib/data";
-import { getWebsite } from "@/lib/presence";
-import { getSocialIcon } from "@/lib/socials";
+import { Panel } from "@/components/ui/panel";
+import { EMOJI_DOMAIN } from "@/lib/const";
+import { getLinkIcon } from "@/lib/links";
+import SHOTS from "@/lib/link-shots.json";
 import { IdCard, type Holder } from "@/components/id-card";
-import { Code } from "@/components/ui/code";
-import { Glass } from "@/components/ui/material-glass";
 import { HoloLight } from "@/components/ui/holo";
-import { Reveal } from "@/components/ui/reveal";
-import { PROD_URL } from "@/lib/const";
-import { cn } from "@/lib/utils";
+import { CardData } from "@/components/landing/card-data";
+import { LiveEmbed } from "@/components/landing/live-embed";
+import { Code } from "@/components/ui/code";
+import { cardOf } from "@/lib/card";
+import { type Card, embedOf } from "@/lib/card-schema";
+import { vcardOf } from "@/lib/vcard";
 
-/** WHAT A CARD DOES, under the hero, as untitled.garden shows a project's
- *  features: each a row of a few words beside the real thing (never a picture
- *  of it), the sides alternating down the page, each arriving as it scrolls in
- *  (@ag/reveal). One column on a phone: the words, then the thing. The card
- *  shown is a real one, the hero's lead (lib/data, `getShowcase`). */
+/** WHAT A CARD DOES, under the hero: the scenes the page scrolls through
+ *  (`Story`), each thing the card does shown as it really is (never a picture of
+ *  it): everywhere its one link routes to, its contact saved on a phone, its data
+ *  and its embed on a laptop. The card shown is a real one, the hero's lead
+ *  (lib/data, `getShowcase`). */
 export async function Features() {
-  // The card the features show: the hero's lead, a real one.
   const [first] = await getShowcase();
   if (!first) throw new Error("the home has no card to show");
   const holder: Holder = {
@@ -29,155 +31,151 @@ export async function Features() {
     image: first.image,
     country: first.country_code,
     bio: first.bio,
-    places: first.places,
+    links: first.links,
   };
-  const landings = await landingsOf(holder);
+  // The same card as data, as a program gets it.
+  const card = await cardOf(holder.username);
+  if (!card) throw new Error(`the home's lead ${holder.username} has no card`);
+  const at = `${EMOJI_DOMAIN}/${holder.username}`;
   return (
-    <section
-      aria-label="what an e-ID does"
-      className="mx-auto flex w-full max-w-5xl flex-col gap-32 px-6 py-32 sm:px-10"
-    >
-      {/* One link: the address, and every place it reaches, drawn. */}
-      <Reveal as="article" className="flex flex-col items-center gap-14">
-        <h2 className="text-3xl font-light tracking-[-0.02em] text-foreground/90">
-          one link
-        </h2>
-        <div className="w-full">
-          <LinkMap username={holder.username} landings={landings} />
-        </div>
-      </Reveal>
-      <Row
-        side="right"
-        title="a contact in one tap"
-        body="Your card saves to a phone as a contact: photo, name, address and every place. Try it."
-      >
-        <div className="flex flex-col items-start gap-6">
-          <HoloLight className="w-full">
-            <IdCard holder={holder} heading="p" holo="laminate" className="[--id-card-thickness:1]" />
-          </HoloLight>
-          <SaveContact username={holder.username} />
-        </div>
-      </Row>
-      <Row
-        side="left"
-        title="on your website"
-        body="Your card on any page with two lines: it draws itself, and its hologram answers the hand."
-      >
-        <EmbedSnippet username={holder.username} />
-      </Row>
-    </section>
-  );
-}
-
-/** Where each of the holder's addresses lands, drawn: the bare address on their
- *  card, small; each place (the first of each kind, as the redirect takes it)
- *  on its own page's preview (@ag/web-preview, the unfurl the profile uses),
- *  or, where nothing can be unfurled (an email), its address with its mark. */
-async function landingsOf(holder: Holder): Promise<Landing[]> {
-  const places = holder.places ?? [];
-  const first = places.filter(
-    (p, i) => places.findIndex((q) => q.platform === p.platform) === i,
-  );
-  const there = await Promise.all(
-    first.map(async (place): Promise<Landing> => {
-      // An email has no page to unfurl, and a YouTube channel none YouTube will
-      // describe (its oEmbed is for videos only): both the plain panel.
-      const plain =
-        place.platform === "email" ||
-        (place.platform === "youtube" &&
-          !/youtu\.be\/|\/watch\?|\/shorts\//.test(place.url));
-      const facts = plain ? null : await getWebsite(place.url);
-      return {
-        end: shortName(place.platform),
-        // In glass, as every container on the page: the preview's own frame
-        // dropped for it.
-        there: (
-          <Glass
-            shape="surface"
-            className="overflow-hidden [--glass-radius:1.25rem]"
-          >
-            {facts ? (
-              <WebPreview
-                facts={facts}
-                className="rounded-none border-0 bg-transparent shadow-none"
-              />
-            ) : (
-              <a
-                href={place.url}
-                className="flex items-center justify-center gap-3 px-6 py-10 font-mono text-sm text-foreground/70 hover:text-foreground [&_svg]:size-5"
-              >
-                {getSocialIcon(place.platform)}
-                {place.url.replace(/^(https?:\/\/|mailto:)(www\.)?/, "")}
-              </a>
-            )}
-          </Glass>
+    <Story
+      username={holder.username}
+      card={<HolderCard holder={holder} />}
+      landings={landingsOf(holder)}
+      contact={{
+        vcard: await contactOf(card),
+        save: <SaveContact username={holder.username} size="lg" className="self-start" />,
+      }}
+      data={{
+        address: `${at}/json`,
+        page: (
+          <div className="p-4">
+            <CardData card={card} />
+          </div>
         ),
-      };
-    }),
+      }}
+      embed={{
+        // The domain reserved for examples (RFC 2606): the address is live, and
+        // any other would be someone's.
+        address: "example.com",
+        page: <EmbedPage username={holder.username} />,
+        code: <EmbedCode username={holder.username} />,
+      }}
+    />
   );
-  return [
-    {
-      end: null,
-      there: (
-        <HoloLight className="w-full">
-          <IdCard
-            holder={holder}
-            heading="p"
-            holo="laminate"
-            className="[--id-card-thickness:1]"
-          />
-        </HoloLight>
-      ),
-    },
-    ...there,
-  ];
 }
 
-/** The embed's two lines for `username`, highlighted (@ag/code, in glass).
- *  Cached: the highlighter reads the clock as it works, which a page being
- *  prerendered may not, and the snippet only changes with the handle. */
-async function EmbedSnippet({ username }: { username: string }) {
+/** Where each of the holder's routes lands (link-map): the first link of each
+ *  platform, the one its route opens, as its page really looks, captured in both
+ *  schemes by `pnpm links` (lib/link-shots.json); an email as the compose window
+ *  it opens. A link with no route (a link of their own) or no capture (a site
+ *  that refuses a headless browser, X) is left out rather than drawn as something
+ *  it is not. */
+function landingsOf(holder: Holder): Landing[] {
+  const links = holder.links ?? [];
+  const first = links.filter(
+    (l, i) => links.findIndex((m) => m.platform === l.platform) === i,
+  );
+  // Captured for one handle, the home's lead; another lead has none until
+  // `pnpm links <handle>` runs.
+  const captured: Partial<Record<string, Omit<Shot, "src">>> =
+    SHOTS.handle === holder.username ? SHOTS.shots : {};
+  return first.flatMap((link): Landing[] => {
+    const end = shortName(link.platform);
+    if (!end) return [];
+    if (link.platform === "email")
+      return [{ end, url: link.url, page: <Compose to={link.url} /> }];
+    const shot = captured[link.platform];
+    if (!shot) return [];
+    const base = `/links/${holder.username}/${link.platform}`;
+    return [
+      {
+        end,
+        url: shot.url,
+        shot: {
+          ...shot,
+          src: { dark: `${base}.dark.webp`, light: `${base}.light.webp` },
+        },
+      },
+    ];
+  });
+}
+
+/** What an email address opens: the mail app's new message, to it. Drawn, since a
+ *  mail app has no page to capture. */
+function Compose({ to }: { to: string }) {
+  const address = to.replace(/^mailto:/, "");
+  return (
+    <div className="grid min-h-full place-items-center p-8">
+      <Panel
+        material="glass"
+        radius="0.75rem"
+        className="w-full max-w-md"
+        bodyClassName="block p-0 text-sm"
+        head={<span className="font-medium">new message</span>}
+      >
+        <div className="flex gap-2 border-current/10 border-b px-5 py-3">
+          <span className="text-foreground/45">to:</span>
+          <span className="rounded-full bg-[#0a84ff]/20 px-2 text-[#0a84ff]">
+            {address}
+          </span>
+        </div>
+        <div className="flex gap-2 border-current/10 border-b px-5 py-3">
+          <span className="text-foreground/45">subject:</span>
+        </div>
+        <div className="h-32 px-5 py-3 text-foreground/30">
+          {getLinkIcon("email")}
+        </div>
+      </Panel>
+    </div>
+  );
+}
+
+/** The card, the visit's first page: the address with no end opens it. */
+function HolderCard({ holder }: { holder: Holder }) {
+  return (
+    <HoloLight className="w-full">
+      <IdCard
+        holder={holder}
+        heading="p"
+        holo="laminate"
+        className="[--id-card-thickness:1]"
+      />
+    </HoloLight>
+  );
+}
+
+/** The contact the card saves as: the very .vcf the save button downloads
+ *  (lib/vcard, `vcardOf`), which the story's phone opens. Cached: the contact
+ *  embeds the photo, fetched as it is built, which a page being prerendered may
+ *  not do; the card is the key, so a changed card is a new contact. */
+async function contactOf(card: Card): Promise<string> {
+  "use cache";
+  cacheLife("days");
+  return vcardOf(card);
+}
+
+/** Someone's own site with the card on it: the real script and element working
+ *  (`LiveEmbed`), centred, at most half the window's width so it sits on the page
+ *  the way an embed does. */
+function EmbedPage({ username }: { username: string }) {
+  return (
+    <div className="@container grid min-h-full place-items-center p-6">
+      <LiveEmbed handle={username} width="min(26rem, 55cqw)" />
+    </div>
+  );
+}
+
+/** The embed's two lines (`embedOf`) as the code a site pastes in (@ag/code,
+ *  glass, its copy in its bar). Cached: the highlighter reads the clock as it
+ *  works, which a page being prerendered may not, and the snippet only changes
+ *  with the handle. */
+async function EmbedCode({ username }: { username: string }) {
   "use cache";
   cacheLife("max");
-  const embed = `<script type="module" src="${PROD_URL}/embed.js"></script>\n<e-id-card handle="${username}"></e-id-card>`;
   return (
-    <Code lang="html" copy material="glass">
-      {embed}
+    <Code lang="html" filename="index.html" material="glass">
+      {embedOf(username)}
     </Code>
-  );
-}
-
-/** One feature: its title and words on one side, the thing on the other. */
-function Row({
-  side,
-  title,
-  body,
-  children,
-}: {
-  side: "left" | "right";
-  title: string;
-  body: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <Reveal
-      as="article"
-      className={cn(
-        "grid grid-cols-1 items-center gap-x-16 gap-y-8",
-        side === "left"
-          ? "lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]"
-          : "lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]",
-      )}
-    >
-      <div className={cn("flex flex-col gap-3", side === "right" && "lg:order-2")}>
-        <h2 className="text-3xl font-light tracking-[-0.02em] text-foreground/90">
-          {title}
-        </h2>
-        <p className="text-lg leading-relaxed font-light text-balance text-foreground/55">
-          {body}
-        </p>
-      </div>
-      <div className="min-w-0">{children}</div>
-    </Reveal>
   );
 }

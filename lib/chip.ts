@@ -3,7 +3,7 @@ import { SESSION_MAX_AGE } from "@/lib/const";
 // The display cookie: who this browser is signed in as, for drawing only. The
 // session cookie is httpOnly and public pages are static, so neither the page nor
 // its scripts can ask who is signed in without a function call; this cookie
-// answers for free. It holds the username (null until one is chosen) and the
+// answers for free. It holds the username (null until they pick one) and the
 // avatar, never a secret, and is never trusted: every action and every
 // signed-in page reads the real session. Written by the server where the session
 // changes (auth.ts on sign-in and sign-out, lib/chip-server on a username

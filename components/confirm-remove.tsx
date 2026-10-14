@@ -16,7 +16,7 @@ import { Tip } from "@/components/ui/tooltip";
 
 /** A remove that asks first: a bin named "remove" by its tooltip, opening a
  *  dialog (@ag/dialog) that says it cannot be undone, the removal its main
- *  action. One for whatever is removed (a comment, a place). */
+ *  action. One for whatever is removed (a comment, a link). */
 export default function ConfirmRemove({
   onRemove,
   side,

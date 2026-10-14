@@ -6,7 +6,7 @@ import { oneTimeToken } from "better-auth/plugins";
 import { eq } from "drizzle-orm";
 import { revalidateTag } from "next/cache";
 import { db } from "./db";
-import { users, accounts, sessions, verification, socials } from "@/db/schema";
+import { users, accounts, sessions, verification, links } from "@/db/schema";
 import {
   EMOJI_DOMAIN_PUNYCODE,
   PROD_URL,
@@ -15,7 +15,7 @@ import {
 } from "@/lib/const";
 import { CHIP_COOKIE, CHIP_COOKIE_OPTIONS, chipOf, chipValue } from "@/lib/chip";
 import { USERS_TAG, profileTag, usernameTag } from "@/lib/tags";
-import { claimUsername } from "@/lib/username";
+import { providedUsername } from "@/lib/username";
 
 type LinkedAccount = {
   userId: string;
@@ -25,24 +25,22 @@ type LinkedAccount = {
 };
 
 /** What a newly linked provider brings to its user's profile: the provider's
- *  handle and email as socials, its avatar, and its handle as the username when
- *  the user has none and it is free. Best effort: a provider that does not answer
- *  or a username already taken leaves the user to choose one on /null. */
+ *  handle and email as links, and its avatar. Best effort: a provider that does
+ *  not answer leaves the profile as it was. */
 async function adoptAccount(account: LinkedAccount) {
   const [user] = await db
-    .select({ email: users.email, username: users.username })
+    .select({ email: users.email })
     .from(users)
     .where(eq(users.id, account.userId));
   if (!user) throw new Error(`linked account for missing user ${account.userId}`);
 
   const owned = await db
-    .select({ platform: socials.platform })
-    .from(socials)
-    .where(eq(socials.user_id, account.userId));
-  const has = (platform: string) => owned.some((s) => s.platform === platform);
+    .select({ platform: links.platform })
+    .from(links)
+    .where(eq(links.user_id, account.userId));
+  const has = (platform: string) => owned.some((l) => l.platform === platform);
 
   let image: string | null = null;
-  let proposed: string | null = null;
 
   if (account.providerId === "github") {
     const response = await fetch("https://api.github.com/user", {
@@ -57,9 +55,8 @@ async function adoptAccount(account: LinkedAccount) {
     }
     const profile: { login: string; avatar_url: string } = await response.json();
     image = profile.avatar_url;
-    proposed = profile.login.toLowerCase();
     if (!has("github"))
-      await db.insert(socials).values({
+      await db.insert(links).values({
         id: crypto.randomUUID(),
         user_id: account.userId,
         platform: "github",
@@ -67,14 +64,12 @@ async function adoptAccount(account: LinkedAccount) {
         image,
         custom_data: { platform_user_id: account.accountId },
       });
-  } else if (account.providerId === "google") {
-    proposed = user.email.split("@")[0].toLowerCase();
-  } else {
+  } else if (account.providerId !== "google") {
     throw new Error(`unknown provider ${account.providerId}`);
   }
 
   if (!has("email"))
-    await db.insert(socials).values({
+    await db.insert(links).values({
       id: crypto.randomUUID(),
       user_id: account.userId,
       platform: "email",
@@ -85,14 +80,6 @@ async function adoptAccount(account: LinkedAccount) {
     await db.update(users).set({ image }).where(eq(users.id, account.userId));
 
   revalidateTag(profileTag(account.userId), { expire: 0 });
-  if (user.username || !proposed) return;
-  try {
-    const username = await claimUsername(account.userId, proposed);
-    revalidateTag(USERS_TAG, { expire: 0 });
-    revalidateTag(usernameTag(username), { expire: 0 });
-  } catch (error) {
-    console.error(`username ${proposed} for ${account.userId}:`, error);
-  }
 }
 
 export const auth = betterAuth({
@@ -125,25 +112,32 @@ export const auth = betterAuth({
   ],
 
   socialProviders: {
+    // What each provider calls them seeds their username (`user.create.before`).
     github: {
       clientId: process.env.GITHUB_CLIENT_ID!,
       clientSecret: process.env.GITHUB_CLIENT_SECRET!,
+      mapProfileToUser: (profile) => ({ username: profile.login }),
     },
     google: {
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+      mapProfileToUser: (profile) => ({ username: profile.email.split("@")[0] }),
     },
   },
 
   user: {
     additionalFields: {
+      // Seeded when the account is made, never sent by a client: set and renamed
+      // only by the site's own actions (lib/username). Null until they pick one.
       username: {
         type: "string",
         required: false,
+        input: false,
       },
       username_normalized: {
         type: "string",
         required: false,
+        input: false,
       },
       bio: {
         type: "string",
@@ -175,6 +169,25 @@ export const auth = betterAuth({
   },
 
   databaseHooks: {
+    user: {
+      create: {
+        // The username its provider seeded, when it is free; else none yet, and
+        // the account corner asks them to pick one (lib/username).
+        before: async (user) => {
+          const seed =
+            typeof user.username === "string" ? user.username : user.email.split("@")[0];
+          const username = await providedUsername(seed);
+          return {
+            data: { ...user, username, username_normalized: username },
+          };
+        },
+        after: async (user) => {
+          if (typeof user.username !== "string") return;
+          revalidateTag(USERS_TAG, { expire: 0 });
+          revalidateTag(usernameTag(user.username), { expire: 0 });
+        },
+      },
+    },
     account: {
       create: {
         // A provider linked for the first time: sign-up, or a second provider.

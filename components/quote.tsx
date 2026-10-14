@@ -1,8 +1,7 @@
 import { Quote as AgQuote } from "./ui/quote";
-import { Textarea } from "./ui/textarea";
 
-/** A social's context line, inside its tab: the person's own words about that
- *  place, so set as their words on their page, not as a quotation. */
+/** A link's note, inside its tab: the person's own words about that link, so
+ *  set as their words on their page, not as a quotation. */
 export function Quote({ text }: { text: string }) {
   return (
     <p className="px-1 text-[15px] leading-relaxed font-light text-pretty text-foreground/75">
@@ -50,28 +49,6 @@ export function Testimonial({
       // No surface of its own: a vouch lies in the page's ground (the profile
       // engraves it there), not on a step above it.
       className="w-full bg-transparent px-0 [&_[data-slot=quote-mark]]:left-0"
-    />
-  );
-}
-
-export function InputQuote({
-  text,
-  name,
-  placeholder,
-}: {
-  text: string;
-  name: string;
-  placeholder: string;
-}) {
-  return (
-    <Textarea
-      placeholder={placeholder}
-      name={name}
-      defaultValue={text ?? ""}
-      className="w-full rounded-lg border border-border bg-card p-3 text-[16px] font-light
-        placeholder:text-muted-foreground focus-visible:border-foreground/40
-        focus-visible:ring-0 focus-visible:ring-transparent focus-visible:outline-hidden
-        disabled:cursor-not-allowed disabled:opacity-50"
     />
   );
 }

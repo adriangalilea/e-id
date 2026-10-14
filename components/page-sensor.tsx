@@ -6,19 +6,15 @@ import { PageSensor } from "@/components/ui/page-sensor";
 // A PLACE is what a reader would call where they are; a ROUTE is the path with
 // the username folded, so every profile is one route.
 
-const PLACES: Record<string, string> = { "": "home", about: "about", null: "null" };
+const PLACES: Record<string, string> = { "": "home" };
 
 function placeOf(path: string) {
-  const [, first = "", second] = path.split("/");
-  if (first in PLACES) return PLACES[first];
-  return second === "edit" ? "edit" : "profile";
+  const [, first = ""] = path.split("/");
+  return first in PLACES ? PLACES[first] : "profile";
 }
 
 function routeOf(path: string) {
-  const place = placeOf(path);
-  if (place === "profile") return "/[username]";
-  if (place === "edit") return "/[username]/edit";
-  return path;
+  return placeOf(path) === "profile" ? "/[username]" : path;
 }
 
 export function SitePageSensor() {

@@ -6,7 +6,7 @@
 export const USERS_TAG = "users";
 
 /** Everything a profile page shows that belongs to this user: their row, their
- *  socials, the testimonials on their profile, and their name and face on the
+ *  links, the testimonials on their profile, and their name and face on the
  *  testimonials they wrote on other profiles. */
 export const profileTag = (userId: string) => `profile:${userId}`;
 

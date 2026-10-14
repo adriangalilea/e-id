@@ -1,81 +1,49 @@
-import { SocialComponent } from "@/components/social_component";
-import { InputQuote } from "@/components/quote";
-import { IdCard, type Place } from "@/components/id-card";
-import { Image } from "@/components/ui/image";
-import { placeOf } from "@/lib/data";
-import { HoloLean, HoloLight } from "@/components/ui/holo";
-import { SubjectLight } from "@/components/light";
+import { ProfileLinks } from "@/components/profile-links";
+import type { HolderLink } from "@/components/id-card";
+import { cardLinkOf } from "@/lib/data";
 import { MaterialProvider } from "@/components/ui/material";
 import { cn } from "@/lib/utils";
 import { SaveContact } from "@/components/save-contact";
-import { Input, InputGroup } from "@/components/ui/input";
-import { EmojiDomain } from "@/components/brand";
-import EditCountry from "@/components/edit-country";
-import { SaveButton } from "@/components/save_button";
-import { DiscardButton } from "@/components/discard_button";
-import type { SelectSocial } from "@/db/schema";
+import { ProfileCard } from "@/components/profile-card";
+import type { SelectLink } from "@/db/schema";
 import type { Profile } from "@/lib/data";
 import type { Presence } from "@/lib/presence";
 import { PROFILE } from "@/components/profile-layout";
-import { EditForm } from "./edit_form";
 
-/** The face on the edit form, square: the avatar GitHub gave, or the handle's
- *  first letters. */
-function Face({ user }: { user: Profile }) {
-  return (
-    <div className="grid size-28 shrink-0 place-items-center overflow-hidden border border-border bg-card">
-      {user.image ? (
-        <Image src={user.image} alt="" className="size-full object-cover" />
-      ) : (
-        <span className="font-mono text-3xl text-foreground/45">
-          {user.username.slice(0, 2).toUpperCase()}
-        </span>
-      )}
-    </div>
-  );
-}
-
-/** Who this is: their e-id card, its flair their places and its hologram answering
- *  the hand, then what they say of themselves. */
+/** Who this is: their e-id card, its flair their links and its hologram answering
+ *  the hand, then what they say of themselves. For its owner the card is also
+ *  where it is changed (components/profile-card). */
 function Identity({
   user,
-  places,
+  links,
   actions,
 }: {
   user: Profile;
-  places: Place[];
+  links: HolderLink[];
   actions?: React.ReactNode;
 }) {
   return (
     <header className={PROFILE.identity}>
-      {/* The same card as the home's: the laminate, a solid body, leaning to the
-          hand, only resting flat, as the page's subject. */}
-      <HoloLight className="relative">
-        <SubjectLight />
-        <HoloLean pose="flat" className="max-lg:[transform:none]">
-          <IdCard
-            holder={{
-              name: user.name,
-              username: user.username,
-              image: user.image,
-              country: user.country_code,
-              bio: user.bio,
-              places,
-            }}
-            holo="laminate"
-            className="[--id-card-thickness:1]"
-          />
-        </HoloLean>
-      </HoloLight>
-      {user.bio && (
-        <p className="px-1 text-[17px] leading-relaxed font-light text-pretty text-foreground/80">
-          {user.bio}
-        </p>
-      )}
-      {/* For whoever is looking: this card as a contact (lib/vcard), their
-          photo, name, address and every place, saved on a phone in one tap. */}
-      <SaveContact username={user.username} className="self-start" />
-      {actions}
+      <ProfileCard
+        holder={{
+          name: user.name,
+          username: user.username,
+          image: user.image,
+          country: user.country_code,
+          bio: user.bio,
+          links,
+        }}
+      >
+        {user.bio && (
+          <p className="px-1 text-[17px] leading-relaxed font-light text-pretty text-foreground/80">
+            {user.bio}
+          </p>
+        )}
+        {/* For whoever is looking: this card as a contact (lib/vcard), their
+            photo, name, address and every link, saved on a phone in one tap. */}
+        <SaveContact username={user.username} className="self-start" />
+        {actions}
+      </ProfileCard>
     </header>
   );
 }
@@ -94,22 +62,22 @@ const ENGRAVED =
  *  floats, and what others say of them lies engraved in the ground under it,
  *  scrolling in its own room (fading at its foot, no bar: a short capped
  *  scroller) so the side never moves with the page. On a phone it is no box
- *  (`display: contents`): its two parts take their own places in the page's grid,
- *  the card at the head, the vouches last. */
+ *  (`display: contents`): its two parts sit in their own cells of the page's
+ *  grid, the card at the head, the vouches last. */
 function Side({
   user,
-  places,
+  links,
   actions,
   vouches,
 }: {
   user: Profile;
-  places: Place[];
+  links: HolderLink[];
   actions?: React.ReactNode;
   vouches?: React.ReactNode;
 }) {
   return (
     <aside className={PROFILE.side}>
-      <Identity user={user} places={places} actions={actions} />
+      <Identity user={user} links={links} actions={actions} />
       <MaterialProvider material="plain">
         <div
           className={cn(
@@ -124,53 +92,10 @@ function Side({
   );
 }
 
-function IdentityEdit({ user }: { user: Profile }) {
-  return (
-    <aside className="flex flex-col gap-3 lg:sticky lg:top-10 lg:self-start">
-      <Face user={user} />
-      {/* The name, the registry's field (@ag/input) as the address under it is,
-          at the size a name is written. */}
-      <Input
-        data-1p-ignore
-        type="text"
-        name="name"
-        aria-label="name"
-        defaultValue={user.name ?? ""}
-        material="plain"
-        size="lg"
-        className="text-2xl font-medium tracking-tight"
-        placeholder="name"
-      />
-      {/* The handle as the address it makes, the domain before it in the well
-          (@ag/input), as the home's card writes it. */}
-      <InputGroup
-        data-1p-ignore
-        type="text"
-        id="username"
-        name="username"
-        aria-label="username"
-        defaultValue={user.username}
-        placeholder="username"
-        material="plain"
-        size="lg"
-        className="min-w-0 font-mono"
-        prefix={<EmojiDomain path="/" />}
-      />
-      <EditCountry saved={user.country_code} />
-      <InputQuote
-        text={user.bio ?? ""}
-        name="bio"
-        placeholder="Message to the world"
-      />
-    </aside>
-  );
-}
-
 type ProfileProps = {
   user: Profile;
-  socials: SelectSocial[];
+  links: SelectLink[];
   presence: Presence;
-  edit?: boolean;
   /** Share and edit, for the owner: under the identity. */
   actions?: React.ReactNode;
   /** What others say of the person: the pinned testimonials and the comments. */
@@ -179,43 +104,30 @@ type ProfileProps = {
 
 /** A profile as a split view in the golden ratio, two different things. WHO, the
  *  smaller part (38.2%): one pane held still (`Side`). WHERE, the larger (61.8%):
- *  the person's places, the page that scrolls. On a phone: the card, the places,
- *  then the vouches (grid areas). The edit form keeps its own two columns. */
+ *  the person's links, the page that scrolls. On a phone: the card, the links,
+ *  then the vouches (grid areas). */
 export default function UserProfile({
   user,
-  socials,
+  links,
   presence,
-  edit,
   actions,
   vouches,
 }: ProfileProps) {
-  if (!edit)
-    return (
-      <div className={cn(PROFILE.grid, "animate-fade-in")}>
-        <Side
-          user={user}
-          places={socials.map(placeOf)}
-          actions={actions}
-          vouches={vouches}
-        />
-        <main className={PROFILE.places}>
-          <SocialComponent socials={socials} presence={presence} />
-        </main>
-      </div>
-    );
-
   return (
-    <EditForm>
-      <div className="grid animate-fade-in gap-10 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-12">
-        <IdentityEdit user={user} />
-        <main className="flex min-w-0 flex-col gap-10">
-          <SocialComponent socials={socials} edit presence={presence} />
-          <div className="flex items-center justify-end gap-2">
-            <DiscardButton username={user.username} />
-            <SaveButton />
-          </div>
-        </main>
-      </div>
-    </EditForm>
+    <div className={cn(PROFILE.grid, "animate-fade-in")}>
+      <Side
+        user={user}
+        // Each mark carries who they are there, its compact profile on hover.
+        links={links.map((link) => ({
+          ...cardLinkOf(link),
+          profile: presence.profiles.find((p) => p.platform === link.platform),
+        }))}
+        actions={actions}
+        vouches={vouches}
+      />
+      <main className={PROFILE.links}>
+        <ProfileLinks links={links} presence={presence} />
+      </main>
+    </div>
   );
 }

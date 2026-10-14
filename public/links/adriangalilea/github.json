@@ -1,0 +1,25 @@
+{
+  "url": "https://github.com/adriangalilea",
+  "dark": {
+    "kind": "image",
+    "width": 2560,
+    "height": 3328,
+    "mime": "image/webp",
+    "bytes": 262042,
+    "blurDataURL": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAAQCAIAAACtAwlQAAAACXBIWXMAAAPoAAAD6AG1e1JrAAABYUlEQVQokV2Ru0oDQRSGFyQE3ezOzmVnzlz3Ek0WXSNKCrESRMXCVu0ULCy1FnwAsfQFfA9r30vGI0kU/uKcOd/M4f8nIZRtjHJUmpE0I+vpaG0wXBsMB8N1nCY7/cnN9fv56aM2TakrAX6hnAEqeX1+f3l6+/z4cnUnwFNhqDBcOekn2BKuk3Y6O728Pzo+pypwu4kDVloBnpWWlTZC42nfdj3YhqrASovvs9JyqJbruHICPOG6kPEersONOYOMyghNun5vtu98I00NYSxDTawmShfaxMIbonRy+3B3dXlxeLDLSlsER7xJg0otbNRytAVk2xfBJdIEwnVGpXbtqm0Ur+d0epZkVKLANlXbRQfCLA6xXkKF9KKZL1r+Y4Ir9wcS4MHG0NFU9CU01kuo1FXVdr6Zgm0E+F/uH8SVc/WWCWOwMQ4MDz0tIcI1xlhIn4sYPeEr6wjX+EfILWgqDELffB06d8TUW1YAAAAASUVORK5CYII=",
+    "average": "#151a1f",
+    "src": "github.dark.webp",
+    "poster": "github.dark.webp"
+  },
+  "light": {
+    "kind": "image",
+    "width": 2560,
+    "height": 3328,
+    "mime": "image/webp",
+    "bytes": 277974,
+    "blurDataURL": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAAQCAIAAACtAwlQAAAACXBIWXMAAAPoAAAD6AG1e1JrAAABVElEQVQokVWRu04DMRBF9wNRJB5Sako6SigQH8A/IFFRICpaaqBDgMRLQHgUEDa7sbPxeGbs2UFeQ0Ku3Ni+c8/YU/T7/dU/rXVaWV5Z6tTr9fJt8fTwvb11cnx0DQCISP/UdlLV4vHibWdz7/TgzE6SiTshh9p65ymGKCLF1c3d+sbu/sEhcjBTQsQYIjM7T7kgmcqqriuDiNClZASF6Pwvrm3bIoUjighyyKU5CRFzQ6mnxo6npmpj8N6PJ2kz5kkTYMKuJjOC2jEU78PncnA/LV+Z+cuNhlB94NcQR6/4edu8XNa3pasSLoaoqs65jPivQUnnT77IVFX13htjAEBEZoe5fm5CDoMqvS5v2ae/IKIFExHNiKrati3H+Pvj8yREY4y1FgBygKpm9EKStbZpGgDw3hMRxzSTBZOIxBBjiEgSJOFEZI4TkTyjbJqtPCVV/QGZkxECQCFdRAAAAABJRU5ErkJggg==",
+    "average": "#eaebec",
+    "src": "github.light.webp",
+    "poster": "github.light.webp"
+  }
+}

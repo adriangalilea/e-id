@@ -12,9 +12,13 @@ import { MARK_BOX, MARK_PATH } from "@/lib/mark";
 // follows it (`LIGHT_HOOKS` names what moves), brighter while the hand is on it.
 // What is inside the element stays shown until the card arrives, and if it never
 // does. The origin is the script's own, so a copy served elsewhere draws from there.
+// A link's mark, under the hand or the keys, shows who they are there (the card's
+// data, the link's `profile`) in one row beside it.
 
 const SCRIPT = `const ORIGIN = new URL(import.meta.url).origin;
 const HOOKS = ${JSON.stringify(LIGHT_HOOKS)};
+// A count as people say it: 52, 1.4K, 9.3M.
+const COUNT = new Intl.NumberFormat("en", { notation: "compact", maximumFractionDigits: 1 });
 
 const FACES = [
   ["Space Grotesk", 400, "SpaceGrotesk-Regular.ttf"],
@@ -32,7 +36,13 @@ if (!document.querySelector("style[data-e-id-fonts]")) {
   document.head.append(style);
 }
 
-const STYLE = \`:host{display:block;width:var(--e-id-card-width,28rem);max-width:100%;perspective:2000px}
+const STYLE = \`:host{display:block;position:relative;width:var(--e-id-card-width,28rem);max-width:100%;perspective:2000px}
+.peek{position:absolute;z-index:1;display:flex;align-items:center;gap:.7rem;max-width:min(20rem,100%);padding:.6rem .9rem .6rem .6rem;border-radius:1rem;background:rgb(22 22 24/.82);-webkit-backdrop-filter:blur(14px) saturate(1.3);backdrop-filter:blur(14px) saturate(1.3);box-shadow:inset 0 0 0 1px rgb(255 255 255/.1),0 .8rem 2rem -.6rem rgb(0 0 0/.6);color:#fff;font:400 .8125rem/1.3 'Space Grotesk',system-ui,sans-serif;pointer-events:none;opacity:0;transform:translate(-50%,-.25rem);transition:opacity 160ms ease-out,transform 160ms ease-out}
+.peek[data-open]{opacity:1;transform:translate(-50%,0)}
+.peek img{width:2.25rem;height:2.25rem;flex:none;border-radius:999px;object-fit:cover;background:rgb(255 255 255/.08)}
+.peek b{display:block;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.peek span{display:block;color:rgb(255 255 255/.6);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media (prefers-reduced-motion:reduce){.peek{transition:none}}
 .card{transform:rotateY(calc((var(--px,.5) - .5) * 6deg)) rotateX(calc((var(--py,.35) - .35) * -4deg));transition:transform 700ms cubic-bezier(.22,1,.36,1);filter:drop-shadow(0 1.2rem 1.6rem rgb(0 0 0/.55))}
 :host([data-hover]) .card{transition-duration:240ms}
 svg{display:block;width:100%;height:auto}
@@ -80,7 +90,70 @@ class EIdCard extends HTMLElement {
     }
     const svg = await response.text();
     if (this.getAttribute("handle") !== handle) return;
-    this.#root.innerHTML = "<style>" + STYLE + "</style><div class=\\"card\\" part=\\"card\\">" + svg + "</div>";
+    this.#root.innerHTML = "<style>" + STYLE + "</style><div class=\\"card\\" part=\\"card\\">" + svg + "</div><div class=\\"peek\\" part=\\"profile\\" role=\\"tooltip\\" id=\\"peek\\"></div>";
+    this.#links = null;
+    this.#root.addEventListener("pointerover", this.#over);
+    this.#root.addEventListener("focusin", this.#over);
+    this.#root.addEventListener("pointerout", this.#out);
+    this.#root.addEventListener("focusout", this.#out);
+  }
+
+  // WHO THEY ARE THERE, on a link's mark: under the hand or the keys, the link's
+  // profile (the card's data, links[i].profile, i the mark's data-link) in one
+  // row beside it, the site's compact profile drawn without the site. Read once,
+  // on the first mark reached; a link with no profile shows nothing.
+  #links = null;
+  #shown = null;
+
+  #read() {
+    if (!this.#links)
+      this.#links = fetch(ORIGIN + "/" + encodeURIComponent(this.getAttribute("handle")) + "/json")
+        .then((r) => (r.ok ? r.json() : { links: [] }))
+        .then((card) => card.links)
+        .catch(() => []);
+    return this.#links;
+  }
+
+  #over = async (event) => {
+    const mark = event.target.closest && event.target.closest("a[data-link]");
+    if (!mark || mark === this.#shown) return;
+    this.#shown = mark;
+    const link = (await this.#read())[Number(mark.dataset.link)];
+    const peek = this.#root.getElementById("peek");
+    if (!peek || this.#shown !== mark) return;
+    const p = link && link.profile;
+    if (!p) return this.#hide();
+    const face = document.createElement("img");
+    face.alt = "";
+    if (p.photo) face.src = p.photo;
+    const name = document.createElement("b");
+    name.textContent = p.name;
+    const line = document.createElement("span");
+    line.textContent = "@" + p.handle + (p.count ? " · " + COUNT.format(p.count.value) + " " + p.count.unit : "");
+    const words = document.createElement("div");
+    words.append(name, line);
+    peek.replaceChildren(face, words);
+    mark.setAttribute("aria-describedby", "peek");
+    // Under the mark, centred on it, kept inside the card's width.
+    const host = this.getBoundingClientRect();
+    const box = mark.getBoundingClientRect();
+    const half = Math.min(peek.offsetWidth / 2, host.width / 2);
+    const x = Math.min(host.width - half, Math.max(half, box.left - host.left + box.width / 2));
+    peek.style.left = x + "px";
+    peek.style.top = box.bottom - host.top + 8 + "px";
+    peek.toggleAttribute("data-open", true);
+  };
+
+  #out = (event) => {
+    const to = event.relatedTarget;
+    if (to && to.closest && to.closest("a[data-link]") === this.#shown) return;
+    this.#hide();
+  };
+
+  #hide() {
+    this.#shown = null;
+    const peek = this.#root.getElementById("peek");
+    if (peek) peek.removeAttribute("data-open");
   }
 
   // The hand, as a share of the card: where the light lies and where it leans.
