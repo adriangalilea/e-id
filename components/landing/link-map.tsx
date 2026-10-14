@@ -102,21 +102,24 @@ export function LinkMap({
           never boxed; a preview wears its own glass, `Landing`). The last
           one leaves as the next arrives, in the same place: one gives way to
           the other, never a pop. */}
-      <div className="grid h-[18rem] w-full max-w-[22rem] shrink-0 place-items-center *:[grid-area:1/1]">
+      {/* Tall enough for the tallest landing (the card, 22rem wide); each laid
+          over the room and centred in it on its own, so neither the one leaving
+          nor the one arriving can size the room or move the other. */}
+      <div className="relative h-[21rem] w-full max-w-[22rem] shrink-0">
         {previous && (
           <div
             key={`gone-${step}`}
             aria-hidden
-            className="pointer-events-none w-full animate-[link-leave_500ms_cubic-bezier(0.22,1,0.36,1)_both]"
+            className="pointer-events-none absolute inset-0 grid place-items-center animate-[link-leave_500ms_cubic-bezier(0.22,1,0.36,1)_both]"
           >
-            {previous.there}
+            <div className="w-full">{previous.there}</div>
           </div>
         )}
         <div
           key={`there-${step}`}
-          className="w-full animate-[link-arrive_700ms_cubic-bezier(0.22,1,0.36,1)_250ms_both]"
+          className="absolute inset-0 grid place-items-center animate-[link-arrive_700ms_cubic-bezier(0.22,1,0.36,1)_250ms_both]"
         >
-          {landing.there}
+          <div className="w-full">{landing.there}</div>
         </div>
       </div>
     </div>
