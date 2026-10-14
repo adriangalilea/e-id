@@ -20,6 +20,7 @@
     "@base-ui/react": "^1.8.0",
     "@libsql/client": "^0.15.15",
     "@resvg/resvg-js": "2.6.2",
+    "@shikijs/transformers": "^4.5.0",
     "@vercel/analytics": "^1.2.2",
     "@vercel/speed-insights": "^1.0.10",
     "better-auth": "^1.6.29",
@@ -30,6 +31,8 @@
     "date-fns": "^4.1.0",
     "dotenv": "^17.2.3",
     "lucide-react": "^0.556.0",
+    "server-only": "^0.0.1",
+    "shiki": "^4.5.0",
     "tailwind-merge": "^3.4.0",
     "web-vitals": "^6.2.3",
     "zod": "^4.1.13"

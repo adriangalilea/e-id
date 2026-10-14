@@ -1,0 +1,208 @@
+@layer components {
+  .ag-code {
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: 0.75rem;
+    background: var(--sidebar);
+  }
+  .ag-code-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.375rem 0.5rem 0.375rem 0.875rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .ag-code-name {
+    font-family: var(--font-mono, ui-monospace, monospace);
+    font-size: 0.75rem;
+    color: var(--muted-foreground);
+    user-select: none;
+  }
+  /* The scroller, not the <pre>: the frame keeps its corners while long lines run.
+   A block is a column, its bar and then the scroller, which takes the rest of the
+   frame's height: given less height than the code needs (`h-96`, a pane's
+   `min-h-0 flex-1`), the code scrolls inside the frame, the frame staying whole. */
+  .ag-code:not([data-compact]) {
+    display: flex;
+    flex-direction: column;
+  }
+  .ag-code:not([data-compact]) > .ag-code-scroll {
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+  /* Compact commands keep the same Shiki output and theme, with the copy control
+   outside the horizontal scroller so long commands never hide the action. */
+  .ag-code[data-compact] {
+    display: flex;
+    width: fit-content;
+    max-width: 100%;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  /* Basis auto, not 0: the row's own width is fit-content, and a zero basis
+   would tell it the command has no length, so it would wrap even with room. */
+  .ag-code[data-compact] > .ag-code-scroll {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+  /* Shiki with `defaultColor: false` writes its palette as custom properties and sets
+   no colour of its own, so the frame keeps its own surface with nothing to override. */
+  .ag-code pre {
+    margin: 0;
+    padding: 1rem 0.875rem;
+    background: transparent;
+    font-size: 0.8125rem;
+    line-height: 1.65;
+    tab-size: 2;
+  }
+  .ag-code[data-compact] pre {
+    padding-block: 0.75rem;
+  }
+  /* Code never breaks its lines. A line too long for the block scrolls sideways
+   with the scrims' edge fade (`ag-edge-fade`, set on its scroller in code.tsx): no
+   scrollbar drawn over it, the hidden side fading. */
+  .ag-code code {
+    display: block;
+    width: fit-content;
+    min-width: 100%;
+    font-family: var(--font-mono, ui-monospace, monospace);
+  }
+
+  /* Shiki with `defaultColor: false` writes --shiki-light and --shiki-dark and no
+   colour of its own, so the theme chooses here. */
+  .ag-code span {
+    color: var(--shiki-light);
+  }
+  .dark .ag-code span {
+    color: var(--shiki-dark);
+  }
+
+  /* ---- marked lines.
+
+   A marked line is marked EDGE TO EDGE, which is why `.line` is a block that runs the
+   full scroll width: a tint that stops at the end of the text draws a ragged shape
+   down the block and reads as damage rather than emphasis. The gutter bar is what
+   survives being scrolled sideways, when the tint under a long line is off screen. */
+  .ag-code .line {
+    display: inline-block;
+    width: 100%;
+    padding-inline: 0.875rem;
+    margin-inline: -0.875rem;
+    border-left: 2px solid transparent;
+  }
+  .ag-code .line.highlighted {
+    background: color-mix(
+      in oklab,
+      var(--brand, var(--foreground)) 10%,
+      transparent
+    );
+    border-left-color: color-mix(
+      in oklab,
+      var(--brand, var(--foreground)) 55%,
+      transparent
+    );
+  }
+  /* An error or a warning is a highlight that has something to say, so it keeps the
+   shape and changes only the hue. */
+  .ag-code .line.highlighted.error {
+    background: color-mix(in oklab, var(--tone-bad) 12%, transparent);
+    border-left-color: var(--tone-bad);
+  }
+  .ag-code .line.highlighted.warning {
+    background: color-mix(in oklab, var(--tone-warn) 12%, transparent);
+    border-left-color: var(--tone-warn);
+  }
+
+  /* ---- a diff.
+
+   The sign is a real character in the gutter, not a colour: colour alone is invisible
+   to a reader who cannot separate red from green, and it does not survive a
+   screenshot pasted into a grey chat. */
+  .ag-code .line.diff {
+    position: relative;
+  }
+  .ag-code .line.diff::before {
+    position: absolute;
+    left: 0.25rem;
+    opacity: 0.7;
+  }
+  .ag-code .line.diff.add {
+    background: color-mix(in oklab, var(--tone-ok) 14%, transparent);
+    border-left-color: var(--tone-ok);
+  }
+  .ag-code .line.diff.add::before {
+    content: "+";
+    color: var(--tone-ok);
+  }
+  .ag-code .line.diff.remove {
+    background: color-mix(in oklab, var(--tone-bad) 12%, transparent);
+    border-left-color: var(--tone-bad);
+  }
+  /* Removed code is still readable, just plainly on its way out. */
+  .ag-code .line.diff.remove {
+    opacity: 0.65;
+  }
+  .ag-code .line.diff.remove::before {
+    content: "-";
+    color: var(--tone-bad);
+  }
+
+  /* ---- focus: everything else steps back, and comes back on hover, because a reader
+   who wants the surrounding lines should not have to leave the page to see them. */
+  .ag-code:has(.focused) .line:not(.focused) {
+    filter: blur(2px);
+    opacity: 0.5;
+    transition:
+      filter 200ms ease,
+      opacity 200ms ease;
+  }
+  .ag-code:has(.focused):hover .line:not(.focused) {
+    filter: none;
+    opacity: 1;
+  }
+
+  /* ---- a word, marked inside the line. */
+  .ag-code .highlighted-word {
+    border-radius: 0.25rem;
+    padding: 0.1em 0.25em;
+    background: color-mix(
+      in oklab,
+      var(--brand, var(--foreground)) 14%,
+      transparent
+    );
+    box-shadow: 0 0 0 1px
+      color-mix(in oklab, var(--brand, var(--foreground)) 30%, transparent);
+  }
+
+  /* ---- line numbers, opt-in. A counter, so nothing is added to the copied text. */
+  .ag-code-numbered code {
+    counter-reset: ag-line;
+  }
+  .ag-code-numbered .line {
+    counter-increment: ag-line;
+    padding-left: 3rem;
+  }
+  .ag-code-numbered .line::after {
+    content: counter(ag-line);
+    position: absolute;
+    left: 0;
+    width: 2.25rem;
+    text-align: right;
+    color: var(--muted-foreground);
+    opacity: 0.5;
+    user-select: none;
+  }
+  .ag-code-numbered .line {
+    position: relative;
+  }
+  .ag-code-numbered .line.diff::before {
+    left: 2.5rem;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .ag-code:has(.focused) .line:not(.focused) {
+      transition: none;
+    }
+  }
+}

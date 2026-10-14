@@ -1,0 +1,94 @@
+@layer components {
+  .ag-reveal {
+    --reveal-y: 16px;
+    --stagger: 80ms;
+  }
+  .ag-reveal[data-from="fade"] {
+    --reveal-y: 0px;
+  }
+
+  @keyframes ag-reveal {
+    from {
+      opacity: 0;
+      transform: translateY(var(--reveal-y));
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  @media (prefers-reduced-motion: no-preference) and (scripting: enabled) {
+    .ag-reveal[data-mode="once"]:not([data-stagger]) {
+      opacity: 0;
+      transform: translateY(var(--reveal-y));
+      transition:
+        opacity var(--dur-3) var(--ease-out),
+        transform var(--dur-3) var(--ease-out);
+    }
+    .ag-reveal[data-mode="once"]:not([data-stagger])[data-in] {
+      opacity: 1;
+      transform: none;
+    }
+
+    /* Staggered: the wrapper stays put, its direct children take turns. */
+    .ag-reveal[data-mode="once"][data-stagger] > * {
+      opacity: 0;
+      transform: translateY(var(--reveal-y));
+      transition:
+        opacity var(--dur-3) var(--ease-out),
+        transform var(--dur-3) var(--ease-out);
+      transition-delay: calc(var(--i, 0) * var(--stagger));
+    }
+    .ag-reveal[data-mode="once"][data-stagger][data-in] > * {
+      opacity: 1;
+      transform: none;
+    }
+    .ag-reveal[data-stagger] > :nth-child(1) {
+      --i: 0;
+    }
+    .ag-reveal[data-stagger] > :nth-child(2) {
+      --i: 1;
+    }
+    .ag-reveal[data-stagger] > :nth-child(3) {
+      --i: 2;
+    }
+    .ag-reveal[data-stagger] > :nth-child(4) {
+      --i: 3;
+    }
+    .ag-reveal[data-stagger] > :nth-child(5) {
+      --i: 4;
+    }
+    .ag-reveal[data-stagger] > :nth-child(6) {
+      --i: 5;
+    }
+    .ag-reveal[data-stagger] > :nth-child(7) {
+      --i: 6;
+    }
+    .ag-reveal[data-stagger] > :nth-child(8) {
+      --i: 7;
+    }
+    .ag-reveal[data-stagger] > :nth-child(9) {
+      --i: 8;
+    }
+    .ag-reveal[data-stagger] > :nth-child(10) {
+      --i: 9;
+    }
+    .ag-reveal[data-stagger] > :nth-child(11) {
+      --i: 10;
+    }
+    .ag-reveal[data-stagger] > :nth-child(n + 12) {
+      --i: 11;
+    }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    @supports (animation-timeline: view()) {
+      .ag-reveal[data-mode="scroll"] {
+        animation: ag-reveal linear both;
+        animation-timeline: view();
+        animation-range: entry 0% entry 40%;
+      }
+    }
+  }
+}
