@@ -1,31 +1,30 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { EmojiDomain } from "@/components/brand";
+import { BrandMark, EmojiDomain } from "@/components/brand";
 import type { SocialPlatform } from "@/db/schema";
-import { EMOJI_DOMAIN_PUNYCODE } from "@/lib/const";
 import { shortName } from "@/lib/place-names";
 import { getSocialIcon } from "@/lib/socials";
 
 /** How long each place is shown, typed, drawn to and arrived at. */
 const STEP_MS = 3200;
 
-/** The domain an address can be written on, in turn: the brand, the plain one
- *  where an emoji is not welcome, the emoji spelled out for a bio that drops
- *  it. Each opens the same page. */
+/** The domain an address is written on, a whole round of places on each: the
+ *  brand, then the plain one, where an emoji is not welcome. Each opens the same
+ *  page. */
 const DOMAINS = [
   { shown: <EmojiDomain />, host: "👤.to" },
   { shown: "e-id.to", host: "e-id.to" },
-  { shown: EMOJI_DOMAIN_PUNYCODE, host: EMOJI_DOMAIN_PUNYCODE },
 ] as const;
 
-/** ONE LINK, SHOWN WORKING: the address, its domain turning through the forms
- *  it can be written in, a place's short name typed onto its end (app/
- *  [username]/[place]: /gh), and a line drawn from there to where it lands:
- *  the place's own address. Then the next place, on another domain, in turn.
- *  The whole address is a link that goes where it says. Each step remounts
- *  (its key), so its arrival plays again (globals.css, `link-*`). Under
- *  reduced motion it holds its first step. */
+/** ONE LINK, SHOWN WORKING: the address written, still (the domain and the
+ *  handle), and only its end changing: first nothing, landing on the profile
+ *  itself, then each place's short name typed on (app/[username]/[place]: /gh)
+ *  and a line drawn from there to where it lands, the place's own address. A
+ *  round of places on each domain in turn. The whole address is a link that
+ *  goes where it says. Only the end and where it lands remount each step (their
+ *  key), so only they arrive again (globals.css, `link-*`). Under reduced
+ *  motion it holds its first step. */
 export function LinkMap({
   username,
   places,
@@ -43,33 +42,43 @@ export function LinkMap({
     const timer = setInterval(() => setStep((s) => s + 1), STEP_MS);
     return () => clearInterval(timer);
   }, []);
-  const domain = DOMAINS[step % DOMAINS.length] as (typeof DOMAINS)[number];
-  const place = first[step % Math.max(first.length, 1)];
-  if (!place) throw new Error(`${username}'s card has no place to show`);
-  const name = shortName(place.platform);
-  const lands = place.url.replace(/^(https?:\/\/|mailto:)(www\.)?/, "");
+  // Each round: the profile itself, then every place.
+  const round = first.length + 1;
+  const domain = DOMAINS[
+    Math.floor(step / round) % DOMAINS.length
+  ] as (typeof DOMAINS)[number];
+  const place = step % round === 0 ? null : first[(step % round) - 1];
+  const name = place ? shortName(place.platform) : null;
+  const lands = place
+    ? place.url.replace(/^(https?:\/\/|mailto:)(www\.)?/, "")
+    : "their e-ID";
   return (
     <a
-      key={step}
-      href={`https://${domain.host}/${username}/${name}`}
+      href={`https://${domain.host}/${username}${name ? `/${name}` : ""}`}
       className="group/link flex flex-wrap items-center justify-center gap-x-5 gap-y-4 font-mono text-xl sm:text-2xl"
     >
       <span className="whitespace-nowrap text-foreground">
-        <span className="inline-block animate-[link-arrive_500ms_cubic-bezier(0.22,1,0.36,1)_both]">
-          {domain.shown}
-        </span>
-        /{username}
-        <span className="inline-block animate-[link-type_450ms_steps(4,end)_350ms_both] text-foreground">
-          /{name}
-        </span>
+        {domain.shown}/{username}
+        {name && (
+          <span
+            key={step}
+            className="inline-block animate-[link-type_450ms_steps(4,end)_both]"
+          >
+            /{name}
+          </span>
+        )}
       </span>
       {/* The line from the address to where it lands, drawn from its start. */}
       <span
+        key={`line-${step}`}
         aria-hidden
-        className="h-px w-16 origin-left animate-[link-draw_600ms_cubic-bezier(0.22,1,0.36,1)_850ms_both] bg-foreground/40 sm:w-24"
+        className="h-px w-16 origin-left animate-[link-draw_600ms_cubic-bezier(0.22,1,0.36,1)_450ms_both] bg-foreground/40 sm:w-24"
       />
-      <span className="flex items-center gap-2.5 whitespace-nowrap text-base text-foreground/55 animate-[link-arrive_500ms_cubic-bezier(0.22,1,0.36,1)_1300ms_both] group-hover/link:text-foreground/80 sm:text-lg [&_svg]:size-5">
-        {getSocialIcon(place.platform)}
+      <span
+        key={`lands-${step}`}
+        className="flex items-center gap-2.5 whitespace-nowrap text-base text-foreground/55 animate-[link-arrive_500ms_cubic-bezier(0.22,1,0.36,1)_900ms_both] group-hover/link:text-foreground/80 sm:text-lg [&_svg]:size-5"
+      >
+        {place ? getSocialIcon(place.platform) : <BrandMark />}
         {lands}
       </span>
     </a>
