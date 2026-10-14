@@ -84,12 +84,16 @@ async function landingsOf(holder: Holder): Promise<Landing[]> {
         place.platform === "email" ? null : await getWebsite(place.url);
       return {
         end: shortName(place.platform),
+        // Each fills the frame it lands in (link-map), its own frame dropped.
         there: facts ? (
-          <WebPreview facts={facts} />
+          <WebPreview
+            facts={facts}
+            className="size-full rounded-none border-0 shadow-none"
+          />
         ) : (
           <a
             href={place.url}
-            className="flex items-center gap-3 rounded-xl border border-border px-4 py-3 font-mono text-sm text-foreground/70 hover:text-foreground [&_svg]:size-4"
+            className="flex size-full items-center justify-center gap-3 font-mono text-sm text-foreground/70 hover:text-foreground [&_svg]:size-5"
           >
             {getSocialIcon(place.platform)}
             {place.url.replace(/^(https?:\/\/|mailto:)(www\.)?/, "")}
@@ -102,14 +106,16 @@ async function landingsOf(holder: Holder): Promise<Landing[]> {
     {
       end: null,
       there: (
-        <HoloLight>
-          <IdCard
-            holder={holder}
-            heading="p"
-            holo="laminate"
-            className="[--id-card-thickness:1]"
-          />
-        </HoloLight>
+        <div className="grid size-full place-items-center p-5">
+          <HoloLight className="w-full">
+            <IdCard
+              holder={holder}
+              heading="p"
+              holo="laminate"
+              className="[--id-card-thickness:1]"
+            />
+          </HoloLight>
+        </div>
       ),
     },
     ...there,

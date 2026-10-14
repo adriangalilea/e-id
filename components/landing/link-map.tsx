@@ -73,10 +73,12 @@ export function LinkMap({
         aria-hidden
         className="h-px w-20 shrink-0 origin-left animate-[link-draw_600ms_cubic-bezier(0.22,1,0.36,1)_450ms_both] bg-foreground/40 max-lg:hidden"
       />
-      <div className="grid h-[20rem] w-full max-w-[22rem] shrink-0 place-items-center">
+      {/* One frame, the same size every step: what is there fills it (its
+          own frame dropped, `Landing`), so the box itself never changes. */}
+      <div className="h-[18rem] w-full max-w-[22rem] shrink-0 overflow-hidden rounded-2xl border border-border bg-foreground/[0.02]">
         <div
           key={`there-${step}`}
-          className="w-full animate-[link-arrive_600ms_cubic-bezier(0.22,1,0.36,1)_900ms_both]"
+          className="size-full animate-[link-arrive_600ms_cubic-bezier(0.22,1,0.36,1)_900ms_both]"
         >
           {landing.there}
         </div>
