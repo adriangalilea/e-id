@@ -220,22 +220,21 @@ export async function cardSvg(card: Card, frame: CardFrame = "share"): Promise<s
 
   const photo = await photoOf(card.photo);
 
-  // The words, from the foot up: the places, the name.
+  // The words beside the photo, as tall as it (components/id-card): the name
+  // from its top edge, the places' glyphs ending at its foot.
   const places = card.places.filter((p) => ICONS[p.platform]);
-  let foot = bodyFoot - 1;
   const flair = places.length
     ? places
         .slice(0, Math.floor((textWidth + 0.6 * u) / (L.iconStep * u)))
         .map((p, i) => {
           const x = cx + textX * u + i * L.iconStep * u;
-          const y = cy + (foot - 1.1 - L.icon) * u;
+          const y = cy + (bodyFoot - L.icon) * u;
           // The hit area is the icon's padded square, as on the site.
           const hit = `<rect x="${f(x - 1.1 * u)}" y="${f(y - 1.1 * u)}" width="${f((L.icon + 2.2) * u)}" height="${f((L.icon + 2.2) * u)}" rx="${f(1.2 * u)}" fill="#fff" fill-opacity="0"/>`;
           return link(p.url, hit + icon(ICONS[p.platform] as IconNode, x, y, L.icon * u), p.platform);
         })
         .join("")
     : "";
-  if (places.length) foot -= L.icon + 2.2 + 1.5;
 
   const nameSize = L.name * u;
   const nameFits = (s: string) => measure(s, SANS, 500, nameSize) <= textWidth;
@@ -243,7 +242,9 @@ export async function cardSvg(card: Card, frame: CardFrame = "share"): Promise<s
   const lineStep = 1.02 * nameSize;
   const name = nameLines
     .map((line, i) => {
-      const base = cy + foot * u - (nameLines.length - 1 - i) * lineStep - 0.2 * nameSize;
+      // The first line's capitals start at the photo's top edge (a cap is
+      // about 0.7 of the type's size).
+      const base = cy + bodyTop * u + 0.7 * nameSize + i * lineStep;
       return `<text x="${f(cx + textX * u)}" y="${f(base)}" font-family="${SANS}" font-weight="500" font-size="${f(nameSize)}" letter-spacing="${f(-0.03 * nameSize)}" fill="${INK}">${esc(line)}</text>`;
     })
     .join("");

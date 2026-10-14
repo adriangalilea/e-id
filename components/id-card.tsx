@@ -109,7 +109,9 @@ function Flair({ places }: { places: Place[] }) {
   return (
     <nav
       aria-label="places"
-      className="-mx-[1.1cqw] flex items-center gap-[0.6cqw] text-foreground/70 [&_svg]:size-(--card-icon) [&_svg]:stroke-[1.4]"
+      // Each icon's padding (its hit area) taken back on every side, so the
+      // glyphs, not their boxes, meet the photo's foot and the words' edge.
+      className="-m-[1.1cqw] flex items-center gap-[0.6cqw] text-foreground/70 [&_svg]:size-(--card-icon) [&_svg]:stroke-[1.4]"
     >
       {places.map(({ platform, url }) => (
         <a
@@ -144,7 +146,7 @@ const SEAL = "bottom-[37cqw] left-[29cqw] size-[14cqw]";
 
 /** The name as the card sets it. */
 const NAME =
-  "line-clamp-2 text-(length:--card-name) leading-[1.02] font-medium tracking-[-0.03em] text-balance";
+  "line-clamp-2 text-(length:--card-name) leading-[1.02] font-medium tracking-[-0.03em] text-balance [text-box:trim-start_cap_alphabetic]";
 
 /** What a card can be written on with: each field's own control, in the place
  *  and at the size the written field takes (the home's blank card, filled in).
@@ -202,13 +204,15 @@ export function IdCard({
   const body = (
     <>
       {head}
-      <div className="relative my-auto flex items-end gap-(--card-gap)">
+      <div className="relative my-auto flex items-stretch gap-(--card-gap)">
         <Portrait holder={holder} />
         <div
           // The rest of the card's width beside the photo, so a field written in
-          // its place has the room the written line would.
+          // its place has the room the written line would; as tall as the
+          // photo, the name from its top edge and the places to its foot, so
+          // the words and the photo make one block with no stray air.
           className={cn(
-            "flex min-w-0 flex-1 flex-col gap-[1.5cqw] pb-[1cqw]",
+            "flex min-w-0 flex-1 flex-col justify-between gap-[1.5cqw]",
             KNOCKOUT,
           )}
         >

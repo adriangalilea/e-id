@@ -1,5 +1,5 @@
 import { ContactRound } from "lucide-react";
-import { Addresses } from "@/components/addresses";
+import { Addresses, PlaceAddresses } from "@/components/addresses";
 import { IdCard, type Holder } from "@/components/id-card";
 import { Button } from "@/components/ui/button";
 import { Code } from "@/components/ui/code";
@@ -29,6 +29,16 @@ export function Features({ holder }: { holder: Holder }) {
       </Row>
       <Row
         side="right"
+        title="straight to a place"
+        body="Add a place's name after your address and it opens that place, not your page."
+      >
+        <PlaceAddresses
+          username={holder.username}
+          places={holder.places ?? []}
+        />
+      </Row>
+      <Row
+        side="left"
         title="a contact in one tap"
         body="Your card saves to a phone as a contact: photo, name, address and every place. Try it."
       >
@@ -50,7 +60,7 @@ export function Features({ holder }: { holder: Holder }) {
         </div>
       </Row>
       <Row
-        side="left"
+        side="right"
         title="on your website"
         body="Your card on any page with two lines: it draws itself, and its hologram answers the hand."
       >
