@@ -1,6 +1,13 @@
 "use client";
 
-import { ArrowLeft, CornerDownLeft, Plus, RotateCcw, X } from "lucide-react";
+import {
+  ArrowLeft,
+  ChevronDown,
+  CornerDownLeft,
+  Plus,
+  RotateCcw,
+  X,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import {
   createContext,
@@ -453,11 +460,17 @@ function Country({ code }: { code: string }) {
         aria-label={code === "XX" ? "your country" : `your country, ${code}`}
         className={cn(
           ON_CARD,
-          "-m-[1cqw] flex cursor-pointer items-center gap-[1.5cqw] p-[1cqw] font-mono transition-colors hover:bg-white/[0.08] data-[popup-open]:bg-white/[0.12]",
+          "group/country -m-[1cqw] flex cursor-pointer items-center gap-[1.5cqw] p-[1cqw] font-mono transition-colors hover:bg-white/[0.08] data-[popup-open]:bg-white/[0.12]",
         )}
       >
+        {/* Set, the code, as a finished card reads; a faint chevron either way,
+            brighter under the hand: it opens. */}
         {code === "XX" ? "" : code}
         <CountryFlag country={code} className="text-[4cqw]" />
+        <ChevronDown
+          aria-hidden
+          className="-ml-[0.8cqw] size-[3cqw] text-foreground/35 transition-colors group-hover/country:text-foreground/70"
+        />
       </button>
     </LazyCountryPickerPopover>
   );
