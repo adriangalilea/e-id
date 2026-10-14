@@ -983,6 +983,15 @@ function under(depth: number, float: number) {
   } as React.CSSProperties;
 }
 
+/** A card of the pile under the hand, every one alike, the top one too: it comes
+ *  toward the reader (nearer in depth, never up the page, so it never rises over
+ *  a card lying above it) and tilts toward the hand, its near edge going down
+ *  where the hand presses (±9° across, ±7° up and down), its shadow longer as
+ *  it comes off the table. Eased both ways, so it follows with a little weight
+ *  and settles back flat. */
+const PICKED =
+  "relative transition-[transform,box-shadow] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/card:shadow-[0_2rem_3.5rem_-0.75rem_rgb(0_0_0/0.7)] group-hover/card:[transform:perspective(1200px)_translateZ(2rem)_rotateY(calc((var(--px,0.5)-0.5)*18deg))_rotateX(calc((var(--py,0.5)-0.5)*-14deg))] motion-reduce:transition-none motion-reduce:group-hover/card:[transform:none]";
+
 /** Real e-id cards in one pile, the maker's on top and then the newest whole ones
  *  (a photo, a name, a country): the top one flat on the table as the rest are,
  *  leaning to the hand, its hologram showing as it turns, over the hero's
@@ -1016,10 +1025,7 @@ function Pile({ people, away }: { people: Holder[]; away: boolean }) {
                 and down), lifted a little; flat again when the hand leaves. */}
             <HoloLight>
               <div
-                className={cn(
-                  CORNER,
-                  "relative transition-[transform,box-shadow] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/card:shadow-[0_2rem_3.5rem_-0.75rem_rgb(0_0_0/0.7)] group-hover/card:[transform:perspective(1200px)_translateY(-0.5rem)_rotateY(calc((var(--px,0.5)-0.5)*18deg))_rotateX(calc((var(--py,0.5)-0.5)*-14deg))] motion-reduce:transition-none motion-reduce:group-hover/card:[transform:none]",
-                )}
+                className={cn(CORNER, PICKED)}
               >
                 <IdCard
                   holder={holder}
@@ -1048,25 +1054,24 @@ function Pile({ people, away }: { people: Holder[]; away: boolean }) {
       >
         {/* Its light, carried with it. */}
         {!away && <SubjectLight />}
-        {/* Flat on the table as the rest are; leaning to the hand, its own
-            light's, only while it is on it. */}
-        <HoloLight>
-          <HoloLean
-            pose="flat"
-            className="[transform:none] group-data-[hover]/holo:[transform:var(--holo-lean)] max-lg:group-data-[hover]/holo:[transform:none]"
-          >
-            {/* Dropped on the table a little askew, as the rest lie, never
-                square to the page. */}
-            <div className="[transform:rotate(3deg)]">
-              <IdCard
-                holder={top}
-                heading="p"
-                holo="laminate"
-                className={FRONT}
-              />
+        {/* Dropped on the table a little askew, as the rest lie, never square
+            to the page. Barely out of focus, the nearest of the pile but still
+            of it; under the hand, sharp, and it answers as every card of the
+            pile does (`PICKED`), with a light of its own. */}
+        <div className="[transform:rotate(3deg)]">
+          <HoloLight>
+            <div className="group/card blur-[0.6px] transition-[filter] duration-1000 ease-[cubic-bezier(0.22,1,0.36,1)] hover:blur-none motion-reduce:transition-none">
+              <div className={cn(CORNER, PICKED)}>
+                <IdCard
+                  holder={top}
+                  heading="p"
+                  holo="laminate"
+                  className={FRONT}
+                />
+              </div>
             </div>
-          </HoloLean>
-        </HoloLight>
+          </HoloLight>
+        </div>
       </div>
     </div>
   );
