@@ -97,13 +97,14 @@ const WRITTEN_HERE = {
   "data-form-type": "other",
 } as const;
 
-/** The heading's letters as brushed steel: a cool neutral grey lit along a band
- *  across its upper half and falling dark under it, as a bevelled metal edge
- *  catches a light from above, crossed by a fine grain of brushing. No outline
- *  and no hue: the letters alone, steel, not chrome's rainbow. */
+/** The heading's letters as brushed steel: a cool neutral grey, brightest at
+ *  the top and falling softly darker to the foot, as metal under a light from
+ *  above, crossed by a fine grain of brushing. One smooth fall, never a band
+ *  across the letters (a dark band cut each glyph in two, worst through a
+ *  g's bowl and tail). No outline and no hue. */
 const STEEL = cn(
   "bg-clip-text text-transparent [-webkit-background-clip:text]",
-  "bg-[repeating-linear-gradient(90deg,rgb(255_255_255/0.05)_0_1px,transparent_1px_3px),linear-gradient(180deg,#f4f5f7_0%,#d5d7db_30%,#9a9da2_48%,#6f7277_52%,#c3c6ca_68%,#eceef0_84%,#a7aaaf_100%)]",
+  "bg-[repeating-linear-gradient(90deg,rgb(255_255_255/0.04)_0_1px,transparent_1px_3px),linear-gradient(180deg,#f3f4f6_0%,#dcdee2_40%,#b9bcc1_75%,#a9acb1_100%)]",
 );
 
 /** Solid: a card hides what is behind it, as a real one does, so its glass
