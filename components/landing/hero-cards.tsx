@@ -22,6 +22,7 @@ import { EmojiDomain } from "@/components/brand";
 import { CountryFlag } from "@/components/country";
 import { type Holder, IdCard, type Place } from "@/components/id-card";
 import { ON_CARD } from "@/components/card-shape";
+import { partShimmer } from "@/components/landing/shimmer-part";
 import { SubjectLight } from "@/components/light";
 import { PROFILE } from "@/components/profile-layout";
 import { useChip } from "@/components/session/use-chip";
@@ -96,8 +97,9 @@ const WRITTEN_HERE = {
   "data-form-type": "other",
 } as const;
 
-/** Solid: a card hides what is behind it, as a real one does. */
-const SOLID = "[--id-card-thickness:1]";
+/** Solid: a card hides what is behind it, as a real one does, so its glass
+ *  blurs nothing behind it (id-card, `--id-card-backdrop`). */
+const SOLID = "[--id-card-thickness:1] [--id-card-backdrop:none]";
 
 /** A card's own corner (ID-1: 3.18 mm on 85.6 by 53.98), as shares of its box, so
  *  a shadow cast from the card's box is rounded as the card is at any size. */
@@ -980,7 +982,8 @@ function settled() {
  *  than the ground it fades onto, as dimming made it, and never see-through,
  *  which showed the shimmer through it), and out of focus the way a lens sets
  *  what lies behind its subject, plainly from the first card under the top
- *  (1.6px) to the deepest (5.8px). Each drifts on its own
+ *  (2.4px; the top card itself 2px) to the deepest (7.3px). Each drifts on its
+ *  own
  *  (globals.css, `card-float`). */
 function under(depth: number, float: number) {
   const { dx, dy, r } = settled()[depth - 1] as ReturnType<
@@ -992,35 +995,14 @@ function under(depth: number, float: number) {
     "--dy": `${dy.toFixed(2)}%`,
     "--r": `${r.toFixed(2)}deg`,
     "--fade": (0.35 + 0.07 * (depth - 1)).toFixed(2),
-    "--bl": `${(1.6 + 0.6 * (depth - 1)).toFixed(2)}px`,
+    "--bl": `${(2.4 + 0.7 * (depth - 1)).toFixed(2)}px`,
     animationDuration: `${float}s`,
     animationDelay: `-${(float * depth) / UNDER.length}s`,
   } as React.CSSProperties;
 }
 
-/** The hero's shimmer parted round `card` as it comes forward, or closed again
- *  with no card (components/light, `HeroShimmer`): the card's middle and size,
- *  from the shimmer's corner, and the parting opened. Closing keeps the place,
- *  so it closes where it opened. */
-function partShimmer(card: Element | null) {
-  const shimmer = document.querySelector<HTMLElement>(
-    "[data-slot=hero-shimmer]",
-  );
-  if (!shimmer) return;
-  if (!card) {
-    shimmer.style.setProperty("--part", "0");
-    return;
-  }
-  const at = shimmer.getBoundingClientRect();
-  const box = card.getBoundingClientRect();
-  shimmer.style.setProperty("--part-x", `${box.left - at.left + box.width / 2}px`);
-  shimmer.style.setProperty("--part-y", `${box.top - at.top + box.height / 2}px`);
-  shimmer.style.setProperty("--part-w", `${box.width}px`);
-  shimmer.style.setProperty("--part-h", `${box.height}px`);
-  shimmer.style.setProperty("--part", "1");
-}
-
-/** What a card of the pile wears to part the shimmer under the hand. */
+/** What a card of the pile wears to part the shimmer under the hand
+ *  (landing/shimmer-part). */
 const PARTS = {
   onPointerEnter: (e: React.PointerEvent<HTMLElement>) =>
     partShimmer(e.currentTarget),
@@ -1038,13 +1020,11 @@ const PICKED =
 
 /** Real e-id cards in one pile, the maker's on top and then the newest whole ones
  *  (a photo, a name, a country): the top one flat on the table as the rest are,
- *  leaning to the hand, its hologram showing as it turns, over the hero's
- *  shimmer; the rest under it, under the shimmer too (components/light, z-[5]).
- *  Each card answers the hand alone, with a light of its own: a hand on one
- *  moves nothing else. Nothing here makes a stacking context of its own (no
- *  transform, no filter on the pile), so each card's layer is the hero's: the
- *  shimmer lies between the top card and the rest. `away`, the whole pile under
- *  it. What a card is, shown whole. */
+ *  the rest under it, all of them under the hero's shimmer (components/light,
+ *  z-[5]), only the visitor's card over it. Each card answers the hand alone,
+ *  with a light of its own: a hand on one moves nothing else, and parts the
+ *  shimmer round it (landing/shimmer-part). `away`, the pile set back while
+ *  the visitor writes. What a card is, shown whole. */
 function Pile({ people, away }: { people: Holder[]; away: boolean }) {
   const [top, ...rest] = people;
   if (!top) throw new Error("the home's pile has nobody to show");
@@ -1090,24 +1070,21 @@ function Pile({ people, away }: { people: Holder[]; away: boolean }) {
           </div>
         ))}
       {/* Drifting as the cards under it do (globals.css, `card-float`), on its
-          own time, so the pile moves as one loose thing. */}
-      <div
-        className={cn(
-          "relative animate-[card-float_10s_ease-in-out_infinite_alternate] [animation-delay:-3s] motion-reduce:animate-none",
-          away ? "z-0" : "z-10",
-        )}
-      >
+          own time, so the pile moves as one loose thing. Under the shimmer
+          with the rest of the pile (z-0 below its z-[5]): only the visitor's
+          card stands over it. */}
+      <div className="relative z-0 animate-[card-float_10s_ease-in-out_infinite_alternate] [animation-delay:-3s] motion-reduce:animate-none">
         {/* Its light, carried with it. */}
         {!away && <SubjectLight />}
         {/* Dropped on the table a little askew, as the rest lie, never square
-            to the page. Barely out of focus, the nearest of the pile but still
-            of it; under the hand, sharp, and it answers as every card of the
-            pile does (`PICKED`), with a light of its own. */}
+            to the page. Out of focus a little, the nearest of the pile but
+            still of it; under the hand, sharp, and it answers as every card of
+            the pile does (`PICKED`), with a light of its own. */}
         <div className="[transform:rotate(3deg)]">
           <HoloLight>
             <div
               {...PARTS}
-              className="group/card blur-[0.6px] transition-[filter] duration-1000 ease-[cubic-bezier(0.22,1,0.36,1)] hover:blur-none motion-reduce:transition-none">
+              className="group/card blur-[2px] transition-[filter] duration-1000 ease-[cubic-bezier(0.22,1,0.36,1)] hover:blur-none motion-reduce:transition-none">
               <div className={cn(CORNER, PICKED)}>
                 <IdCard
                   holder={top}
@@ -1132,7 +1109,7 @@ type Slot = { x: number; y: number; w: number; rz: number };
 /** The middle: the pile's top card at rest, right of centre, the pile spread
  *  from it leftward toward the visitor's card (`UNDER`), so the two stand
  *  centred as one group; the visitor's card once taken up. */
-const MIDDLE = { x: 31, y: 8, w: 34, rz: 0 } as const;
+const MIDDLE = { x: 31, y: 13, w: 34, rz: 0 } as const;
 
 /** Where the visitor's blank card waits: on the left where the eye starts, a
  *  little above the pile's middle, lying over the pile's deepest cards (they are

@@ -193,15 +193,6 @@
   }
 }
 
-/* How far the hero's shimmer has parted round a card come forward
-   (components/light, `HeroShimmer`), 0 closed to 1 open: registered, so it eases
-   open and shut as the card comes and goes. */
-@property --part {
-  syntax: "<number>";
-  inherits: false;
-  initial-value: 0;
-}
-
 /* The site's bar on the home (components/footer): at the top of a wide screen
    there is none, the stage alone; scrolling on, it arrives, faded in and settled
    down onto the page, and stays. Driven by the scroll itself, so it is where the

@@ -228,6 +228,12 @@ export function IdCard({
             "--id1-ratio": ID1_RATIO,
             "--id1-radius": ID1_RADIUS,
             "--holo-print-unit": PRINT_UNIT,
+            // What the glass does to what lies behind it, its blur unless the
+            // card says otherwise (`--id-card-backdrop`): a solid card shows
+            // nothing behind it, and a blur of what it hides, done again every
+            // frame a card floats, was the home's whole cost.
+            "--glass-backdrop":
+              "var(--id-card-backdrop, blur(var(--id-card-blur, 9px)) saturate(1.25))",
           } as React.CSSProperties
         }
       >

@@ -65,6 +65,11 @@ export interface GrainProps {
    *  little sideways on its own longer beat, as cards floating on a page do, so
    *  a shimmer among them moves as one of them. */
   sway?: number
+  /** shimmer: a box come up through the surface (CSS px, in the shimmer's own
+   *  box): the sparks near it nudged a little way out from it and dimmer over
+   *  it, a nudge, never a clearing; null or none, the surface as it was. It
+   *  eases in and out, leaving where it last was. */
+  part?: { x: number; y: number; width: number; height: number } | null
   /** shimmer: alive at rest (default): the facets turn on their own and flash all
    *  over the surface, visual interest with nothing moving. */
   rest?: boolean
@@ -222,6 +227,8 @@ uniform vec4 uWake[12];
 uniform float uWakeAge[12];
 uniform float uFlow;
 uniform float uSway;
+uniform vec4 uPart;
+uniform float uPartOpen;
 
 // The surface as the hand's wake has moved it: each mark in the wake pushes the
 // surface along the way the hand went and curls it round the hand's path, within
@@ -252,6 +259,25 @@ vec2 flowed(vec2 at) {
   float m = length(moved);
   if (m > most) moved *= most / m;
   return at - moved * uFlow;
+}
+
+// The surface nudged aside by a box come up through it (uPart: its middle and
+// half its size, page px; uPartOpen 0 to 1): the sparks near it drift a little
+// way out from it, the most over it and none from half its size beyond its
+// edge, and over it they are dimmer. A nudge, never a clearing: the surface
+// stays whole, only shifted. Distances are the box's own (a rounded square in
+// its halves), so the nudge follows its shape. Its z: how much of the light
+// stays.
+vec3 parted(vec2 at) {
+  if (uPartOpen <= 0.0) return vec3(at, 1.0);
+  vec2 d = (at - uPart.xy) / uPart.zw;
+  float r = pow(pow(abs(d.x), 4.0) + pow(abs(d.y), 4.0), 0.25);
+  float near = 1.0 - smoothstep(0.0, 1.5, r);
+  // Read from a little further in, so what shows here came from nearer the
+  // box: the sparks seem pushed out, by at most a tenth of its half-size.
+  vec2 from = d * (1.0 - 0.1 * near * uPartOpen / max(r, 0.35));
+  float keep = 1.0 - 0.5 * (1.0 - smoothstep(0.85, 1.15, r)) * uPartOpen;
+  return vec3(uPart.xy + from * uPart.zw, keep);
 }
 
 float hash(vec2 p) {
@@ -324,7 +350,8 @@ void main() {
   // swayed (uSway: up and down over some eighteen seconds there and back, a
   // little sideways on a longer beat of its own, so it never reads as a loop).
   vec2 sway = uSway * vec2(0.35 * sin(uTime * 0.22 + 1.7), sin(uTime * 0.35));
-  vec2 at = flowed(vec2(gl_FragCoord.x, uSize.y - gl_FragCoord.y + uScroll) + sway);
+  vec3 nudged = parted(flowed(vec2(gl_FragCoord.x, uSize.y - gl_FragCoord.y + uScroll) + sway));
+  vec2 at = nudged.xy;
   vec2 home = floor(at / uCell);
   vec2 here = floor(at / uSpeck);
   // The facets that may have drifted onto this pixel: its own cell's and its
@@ -354,7 +381,7 @@ void main() {
     }
   }
   if (light <= 0.0) { gl_FragColor = vec4(0.0); return; }
-  float a = clamp(light * uStrength, 0.0, 1.0);
+  float a = clamp(light * uStrength * nudged.z, 0.0, 1.0);
   gl_FragColor = vec4(tone / light * a, a);
 }`
 
@@ -395,7 +422,7 @@ type Knobs = Required<
     | "rest"
     | "hand"
   >
-> & { size: number | undefined }
+> & { size: number | undefined; part: GrainProps["part"] }
 
 function Shimmer({
   rest = true,
@@ -411,6 +438,7 @@ function Shimmer({
   drift = 1,
   flow = 0.15,
   sway = 0,
+  part = null,
   className,
 }: GrainProps) {
   const ref = React.useRef<HTMLCanvasElement>(null)
@@ -428,6 +456,7 @@ function Shimmer({
     drift,
     flow,
     sway,
+    part,
   }
 
   React.useEffect(() => {
@@ -495,6 +524,10 @@ function Shimmer({
     const ages = new Float32Array(WAKE)
     let next = 0
     let mark: { x: number; y: number; t: number } | null = null
+    // The parting: how open (eased toward 1 while a box is given, 0 without),
+    // and the last box given, so it closes where it was.
+    let parting = 0
+    let parted: NonNullable<GrainProps["part"]> | null = null
     const draw = (now: number) => {
       const m = knobs.current
       const device = Math.max(2, Math.round(m.cell * dpr))
@@ -539,6 +572,19 @@ function Shimmer({
         : energy * Math.exp(-dt / 1.1)
       gl.uniform1i(u("uHand"), m.hand ? 1 : 0)
       gl.uniform1f(u("uEnergy"), energy)
+      // Parting: opens over about half a second while a box lies on it, closes
+      // as long once it is lifted.
+      if (m.part) parted = m.part
+      parting += ((m.part ? 1 : 0) - parting) * (1 - Math.exp(-dt / 0.18))
+      gl.uniform1f(u("uPartOpen"), parted && parting > 0.002 ? parting : 0)
+      if (parted)
+        gl.uniform4f(
+          u("uPart"),
+          (parted.x + parted.width / 2) * k,
+          (parted.y + parted.height / 2) * k + (box.top + window.scrollY) * k,
+          (parted.width / 2) * k,
+          (parted.height / 2) * k,
+        )
       // The facets are the page's: where the box stands in the page (a fixed layer
       // moves through it as the page scrolls; a box in the page does not), so a
       // scroll carries the surface under a light that stays put on the screen.
