@@ -104,9 +104,12 @@ const WRITTEN_HERE = {
  *  - its body: cool grey, near white at the top to dark steel at the foot,
  *    the contrast metal has and paint does not.
  *  No grain (level lines read as stripes printed on the letters, not as
- *  brushing), no outline, no hue. */
+ *  brushing), no outline, no hue. The steel is painted in the text's own box,
+ *  so the box reaches below the line by a descender's depth (taken back
+ *  outside, the line unmoved): set tight, a g's tail hung under it unpainted,
+ *  invisible. */
 const STEEL = cn(
-  "bg-clip-text text-transparent [-webkit-background-clip:text]",
+  "-mb-[0.25em] pb-[0.25em] bg-clip-text text-transparent [-webkit-background-clip:text]",
   "bg-[linear-gradient(108deg,transparent_18%,rgb(255_255_255/0.75)_26%,transparent_34%,transparent_58%,rgb(255_255_255/0.45)_64%,transparent_71%),linear-gradient(180deg,#fdfdfe_0%,#cfd2d6_45%,#8a8e93_80%,#6e7277_100%)]",
 );
 
