@@ -4,7 +4,6 @@ import { useMemo } from "react";
 import { Browser, BrowserSession } from "@/components/ui/browser";
 import { ContactsApp, contactsAppScreen } from "@/components/ui/contacts-app";
 import { IphoneFrame, MacbookFrame } from "@/components/ui/device-frame";
-import { Grain } from "@/components/ui/grain";
 import { ScrollStage } from "@/components/ui/scroll-stage";
 import {
   type ScrollBeat,
@@ -12,24 +11,25 @@ import {
 } from "@/components/ui/scroll-stage-timeline";
 import { type Landing, routePages } from "@/components/landing/link-map";
 import { Scaled } from "@/components/landing/scaled";
-import { SubjectLight } from "@/components/light";
 import { EMOJI_DOMAIN } from "@/lib/const";
 import { type BrowserStep, browserTimeline } from "@/lib/browser-session";
 import { cn } from "@/lib/utils";
 
-// WHAT A CARD DOES, told in three scenes on one stage. First every route of the
-// one link, side by side, each window at its route over the real page it leads
-// to. Then a phone: the contact a card saves as, opened as a .vcf
-// and saved in the phone's own Contacts app (@ag/contacts-app). Then a laptop: its
-// browser at the card's /json, scrolled through, and then on a site with the card
-// embedded. Where the stage pins (a wide screen, motion welcome: @ag/scroll-stage)
-// the page's scroll moves through them, the words on the left saying where it is;
-// elsewhere (a phone, reduced motion) the scenes stand one after another.
+// WHAT A CARD DOES, told on one card of its own, as untitled.garden tells xtldr
+// (apps/garden, xtldr-language-gallery): a rounded surface a step off the page,
+// the act's words large inside it on the left, the thing on the right, a device
+// standing taller than the card. Three scenes: every route of the one link,
+// dealt as a deck of windows, each address showing; a phone, the contact a card
+// saves as opened and saved in its Contacts app (@ag/contacts-app); a laptop, its
+// browser at the card's /json and then on a site with the card embedded. Where
+// the stage pins (@ag/scroll-stage) the scroll moves through them; elsewhere (a
+// phone, reduced motion) the acts stand one after another.
 
-/** One act of the story: what it is called, what it says, and the press it is
- *  about. */
+/** One act: its headline in two tones (`lead` bright, `rest` dimmer), its line,
+ *  and the press it is about. */
 export type StoryAct = {
-  title: string;
+  lead: string;
+  rest: string;
   body?: React.ReactNode;
   action?: React.ReactNode;
 };
@@ -48,29 +48,25 @@ type StoryProps = {
 };
 
 /** The scroll each act gets, in shares of the track. An act plays over most of its
- *  share (`play`), rests on its last moment, and hands on to the next over the
- *  rest (past `hold`). */
+ *  share (`play`), rests on its last moment, and hands on to the next past
+ *  `hold`. The routes take longest: one window dealt each. */
 const BEATS: readonly ScrollBeat[] = [
-  { span: 1.2, play: 0.5, hold: 0.8 },
+  { span: 1.6, play: 0.8, hold: 0.9 },
   { span: 1.2, play: 0.7, hold: 0.85 },
   { span: 1.2, play: 0.75, hold: 0.85 },
   { span: 1, play: 0.7, hold: 0.9 },
 ];
 
-/** Every scene's design size, CSS px: a 16:10 stage, scaled whole to the space
- *  it is given (`Scaled`). */
-const STAGE = { width: 1280, height: 800 };
+/** The card the story is told on: the foreground a step into the page's ground
+ *  (garden's `--card-bg`), rounded, as tall as the screen leaves under the site's
+ *  bar and above its foot (10rem), within 28rem and 46rem. */
+const CARD =
+  "relative grid h-[clamp(28rem,calc(100svh-10rem),46rem)] grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] gap-12 rounded-[2rem] bg-[color-mix(in_oklab,var(--foreground)_4%,var(--background))] px-12";
 
-/** The stage where it pins: as tall as the screen leaves under the site's bar
- *  (6rem over it, 1.5rem under), its width from its own 16:10, never wider than
- *  its column. */
-const FRAME = "relative ml-auto w-full max-w-[calc((100svh-7.5rem)*1.6)]";
-
-/** A page a step lighter than the site's ground (globals.css: 0.12; a card's
- *  surface 0.19), as a surface on this site stands a step above the ground. Set
- *  as the theme's own `--background` round a window, so its page and the band
- *  behind its controls (@ag/browser) both take it. */
-const GROUND = "[--background:oklch(0.155_0_0)]";
+/** A window's page a step lighter than the site's ground (globals.css: 0.12; a
+ *  card's surface 0.19), as the theme's own `--background` round it, so its page
+ *  and the band behind its controls (@ag/browser) both take it. */
+const GROUND = "[--background:oklch(0.17_0_0)]";
 
 export function Story(props: StoryProps) {
   const story = useStory(props);
@@ -113,14 +109,15 @@ function useStory({ username, card, landings, contact, data, embed }: StoryProps
         typed,
       },
       acts: [
-        { title: "one link to route them all" },
+        { lead: "one link", rest: "to route them all" },
         {
-          title: "easy to save",
+          lead: "easy",
+          rest: "to save",
           body: "Your e-ID generates a vCard so people can save you as a contact.",
           action: contact.save,
         },
-        { title: "for programs too", body: "just add /json to any profile" },
-        { title: "embed on your website", action: embed.code },
+        { lead: "for programs", rest: "too", body: "just add /json to any profile" },
+        { lead: "embed", rest: "on your website", action: embed.code },
       ] satisfies StoryAct[],
     };
   }, [username, card, landings, contact, data, embed]);
@@ -133,60 +130,55 @@ function distance(offset: number, from: number, to = from): number {
   return offset < from ? offset - from : offset > to ? offset - to : 0;
 }
 
-/** A scene coming up into the stage from below and going on up out of it, fading
- *  in and out as it moves, and taking no hand while it is on its way. */
+/** A scene rising into the card from below and on up out of it, fading as it
+ *  moves, taking no hand while it is on its way. */
 function entrance(d: number): React.CSSProperties {
   const away = Math.min(1, Math.abs(d));
   return {
     opacity: Math.max(0, 1 - away * 1.4),
-    transform: `translateY(${-d * 10}%) scale(${1 - away * 0.05})`,
+    transform: `translateY(${-d * 12}%)`,
     visibility: away >= 1 ? "hidden" : undefined,
   };
 }
 
-/** The pinned story: the words and the stage side by side, centred in the screen
- *  under the site's bar, the scroll moving through the scenes. */
+/** The pinned story: the card, the act's words in it, the scene beside them. */
 function Scene({ story }: { story: Story }) {
-  const beats = useScrollStageTimeline(BEATS, { top: "6rem", bottom: "1.5rem" });
+  const beats = useScrollStageTimeline(BEATS, { top: "6rem", bottom: "4rem" });
   const { offset, active } = beats;
   const local = (act: number) => beats.progress[act] ?? 0;
+  const { laptop } = story;
   // The laptop's visit across its two acts: the data scrolled through in the
   // first, the site's address typed and loaded in the second.
-  const { laptop } = story;
   const at =
-    (active < 3 ? local(2) * laptop.typed : laptop.typed + local(3) * (laptop.total - laptop.typed)) /
-    laptop.total;
+    (active < 3
+      ? local(2) * laptop.typed
+      : laptop.typed + local(3) * (laptop.total - laptop.typed)) / laptop.total;
   return (
-    // The words a narrow column of their own; the stage everything else.
-    <div className="mx-auto grid w-full max-w-[100rem] grid-cols-[20rem_minmax(0,1fr)] items-center gap-12 px-8">
-      <Words acts={story.acts} active={active} onPick={beats.seek} />
-      <div className={FRAME}>
-        {/* What the stage shows stands in a soft light of its own, with a faint
-            shimmer round it, as the hero's cards do (components/light). */}
-        <SubjectLight />
-        <div
-          aria-hidden
-          className="pointer-events-none absolute -inset-[20%] -z-10 [mask-image:radial-gradient(ellipse_closest-side,black_35%,transparent)]"
-        >
-          <Grain look="shimmer" strength={0.35} density={0.3} frost={0.01} hand={false} />
+    <div className="mx-auto w-full max-w-6xl px-8">
+      <div className={CARD}>
+        <div className="flex min-w-0 flex-col justify-between py-12">
+          <Words acts={story.acts} active={active} />
+          <Acts acts={story.acts} active={active} onPick={beats.seek} />
         </div>
-        <Scaled {...STAGE}>
+        {/* The scenes, centred in the right half; a device may stand taller
+            than the card, past its top and foot. */}
+        <div className="relative">
           <Layer d={distance(offset, 0)}>
-            <Routes routes={story.routes} columns={3} />
+            <Routes routes={story.routes} at={local(0)} />
           </Layer>
           <Layer d={distance(offset, 1)}>
-            <Phone vcard={story.vcard} at={local(1)} />
+            <Phone vcard={story.vcard} at={local(1)} className="h-[calc(100%+6rem)]" />
           </Layer>
           <Layer d={distance(offset, 2, 3)}>
-            <Laptop laptop={story.laptop} at={at} />
+            <Laptop laptop={laptop} at={at} className="w-[112%] shrink-0" />
           </Layer>
-        </Scaled>
+        </div>
       </div>
     </div>
   );
 }
 
-/** One scene on the stage, placed by how far it is from being on it. */
+/** One scene in the card's right half, placed by how far it is from being on. */
 function Layer({ d, children }: { d: number; children: React.ReactNode }) {
   return (
     <div
@@ -200,58 +192,145 @@ function Layer({ d, children }: { d: number; children: React.ReactNode }) {
   );
 }
 
-/** The gap between the routes' windows, design px. */
-const GAP = 24;
-
-/** Every route of the one link at once: a window each, at its route, over the
- *  page it leads to, `columns` to a row (16:10 each), as many rows as there are
- *  routes. */
-function Routes({ routes, columns }: { routes: Story["routes"]; columns: number }) {
+/** The act on stage, large: its headline in two tones, its line, its press. Every
+ *  act's laid in one cell and only the one on stage shown, so the words never
+ *  change the card's height. */
+function Words({ acts, active }: { acts: StoryAct[]; active: number }) {
   return (
-    <div
-      className={cn("grid w-full content-center", GROUND)}
-      style={{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`, gap: GAP }}
-    >
-      {routes.map((route) => (
-        <Browser key={route.address} material="glass" full url={route.address} scroll={0} inert>
-          {route.page}
-        </Browser>
+    <div className="grid grid-cols-[minmax(0,1fr)]">
+      {acts.map((act, i) => (
+        <div
+          key={act.lead}
+          inert={i !== active}
+          aria-hidden={i !== active}
+          className={cn(
+            "col-start-1 row-start-1 flex min-w-0 flex-col gap-6 transition-opacity duration-500",
+            i === active ? "opacity-100" : "opacity-0",
+          )}
+        >
+          <h3 className="text-5xl leading-[1.05] font-semibold tracking-tight text-balance">
+            <span className="text-foreground">{act.lead}</span>{" "}
+            <span className="text-foreground/45">{act.rest}</span>
+          </h3>
+          {act.body && (
+            <p className="text-lg leading-relaxed text-pretty text-foreground/60">
+              {act.body}
+            </p>
+          )}
+          {act.action && <div className="min-w-0 pt-2">{act.action}</div>}
+        </div>
       ))}
     </div>
   );
 }
 
-/** The design height `columns` of routes take at `width`: their rows of 16:10
- *  windows and the gaps between them. */
-function routesHeight(count: number, columns: number, width: number): number {
-  const rows = Math.ceil(count / columns);
-  const cell = (width - (columns - 1) * GAP) / columns;
-  return Math.ceil(rows * (cell / 1.6) + (rows - 1) * GAP);
+/** Every act by its number and headline, along the card's foot: where the story
+ *  is, and a press on any scrolls there. */
+function Acts({
+  acts,
+  active,
+  onPick,
+}: {
+  acts: StoryAct[];
+  active: number;
+  onPick: (act: number) => void;
+}) {
+  return (
+    <ol className="flex flex-wrap gap-x-5 gap-y-2">
+      {acts.map((act, i) => (
+        <li key={act.lead}>
+          <button
+            type="button"
+            aria-current={i === active ? "step" : undefined}
+            onClick={() => onPick(i)}
+            className={cn(
+              "flex cursor-pointer items-baseline gap-2 rounded-md text-sm transition-colors outline-none focus-visible:ring-2 focus-visible:ring-foreground/40",
+              i === active ? "text-foreground" : "text-foreground/40 hover:text-foreground/70",
+            )}
+          >
+            <span className="font-mono text-xs tabular-nums">0{i + 1}</span>
+            {act.lead}
+          </button>
+        </li>
+      ))}
+    </ol>
+  );
+}
+
+/** The design size the deck is drawn at, CSS px, scaled to its half of the card. */
+const DECK = { width: 760, step: 58, window: 475 };
+
+/** Every route of the one link, dealt as a deck as `at` runs 0..1: the window of
+ *  the route being read in front, whole; the ones dealt before it stacked above,
+ *  each still showing its address bar; the ones to come not yet dealt. */
+function Routes({ routes, at }: { routes: Story["routes"]; at: number }) {
+  const current = Math.min(routes.length - 1, Math.floor(at * routes.length));
+  const height = DECK.window + (routes.length - 1) * DECK.step;
+  return (
+    <Scaled width={DECK.width} height={height} className="w-full">
+      {routes.map((route, i) => {
+        const dealt = i <= current;
+        return (
+          <div
+            key={route.address}
+            className={cn("absolute inset-x-0 transition-[transform,opacity,filter] duration-500 ease-out", GROUND)}
+            style={{
+              top: i * DECK.step,
+              zIndex: i,
+              opacity: dealt ? 1 : 0,
+              transform: dealt ? undefined : "translateY(3rem)",
+              // The windows behind sink back: dimmer, never see-through.
+              filter: i < current ? "brightness(0.55)" : undefined,
+            }}
+          >
+            <Browser material="glass" full url={route.address} scroll={0} inert>
+              {route.page}
+            </Browser>
+          </div>
+        );
+      })}
+    </Scaled>
+  );
 }
 
 /** The phone, a .vcf just opened on it (`at` its act's moment, 0..1): the contact
  *  as iOS offers it, then "Create New Contact" pressed, then the contact saved in
  *  the phone's Contacts. */
-function Phone({ vcard, at }: { vcard: string; at: number }) {
+function Phone({
+  vcard,
+  at,
+  className,
+}: {
+  vcard: string;
+  at: number;
+  className?: string;
+}) {
   const view = at >= 0.6 ? "contact" : "import";
   return (
     // The frame's status bar and screen in the app's colours (the frame draws
-    // them outside the app's box).
-    <IphoneFrame className="w-[360px]" style={contactsAppScreen(view, "dark")}>
-      <ContactsApp
-        vcard={vcard}
-        view={view}
-        pressed={view === "import" && at >= 0.42}
-      />
+    // them outside the app's box). As tall as it is given, its width its own.
+    <IphoneFrame
+      className={cn("w-auto shrink-0", className)}
+      style={contactsAppScreen(view, "dark")}
+    >
+      <ContactsApp vcard={vcard} view={view} pressed={view === "import" && at >= 0.42} />
     </IphoneFrame>
   );
 }
 
 /** The laptop, its browser at the card's data and then on a site with the card
  *  (`at` the visit's moment, 0..1). */
-function Laptop({ laptop, at }: { laptop: Story["laptop"]; at: number }) {
+function Laptop({
+  laptop,
+  at,
+  className,
+}: {
+  laptop: Story["laptop"];
+  at: number;
+  className?: string;
+}) {
   return (
-    <MacbookFrame className={cn("w-[1060px]", GROUND)}>
+    <MacbookFrame className={cn(GROUND, className)}>
       <BrowserSession
         material="glass"
         full
@@ -267,141 +346,31 @@ function Laptop({ laptop, at }: { laptop: Story["laptop"]; at: number }) {
   );
 }
 
-/** Every act's title, the one on stage lit, the rest dim: where the story is, and
- *  a press on any title scrolls there. The one on stage opens under its title to
- *  its line and its press.
- *
- *  The column is the same height whichever act is open: the stage is centred on
- *  its own height (useScrollStageTimeline), and a column that grew and shrank as
- *  acts opened moved the whole stage. So two layers share one cell: the titles
- *  with the tallest act's opening laid out unseen, which alone gives the cell its
- *  height, and over it the titles as they are, one open. */
-function Words({
-  acts,
-  active,
-  onPick,
-}: {
-  acts: StoryAct[];
-  active: number;
-  onPick: (act: number) => void;
-}) {
-  return (
-    <div className="grid grid-cols-[minmax(0,1fr)]">
-      <div aria-hidden inert className="invisible col-start-1 row-start-1 flex min-w-0 flex-col gap-4">
-        {acts.map((act, i) => (
-          <Title key={act.title} act={act} index={i} />
-        ))}
-        <div className="grid grid-cols-[minmax(0,1fr)]">
-          {acts.map((act) => (
-            <div key={act.title} className="col-start-1 row-start-1 min-w-0">
-              <Opening act={act} />
-            </div>
-          ))}
-        </div>
-      </div>
-      <ol className="col-start-1 row-start-1 flex min-w-0 flex-col gap-4 self-start">
-        {acts.map((act, i) => {
-          const on = i === active;
-          return (
-            <li key={act.title} className="min-w-0">
-              <button
-                type="button"
-                aria-current={on ? "step" : undefined}
-                onClick={() => onPick(i)}
-                className={cn(
-                  "block cursor-pointer rounded-lg text-left transition-opacity duration-500 outline-none focus-visible:ring-2 focus-visible:ring-foreground/40",
-                  on ? "opacity-100" : "opacity-35 hover:opacity-60",
-                )}
-              >
-                <Title act={act} index={i} />
-              </button>
-              {(act.body || act.action) && (
-                <div
-                  className="grid grid-cols-[minmax(0,1fr)] transition-[grid-template-rows,opacity] duration-500 ease-out"
-                  style={{ gridTemplateRows: on ? "1fr" : "0fr", opacity: on ? 1 : 0 }}
-                  inert={!on}
-                >
-                  <div className="min-h-0 min-w-0 overflow-hidden">
-                    <Opening act={act} />
-                  </div>
-                </div>
-              )}
-            </li>
-          );
-        })}
-      </ol>
-    </div>
-  );
-}
-
-/** An act's number and title, one line of the list. */
-function Title({ act, index }: { act: StoryAct; index: number }) {
-  return (
-    <span className="flex items-baseline gap-4">
-      <span className="font-mono text-xs text-foreground/50 tabular-nums">
-        0{index + 1}
-      </span>
-      <h3 className="text-2xl font-light tracking-[-0.02em] text-balance text-foreground/90">
-        {act.title}
-      </h3>
-    </span>
-  );
-}
-
-/** What an act opens to under its title: its line and its press, inset to the
- *  title's words, with room inside the fold (which clips) for the press's glass
- *  edge and shadow. */
-function Opening({ act }: { act: StoryAct }) {
-  if (!act.body && !act.action) return null;
-  return (
-    <div className="flex min-w-0 flex-col gap-5 pt-3 pr-2 pb-3 pl-8">
-      {act.body && (
-        <p className="text-base leading-relaxed font-light text-balance text-foreground/60">
-          {act.body}
-        </p>
-      )}
-      {act.action && <div className="min-w-0">{act.action}</div>}
-    </div>
-  );
-}
-
-/** The story where the stage does not pin: each act's words over its scene, the
- *  scenes at rest (the routes, the contact saved, the data at its top, the site),
- *  each at a design size of its own for a narrow column: the routes two to a
- *  row, the phone alone. */
+/** The story where the stage does not pin: each act's words, then its scene at
+ *  rest (the deck dealt, the contact saved, the data at its top, the site). */
 function Stacked({ story }: { story: Story }) {
   const scenes = [
-    {
-      width: 760,
-      height: routesHeight(story.routes.length, 2, 760),
-      node: <Routes routes={story.routes} columns={2} />,
-    },
-    { width: 420, height: 820, node: <Phone vcard={story.vcard} at={1} /> },
-    { width: 1100, height: 740, node: <Laptop laptop={story.laptop} at={0} /> },
-    { width: 1100, height: 740, node: <Laptop laptop={story.laptop} at={1} /> },
+    <Routes key="routes" routes={story.routes} at={1} />,
+    <div key="phone" className="mx-auto h-[36rem]">
+      <Phone vcard={story.vcard} at={1} className="h-full" />
+    </div>,
+    <Laptop key="data" laptop={story.laptop} at={0} className="w-full" />,
+    <Laptop key="site" laptop={story.laptop} at={1} className="w-full" />,
   ];
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-24 px-4 py-24">
       {story.acts.map((act, i) => (
-        <article key={act.title} className="flex flex-col gap-6">
-          <h3 className="text-3xl font-light tracking-[-0.02em] text-balance text-foreground/90">
-            {act.title}
+        <article key={act.lead} className="flex flex-col gap-6">
+          <h3 className="text-4xl leading-[1.05] font-semibold tracking-tight text-balance">
+            <span className="text-foreground">{act.lead}</span>{" "}
+            <span className="text-foreground/45">{act.rest}</span>
           </h3>
           {act.body && (
-            <p className="text-lg leading-relaxed font-light text-balance text-foreground/60">
+            <p className="text-lg leading-relaxed text-pretty text-foreground/60">
               {act.body}
             </p>
           )}
-          <Scaled
-            width={scenes[i]?.width ?? STAGE.width}
-            height={scenes[i]?.height ?? STAGE.height}
-            className="mx-auto w-full"
-            style={{ maxWidth: scenes[i]?.width }}
-          >
-            <div className="absolute inset-0 flex items-center justify-center">
-              {scenes[i]?.node}
-            </div>
-          </Scaled>
+          <div className="flex justify-center">{scenes[i]}</div>
           {act.action}
         </article>
       ))}
