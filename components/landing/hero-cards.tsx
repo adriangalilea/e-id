@@ -97,18 +97,17 @@ const WRITTEN_HERE = {
   "data-form-type": "other",
 } as const;
 
-/** The heading's letters as brushed steel. What makes metal read as metal is
- *  how it takes light, so three layers, top first:
- *  - its sheen: two streaks of light crossing the words on a slant, as a
- *    brushed surface throws a light back along its grain, slanted so it never
- *    cuts a letter in two the way a level band did (worst through a g);
- *  - its grain: fine level lines, lighter and darker, the brushing itself;
+/** The heading's letters as steel, by how they take light, two layers, top
+ *  first:
+ *  - its sheen: two streaks of light crossing the letters on a slant, slanted
+ *    so it never cuts a letter in two the way a level band did;
  *  - its body: cool grey, near white at the top to dark steel at the foot,
  *    the contrast metal has and paint does not.
- *  No outline, no hue. */
+ *  No grain (level lines read as stripes printed on the letters, not as
+ *  brushing), no outline, no hue. */
 const STEEL = cn(
   "bg-clip-text text-transparent [-webkit-background-clip:text]",
-  "bg-[linear-gradient(108deg,transparent_18%,rgb(255_255_255/0.75)_26%,transparent_34%,transparent_58%,rgb(255_255_255/0.45)_64%,transparent_71%),repeating-linear-gradient(0deg,rgb(255_255_255/0.1)_0_1px,rgb(0_0_0/0.12)_1px_2px,transparent_2px_3px),linear-gradient(180deg,#fdfdfe_0%,#cfd2d6_45%,#8a8e93_80%,#6e7277_100%)]",
+  "bg-[linear-gradient(108deg,transparent_18%,rgb(255_255_255/0.75)_26%,transparent_34%,transparent_58%,rgb(255_255_255/0.45)_64%,transparent_71%),linear-gradient(180deg,#fdfdfe_0%,#cfd2d6_45%,#8a8e93_80%,#6e7277_100%)]",
 );
 
 /** Solid: a card hides what is behind it, as a real one does, so its glass
