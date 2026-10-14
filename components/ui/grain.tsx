@@ -261,23 +261,38 @@ vec2 flowed(vec2 at) {
   return at - moved * uFlow;
 }
 
-// The surface nudged aside by a box come up through it (uPart: its middle and
-// half its size, page px; uPartOpen 0 to 1): the sparks near it drift a little
-// way out from it, the most over it and none from half its size beyond its
-// edge, and over it they are dimmer. A nudge, never a clearing: the surface
-// stays whole, only shifted. Distances are the box's own (a rounded square in
-// its halves), so the nudge follows its shape. Its z: how much of the light
-// stays.
+// How far a point lies outside the box (uPart: its middle and half its size,
+// page px), negative inside: the box as a rounded rectangle, its corner a card's
+// (3.18 mm on 85.6, a 7.4% of its half-width), so everything follows its
+// outline, corners and all.
+float boxDistance(vec2 at) {
+  float corner = uPart.z * 0.074;
+  vec2 q = abs(at - uPart.xy) - (uPart.zw - corner);
+  return length(max(q, 0.0)) + min(max(q.x, q.y), 0.0) - corner;
+}
+
+// The surface nudged aside by a box come up through it (uPartOpen 0 to 1): the
+// sparks just outside its edge pushed a little way out, straight away from the
+// nearest edge, the most at the edge and none a band beyond it; over it, the
+// sparks dimmer, evenly, the change soft along its outline. A nudge, never a
+// clearing. Its z: how much of the light stays.
 vec3 parted(vec2 at) {
   if (uPartOpen <= 0.0) return vec3(at, 1.0);
-  vec2 d = (at - uPart.xy) / uPart.zw;
-  float r = pow(pow(abs(d.x), 4.0) + pow(abs(d.y), 4.0), 0.25);
-  float near = 1.0 - smoothstep(0.0, 1.5, r);
-  // Read from a little further in, so what shows here came from nearer the
-  // box: the sparks seem pushed out, by at most a tenth of its half-size.
-  vec2 from = d * (1.0 - 0.1 * near * uPartOpen / max(r, 0.35));
-  float keep = 1.0 - 0.5 * (1.0 - smoothstep(0.85, 1.15, r)) * uPartOpen;
-  return vec3(uPart.xy + from * uPart.zw, keep);
+  float d = boxDistance(at);
+  float band = uPart.w * 0.3;
+  float soft = uPart.w * 0.04;
+  float keep = 1.0 - 0.5 * uPartOpen * (1.0 - smoothstep(-soft, soft, d));
+  if (d < 0.0 || d > band) return vec3(at, keep);
+  // Away from the nearest edge: the distance's own slope.
+  float e = 1.0;
+  vec2 out = normalize(vec2(
+    boxDistance(at + vec2(e, 0.0)) - boxDistance(at - vec2(e, 0.0)),
+    boxDistance(at + vec2(0.0, e)) - boxDistance(at - vec2(0.0, e))
+  ));
+  float fall = 1.0 - d / band;
+  // Read from nearer the edge, so the sparks seem pushed out by up to a
+  // tenth of the band.
+  return vec3(at - out * band * 0.1 * fall * fall * uPartOpen, keep);
 }
 
 float hash(vec2 p) {
