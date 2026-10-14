@@ -1125,7 +1125,7 @@ type Slot = { x: number; y: number; w: number; rz: number };
 /** The middle: the pile's top card at rest, right of centre, the pile spread
  *  from it leftward toward the visitor's card (`UNDER`), so the two stand
  *  centred as one group; the visitor's card once taken up. */
-const MIDDLE = { x: 31, y: 13, w: 34, rz: 0 } as const;
+const MIDDLE = { x: 31, y: 9, w: 34, rz: 0 } as const;
 
 /** Where the visitor's blank card waits: on the left where the eye starts, a
  *  little above the pile's middle, lying over the pile's deepest cards (they are
