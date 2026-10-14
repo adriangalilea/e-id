@@ -7,6 +7,7 @@ import { getSocialIcon } from "@/lib/socials";
 import { IdCard, type Holder } from "@/components/id-card";
 import { Button } from "@/components/ui/button";
 import { Code } from "@/components/ui/code";
+import { Glass } from "@/components/ui/material-glass";
 import { HoloLight } from "@/components/ui/holo";
 import { Reveal } from "@/components/ui/reveal";
 import { PROD_URL } from "@/lib/const";
@@ -61,9 +62,14 @@ export async function Features({ holder }: { holder: Holder }) {
         title="on your website"
         body="Your card on any page with two lines: it draws itself, and its hologram answers the hand."
       >
-        <Code lang="html" copy>
-          {embed}
-        </Code>
+        <Glass
+          shape="surface"
+          className="overflow-hidden p-1 [--glass-radius:1.25rem]"
+        >
+          <Code lang="html" copy>
+            {embed}
+          </Code>
+        </Glass>
       </Row>
     </section>
   );

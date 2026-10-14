@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { EmojiDomain } from "@/components/brand";
+import { Glass } from "@/components/ui/material-glass";
 
 /** How long each landing is shown: typed, drawn to and arrived at. */
 const STEP_MS = 3600;
@@ -75,14 +76,17 @@ export function LinkMap({
       />
       {/* One frame, the same size every step: what is there fills it (its
           own frame dropped, `Landing`), so the box itself never changes. */}
-      <div className="h-[18rem] w-full max-w-[22rem] shrink-0 overflow-hidden rounded-2xl border border-border bg-foreground/[0.02]">
+      <Glass
+        shape="surface"
+        className="h-[18rem] w-full max-w-[22rem] shrink-0 overflow-hidden [--glass-radius:1.25rem]"
+      >
         <div
           key={`there-${step}`}
           className="size-full animate-[link-arrive_600ms_cubic-bezier(0.22,1,0.36,1)_900ms_both]"
         >
           {landing.there}
         </div>
-      </div>
+      </Glass>
     </div>
   );
 }
