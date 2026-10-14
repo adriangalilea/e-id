@@ -32,7 +32,7 @@ export function CopyAddress({ username }: { username: string }) {
       }
       className={cn(
         ON_CARD,
-        "group/copy -mx-[1.2cqw] flex min-w-0 cursor-pointer items-center gap-[1.2cqw] self-start px-[1.2cqw] py-[0.6cqw] font-mono text-[3cqw] text-foreground/50 transition-colors hover:bg-white/[0.06] hover:text-foreground/85 data-copied:text-foreground/85",
+        "group/copy -mx-[1.2cqw] flex min-w-0 cursor-pointer items-center gap-[1.2cqw] self-start px-[1.2cqw] py-[0.6cqw] font-mono text-(length:--card-head) text-foreground/50 transition-colors hover:bg-white/[0.06] hover:text-foreground/85 data-copied:text-foreground/85",
       )}
     >
       <EmojiDomain path={`/${username}`} className="truncate" />

@@ -6,6 +6,7 @@ import { FoilEdge, Holo } from "@/components/ui/holo";
 import { Image } from "@/components/ui/image";
 import { Glass } from "@/components/ui/material-glass";
 import type { SelectSocial } from "@/db/schema";
+import { CARD_LAYOUT, cqw } from "@/lib/card-layout";
 import { type HoloPrint, MARK_EMBLEM } from "@/lib/holo";
 import { getSocialIcon } from "@/lib/socials";
 import { cn } from "@/lib/utils";
@@ -61,7 +62,7 @@ function Portrait({
   return (
     <div
       className={cn(
-        "grid aspect-square w-[30cqw] shrink-0 place-items-center overflow-hidden bg-white/[0.1]",
+        "grid aspect-square w-(--card-photo) shrink-0 place-items-center overflow-hidden bg-white/[0.1]",
         ON_CARD,
         className,
       )}
@@ -108,7 +109,7 @@ function Flair({ places }: { places: Place[] }) {
   return (
     <nav
       aria-label="places"
-      className="-mx-[1.1cqw] flex items-center gap-[0.6cqw] text-foreground/70 [&_svg]:size-[4.6cqw] [&_svg]:stroke-[1.4]"
+      className="-mx-[1.1cqw] flex items-center gap-[0.6cqw] text-foreground/70 [&_svg]:size-(--card-icon) [&_svg]:stroke-[1.4]"
     >
       {places.map(({ platform, url }) => (
         <a
@@ -143,7 +144,7 @@ const SEAL = "bottom-[37cqw] left-[29cqw] size-[14cqw]";
 
 /** The name as the card sets it. */
 const NAME =
-  "line-clamp-2 text-[7cqw] leading-[1.02] font-medium tracking-[-0.03em] text-balance";
+  "line-clamp-2 text-(length:--card-name) leading-[1.02] font-medium tracking-[-0.03em] text-balance";
 
 /** What a card can be written on with: each field's own control, in the place
  *  and at the size the written field takes (the home's blank card, filled in).
@@ -177,7 +178,7 @@ export function IdCard({
   const head = (
     <header
       className={cn(
-        "relative flex items-center justify-between text-[3cqw] text-foreground/60",
+        "relative flex items-center justify-between text-(length:--card-head) text-foreground/60",
         KNOCKOUT,
       )}
     >
@@ -187,7 +188,10 @@ export function IdCard({
       {slots?.country ?? (
         <span className="flex items-center gap-[1.5cqw] font-mono">
           {holder.country === "XX" ? "" : holder.country}
-          <CountryFlag country={holder.country} className="text-[4cqw]" />
+          <CountryFlag
+            country={holder.country}
+            className="text-(length:--card-flag)"
+          />
         </span>
       )}
     </header>
@@ -198,7 +202,7 @@ export function IdCard({
   const body = (
     <>
       {head}
-      <div className="relative my-auto flex items-end gap-[5cqw]">
+      <div className="relative my-auto flex items-end gap-(--card-gap)">
         <Portrait holder={holder} />
         <div
           // The rest of the card's width beside the photo, so a field written in
@@ -222,12 +226,21 @@ export function IdCard({
         as="article"
         shape="surface"
         data-slot="id-card"
-        className="flex aspect-(--id1-ratio) w-full flex-col justify-between overflow-hidden p-[6cqw] [--glass-radius:var(--id1-radius)] [--glass-thickness:var(--id-card-thickness,0.3)] [--glass-blur:var(--id-card-blur,9px)]"
+        className="flex aspect-(--id1-ratio) w-full flex-col justify-between overflow-hidden p-(--card-pad) [--glass-radius:var(--id1-radius)] [--glass-thickness:var(--id-card-thickness,0.3)] [--glass-blur:var(--id-card-blur,9px)]"
         style={
           {
             "--id1-ratio": ID1_RATIO,
             "--id1-radius": ID1_RADIUS,
             "--holo-print-unit": PRINT_UNIT,
+            // The layout (lib/card-layout), the one the share image, the embed
+            // and the link preview draw too: every size on the card reads it.
+            "--card-pad": cqw(CARD_LAYOUT.pad),
+            "--card-head": cqw(CARD_LAYOUT.head),
+            "--card-flag": cqw(CARD_LAYOUT.flag),
+            "--card-photo": cqw(CARD_LAYOUT.photo),
+            "--card-gap": cqw(CARD_LAYOUT.gap),
+            "--card-name": cqw(CARD_LAYOUT.name),
+            "--card-icon": cqw(CARD_LAYOUT.icon),
             // What the glass does to what lies behind it, its blur unless the
             // card says otherwise (`--id-card-backdrop`): a solid card shows
             // nothing behind it, and a blur of what it hides, done again every

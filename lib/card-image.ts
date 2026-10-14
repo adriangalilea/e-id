@@ -1,6 +1,7 @@
 import "server-only";
 
 import { join } from "node:path";
+import { CARD_LAYOUT } from "@/lib/card-layout";
 import { fetchPhoto } from "@/lib/photo";
 import { Resvg } from "@resvg/resvg-js";
 import * as FLAGS from "country-flag-icons/string/3x2";
@@ -203,50 +204,40 @@ export async function cardSvg(card: Card, frame: CardFrame = "share"): Promise<s
       ? body
       : `<a href="${esc(href)}" target="_blank" rel="me noopener"${label ? ` aria-label="${esc(label)}"` : ""}>${body}</a>`;
   const radius = (3.18 / 85.6) * cw;
-  const pad = 6 * u;
+  const L = CARD_LAYOUT;
+  const pad = L.pad * u;
   const at = (x: number, y: number) => [cx + x * u, cy + y * u] as const;
 
   // The body: the head alone above, the photo and the words beside it centred in
-  // the room under it (components/id-card).
-  const headLine = 4.5;
-  const bodyTop = 6 + headLine + ((63.06 - 6 - (6 + headLine)) - 30) / 2;
-  const bodyFoot = bodyTop + 30;
-  const photoX = 6;
-  const textX = photoX + 30 + 5;
-  const textWidth = (100 - 6 - textX) * u;
+  // the room under it (lib/card-layout, as components/id-card lays it out).
+  const headLine = 1.5 * L.head;
+  const bodyTop =
+    L.pad + headLine + (63.06 - L.pad - (L.pad + headLine) - L.photo) / 2;
+  const bodyFoot = bodyTop + L.photo;
+  const photoX = L.pad;
+  const textX = photoX + L.photo + L.gap;
+  const textWidth = (100 - L.pad - textX) * u;
 
   const photo = await photoOf(card.photo);
 
-  // The words, from the foot up: the places, the address, the name.
+  // The words, from the foot up: the places, the name.
   const places = card.places.filter((p) => ICONS[p.platform]);
   let foot = bodyFoot - 1;
   const flair = places.length
     ? places
-        .slice(0, Math.floor((textWidth + 0.6 * u) / (7.4 * u)))
+        .slice(0, Math.floor((textWidth + 0.6 * u) / (L.iconStep * u)))
         .map((p, i) => {
-          const x = cx + textX * u + i * 7.4 * u;
-          const y = cy + (foot - 1.1 - 4.6) * u;
+          const x = cx + textX * u + i * L.iconStep * u;
+          const y = cy + (foot - 1.1 - L.icon) * u;
           // The hit area is the icon's padded square, as on the site.
-          const hit = `<rect x="${f(x - 1.1 * u)}" y="${f(y - 1.1 * u)}" width="${f(6.8 * u)}" height="${f(6.8 * u)}" rx="${f(1.2 * u)}" fill="#fff" fill-opacity="0"/>`;
-          return link(p.url, hit + icon(ICONS[p.platform] as IconNode, x, y, 4.6 * u), p.platform);
+          const hit = `<rect x="${f(x - 1.1 * u)}" y="${f(y - 1.1 * u)}" width="${f((L.icon + 2.2) * u)}" height="${f((L.icon + 2.2) * u)}" rx="${f(1.2 * u)}" fill="#fff" fill-opacity="0"/>`;
+          return link(p.url, hit + icon(ICONS[p.platform] as IconNode, x, y, L.icon * u), p.platform);
         })
         .join("")
     : "";
-  if (places.length) foot -= 6.8 + 1.5;
+  if (places.length) foot -= L.icon + 2.2 + 1.5;
 
-  const addressSize = 3 * u;
-  const addressBase = foot - 0.6 - 1.5 + 0.2;
-  const markSize = addressSize * 0.72;
-  const tail = `.${EMOJI_DOMAIN.split(".").slice(1).join(".")}/${card.handle}`;
-  const tailRoom = textWidth - markSize - 0.15 * addressSize;
-  const tailFits = (s: string) => measure(s, MONO, 400, addressSize) <= tailRoom;
-  const tailText = tailFits(tail) ? tail : cut(tail, tailFits);
-  const address =
-    mark(cx + textX * u, cy + addressBase * u, markSize, `${INK}`) +
-    `<text x="${f(cx + textX * u + markSize + 0.15 * addressSize)}" y="${f(cy + addressBase * u)}" font-family="${MONO}" font-size="${f(addressSize)}" fill="${INK}" fill-opacity="0.5">${esc(tailText)}</text>`;
-  foot -= 5.7 + 1.5;
-
-  const nameSize = 7 * u;
+  const nameSize = L.name * u;
   const nameFits = (s: string) => measure(s, SANS, 500, nameSize) <= textWidth;
   const nameLines = wrap(card.name, textWidth, 2, nameFits);
   const lineStep = 1.02 * nameSize;
@@ -257,16 +248,26 @@ export async function cardSvg(card: Card, frame: CardFrame = "share"): Promise<s
     })
     .join("");
 
-  // The head: the mark and e-id, the country and its flag.
-  const headBase = 6 + 3.25;
-  const headSize = 3 * u;
+  // The head: the address on the left, the country and its flag on the right.
+  const headBase = L.pad + 1.08 * L.head;
+  const headSize = L.head * u;
   const flag = card.country ? (FLAGS as Record<string, string>)[card.country] : undefined;
-  const flagH = 4 * u * 0.7;
+  const flagH = L.flag * u * 0.7;
   const flagW = flagH * 1.5;
-  const [hx, hy] = at(100 - 6, headBase);
+  const [hx, hy] = at(100 - L.pad, headBase);
+  const markSize = headSize * 0.72;
+  const tail = `.${EMOJI_DOMAIN.split(".").slice(1).join(".")}/${card.handle}`;
+  const tailRoom =
+    (100 - 2 * L.pad) * u - markSize - 0.15 * headSize - (flag ? flagW + 9 * u : 0);
+  const tailFits = (s: string) => measure(s, MONO, 400, headSize) <= tailRoom;
+  const tailText = tailFits(tail) ? tail : cut(tail, tailFits);
+  const address = link(
+    card.id,
+    mark(cx + pad, hy, markSize, INK) +
+      `<text x="${f(cx + pad + markSize + 0.15 * headSize)}" y="${f(hy)}" font-family="${MONO}" font-size="${f(headSize)}" fill="${INK}" fill-opacity="0.6">${esc(tailText)}</text>`,
+  );
   const head =
-    mark(cx + pad, hy, headSize * 0.7, INK) +
-    `<text x="${f(cx + pad + headSize * 0.7 * (MARK_BOX.w / MARK_BOX.h) + 1.5 * u)}" y="${f(hy)}" font-family="${SANS}" font-weight="500" font-size="${f(headSize)}" letter-spacing="${f(-0.02 * headSize)}" fill="${INK}" fill-opacity="0.85">e-ID</text>` +
+    address +
     (flag
       ? `<image href="${dataUri("image/svg+xml", new TextEncoder().encode(flag))}" x="${f(hx - flagW)}" y="${f(hy - flagH)}" width="${f(flagW)}" height="${f(flagH)}" preserveAspectRatio="none"/>` +
         `<rect x="${f(hx - flagW)}" y="${f(hy - flagH)}" width="${f(flagW)}" height="${f(flagH)}" fill="none" stroke="#fff" stroke-opacity="0.18" stroke-width="1"/>` +
@@ -342,7 +343,7 @@ ${page}
   <rect x="${f(px)}" y="${f(py)}" width="${f(ps)}" height="${f(ps)}" rx="${f(1.4 * u)}" fill="#fff" fill-opacity="0.05" stroke="#fff" stroke-opacity="0.08"/>
   ${portrait}
   ${head}
-  ${link(card.id, name + address)}
+  ${link(card.id, name)}
   ${flair}
 </g>
 <rect x="${f(cx + 0.5)}" y="${f(cy + 0.5)}" width="${f(cw - 1)}" height="${f(ch - 1)}" rx="${f(radius - 0.5)}" fill="none" stroke="url(#rim)" pointer-events="none"/>

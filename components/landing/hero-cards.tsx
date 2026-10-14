@@ -309,7 +309,7 @@ function FillCard() {
               // The written name's size (id-card, `NAME`), across its row: sized
               // to the row, never to what is typed (the page sizes fields to
               // their content), so no letter of it is ever cut.
-              "w-full text-[7cqw] font-medium tracking-[-0.03em] [&_input]:[field-sizing:fixed]",
+              "w-full text-(length:--card-name) font-medium tracking-[-0.03em] [&_input]:[field-sizing:fixed]",
             )}
           />
         ),
@@ -482,7 +482,7 @@ function Country({ code }: { code: string }) {
         {/* Set, the code, as a finished card reads; a faint chevron either way,
             brighter under the hand: it opens. */}
         {code === "XX" ? "" : code}
-        <CountryFlag country={code} className="text-[4cqw]" />
+        <CountryFlag country={code} className="text-(length:--card-flag)" />
         <ChevronDown
           aria-hidden
           className="-ml-[0.8cqw] size-[3cqw] text-foreground/35 transition-colors group-hover/country:text-foreground/70"

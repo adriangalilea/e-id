@@ -18,9 +18,6 @@ import type { Presence } from "@/lib/presence";
 import { PROFILE } from "@/components/profile-layout";
 import { EditForm } from "./edit_form";
 
-const FIELD =
-  "m-0! border border-border bg-transparent! focus-visible:border-foreground/40 focus-visible:ring-0 focus-visible:ring-transparent focus-visible:ring-offset-0";
-
 /** The face on the edit form, square: the avatar GitHub gave, or the handle's
  *  first letters. */
 function Face({ user }: { user: Profile }) {
@@ -127,13 +124,18 @@ function IdentityEdit({ user }: { user: Profile }) {
   return (
     <aside className="flex flex-col gap-3 lg:sticky lg:top-10 lg:self-start">
       <Face user={user} />
+      {/* The name, the registry's field (@ag/input) as the address under it is,
+          at the size a name is written. */}
       <Input
         data-1p-ignore
         type="text"
         name="name"
+        aria-label="name"
         defaultValue={user.name ?? ""}
-        className={`${FIELD} h-12 text-2xl font-medium tracking-tight`}
-        placeholder="Name"
+        material="plain"
+        size="lg"
+        className="text-2xl font-medium tracking-tight"
+        placeholder="name"
       />
       {/* The handle as the address it makes, the domain before it in the well
           (@ag/input), as the home's card writes it. */}
