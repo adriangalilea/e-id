@@ -818,18 +818,20 @@ function useWriting() {
  *  drift takes (globals.css, `card-float`), no two in step. */
 const UNDER = [9, 11, 10, 12, 9.5, 10.5, 11.5, 8.5] as const;
 
+/** Where the pile's far end lies, in the top card's widths across and heights
+ *  up or down from its middle: the layout Adrian chose, fixed. The pile is
+ *  composed on its own and never follows the visitor's card or the heading:
+ *  moving either once reshuffled every card behind them. */
+const PILE_END = { x: -1.388, y: -0.606 };
+
 /** The funnel the cards are carried along, lying on its side as a tornado
- *  blown over: its axis from the top card's middle to the deepest card's,
- *  under the visitor's card (`end`, the top card's widths across and heights
- *  up or down). Round that axis the cards swing (`TURN`, degrees a card), wide
+ *  blown over: its axis from the top card's middle to its far end
+ *  (`PILE_END`). Round that axis the cards swing (`TURN`, degrees a card), wide
  *  at the top card (`MOUTH`, the swing in the top card's heights either side
  *  of the axis) and narrowing to nothing at the tip, each card a step further
  *  along it, the steps lengthening a little as it goes (`ALONG`). */
 function end() {
-  return {
-    x: ((WAITING.x - MIDDLE.x) / 100) * (STAGE / MIDDLE.w),
-    y: (WAITING.y - MIDDLE.y) / (MIDDLE.w / (85.6 / 53.98)),
-  };
+  return PILE_END;
 }
 const MOUTH = 1;
 const TURN = 130;
@@ -886,14 +888,14 @@ function funneled(depth: number) {
 const ROOM = { left: -0.05, right: 0.45, top: -0.85, bottom: 0.3 };
 
 /** How much more room what holds still claims than one card under the top: the
- *  top card the most, the heading over the visitor's card next (no card may lie
- *  under it), the visitor's card least. */
-const CLAIM = { top: 0.2, visitor: 0.08, heading: 0.12 };
+ *  top card the most, the visitor's card's room less. */
+const CLAIM = { top: 0.2, visitor: 0.08 };
 
 /** The cards' places: the room shared out evenly among them, each card at the
  *  middle of its own share (a centroidal Voronoi tessellation, by Lloyd's
- *  relaxation over a grid of the room), the top card, the visitor's and the
- *  heading over it holding still and claiming more (`CLAIM`). Distances are in card shapes (heights
+ *  relaxation over a grid of the room), the top card and the visitor's card's
+ *  room at the pile's far end holding still and claiming more (`CLAIM`).
+ *  Distances are in card shapes (heights
  *  scaled to widths), so each share is a card's shape, not a square: no card
  *  bunched on another, no part of the room left bare. Then the nearest to the
  *  top card is the nearest in depth, and so on out. Once, on first use (the
@@ -905,14 +907,9 @@ function settled() {
   const ratio = 85.6 / 53.98;
   const tip = end();
   // Card shapes: across in the top card's widths, down in its heights.
-  // The visitor's card's height, in the top card's heights (the same share as
-  // its width), and the heading over it (two lines and its 2rem gap, about a
-  // third of a card's height), claimed too: no card lies under the heading.
-  const visitor = WAITING.w / MIDDLE.w;
   const still = [
     { u: 0, v: 0, claim: CLAIM.top },
     { u: tip.x, v: tip.y, claim: CLAIM.visitor },
-    { u: tip.x, v: tip.y - visitor / 2 - 0.25, claim: CLAIM.heading },
   ];
   const left = tip.x + ROOM.left;
   const right = ROOM.right;
@@ -1136,10 +1133,6 @@ type Slot = { x: number; y: number; w: number; rz: number };
  *  from it leftward toward the visitor's card (`UNDER`), so the two stand
  *  centred as one group; the visitor's card once taken up. */
 const MIDDLE = { x: 31, y: 8, w: 34, rz: 0 } as const;
-
-/** The stage's width on a wide screen, in rem (the page's 72rem column): what
- *  turns a slot's place across, a share of it, into the top card's widths. */
-const STAGE = 72;
 
 /** Where the visitor's blank card waits: on the left where the eye starts, a
  *  little above the pile's middle, lying over the pile's deepest cards (they are
