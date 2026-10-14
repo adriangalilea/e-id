@@ -1251,10 +1251,10 @@ export function Stage({
           )}
           style={at(WAITING)}
         >
-          <span className={STEEL}>your digital ID</span>
-          {/* The logo beside it, as the bar draws it: the seal the words are
-              about. A little taller than the words' capitals. */}
+          {/* The logo before the words, as the bar draws it: the seal they are
+              about. A little taller than their capitals. */}
           <BrandLogo className="size-[0.95em]" />
+          <span className={STEEL}>your digital ID</span>
         </h1>
         {!forming && (
           // In the middle at rest; once the visitor's card is taken up and
