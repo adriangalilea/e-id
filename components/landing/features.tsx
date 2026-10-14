@@ -1,5 +1,5 @@
 import { ContactRound } from "lucide-react";
-import { Addresses, PlaceAddresses } from "@/components/addresses";
+import { LinkMap } from "@/components/landing/link-map";
 import { IdCard, type Holder } from "@/components/id-card";
 import { Button } from "@/components/ui/button";
 import { Code } from "@/components/ui/code";
@@ -20,25 +20,17 @@ export function Features({ holder }: { holder: Holder }) {
       aria-label="what an e-ID does"
       className="mx-auto flex w-full max-w-5xl flex-col gap-32 px-6 py-32 sm:px-10"
     >
-      <Row
-        side="left"
-        title="one link"
-        body="Every place you are online, under one address. Each of these opens the same page."
-      >
-        <Addresses username={holder.username} size="lg" />
-      </Row>
+      {/* One link: the address, and every place it reaches, drawn. */}
+      <Reveal as="article" className="flex flex-col items-center gap-14">
+        <h2 className="text-3xl font-light tracking-[-0.02em] text-foreground/90">
+          one link
+        </h2>
+        <div className="w-full">
+          <LinkMap username={holder.username} places={holder.places ?? []} />
+        </div>
+      </Reveal>
       <Row
         side="right"
-        title="straight to a place"
-        body="Add a place's name after your address and it opens that place, not your page."
-      >
-        <PlaceAddresses
-          username={holder.username}
-          places={holder.places ?? []}
-        />
-      </Row>
-      <Row
-        side="left"
         title="a contact in one tap"
         body="Your card saves to a phone as a contact: photo, name, address and every place. Try it."
       >
@@ -60,7 +52,7 @@ export function Features({ holder }: { holder: Holder }) {
         </div>
       </Row>
       <Row
-        side="right"
+        side="left"
         title="on your website"
         body="Your card on any page with two lines: it draws itself, and its hologram answers the hand."
       >
