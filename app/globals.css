@@ -223,6 +223,30 @@
   }
 }
 
+/* One link shown working (components/landing/link-map): a part of the address
+   arriving, a place's name typed onto its end (revealed left to right in a few
+   steps, as typed), and the line drawn out from it to where it lands. Keyframes,
+   which no utility can write. */
+@keyframes link-arrive {
+  from {
+    opacity: 0;
+    translate: 0 0.25em;
+  }
+}
+@keyframes link-type {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+@keyframes link-draw {
+  from {
+    scale: 0 1;
+  }
+}
+
 /* A real card's slow drift in the home's spread (components/landing/hero-cards,
    `Float`): up a little and turned a hair, then back. Keyframes, which no utility
    can write; on `translate` and `rotate`, so it adds to the card's placed
