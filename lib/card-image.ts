@@ -266,7 +266,7 @@ export async function cardSvg(card: Card, frame: CardFrame = "share"): Promise<s
   const [hx, hy] = at(100 - 6, headBase);
   const head =
     mark(cx + pad, hy, headSize * 0.7, INK) +
-    `<text x="${f(cx + pad + headSize * 0.7 * (MARK_BOX.w / MARK_BOX.h) + 1.5 * u)}" y="${f(hy)}" font-family="${SANS}" font-weight="500" font-size="${f(headSize)}" letter-spacing="${f(-0.02 * headSize)}" fill="${INK}" fill-opacity="0.85">e-id</text>` +
+    `<text x="${f(cx + pad + headSize * 0.7 * (MARK_BOX.w / MARK_BOX.h) + 1.5 * u)}" y="${f(hy)}" font-family="${SANS}" font-weight="500" font-size="${f(headSize)}" letter-spacing="${f(-0.02 * headSize)}" fill="${INK}" fill-opacity="0.85">e-ID</text>` +
     (flag
       ? `<image href="${dataUri("image/svg+xml", new TextEncoder().encode(flag))}" x="${f(hx - flagW)}" y="${f(hy - flagH)}" width="${f(flagW)}" height="${f(flagH)}" preserveAspectRatio="none"/>` +
         `<rect x="${f(hx - flagW)}" y="${f(hy - flagH)}" width="${f(flagW)}" height="${f(flagH)}" fill="none" stroke="#fff" stroke-opacity="0.18" stroke-width="1"/>` +
@@ -305,7 +305,7 @@ export async function cardSvg(card: Card, frame: CardFrame = "share"): Promise<s
     : "";
   const grain = share ? `<rect width="${W}" height="${H}" filter="url(#grain)" opacity="0.045"/>` : "";
 
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${f(W)} ${f(H)}"${share ? "" : ` role="group" aria-label="${esc(`${card.name}'s e-id card`)}"`}>
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${f(W)} ${f(H)}"${share ? "" : ` role="group" aria-label="${esc(`${card.name}'s e-ID card`)}"`}>
 <defs>
   <radialGradient id="beam" gradientUnits="userSpaceOnUse" cx="0" cy="0" r="1" gradientTransform="translate(${W / 2} ${f(-0.06 * H)}) scale(${f(0.12 * W)} ${f(0.55 * H)})"><stop offset="0" stop-color="#fff" stop-opacity="0.09"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
   <radialGradient id="halo" gradientUnits="userSpaceOnUse" cx="0" cy="0" r="1" gradientTransform="translate(${W / 2} ${f(-0.12 * H)}) scale(${f(0.42 * W)} ${f(0.75 * H)})"><stop offset="0" stop-color="#fff" stop-opacity="0.055"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>

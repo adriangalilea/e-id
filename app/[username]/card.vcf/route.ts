@@ -28,7 +28,7 @@ export async function GET(
   const { username } = await params;
   const vcard = await contact(username);
   if (!vcard)
-    return new Response(`no e-id is called ${username}`, {
+    return new Response(`no e-ID is called ${username}`, {
       status: 404,
       headers: CORS,
     });

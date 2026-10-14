@@ -28,7 +28,7 @@ const spaceMono = Space_Mono({
 
 export const metadata: Metadata = {
   title: {
-    template: "%s · e-id",
+    template: "%s · e-ID",
     default: "your page at 👤.to/you",
   },
   description:

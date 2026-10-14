@@ -46,12 +46,12 @@ export async function GET(request: Request) {
   const address = params.get("url");
   const handle = address && handleOf(address);
   if (!handle)
-    return new Response(`not an e-id profile address: ${address}`, {
+    return new Response(`not an e-ID profile address: ${address}`, {
       status: 404,
     });
   const card = await cardOf(handle);
   if (!card)
-    return new Response(`no e-id is called ${handle}`, { status: 404 });
+    return new Response(`no e-ID is called ${handle}`, { status: 404 });
 
   const asked = Number(params.get("maxwidth"));
   const width = Math.round(asked > 0 ? Math.min(asked, WIDTH) : WIDTH);
@@ -60,13 +60,13 @@ export async function GET(request: Request) {
   const html =
     `<script type="module" src="${PROD_URL}/embed.js"></script>` +
     `<e-id-card handle="${card.handle}" style="--e-id-card-width:${width}px">` +
-    `<a href="${card.id}">${name} on e-id</a></e-id-card>`;
+    `<a href="${card.id}">${name} on e-ID</a></e-id-card>`;
 
   return Response.json(
     {
       version: "1.0",
       type: "rich",
-      provider_name: "e-id",
+      provider_name: "e-ID",
       provider_url: PROD_URL,
       title: `${name} (@${card.handle})`,
       author_name: name,

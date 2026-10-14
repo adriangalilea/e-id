@@ -10,7 +10,7 @@ import { EMOJI_DOMAIN } from "@/lib/const";
 
 export const size = SHARE_SIZE;
 export const contentType = "image/png";
-export const alt = `An e-id card on ${EMOJI_DOMAIN}`;
+export const alt = `An e-ID card on ${EMOJI_DOMAIN}`;
 
 async function shareImage(username: string): Promise<Uint8Array | null> {
   "use cache";

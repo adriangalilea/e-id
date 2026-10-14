@@ -1241,7 +1241,7 @@ export function Stage({
           )}
           style={at(WAITING)}
         >
-          your digital id
+          your digital ID
         </h1>
         {!forming && (
           // In the middle at rest; once the visitor's card is taken up and

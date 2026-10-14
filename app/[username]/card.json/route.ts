@@ -18,7 +18,7 @@ export async function GET(
   const card = await cardOf(username);
   if (!card)
     return Response.json(
-      { error: `no e-id is called ${username}` },
+      { error: `no e-ID is called ${username}` },
       { status: 404, headers: { "access-control-allow-origin": "*" } },
     );
   return Response.json(card, {

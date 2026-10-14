@@ -70,7 +70,7 @@ export async function vcardOf(card: Card): Promise<string> {
     // Their e-id first, then each place, each labelled (Apple's grouped label,
     // which other readers ignore and keep the link).
     "item1.URL:" + card.id,
-    "item1.X-ABLabel:e-id",
+    "item1.X-ABLabel:e-ID",
     // An email place is their address, as a contact's email; every other place
     // a link.
     ...card.places.flatMap((place, i) =>
