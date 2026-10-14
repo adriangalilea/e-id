@@ -298,7 +298,6 @@ function FillCard() {
         // The address heads the card, where its mark and "e-id" stand on a
         // finished one: it is what the card is for, written first.
         head: <Address draft={draft} handle={handle} onClaim={claim} />,
-        address: null,
         country: <Country code={draft.country} />,
         flair: <Places places={draft.places} />,
       }}
@@ -886,14 +885,15 @@ function funneled(depth: number) {
  *  under the bar to a little under the top card's foot. */
 const ROOM = { left: -0.05, right: 0.45, top: -0.85, bottom: 0.3 };
 
-/** How much more room the two cards that hold still claim than one card under
- *  the top: the top card is the largest, the visitor's next. */
-const CLAIM = { top: 0.2, visitor: 0.08 };
+/** How much more room what holds still claims than one card under the top: the
+ *  top card the most, the heading over the visitor's card next (no card may lie
+ *  under it), the visitor's card least. */
+const CLAIM = { top: 0.2, visitor: 0.08, heading: 0.12 };
 
 /** The cards' places: the room shared out evenly among them, each card at the
  *  middle of its own share (a centroidal Voronoi tessellation, by Lloyd's
- *  relaxation over a grid of the room), the top card and the visitor's holding
- *  still and claiming more (`CLAIM`). Distances are in card shapes (heights
+ *  relaxation over a grid of the room), the top card, the visitor's and the
+ *  heading over it holding still and claiming more (`CLAIM`). Distances are in card shapes (heights
  *  scaled to widths), so each share is a card's shape, not a square: no card
  *  bunched on another, no part of the room left bare. Then the nearest to the
  *  top card is the nearest in depth, and so on out. Once, on first use (the
@@ -905,9 +905,14 @@ function settled() {
   const ratio = 85.6 / 53.98;
   const tip = end();
   // Card shapes: across in the top card's widths, down in its heights.
+  // The visitor's card's height, in the top card's heights (the same share as
+  // its width), and the heading over it (two lines and its 2rem gap, about a
+  // third of a card's height), claimed too: no card lies under the heading.
+  const visitor = WAITING.w / MIDDLE.w;
   const still = [
     { u: 0, v: 0, claim: CLAIM.top },
     { u: tip.x, v: tip.y, claim: CLAIM.visitor },
+    { u: tip.x, v: tip.y - visitor / 2 - 0.25, claim: CLAIM.heading },
   ];
   const left = tip.x + ROOM.left;
   const right = ROOM.right;
@@ -1140,7 +1145,7 @@ const STAGE = 72;
  *  little above the pile's middle, lying over the pile's deepest cards (they are
  *  under the shimmer, it over), so it reads as the nearest card on the table.
  *  Taken up, the pile goes to lie where it lay: the two trade places. */
-const WAITING = { x: -34.5, y: -5, w: 27, rz: 0 } as const;
+const WAITING = { x: -34, y: -2, w: 29, rz: 0 } as const;
 
 /** Where the pile goes once the visitor's card is taken up: pushed back from
  *  the middle the visitor's card grows into, further right and a little down,
@@ -1256,6 +1261,18 @@ export function Stage({
             : "flex flex-col items-center gap-12 py-16 sm:py-20 lg:block lg:h-[50rem] lg:py-0",
         )}
       >
+        {/* The page's heading: what the card waiting under it is for, standing
+            over it, flush with its left edge. It gives way while the visitor
+            writes, and is only read aloud once the card is a profile. */}
+        <h1
+          className={cn(
+            "pointer-events-none text-[clamp(1.5rem,2.4vw,2.25rem)] leading-tight font-light tracking-[-0.02em] text-balance text-foreground/85 transition-opacity duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] max-lg:text-center lg:absolute lg:bottom-[calc(100%-var(--t)+var(--w)/3.172+2rem)] lg:left-[calc(var(--l)-var(--w)/2)] lg:z-20 lg:w-(--w)",
+            forming ? "sr-only" : writing && "opacity-0",
+          )}
+          style={at(WAITING)}
+        >
+          one link for every place you are online.
+        </h1>
         {!forming && (
           // In the middle at rest; once the visitor's card is taken up and
           // grows into the middle, pushed back where it lay (`PUSHED`), smaller

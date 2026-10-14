@@ -147,12 +147,10 @@ const NAME =
 
 /** What a card can be written on with: each field's own control, in the place
  *  and at the size the written field takes (the home's blank card, filled in).
- *  `head` stands where the mark and "e-id" do, across the head's left; a slot
- *  given as null is left empty (the address, when the head holds it). */
+ *  `head` stands where the address does, across the head's left. */
 export type CardSlots = {
   head?: React.ReactNode;
   name?: React.ReactNode;
-  address?: React.ReactNode;
   country?: React.ReactNode;
   flair?: React.ReactNode;
 };
@@ -183,12 +181,9 @@ export function IdCard({
         KNOCKOUT,
       )}
     >
-      {slots?.head ?? (
-        <span className="flex items-center gap-[1.5cqw] font-medium tracking-tight text-foreground/85">
-          <BrandMark className="h-[1cap] w-auto" />
-          e-id
-        </span>
-      )}
+      {/* The address heads the card, where the eye starts: it is what the card
+          is for, the blank card's and the finished one's alike. */}
+      {slots?.head ?? <CopyAddress username={holder.username} />}
       {slots?.country ?? (
         <span className="flex items-center gap-[1.5cqw] font-mono">
           {holder.country === "XX" ? "" : holder.country}
@@ -216,9 +211,6 @@ export function IdCard({
           {slots?.name ?? (
             <Name className={NAME}>{name}</Name>
           )}
-          {slots?.address === null
-            ? null
-            : (slots?.address ?? <CopyAddress username={holder.username} />)}
           {slots?.flair ?? <Flair places={places} />}
         </div>
       </div>

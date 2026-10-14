@@ -27,7 +27,6 @@ export async function Hero() {
     // back and given as its own padding): the bar's glass frosts the shimmer,
     // never a band of bare ground above it.
     <section data-slot="hero" className="relative isolate md:-mt-20 md:pt-20">
-      <h1 className="sr-only">your page at 👤.to</h1>
       <HeroShimmer />
       <div
         className={cn(
