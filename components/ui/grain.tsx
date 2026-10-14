@@ -285,14 +285,14 @@ vec3 parted(vec2 at) {
   if (d < 0.0 || d > band) return vec3(at, keep);
   // Away from the nearest edge: the distance's own slope.
   float e = 1.0;
-  vec2 out = normalize(vec2(
+  vec2 away = normalize(vec2(
     boxDistance(at + vec2(e, 0.0)) - boxDistance(at - vec2(e, 0.0)),
     boxDistance(at + vec2(0.0, e)) - boxDistance(at - vec2(0.0, e))
   ));
   float fall = 1.0 - d / band;
   // Read from nearer the edge, so the sparks seem pushed out by up to a
   // tenth of the band.
-  return vec3(at - out * band * 0.1 * fall * fall * uPartOpen, keep);
+  return vec3(at - away * band * 0.1 * fall * fall * uPartOpen, keep);
 }
 
 float hash(vec2 p) {
