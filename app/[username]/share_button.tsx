@@ -47,6 +47,14 @@ export default function ShareButton({ username }: { username: string }) {
           name="twitter/instagram bio"
           value={`https://${EMOJI_DOMAIN_PUNYCODE}/${username}`}
         />
+        {/* The card as a contact (lib/vcard): opened on a phone, it adds you. */}
+        <Row name="contact card" value={`${PROD_URL}/${username}.vcf`} />
+        {/* The card on your own site (app/embed.js): one script, one tag, the
+            card drawn there and lit by the hand. */}
+        <Row
+          name="on your website"
+          value={`<script type="module" src="${PROD_URL}/embed.js"></script><e-id-card handle="${username}"></e-id-card>`}
+        />
         <Link
           href="/about"
           className="px-3 py-2.5 font-mono text-[11px] text-foreground/55 hover:text-foreground"
