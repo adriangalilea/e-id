@@ -89,20 +89,19 @@ export function HeroShimmer() {
     <div
       data-slot="hero-shimmer"
       aria-hidden
-      // Nearer than the cards it lies over and further than the visitor's: a
-      // little out of focus (the cards behind it are by 2.6px and more), so it
-      // is of that depth, soft.
+      // Nearer than the cards it lies over and further than the visitor's: out
+      // of focus by a hair, so its sparks stay sparks.
       // While the visitor writes on their card (hero-cards, `data-writing`) it
       // steps back with the pile: out of focus and fainter, eased as the cards
       // move.
-      className="pointer-events-none absolute inset-0 z-[5] blur-[1px] transition-[filter,opacity] duration-[900ms] ease-[cubic-bezier(0.22,1,0.36,1)] [mask-composite:intersect] [mask-image:radial-gradient(ellipse_70%_80%_at_45%_45%,black_30%,transparent_100%),linear-gradient(to_bottom,black_55%,transparent)] [[data-slot=hero]:has([data-writing])_&]:opacity-40 [[data-slot=hero]:has([data-writing])_&]:blur-[3px] motion-reduce:transition-none"
+      className="pointer-events-none absolute inset-0 z-[5] blur-[0.4px] transition-[filter,opacity] duration-[900ms] ease-[cubic-bezier(0.22,1,0.36,1)] [mask-composite:intersect] [mask-image:radial-gradient(ellipse_70%_80%_at_45%_45%,black_30%,transparent_100%),linear-gradient(to_bottom,black_55%,transparent)] [[data-slot=hero]:has([data-writing])_&]:opacity-40 [[data-slot=hero]:has([data-writing])_&]:blur-[3px] motion-reduce:transition-none"
     >
       {/* Swaying as the cards it lies among float (hero-cards, `card-float`:
           ±0.4rem), so it moves as one of them. */}
       <PartedGrain
         look="shimmer"
-        strength={0.55}
-        density={0.35}
+        strength={0.75}
+        density={0.45}
         frost={0.01}
         sway={6}
       />
