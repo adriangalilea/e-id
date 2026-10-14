@@ -4,6 +4,7 @@ import { and, asc, desc, eq, isNotNull, ne, sql } from "drizzle-orm";
 import { cacheLife, cacheTag } from "next/cache";
 import { db } from "@/db";
 import { comments, socials, users, type SelectSocial } from "@/db/schema";
+import { SHOWCASE_EXAMPLES, type ShowcaseCard } from "@/lib/showcase-examples";
 import { getSocialUrl } from "@/lib/socials";
 import { USERS_TAG, profileTag, usernameTag } from "@/lib/tags";
 
@@ -189,20 +190,11 @@ const SHOWCASE = 10;
 const SHOWCASE_LEAD = "adriangalilea";
 
 /** The people whose cards the home shows: the lead card first, then the latest
- *  with a whole card to show (a photo, a name and a country), newest first.
- *  Expires with the sign-ups list. */
-export async function getShowcase(): Promise<
-  {
-    name: string;
-    username: string;
-    image: string;
-    country_code: string;
-    bio: string | null;
-    /** Their public places, in their order, each with the address that opens it:
-     *  the card's flair. */
-    places: { platform: SelectSocial["platform"]; url: string }[];
-  }[]
-> {
+ *  with a whole card to show (a photo, a name and a country), newest first,
+ *  and where too few have one yet, the pile filled with examples
+ *  (lib/showcase-examples), never in a real card's place. Expires with the
+ *  sign-ups list. */
+export async function getShowcase(): Promise<ShowcaseCard[]> {
   "use cache";
   cacheLife("max");
   cacheTag(USERS_TAG);
@@ -231,7 +223,7 @@ export async function getShowcase(): Promise<
     )
     .limit(SHOWCASE);
 
-  return Promise.all(
+  const real = await Promise.all(
     rows.map(async ({ id, name, username, image, ...row }) => {
       if (!name || !username || !image)
         throw new Error(
@@ -241,6 +233,7 @@ export async function getShowcase(): Promise<
       return { ...row, name, username, image, places };
     }),
   );
+  return [...real, ...SHOWCASE_EXAMPLES].slice(0, SHOWCASE);
 }
 
 /** Every username, the way it is shown: the profiles that exist. */
