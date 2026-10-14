@@ -1011,7 +1011,7 @@ function under(depth: number, float: number) {
     "--dx": `${dx.toFixed(2)}%`,
     "--dy": `${dy.toFixed(2)}%`,
     "--r": `${r.toFixed(2)}deg`,
-    "--fade": (0.35 + 0.07 * (depth - 1)).toFixed(2),
+    "--fade": (0.45 + 0.07 * (depth - 1)).toFixed(2),
     "--bl": `${(3.2 + 0.85 * (depth - 1)).toFixed(2)}px`,
     animationDuration: `${float}s`,
     animationDelay: `-${(float * depth) / UNDER.length}s`,
@@ -1108,6 +1108,15 @@ function Pile({ people, away }: { people: Holder[]; away: boolean }) {
                   heading="p"
                   holo="laminate"
                   className={FRONT}
+                />
+                {/* Faded into the page a little, as the cards under it are
+                    more; clear under the hand. */}
+                <div
+                  aria-hidden
+                  className={cn(
+                    CORNER,
+                    "pointer-events-none absolute inset-0 bg-background opacity-30 transition-opacity duration-1000 group-hover/card:opacity-0",
+                  )}
                 />
               </div>
             </div>
