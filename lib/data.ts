@@ -229,7 +229,7 @@ export async function getShowcase(): Promise<ShowcaseCard[]> {
           `showcase row for @${username} lacks what it was chosen for`,
         )
       const links = (await getPublicLinks(id)).map(cardLinkOf)
-      return { ...row, name, username, image, links }
+      return { ...row, name, username, image, links, href: `/${username}` }
     }),
   )
   return [...real, ...SHOWCASE_EXAMPLES].slice(0, SHOWCASE)

@@ -15,6 +15,9 @@ export type ShowcaseCard = {
   country_code: string
   bio: string | null
   links: CardLink[]
+  /** Where pressing the card goes: a real card's profile, an example's one
+   *  link (it has no profile). */
+  href: string
 }
 
 const example = (
@@ -23,20 +26,18 @@ const example = (
   image: string,
   country_code: string,
   wikipedia: string,
-): ShowcaseCard => ({
-  name,
-  username,
-  image: `/showcase/${image}`,
-  country_code,
-  bio: null,
-  links: [
-    {
-      platform: "link",
-      name: "Wikipedia",
-      url: `https://en.wikipedia.org/wiki/${wikipedia}`,
-    },
-  ],
-})
+): ShowcaseCard => {
+  const url = `https://en.wikipedia.org/wiki/${wikipedia}`
+  return {
+    name,
+    username,
+    image: `/showcase/${image}`,
+    country_code,
+    bio: null,
+    links: [{ platform: "link", name: "Wikipedia", url }],
+    href: url,
+  }
+}
 
 /** In the order they fill the pile. Portraits (Wikimedia Commons):
  *  Ada_Lovelace_daguerreotype_by_Antoine_Claudet_1843_-_cropped.png,

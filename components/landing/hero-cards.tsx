@@ -1,6 +1,14 @@
 "use client"
 
-import { ArrowLeft, CornerDownLeft, Plus, RotateCcw, X } from "lucide-react"
+import {
+  ArrowLeft,
+  ArrowUpRight,
+  CornerDownLeft,
+  Plus,
+  RotateCcw,
+  X,
+} from "lucide-react"
+import Link from "next/link"
 import { useRouter } from "next/navigation"
 import {
   createContext,
@@ -22,7 +30,7 @@ import {
   useHandleState,
   WRITTEN_HERE,
 } from "@/components/card-fields"
-import { CORNER, ID1, ON_CARD } from "@/components/card-shape"
+import { CORNER, ID1, ON_CARD, PRESS_HINT } from "@/components/card-shape"
 import { type Holder, IdCard } from "@/components/id-card"
 import { SubjectLight } from "@/components/light"
 import { PROFILE } from "@/components/profile-layout"
@@ -150,28 +158,45 @@ export function YourCard() {
     >
       <Claim />
       {chip?.u ? (
-        <Suspense
-          fallback={
-            <IdCard
-              heading="p"
-              holo="laminate"
-              className={FRONT}
-              holder={{
-                name: null,
-                username: chip.u,
-                image: chip.i,
-                country: "XX",
-                bio: null,
-              }}
-            />
-          }
-        >
-          <HoloLean pose="flat" className="max-lg:[transform:none]">
-            <div className={IDLE}>
-              <OwnCard username={chip.u} />
-            </div>
-          </HoloLean>
-        </Suspense>
+        <>
+          <Suspense
+            fallback={
+              <IdCard
+                heading="p"
+                holo="laminate"
+                className={FRONT}
+                holder={{
+                  name: null,
+                  username: chip.u,
+                  image: chip.i,
+                  country: "XX",
+                  bio: null,
+                }}
+              />
+            }
+          >
+            <HoloLean pose="flat" className="max-lg:[transform:none]">
+              <div className={IDLE}>
+                <OwnCard username={chip.u} />
+              </div>
+            </HoloLean>
+          </Suspense>
+          {/* Theirs, waiting by the pile: one press to their profile, where
+              pressing it again takes it up to edit (components/profile-card). */}
+          <Link
+            href={`/${chip.u}`}
+            aria-label="your page"
+            className={cn(
+              CORNER,
+              "group/press absolute inset-0 z-10 cursor-pointer outline-offset-4",
+            )}
+          >
+            <span aria-hidden className={PRESS_HINT}>
+              <ArrowUpRight strokeWidth={1.5} />
+              your page
+            </span>
+          </Link>
+        </>
       ) : (
         <>
           {/* Leaning to the hand as a profile's card does (user_profile), by
@@ -923,14 +948,40 @@ function under(depth: number, float: number) {
 const PICKED =
   "relative transition-[transform,box-shadow] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/card:shadow-[0_2rem_3.5rem_-0.75rem_rgb(0_0_0/0.7)] group-hover/card:[transform:perspective(1200px)_translateZ(2rem)_rotateY(calc((var(--px,0.5)-0.5)*18deg))_rotateX(calc((var(--py,0.5)-0.5)*-14deg))] motion-reduce:transition-none motion-reduce:group-hover/card:[transform:none]"
 
+/** A card on the home and where pressing it goes (lib/data, `getShowcase`): a
+ *  person's profile, or an example's one link. */
+export type Shown = { holder: Holder; href: string }
+
+/** What a card's press is called, read aloud: whose card it is. */
+const pressLabel = (holder: Holder) =>
+  `${holder.name ?? holder.username}'s card`
+
+/** A card on the home is one press, its whole face: it opens where it says
+ *  (`Shown`), a profile in the site, an example's page in a new tab. Laid over
+ *  the card, so nothing on its face (the address, the links) takes the press
+ *  instead: on the home a card is shown, not used. */
+function CardPress({ href, label }: { href: string; label: string }) {
+  const className = cn(CORNER, "absolute inset-0 z-10 cursor-pointer")
+  const named = <span className="sr-only">{label}</span>
+  return href.startsWith("/") ? (
+    <Link href={href} className={className}>
+      {named}
+    </Link>
+  ) : (
+    <a href={href} target="_blank" rel="noreferrer" className={className}>
+      {named}
+    </a>
+  )
+}
+
 /** Real e-id cards in one pile, the maker's on top and then the newest whole ones
  *  (a photo, a name, a country): the top one flat on the table as the rest are,
  *  the rest under it, all of them under the hero's shimmer (components/light,
  *  z-[5]), only the visitor's card over it. Each card answers the hand alone,
  *  with a light of its own: a hand on one moves nothing else, and parts the
- *  shimmer round it (`PICKED`). `away`, the pile set back while
- *  the visitor writes. What a card is, shown whole. */
-function Pile({ people, away }: { people: Holder[]; away: boolean }) {
+ *  shimmer round it (`PICKED`); pressed, it opens (`CardPress`). `away`, the
+ *  pile set back while the visitor writes. What a card is, shown whole. */
+function Pile({ people, away }: { people: Shown[]; away: boolean }) {
   const [top, ...rest] = people
   if (!top) throw new Error("the home's pile has nobody to show")
   return (
@@ -940,9 +991,9 @@ function Pile({ people, away }: { people: Holder[]; away: boolean }) {
     // had no height in that first paint and every card jumped from the middle.
     <div className={cn(ID1, "relative w-full")}>
       {rest
-        .map((holder, i) => ({ holder, depth: i + 1 }))
+        .map((shown, i) => ({ ...shown, depth: i + 1 }))
         .reverse()
-        .map(({ holder, depth }) => (
+        .map(({ holder, href, depth }) => (
           <div
             key={holder.username}
             // Its middle placed from the top card's by left and top (shares of
@@ -971,6 +1022,7 @@ function Pile({ people, away }: { people: Holder[]; away: boolean }) {
                     `pointer-events-none absolute inset-0 bg-background opacity-(--fade) transition-opacity duration-1000 group-hover/card:opacity-0`,
                   )}
                 />
+                <CardPress href={href} label={pressLabel(holder)} />
               </ShimmerLift>
             </HoloLight>
           </div>
@@ -991,7 +1043,7 @@ function Pile({ people, away }: { people: Holder[]; away: boolean }) {
             <div className="group/card blur-[3.2px] transition-[filter] duration-1000 ease-[cubic-bezier(0.22,1,0.36,1)] hover:blur-none motion-reduce:transition-none">
               <ShimmerLift className={cn(CORNER, PICKED)}>
                 <IdCard
-                  holder={top}
+                  holder={top.holder}
                   heading="p"
                   holo="laminate"
                   className={FRONT}
@@ -1005,6 +1057,7 @@ function Pile({ people, away }: { people: Holder[]; away: boolean }) {
                     `pointer-events-none absolute inset-0 bg-background opacity-30 transition-opacity duration-1000 group-hover/card:opacity-0`,
                   )}
                 />
+                <CardPress href={top.href} label={pressLabel(top.holder)} />
               </ShimmerLift>
             </div>
           </HoloLight>
@@ -1087,15 +1140,16 @@ const PILED = cn(
  *  stage IS the profile page's layout (the golden split,
  *  app/[username]/user_profile): the card held in the left column, the links
  *  it makes on the right (`Preview`), the pile gone. The card moves there as one
- *  thing (a view transition, `shape`), never a jump. A visitor with an account
- *  has their own card in the middle from the start. Under reduced motion nothing
- *  moves. On one column, the pile, then their card under it. */
+ *  thing (a view transition, `shape`), never a jump. A visitor with an address
+ *  has their own card waiting there instead of the blank one, pressed to open
+ *  their profile. Under reduced motion nothing moves. On one column, the pile,
+ *  then their card under it. */
 export function Stage({
   people,
   preview,
   children,
 }: {
-  people: Holder[]
+  people: Shown[]
   /** the profile the card makes, beside it once it forms */
   preview: React.ReactNode
   /** what the visitor holds: their card */
@@ -1105,7 +1159,10 @@ export function Stage({
   const draft = useDraft()
   const forming = useForming()
   const [asked, setAsked] = useState(false)
-  const writing = Boolean(own) || asked || !isBlank(draft)
+  // A visitor with an address has nothing to write: their card waits where the
+  // blank one does, the stage as everyone sees it. Only a card being filled in,
+  // or one taken up to be, sets the pile back.
+  const writing = asked || (!own && !isBlank(draft))
   // Taken up and still blank, it goes back where it waited on Esc or a press
   // anywhere off it: nothing written is ever put down. A popup open on it (the
   // country picker, a link) takes its own Esc and presses first.
@@ -1135,9 +1192,9 @@ export function Stage({
       document.removeEventListener("pointerdown", press, true)
     }
   }, [putBack])
-  const pile = people
-    .filter((holder) => holder.username !== own)
-    .slice(0, UNDER.length + 1)
+  // Everyone's, theirs too: a visitor's own card may lie in the pile and wait
+  // beside it at once.
+  const pile = people.slice(0, UNDER.length + 1)
   return (
     <Writing
       value={{

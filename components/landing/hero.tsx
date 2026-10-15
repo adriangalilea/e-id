@@ -1,9 +1,8 @@
 import { GUTTER } from "@/components/frame"
-import type { Holder } from "@/components/id-card"
 import { HeroShimmer } from "@/components/light"
 import { getShowcase } from "@/lib/data"
 import { cn } from "@/lib/utils"
-import { Preview, Stage, YourCard } from "./hero-cards"
+import { Preview, type Shown, Stage, YourCard } from "./hero-cards"
 
 /** The landing's first screen, and nothing on it but cards: in the middle real
  *  ones, stacked, which is how one looks; by them the visitor's own, blank, to
@@ -11,13 +10,16 @@ import { Preview, Stage, YourCard } from "./hero-cards"
  *  `YourCard`). The middle stands in the light, the shimmer behind everything. */
 export async function Hero() {
   const people = (await getShowcase()).map(
-    (p): Holder => ({
-      name: p.name,
-      username: p.username,
-      image: p.image,
-      country: p.country_code,
-      bio: p.bio,
-      links: p.links,
+    (p): Shown => ({
+      holder: {
+        name: p.name,
+        username: p.username,
+        image: p.image,
+        country: p.country_code,
+        bio: p.bio,
+        links: p.links,
+      },
+      href: p.href,
     }),
   )
   return (

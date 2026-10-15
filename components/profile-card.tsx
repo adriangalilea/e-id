@@ -4,7 +4,7 @@ import { Pen } from "lucide-react"
 import { createContext, use, useRef, useState } from "react"
 import { flushSync } from "react-dom"
 import type { CardEditor } from "@/components/card-editor"
-import { CORNER } from "@/components/card-shape"
+import { CORNER, PRESS_HINT } from "@/components/card-shape"
 import { type Holder, IdCard } from "@/components/id-card"
 import { SubjectLight } from "@/components/light"
 import { useChip } from "@/components/session/use-chip"
@@ -115,13 +115,10 @@ export function ProfileCard({
             onFocus={() => void load()}
             className={cn(
               CORNER,
-              "group/edit absolute inset-0 z-10 cursor-pointer outline-offset-4",
+              "group/press absolute inset-0 z-10 cursor-pointer outline-offset-4",
             )}
           >
-            <span
-              aria-hidden
-              className="absolute right-3 bottom-3 flex items-center gap-1.5 rounded-full bg-background/70 px-3 py-1.5 text-foreground/85 text-sm opacity-0 backdrop-blur-md transition-opacity group-hover/edit:opacity-100 group-focus-visible/edit:opacity-100 [&_svg]:size-3.5"
-            >
+            <span aria-hidden className={PRESS_HINT}>
               <Pen strokeWidth={1.5} />
               {opening ? "opening" : "edit"}
             </span>
