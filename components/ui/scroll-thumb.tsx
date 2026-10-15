@@ -404,7 +404,7 @@ function Thumb({
                 // A pill as thick as the thumb: its radius half of 6 px, of 8 under
                 // the hand.
                 "[--glass-radius:3px] group-hover/thumb:[--glass-radius:4px] group-data-held/thumb:[--glass-radius:4px]",
-                "[--glass-change-duration:150ms] [--glass-moves:width_150ms,height_150ms] [--glass-tint:rgb(255_255_255/0.4)] scheme-dark:[--glass-tint:rgb(255_255_255/0.3)] group-hover/thumb:[--glass-rim:1.8]! group-data-held/thumb:[--glass-rim:1.8]!",
+                "[--glass-moves:width_150ms,height_150ms] [--glass-change-duration:150ms] [--glass-tint:rgb(255_255_255/0.4)] scheme-dark:[--glass-tint:rgb(255_255_255/0.3)] group-hover/thumb:[--glass-rim:1.8]! group-data-held/thumb:[--glass-rim:1.8]!",
               ]
             : "rounded-full bg-foreground/35 transition-[width,height,background-color] duration-150 group-hover/thumb:bg-foreground/55 group-data-held/thumb:bg-foreground/55 motion-reduce:transition-none",
           y
