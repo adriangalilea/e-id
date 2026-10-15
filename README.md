@@ -28,6 +28,7 @@ Built with Next.js, better-auth, and Drizzle on Turso. The interface comes from 
 - [ ] an optional status line on the profile and its share image
 - [ ] a write API for the card (`card.json` is the read one), on the same API keys
 - [ ] passkeys (better-auth has them)
+- [ ] deleting your account: there is no way to yet (better-auth's `deleteUser` is off). When it comes, its visits go with it already (`forgetPerson`, in auth.ts's user delete hook).
 - [ ] live activity: a feed (RSS or Atom), a YouTube channel (each has a feed), Bluesky, GitHub, mixed into the latest of what you made, on your page
 
 ### Premium
