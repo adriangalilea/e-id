@@ -20,7 +20,7 @@ export type LinkShotsMeta = { handle: string }
 
 /** The home's lead: kept here, where the captures are made, and checked by the
  *  home against its own lead (a lead changed since shows their card alone). */
-const LEAD = "adriangalilea"
+const LEAD = "adrian"
 
 export default async function plan(): Promise<CapturePlan<LinkShotsMeta>> {
   const site = process.env.CAPTURE_SITE ?? "https://e-id.to"
