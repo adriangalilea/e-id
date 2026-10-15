@@ -78,12 +78,13 @@ export function SubjectLight() {
  *  surface carried onto the profile, faint enough to stay behind the card. */
 export const PROFILE_SHIMMER = 0.45;
 
-/** THE PROFILE'S SHIMMER: the hero's surface of facets (@ag/grain) behind the
- *  profile's card, so a profile stands in the same light as the home it came
- *  from. Placed inside the subject's box (positioned) like `SubjectLight`,
- *  spreading well past it and fading to nothing in an ellipse, so it has no
- *  edge; fainter than the hero's (`strength`, `PROFILE_SHIMMER` unless a sweep
- *  says otherwise). It takes no pointer. */
+/** THE PROFILE'S SHIMMER: the hero's surface of facets (@ag/grain) across the
+ *  whole profile, its card and its links alike, so a profile stands in the same
+ *  light as the home it came from; the glass of its panels carries it, blurred.
+ *  Fixed to the window over the page's ground (`PageLight`, under it) and under
+ *  everything on the page, so it is behind whatever is scrolled into view;
+ *  fading out toward the window's edges, so it has none of its own. Fainter
+ *  than the hero's (`strength`). It takes no pointer. */
 export function ProfileShimmer({
   strength = PROFILE_SHIMMER,
 }: {
@@ -93,7 +94,7 @@ export function ProfileShimmer({
     <div
       data-slot="profile-shimmer"
       aria-hidden
-      className="pointer-events-none absolute top-1/2 left-1/2 -z-10 h-[180%] w-[200%] -translate-x-1/2 -translate-y-1/2 blur-[0.4px] [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,black_25%,transparent_100%)]"
+      className="pointer-events-none fixed inset-0 -z-10 blur-[0.4px] [mask-image:radial-gradient(ellipse_75%_70%_at_50%_45%,black_35%,transparent_100%)]"
     >
       <Grain
         look="shimmer"

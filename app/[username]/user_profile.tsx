@@ -5,6 +5,7 @@ import { MaterialProvider } from "@/components/ui/material";
 import { cn } from "@/lib/utils";
 import { SaveContact } from "@/components/save-contact";
 import { ProfileCard } from "@/components/profile-card";
+import { ProfileShimmer } from "@/components/light";
 import type { SelectLink } from "@/db/schema";
 import type { Profile } from "@/lib/data";
 import type { Presence } from "@/lib/presence";
@@ -115,6 +116,7 @@ export default function UserProfile({
 }: ProfileProps) {
   return (
     <div className={cn(PROFILE.grid, "animate-fade-in")}>
+      <ProfileShimmer />
       <Side
         user={user}
         // Each mark carries who they are there, its compact profile on hover.
