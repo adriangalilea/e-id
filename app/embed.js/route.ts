@@ -251,7 +251,12 @@ export function GET() {
     headers: {
       "content-type": "text/javascript; charset=utf-8",
       "access-control-allow-origin": "*",
-      "cache-control": "public, max-age=3600, stale-while-revalidate=86400",
+      // Kept an hour where it is served for real; never in development, where
+      // a script kept from before an edit drew the old card in its place.
+      "cache-control":
+        process.env.NODE_ENV === "production"
+          ? "public, max-age=3600, stale-while-revalidate=86400"
+          : "no-store",
     },
   });
 }
