@@ -224,6 +224,7 @@ export function IdCard({
   heading = "h1",
   holo,
   slots,
+  press,
   className,
 }: {
   holder: Holder
@@ -233,6 +234,12 @@ export function IdCard({
   holo?: HoloPrint
   /** Fields to write in, instead of the holder's written ones. */
   slots?: CardSlots
+  /** What pressing the card does where it is shown away from its profile (the
+   *  home's pile, a list): a link (or button) laid over its whole face, drawn
+   *  inside the card under what the card itself does, so its own controls (a
+   *  link's mark and who they are there, the address's copy, the save) still
+   *  answer the hand and anywhere else opens the press. `PRESS`, its class. */
+  press?: React.ReactNode
   className?: string
 }) {
   const Name = heading
@@ -301,6 +308,10 @@ export function IdCard({
         className={cn(
           ID1,
           "flex w-full flex-col justify-between overflow-hidden p-(--card-pad) [--glass-blur:var(--id-card-blur,9px)] [--glass-radius:var(--id1-radius)] [--glass-thickness:var(--id-card-thickness,0.3)]",
+          // Pressed through: what is written on it lets the press under it take
+          // the hand, all but what it does itself.
+          press &&
+            "[&>*]:pointer-events-none [&_a]:pointer-events-auto [&_button]:pointer-events-auto",
         )}
         style={
           {
@@ -332,6 +343,8 @@ export function IdCard({
             card turns. The seal bites the photo's corner, where a real one sits
             so the photo cannot be swapped (`SEAL`). */}
         {holo && <Holo print={holo} seal={SEAL} emblem={MARK_EMBLEM} />}
+        {/* Under what is written (positioned after it, so it paints over). */}
+        {press}
         {body}
         {/* The card's own action, the save, in its foot's corner: on the
             padding, its edges on the card's inner margin, as the flag's are at

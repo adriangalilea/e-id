@@ -159,25 +159,30 @@ export function YourCard() {
           >
             <HoloLean pose="flat" className="max-lg:[transform:none]">
               <div className={IDLE}>
-                <OwnCard username={chip.u} />
+                <OwnCard
+                  username={chip.u}
+                  // Theirs, waiting by the pile: one press to their profile,
+                  // where pressing it again takes it up to edit
+                  // (components/profile-card); its links still their own.
+                  press={
+                    <Link
+                      href={`/${chip.u}`}
+                      aria-label="your page"
+                      className={cn(
+                        CORNER,
+                        "group/press absolute inset-0 cursor-pointer outline-offset-4",
+                      )}
+                    >
+                      <span aria-hidden className={PRESS_HINT}>
+                        <ArrowUpRight strokeWidth={1.5} />
+                        your page
+                      </span>
+                    </Link>
+                  }
+                />
               </div>
             </HoloLean>
           </Suspense>
-          {/* Theirs, waiting by the pile: one press to their profile, where
-              pressing it again takes it up to edit (components/profile-card). */}
-          <Link
-            href={`/${chip.u}`}
-            aria-label="your page"
-            className={cn(
-              CORNER,
-              "group/press absolute inset-0 z-10 cursor-pointer outline-offset-4",
-            )}
-          >
-            <span aria-hidden className={PRESS_HINT}>
-              <ArrowUpRight strokeWidth={1.5} />
-              your page
-            </span>
-          </Link>
         </>
       ) : (
         <>
@@ -525,13 +530,20 @@ function cardHolder(username: string): Promise<Holder> {
   return holder
 }
 
-function OwnCard({ username }: { username: string }) {
+function OwnCard({
+  username,
+  press,
+}: {
+  username: string
+  press: React.ReactNode
+}) {
   return (
     <IdCard
       heading="p"
       holo="laminate"
       className={FRONT}
       holder={use(cardHolder(username))}
+      press={press}
     />
   )
 }
@@ -803,12 +815,12 @@ export type Shown = { holder: Holder; href: string }
 const pressLabel = (holder: Holder) =>
   `${holder.name ?? holder.username}'s card`
 
-/** A card on the home is one press, its whole face: it opens where it says
- *  (`Shown`), a profile in the site, an example's page in a new tab. Laid over
- *  the card, so nothing on its face (the address, the links) takes the press
- *  instead: on the home a card is shown, not used. */
+/** A card on the home is one press, its face: it opens where it says (`Shown`),
+ *  a profile in the site, an example's page in a new tab. Inside the card, under
+ *  what it does itself (id-card, `press`): a link's mark still opens that link
+ *  and shows who they are there, the address still copies. */
 function CardPress({ href, label }: { href: string; label: string }) {
-  const className = cn(CORNER, "absolute inset-0 z-10 cursor-pointer")
+  const className = cn(CORNER, "absolute inset-0 cursor-pointer")
   const named = <span className="sr-only">{label}</span>
   return href.startsWith("/") ? (
     <Link href={href} className={className}>
@@ -861,6 +873,7 @@ function Pile({ people, away }: { people: Shown[]; away: boolean }) {
                   heading="p"
                   holo="laminate"
                   className={SOLID}
+                  press={<CardPress href={href} label={pressLabel(holder)} />}
                 />
                 <div
                   aria-hidden
@@ -869,7 +882,6 @@ function Pile({ people, away }: { people: Shown[]; away: boolean }) {
                     `pointer-events-none absolute inset-0 bg-background opacity-(--fade) transition-opacity duration-1000 group-hover/card:opacity-0`,
                   )}
                 />
-                <CardPress href={href} label={pressLabel(holder)} />
               </ShimmerLift>
             </HoloLight>
           </div>
@@ -894,6 +906,9 @@ function Pile({ people, away }: { people: Shown[]; away: boolean }) {
                   heading="p"
                   holo="laminate"
                   className={FRONT}
+                  press={
+                    <CardPress href={top.href} label={pressLabel(top.holder)} />
+                  }
                 />
                 {/* Faded into the page a little, as the cards under it are
                     more; clear under the hand. */}
@@ -904,7 +919,6 @@ function Pile({ people, away }: { people: Shown[]; away: boolean }) {
                     `pointer-events-none absolute inset-0 bg-background opacity-30 transition-opacity duration-1000 group-hover/card:opacity-0`,
                   )}
                 />
-                <CardPress href={top.href} label={pressLabel(top.holder)} />
               </ShimmerLift>
             </div>
           </HoloLight>
