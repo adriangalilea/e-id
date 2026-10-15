@@ -41,6 +41,8 @@ import { cn } from "@/lib/utils";
 export type StoryAct = {
   /** What the act is about, at a glance, beside its name in the acts' bar. */
   Icon: LucideIcon;
+  /** Its name in the acts' bar: the thing itself, never the headline's word. */
+  name: string;
   lead: string;
   rest: string;
   body?: React.ReactNode;
@@ -198,9 +200,15 @@ function useStory({
         typed,
       },
       acts: [
-        { Icon: RouteIcon, lead: "one link", rest: "to route them all" },
+        {
+          Icon: RouteIcon,
+          name: "one link",
+          lead: "one link",
+          rest: "to route them all",
+        },
         {
           Icon: Contact,
+          name: "vCard",
           lead: "easy",
           rest: "to save",
           body: "Your e-ID generates a vCard so people can save you as a contact.",
@@ -208,11 +216,12 @@ function useStory({
         },
         {
           Icon: Braces,
+          name: "for programs",
           lead: "for programs",
           rest: "too",
           body: "just add /json to any profile",
         },
-        { Icon: Code, lead: "embed", rest: "on your website" },
+        { Icon: Code, name: "embed", lead: "embed", rest: "on your website" },
       ] satisfies StoryAct[],
     };
   }, [username, profile, landings, contact, data, embed]);
@@ -466,9 +475,9 @@ function Acts({
         onValueChange={(v) => onPick(Number(v))}
       >
         {acts.map((act, i) => (
-          <ToggleGroupItem key={act.lead} value={String(i)}>
+          <ToggleGroupItem key={act.name} value={String(i)}>
             <act.Icon />
-            {act.lead}
+            {act.name}
           </ToggleGroupItem>
         ))}
       </ToggleGroup>
