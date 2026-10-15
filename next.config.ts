@@ -14,6 +14,9 @@ const host = (...domains: string[]) =>
 // in Vercel's router, before any function and before the cache.
 const SAFARI = ".*Version/.*Safari.*"
 const NOT_SAFARI = ".*(?:Chrome|CriOS).*"
+/** A command-line client: answered with the card as text, on whichever domain it
+ *  asked, since it does not follow a redirect unless told to (`curl -L`). */
+const CLI = "(?:curl|Wget|HTTPie|xh)/.*"
 
 const nextConfig: NextConfig = {
   cacheComponents: true,
@@ -83,6 +86,18 @@ const nextConfig: NextConfig = {
           source: "/:username([A-Za-z0-9_-]+)/json",
           destination: "/:username/card.json",
         },
+        // The card as text for a terminal (lib/card-text): at `/txt`, and at the
+        // address itself for a command-line client, which asks for `*/*` and
+        // is told by its name alone.
+        {
+          source: "/:username([A-Za-z0-9_-]+)/txt",
+          destination: "/:username/card.txt",
+        },
+        {
+          source: "/:username([A-Za-z0-9_-]+)",
+          has: [{ type: "header", key: "user-agent", value: CLI }],
+          destination: "/:username/card.txt",
+        },
         {
           source: "/:username([A-Za-z0-9_-]+)",
           has: [
@@ -117,7 +132,10 @@ const nextConfig: NextConfig = {
         has: [
           { type: "host", value: host(SHORT_DOMAIN, EMOJI_DOMAIN_PUNYCODE) },
         ],
-        missing: [{ type: "header", key: "user-agent", value: SAFARI }],
+        missing: [
+          { type: "header", key: "user-agent", value: SAFARI },
+          { type: "header", key: "user-agent", value: CLI },
+        ],
         destination: `https://${MAIN_DOMAIN}/:path`,
         permanent: true,
       },
