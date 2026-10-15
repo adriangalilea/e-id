@@ -91,13 +91,10 @@ function carried(change: () => void) {
 
 export function ProfileCard({
   holder,
-  save,
   children,
 }: {
   holder: Holder;
-  /** The card's own save, on its photo (`IdCard`'s `save`). */
-  save?: React.ReactNode;
-  /** What stands under the card (the bio, save contact, the owner's actions). */
+  /** What stands under the card (the bio, the owner's actions). */
   children: React.ReactNode;
 }) {
   const chip = useChip();
@@ -141,7 +138,6 @@ export function ProfileCard({
           <IdCard
             holder={holder}
             holo="laminate"
-            save={save}
             className="[--id-card-thickness:1]"
           />
         </HoloLean>

@@ -1,6 +1,7 @@
 import { BrandMark } from "@/components/brand";
 import { ON_CARD } from "@/components/card-shape";
 import { CopyAddress } from "@/components/copy-address";
+import { CardSave } from "@/components/save-contact";
 import { CountryFlag } from "@/components/country";
 import { FoilEdge, Holo } from "@/components/ui/holo";
 import {
@@ -209,13 +210,9 @@ export function IdCard({
   heading = "h1",
   holo,
   slots,
-  save,
   className,
 }: {
   holder: Holder;
-  /** The card saved as a contact (`CardSave`), on its photo: for a card that is
-   *  someone's, shown where it can be kept. */
-  save?: React.ReactNode;
   /** The name's element: the profile's h1, a sample's p. */
   heading?: "h1" | "p";
   /** The security print (`Hologram`), for a card someone can turn. */
@@ -225,6 +222,9 @@ export function IdCard({
   className?: string;
 }) {
   const Name = heading;
+  // Every card that is someone's carries its save (`CardSave`): one with a
+  // handle, not being written (`slots`, the blank card filled in).
+  const saves = Boolean(holder.username) && !slots;
   const name = holder.name || `@${holder.username}`;
   // On one line whenever it can be (lib/name-fit): the column beside the photo.
   const fit = nameFit(name, NAME_COLUMN, CARD_LAYOUT.name);
@@ -326,9 +326,9 @@ export function IdCard({
         {/* The card's own action, the save, in its foot's corner: on the
             padding, its edges on the card's inner margin, as the flag's are at
             its head. */}
-        {save && (
+        {saves && (
           <div className="absolute right-(--card-pad) bottom-(--card-pad) z-20">
-            {save}
+            <CardSave username={holder.username} />
           </div>
         )}
         <FoilEdge />

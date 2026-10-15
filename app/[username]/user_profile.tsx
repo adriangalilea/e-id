@@ -3,7 +3,6 @@ import type { HolderLink } from "@/components/id-card";
 import { cardLinkOf } from "@/lib/data";
 import { MaterialProvider } from "@/components/ui/material";
 import { cn } from "@/lib/utils";
-import { CardSave } from "@/components/save-contact";
 import { ProfileCard } from "@/components/profile-card";
 import { ProfileShimmer } from "@/components/light";
 import type { SelectLink } from "@/db/schema";
@@ -34,9 +33,6 @@ function Identity({
           bio: user.bio,
           links,
         }}
-        // For whoever is looking: this card as a contact (lib/vcard), their
-        // photo, name, address and every link, saved on a phone in one tap.
-        save={<CardSave username={user.username} />}
       >
         {user.bio && (
           <p className="px-1 text-[17px] leading-relaxed font-light text-pretty text-foreground/80">
