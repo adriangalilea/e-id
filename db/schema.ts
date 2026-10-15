@@ -4,6 +4,7 @@ import {
   integer,
   sqliteTable,
   index,
+  uniqueIndex,
 } from "drizzle-orm/sqlite-core";
 
 // USER TABLE - better-auth core + custom fields
@@ -13,7 +14,9 @@ export const users = sqliteTable(
     // better-auth core fields
     id: text("id").notNull().primaryKey(),
     name: text("name"),
-    email: text("email").notNull(),
+    // One person per email: better-auth finds a returning user by it to link
+    // another provider to them.
+    email: text("email").notNull().unique(),
     emailVerified: integer("emailVerified", { mode: "boolean" }),
     image: text("image"),
     createdAt: integer("createdAt", { mode: "timestamp" })
@@ -42,62 +45,87 @@ export const users = sqliteTable(
   },
 );
 
-// SESSION TABLE - better-auth exact schema
-export const sessions = sqliteTable("session", {
-  id: text("id").notNull().primaryKey(),
-  token: text("token").notNull().unique(),
-  expiresAt: integer("expiresAt", { mode: "timestamp" }).notNull(),
-  userId: text("userId")
-    .notNull()
-    .references(() => users.id, { onDelete: "cascade" }),
-  ipAddress: text("ipAddress"),
-  userAgent: text("userAgent"),
-  createdAt: integer("createdAt", { mode: "timestamp" })
-    .default(sql`(unixepoch())`)
-    .notNull(),
-  updatedAt: integer("updatedAt", { mode: "timestamp" })
-    .default(sql`(unixepoch())`)
-    .notNull(),
-});
+// SESSION TABLE - better-auth exact schema, indexed by its user (better-auth
+// lists and revokes a user's sessions by it).
+export const sessions = sqliteTable(
+  "session",
+  {
+    id: text("id").notNull().primaryKey(),
+    token: text("token").notNull().unique(),
+    expiresAt: integer("expiresAt", { mode: "timestamp" }).notNull(),
+    userId: text("userId")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    ipAddress: text("ipAddress"),
+    userAgent: text("userAgent"),
+    createdAt: integer("createdAt", { mode: "timestamp" })
+      .default(sql`(unixepoch())`)
+      .notNull(),
+    updatedAt: integer("updatedAt", { mode: "timestamp" })
+      .default(sql`(unixepoch())`)
+      .notNull(),
+  },
+  (table) => ({ userIdx: index("session_user_idx").on(table.userId) }),
+);
 
-// ACCOUNT TABLE - better-auth exact schema
-export const accounts = sqliteTable("account", {
-  id: text("id").notNull().primaryKey(),
-  userId: text("userId")
-    .notNull()
-    .references(() => users.id, { onDelete: "cascade" }),
-  accountId: text("accountId").notNull(),
-  providerId: text("providerId").notNull(),
-  accessToken: text("accessToken"),
-  refreshToken: text("refreshToken"),
-  accessTokenExpiresAt: integer("accessTokenExpiresAt", { mode: "timestamp" }),
-  refreshTokenExpiresAt: integer("refreshTokenExpiresAt", {
-    mode: "timestamp",
+// ACCOUNT TABLE - better-auth exact schema. A provider's account belongs to one
+// user (unique on provider and its id): signing in finds it by those two.
+export const accounts = sqliteTable(
+  "account",
+  {
+    id: text("id").notNull().primaryKey(),
+    userId: text("userId")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    accountId: text("accountId").notNull(),
+    providerId: text("providerId").notNull(),
+    accessToken: text("accessToken"),
+    refreshToken: text("refreshToken"),
+    accessTokenExpiresAt: integer("accessTokenExpiresAt", {
+      mode: "timestamp",
+    }),
+    refreshTokenExpiresAt: integer("refreshTokenExpiresAt", {
+      mode: "timestamp",
+    }),
+    scope: text("scope"),
+    idToken: text("idToken"),
+    password: text("password"),
+    createdAt: integer("createdAt", { mode: "timestamp" })
+      .default(sql`(unixepoch())`)
+      .notNull(),
+    updatedAt: integer("updatedAt", { mode: "timestamp" })
+      .default(sql`(unixepoch())`)
+      .notNull(),
+  },
+  (table) => ({
+    providerAccountIdx: uniqueIndex("account_provider_account_idx").on(
+      table.providerId,
+      table.accountId,
+    ),
+    userIdx: index("account_user_idx").on(table.userId),
   }),
-  scope: text("scope"),
-  idToken: text("idToken"),
-  password: text("password"),
-  createdAt: integer("createdAt", { mode: "timestamp" })
-    .default(sql`(unixepoch())`)
-    .notNull(),
-  updatedAt: integer("updatedAt", { mode: "timestamp" })
-    .default(sql`(unixepoch())`)
-    .notNull(),
-});
+);
 
-// VERIFICATION TABLE - better-auth exact schema
-export const verification = sqliteTable("verification", {
-  id: text("id").notNull().primaryKey(),
-  identifier: text("identifier").notNull(),
-  value: text("value").notNull(),
-  expiresAt: integer("expiresAt", { mode: "timestamp" }).notNull(),
-  createdAt: integer("createdAt", { mode: "timestamp" })
-    .default(sql`(unixepoch())`)
-    .notNull(),
-  updatedAt: integer("updatedAt", { mode: "timestamp" })
-    .default(sql`(unixepoch())`)
-    .notNull(),
-});
+// VERIFICATION TABLE - better-auth exact schema, looked up by identifier (an
+// OAuth sign-in's state).
+export const verification = sqliteTable(
+  "verification",
+  {
+    id: text("id").notNull().primaryKey(),
+    identifier: text("identifier").notNull(),
+    value: text("value").notNull(),
+    expiresAt: integer("expiresAt", { mode: "timestamp" }).notNull(),
+    createdAt: integer("createdAt", { mode: "timestamp" })
+      .default(sql`(unixepoch())`)
+      .notNull(),
+    updatedAt: integer("updatedAt", { mode: "timestamp" })
+      .default(sql`(unixepoch())`)
+      .notNull(),
+  },
+  (table) => ({
+    identifierIdx: index("verification_identifier_idx").on(table.identifier),
+  }),
+);
 
 // CUSTOM TABLES (not part of better-auth)
 

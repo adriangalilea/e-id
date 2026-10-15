@@ -111,10 +111,14 @@ export async function createComment(
   if (!body) return { ...prevState, error: "Comment can't be empty" };
 
   const [profile] = await db
-    .select({ id: users.id })
+    .select({ id: users.id, allowComments: users.allow_comments })
     .from(users)
     .where(eq(users.id, profileUserId));
   if (!profile) return { ...prevState, error: "That profile does not exist." };
+  // The form is only drawn where comments are open, but an action is an
+  // endpoint anyone can call: the profile's own choice is checked here.
+  if (!profile.allowComments)
+    return { ...prevState, error: "This profile does not take comments." };
 
   await db.insert(comments).values({
     id: crypto.randomUUID(),
@@ -134,11 +138,10 @@ async function commentOf(id: SelectComment["id"]) {
 export async function deleteComment(id: SelectComment["id"]) {
   const user = await requireUser();
   const comment = await commentOf(id);
-  if (
-    comment.commentator_id !== user.id &&
-    comment.profile_user_id !== user.id
-  )
-    throw new Error("Only its author or the profile's owner can remove a comment.");
+  if (comment.commentator_id !== user.id && comment.profile_user_id !== user.id)
+    throw new Error(
+      "Only its author or the profile's owner can remove a comment.",
+    );
 
   await db.delete(comments).where(eq(comments.id, id));
   if (comment.pinned) updateTag(profileTag(comment.profile_user_id));
@@ -254,7 +257,8 @@ export async function saveCard(input: unknown): Promise<SaveResult> {
         })
         .where(eq(users.id, user.id));
       const gone = owned.filter((l) => !named.has(l.id)).map((l) => l.id);
-      if (gone.length > 0) await tx.delete(links).where(inArray(links.id, gone));
+      if (gone.length > 0)
+        await tx.delete(links).where(inArray(links.id, gone));
       for (const [order, link] of card.links.entries()) {
         // What was read from the platform stays; the highlight is the owner's
         // (none is left out of the stored JSON).
@@ -372,7 +376,11 @@ async function takeHandle(
   if (!handle || handle === user.username)
     return { username: user.username ?? null, stale: false, refused: null };
   try {
-    return { username: await renameTo(user, handle), stale: false, refused: null };
+    return {
+      username: await renameTo(user, handle),
+      stale: false,
+      refused: null,
+    };
   } catch (error) {
     return {
       username: user.username ?? null,
@@ -439,4 +447,3 @@ export async function claimDraft(draft: Written): Promise<Claimed> {
   updateTag(profileTag(user.id));
   return takeHandle(user, draft.handle);
 }
-

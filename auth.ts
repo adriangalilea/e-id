@@ -13,7 +13,12 @@ import {
   SESSION_MAX_AGE,
   SHORT_DOMAIN,
 } from "@/lib/const";
-import { CHIP_COOKIE, CHIP_COOKIE_OPTIONS, chipOf, chipValue } from "@/lib/chip";
+import {
+  CHIP_COOKIE,
+  CHIP_COOKIE_OPTIONS,
+  chipOf,
+  chipValue,
+} from "@/lib/chip";
 import { USERS_TAG, profileTag, usernameTag } from "@/lib/tags";
 import { providedUsername } from "@/lib/username";
 
@@ -32,7 +37,8 @@ async function adoptAccount(account: LinkedAccount) {
     .select({ email: users.email })
     .from(users)
     .where(eq(users.id, account.userId));
-  if (!user) throw new Error(`linked account for missing user ${account.userId}`);
+  if (!user)
+    throw new Error(`linked account for missing user ${account.userId}`);
 
   const owned = await db
     .select({ platform: links.platform })
@@ -50,10 +56,13 @@ async function adoptAccount(account: LinkedAccount) {
       },
     });
     if (!response.ok) {
-      console.error(`GitHub profile for ${account.userId}: HTTP ${response.status}`);
+      console.error(
+        `GitHub profile for ${account.userId}: HTTP ${response.status}`,
+      );
       return;
     }
-    const profile: { login: string; avatar_url: string } = await response.json();
+    const profile: { login: string; avatar_url: string } =
+      await response.json();
     image = profile.avatar_url;
     if (!has("github"))
       await db.insert(links).values({
@@ -82,6 +91,14 @@ async function adoptAccount(account: LinkedAccount) {
   revalidateTag(profileTag(account.userId), { expire: 0 });
 }
 
+/** A setting sign-in cannot work without: missing, the server refuses to start
+ *  rather than fail on someone's first sign-in. */
+function required(name: string): string {
+  const value = process.env[name];
+  if (!value) throw new Error(`auth: ${name} is not set`);
+  return value;
+}
+
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
     provider: "sqlite",
@@ -93,16 +110,27 @@ export const auth = betterAuth({
     },
   }),
 
-  baseURL: process.env.BETTER_AUTH_URL || "http://localhost:3000",
+  // Where OAuth comes back: e-id.to in production, the dev server's own address
+  // locally (http://localhost:3456), which better-auth trusts as its own.
+  baseURL: required("BETTER_AUTH_URL"),
+  // The site's other hosts, and nothing else: a pattern like `*.vercel.app` let
+  // anyone's deployment send requests here with a visitor's session.
   trustedOrigins: [
     PROD_URL,
     `https://${SHORT_DOMAIN}`,
     `https://${EMOJI_DOMAIN_PUNYCODE}`,
-    "http://localhost:3000",
-    "*.vercel.app", // all vercel preview deployments
   ],
-  secret: process.env.BETTER_AUTH_SECRET!,
+  secret: required("BETTER_AUTH_SECRET"),
   session: { expiresIn: SESSION_MAX_AGE },
+
+  // One person, one e-ID, whichever provider they come back with: a sign-in whose
+  // provider vouches for an email we hold joins that account (both GitHub and
+  // Google say whether an email is verified, and every email stored here came
+  // from one of them). A provider is never trusted blind: an unverified email
+  // links nothing.
+  account: {
+    accountLinking: { enabled: true, trustedProviders: [] },
+  },
 
   plugins: [
     // The session handed from e-id.to to 👤.to (lib/handoff). Tokens are made
@@ -114,14 +142,16 @@ export const auth = betterAuth({
   socialProviders: {
     // What each provider calls them seeds their username (`user.create.before`).
     github: {
-      clientId: process.env.GITHUB_CLIENT_ID!,
-      clientSecret: process.env.GITHUB_CLIENT_SECRET!,
+      clientId: required("GITHUB_CLIENT_ID"),
+      clientSecret: required("GITHUB_CLIENT_SECRET"),
       mapProfileToUser: (profile) => ({ username: profile.login }),
     },
     google: {
-      clientId: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-      mapProfileToUser: (profile) => ({ username: profile.email.split("@")[0] }),
+      clientId: required("GOOGLE_CLIENT_ID"),
+      clientSecret: required("GOOGLE_CLIENT_SECRET"),
+      mapProfileToUser: (profile) => ({
+        username: profile.email.split("@")[0],
+      }),
     },
   },
 
@@ -175,7 +205,9 @@ export const auth = betterAuth({
         // the account corner asks them to pick one (lib/username).
         before: async (user) => {
           const seed =
-            typeof user.username === "string" ? user.username : user.email.split("@")[0];
+            typeof user.username === "string"
+              ? user.username
+              : user.email.split("@")[0];
           const username = await providedUsername(seed);
           return {
             data: { ...user, username, username_normalized: username },
