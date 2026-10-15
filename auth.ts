@@ -16,6 +16,7 @@ import {
 import { required } from "@/lib/env"
 import { profileTag, USERS_TAG, usernameTag } from "@/lib/tags"
 import { providedUsername } from "@/lib/username"
+import { forgetPerson, visitsEnabled } from "@/lib/visit-store"
 import { db } from "./db"
 
 type LinkedAccount = {
@@ -204,6 +205,14 @@ export const auth = betterAuth({
           if (typeof user.username !== "string") return
           revalidateTag(USERS_TAG, { expire: 0 })
           revalidateTag(usernameTag(user.username), { expire: 0 })
+        },
+      },
+      // A deleted account leaves no numbers behind (lib/visit-store): forgotten
+      // before the user goes, while their old names still say they were theirs.
+      // A failure here keeps the account, so nothing is deleted half.
+      delete: {
+        before: async (user) => {
+          if (visitsEnabled) await forgetPerson(user)
         },
       },
     },

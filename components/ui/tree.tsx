@@ -682,7 +682,7 @@ export function Tree<N extends Nodelike<N>>({
               {actions && (
                 <span
                   data-slot="tree-actions"
-                  className="ml-1 flex shrink-0 items-center gap-0.5 [&>*]:opacity-0 group-hover/row:[&>*]:opacity-100 group-focus-visible/row:[&>*]:opacity-100 [&>[data-pinned]]:opacity-100"
+                  className="ml-1 flex shrink-0 items-center gap-0.5 group-hover/row:[&>*]:opacity-100 group-focus-visible/row:[&>*]:opacity-100 [&>*]:opacity-0 [&>[data-pinned]]:opacity-100"
                 >
                   {actions(n, state)}
                 </span>

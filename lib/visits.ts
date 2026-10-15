@@ -873,6 +873,87 @@ export async function readOwner(
   }
 }
 
+/** The owners whose pages were read most in the last `days`, most first: each
+ *  owner's visits (each once a day) and the hits of their addresses that opened
+ *  something, and the names asked of anyone that opened nothing, most first: the
+ *  links people want. For the site's own view of every owner. */
+export async function readOwners(
+  db: MetricsReader,
+  q: { site: string; days: number; limit?: number; now?: number },
+): Promise<{
+  owners: readonly { owner: string; views: number; hits: number }[]
+  missed: readonly { name: string; hits: number }[]
+}> {
+  if (!(Number.isInteger(q.days) && q.days >= 1))
+    throw new Error(`visits: days is a whole number of days, got ${q.days}`)
+  const since = daysBefore(q.now ?? Date.now(), q.days - 1)
+  const limit = q.limit ?? 20
+  const [owners, missed] = await Promise.all([
+    db.query({
+      sql: "SELECT owner, SUM(views) AS views, SUM(hits) AS hits FROM (SELECT owner, views, 0 AS hits FROM visits_owner_views WHERE site = ? AND day >= ? UNION ALL SELECT owner, 0, hits FROM visits_owner_hits WHERE site = ? AND day >= ? AND opened != '') GROUP BY owner ORDER BY views DESC, hits DESC LIMIT ?",
+      args: [q.site, since, q.site, since, limit],
+    }),
+    db.query({
+      sql: "SELECT name, SUM(hits) AS hits FROM visits_owner_hits WHERE site = ? AND day >= ? AND opened = '' GROUP BY name ORDER BY hits DESC, name LIMIT ?",
+      args: [q.site, since, limit],
+    }),
+  ])
+  return {
+    owners: [...owners].map((r) => ({
+      owner: String(r.owner),
+      views: Number(r.views),
+      hits: Number(r.hits),
+    })),
+    missed: [...missed].map((r) => ({
+      name: String(r.name),
+      hits: Number(r.hits),
+    })),
+  }
+}
+
+/**
+ * Forgets an owner, for an account that is deleted: their counts and hits, the rows of
+ * the pages that were theirs (others' visits keep their other pages) with those pages'
+ * lines, and every page's views under the addresses that were theirs (`paths`: each
+ * name's root, `/ada`, with what is under it), which `ownerOf` cannot tell once they are
+ * gone. Nothing of theirs is left to read.
+ */
+export async function forgetOwner(
+  db: MetricsDriver,
+  q: { site: string; owner: string; paths: readonly string[] },
+): Promise<void> {
+  for (const p of q.paths)
+    if (!/^\/[^/]+$/.test(p))
+      throw new Error(`visits: an owner's address is one segment, got ${p}`)
+  await db.transact([
+    {
+      sql: "DELETE FROM visits_event WHERE trace_id IN (SELECT trace_id FROM visits_page WHERE site = ? AND owner = ?)",
+      args: [q.site, q.owner],
+    },
+    {
+      sql: "DELETE FROM visits_page WHERE site = ? AND owner = ?",
+      args: [q.site, q.owner],
+    },
+    {
+      sql: "DELETE FROM visits_owner_views WHERE site = ? AND owner = ?",
+      args: [q.site, q.owner],
+    },
+    {
+      sql: "DELETE FROM visits_owner_hits WHERE site = ? AND owner = ?",
+      args: [q.site, q.owner],
+    },
+    {
+      sql: "DELETE FROM visits_hit WHERE site = ? AND owner = ?",
+      args: [q.site, q.owner],
+    },
+    // An exact prefix, never LIKE: a name can hold `_`, which LIKE reads as any.
+    ...q.paths.map((p) => ({
+      sql: "DELETE FROM visits_views WHERE site = ? AND (path = ? OR substr(path, 1, ?) = ?)",
+      args: [q.site, p, p.length + 1, `${p}/`],
+    })),
+  ])
+}
+
 /** One visit's page rows and its lines as written, in the order kept: each page's
  *  trace (its own start and end, its requests, its events) by trace id. */
 export async function readVisit(

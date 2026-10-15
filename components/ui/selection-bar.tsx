@@ -121,7 +121,7 @@ export function SelectionBar({
   const countLabel = (
     <span
       data-slot="selection-bar-count"
-      className="shrink-0 whitespace-nowrap px-2 font-medium text-[13px] tabular-nums"
+      className="shrink-0 whitespace-nowrap px-2 text-[13px] font-medium tabular-nums"
     >
       {count} {noun}
       {count === 1 ? "" : "s"} selected
@@ -218,7 +218,7 @@ export function BarVerb({
       onClick={entry.onSelect}
       data-part={part}
       className={cn(
-        "shrink-0 whitespace-nowrap px-2 font-normal text-[13px] [&_svg]:size-3.5",
+        "shrink-0 whitespace-nowrap px-2 text-[13px] font-normal [&_svg]:size-3.5",
         entry.destructive
           ? "text-tone-bad hover:text-tone-bad"
           : "text-foreground/80 hover:text-foreground",
