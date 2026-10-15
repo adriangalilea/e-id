@@ -42,6 +42,10 @@ if (!document.querySelector("style[data-e-id-fonts]")) {
 const STYLE = \`:host{display:block;position:relative;width:var(--e-id-card-width,28rem);max-width:100%;perspective:2000px}
 :host([compact]){display:inline-block;width:auto;vertical-align:middle;perspective:900px}
 :host([compact]) svg{width:auto;max-width:100%;height:var(--e-id-card-height,4.5rem)}
+.lift{position:absolute;z-index:10;left:0;bottom:100%;width:min(26rem,90vw);padding-bottom:.75rem;opacity:0;visibility:hidden;transform:translateY(.35rem);transition:opacity 180ms ease-out 120ms,transform 180ms ease-out 120ms,visibility 0s linear 300ms}
+:host([data-below]) .lift{bottom:auto;top:100%;padding-bottom:0;padding-top:.75rem;transform:translateY(-.35rem)}
+:host(:hover) .lift,:host(:focus-within) .lift{opacity:1;visibility:visible;transform:none;transition-delay:0s}
+@media (prefers-reduced-motion:reduce){.lift{transition:none}}
 .peek{position:absolute;z-index:1;display:flex;align-items:center;gap:.7rem;max-width:min(20rem,100%);padding:.6rem .9rem .6rem .6rem;border-radius:1rem;background:rgb(22 22 24/.82);-webkit-backdrop-filter:blur(14px) saturate(1.3);backdrop-filter:blur(14px) saturate(1.3);box-shadow:inset 0 0 0 1px rgb(255 255 255/.1),0 .8rem 2rem -.6rem rgb(0 0 0/.6);color:#fff;font:400 .8125rem/1.3 'Space Grotesk',system-ui,sans-serif;pointer-events:none;opacity:0;transform:translate(-50%,-.25rem);transition:opacity 160ms ease-out,transform 160ms ease-out}
 .peek[data-open]{opacity:1;transform:translate(-50%,0)}
 .peek img{width:2.25rem;height:2.25rem;flex:none;border-radius:999px;object-fit:cover;background:rgb(255 255 255/.08)}
@@ -73,13 +77,35 @@ class EIdCard extends HTMLElement {
     if (!this.#root.firstChild) this.#root.innerHTML = FALLBACK;
     this.addEventListener("pointermove", this.#move);
     this.addEventListener("pointerleave", this.#leave);
+    this.addEventListener("pointerenter", this.#rise);
+    this.addEventListener("focusin", this.#rise);
   }
 
   disconnectedCallback() {
     this.removeEventListener("pointermove", this.#move);
     this.removeEventListener("pointerleave", this.#leave);
+    this.removeEventListener("pointerenter", this.#rise);
+    this.removeEventListener("focusin", this.#rise);
     cancelAnimationFrame(this.#frame);
   }
+
+  // THE CARD RISING FROM ITS BYLINE: under the hand or the keys, the compact
+  // face shows the whole card over it (CSS shows it while the hand is on
+  // either), the real one, lit and its links answering; below it where the
+  // window has no room above. Made on the first rise, so a byline nobody
+  // reaches for fetches only itself.
+  #rise = () => {
+    const lift = this.#root.getElementById("lift");
+    if (!lift) return;
+    if (!lift.firstChild) {
+      const card = document.createElement("e-id-card");
+      card.setAttribute("handle", this.getAttribute("handle"));
+      card.style.setProperty("--e-id-card-width", "100%");
+      lift.append(card);
+    }
+    const room = this.getBoundingClientRect().top;
+    this.toggleAttribute("data-below", room < lift.offsetHeight + 16);
+  };
 
   attributeChangedCallback() {
     this.#load();
@@ -99,7 +125,10 @@ class EIdCard extends HTMLElement {
     const svg = await response.text();
     // Asked again meanwhile, for another card or the other face.
     if (this.getAttribute("handle") !== handle || this.hasAttribute("compact") !== compact) return;
-    this.#root.innerHTML = "<style>" + STYLE + "</style><div class=\\"card\\" part=\\"card\\">" + svg + "</div><div class=\\"peek\\" part=\\"profile\\" role=\\"tooltip\\" id=\\"peek\\"></div>";
+    this.#root.innerHTML = "<style>" + STYLE + "</style><div class=\\"card\\" part=\\"card\\">" + svg + "</div>" +
+      (compact
+        ? "<div class=\\"lift\\" part=\\"full\\" id=\\"lift\\"></div>"
+        : "<div class=\\"peek\\" part=\\"profile\\" role=\\"tooltip\\" id=\\"peek\\"></div>");
     this.#links = null;
     this.#root.addEventListener("pointerover", this.#over);
     this.#root.addEventListener("focusin", this.#over);
@@ -170,6 +199,9 @@ class EIdCard extends HTMLElement {
 
   // The hand, as a share of the card: where the light lies and where it leans.
   #move = (event) => {
+    // The hand on the card risen over the byline lights that card, not this one.
+    const lift = this.#root.getElementById("lift");
+    if (lift && event.composedPath().includes(lift)) return this.#leave();
     const box = this.getBoundingClientRect();
     const px = Math.min(1, Math.max(0, (event.clientX - box.left) / box.width));
     const py = Math.min(1, Math.max(0, (event.clientY - box.top) / box.height));

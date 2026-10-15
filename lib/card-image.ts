@@ -6,6 +6,7 @@ import { fetchPhoto } from "@/lib/photo";
 import { Resvg } from "@resvg/resvg-js";
 import * as FLAGS from "country-flag-icons/string/3x2";
 import { __iconNode as circleDotDashed } from "lucide-react/dist/esm/icons/circle-dot-dashed.js";
+import { __iconNode as contactRound } from "lucide-react/dist/esm/icons/contact-round.js";
 import { __iconNode as github } from "lucide-react/dist/esm/icons/github.js";
 import { __iconNode as instagram } from "lucide-react/dist/esm/icons/instagram.js";
 import { __iconNode as linkIcon } from "lucide-react/dist/esm/icons/link.js";
@@ -144,7 +145,13 @@ function mark(x: number, y: number, size: number, fill: string): string {
   return `<path transform="translate(${f(x - MARK_BOX.x * k)} ${f(y - size - MARK_BOX.y * k)}) scale(${f(k)})" d="${MARK_PATH}" fill="${fill}"/>`;
 }
 
-function icon(node: IconNode, x: number, y: number, size: number): string {
+function icon(
+  node: IconNode,
+  x: number,
+  y: number,
+  size: number,
+  stroke = `stroke="${INK}" stroke-opacity="0.7" stroke-width="1.4"`,
+): string {
   const parts = node
     .map(([tag, attrs]) => {
       const a = Object.entries(attrs)
@@ -154,7 +161,7 @@ function icon(node: IconNode, x: number, y: number, size: number): string {
       return `<${tag} ${a}/>`;
     })
     .join("");
-  return `<g transform="translate(${f(x)} ${f(y)}) scale(${f(size / 24)})" fill="none" stroke="${INK}" stroke-opacity="0.7" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">${parts}</g>`;
+  return `<g transform="translate(${f(x)} ${f(y)}) scale(${f(size / 24)})" fill="none" ${stroke} stroke-linecap="round" stroke-linejoin="round">${parts}</g>`;
 }
 
 const dataUri = (mime: string, bytes: Uint8Array) =>
@@ -297,6 +304,23 @@ export async function cardSvg(card: Card, frame: CardFrame = "share"): Promise<s
   const portrait = photo
     ? `<image href="${photo}" x="${f(px)}" y="${f(py)}" width="${f(ps)}" height="${f(ps)}" preserveAspectRatio="xMidYMid slice" clip-path="url(#photo)"/>`
     : `<g opacity="0.15">${mark(px + ps / 2 - (ps / 2) * (MARK_BOX.w / MARK_BOX.h) / 2, py + ps * 0.75, ps / 2, "#fff")}</g>`;
+  // The card's own save, on the photo's foot, half over it (components/
+  // save-contact `CardSave`, in the same shares): on the card set on a page,
+  // where it can be pressed; not on the share image.
+  const saveH = 7 * u;
+  const saveText = 3.2 * u;
+  const saveIcon = 3.6 * u;
+  const saveW =
+    2 * 2.6 * u + saveIcon + 1.2 * u + measure("save", SANS, 500, saveText);
+  const saveX = px + ps / 2 - saveW / 2;
+  const saveY = py + ps - saveH / 2;
+  const save = share
+    ? ""
+    : `<a href="${esc(card.formats.vcard)}" download="${esc(card.handle)}.vcf" aria-label="save contact">` +
+      `<rect x="${f(saveX)}" y="${f(saveY + 0.8 * u)}" width="${f(saveW)}" height="${f(saveH)}" rx="${f(saveH / 2)}" fill="#000" fill-opacity="0.45" filter="url(#lift)"/>` +
+      `<rect x="${f(saveX)}" y="${f(saveY)}" width="${f(saveW)}" height="${f(saveH)}" rx="${f(saveH / 2)}" fill="#fff"/>` +
+      icon(contactRound, saveX + 2.6 * u, saveY + (saveH - saveIcon) / 2, saveIcon, `stroke="#000" stroke-width="2"`) +
+      `<text x="${f(saveX + 2.6 * u + saveIcon + 1.2 * u)}" y="${f(saveY + saveH / 2 + 0.36 * saveText)}" font-family="${SANS}" font-weight="500" font-size="${f(saveText)}" fill="#000">save</text></a>`;
   const [gx, gy] = at(100 - 2 - 34, 6);
   const gs = 34 * u;
   const ghost = photo
@@ -364,6 +388,7 @@ ${page}
 </g>
 <rect x="${f(cx + 0.5)}" y="${f(cy + 0.5)}" width="${f(cw - 1)}" height="${f(ch - 1)}" rx="${f(radius - 0.5)}" fill="none" stroke="url(#rim)" pointer-events="none"/>
 <rect x="${f(cx + 0.5)}" y="${f(cy + 0.5)}" width="${f(cw - 1)}" height="${f(ch - 1)}" rx="${f(radius - 0.5)}" fill="none" stroke="url(#edge-foil)" stroke-opacity="0.16" pointer-events="none"/>
+${save}
 ${grain}
 </svg>`;
 }
