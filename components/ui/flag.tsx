@@ -1,6 +1,6 @@
 import { hasFlag as known } from "country-flag-icons"
-import { cn } from "@/lib/utils"
 import { Image } from "@/components/ui/image"
+import { cn } from "@/lib/utils"
 
 export type FlagShape = "rect" | "square"
 

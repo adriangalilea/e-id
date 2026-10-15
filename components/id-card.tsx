@@ -59,6 +59,12 @@ const ID1_RADIUS = `${(3.18 / 85.6) * 100}cqw`
  *  name and every word on the card, one physical thing at any size. */
 const PRINT_UNIT = `${100 / 544}cqw`
 
+/** How wide the card's photo (and its ghost) are drawn, for the loader: a third
+ *  of the card at most (30 and 34 cqw), and no card on the site is wider than
+ *  about 560 px, so never more than 190 px; the loader serves the width for the
+ *  screen's density from that. */
+const PHOTO_SIZES = "190px"
+
 /** The face, square: the avatar GitHub gave, or with none the mark itself, the
  *  empty photo slot it draws. */
 function Portrait({
@@ -81,7 +87,12 @@ function Portrait({
       )}
     >
       {holder.image ? (
-        <Image src={holder.image} alt="" className="size-full object-cover" />
+        <Image
+          src={holder.image}
+          alt=""
+          sizes={PHOTO_SIZES}
+          className="size-full object-cover"
+        />
       ) : (
         (stand ?? <BrandMark className="h-1/2 text-white/30" />)
       )}
@@ -105,6 +116,7 @@ function Ghost({ holder }: { holder: Holder }) {
       src={holder.image}
       alt=""
       aria-hidden
+      sizes={PHOTO_SIZES}
       className={cn(
         "pointer-events-none absolute top-[6cqw] right-[2cqw] aspect-square w-[34cqw] object-cover opacity-30 contrast-125 grayscale",
         GHOST_MASK,

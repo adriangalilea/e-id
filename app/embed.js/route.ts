@@ -69,6 +69,19 @@ const FALLBACK = \`<style>:host{display:block}
 .fallback svg{height:1cap;width:auto;fill:currentColor;opacity:.75}
 ::slotted(a){color:inherit;text-decoration:none}</style><span class="fallback"><svg viewBox="${MARK_BOX.x} ${MARK_BOX.y} ${MARK_BOX.w} ${MARK_BOX.h}" aria-hidden="true"><path d="${MARK_PATH}"/></svg><slot></slot></span>\`;
 
+// Each drawing fetched once for the page, however many cards show it: the
+// cards on one page share the one request (null, logged, when it fails).
+const DRAWINGS = new Map();
+function drawing(url) {
+  if (!DRAWINGS.has(url))
+    DRAWINGS.set(url, fetch(url).then((r) => {
+      if (r.ok) return r.text();
+      console.error("<e-id-card>: " + url + " answered " + r.status);
+      return null;
+    }));
+  return DRAWINGS.get(url);
+}
+
 class EIdCard extends HTMLElement {
   static observedAttributes = ["handle", "compact"];
   #root = this.attachShadow({ mode: "open" });
@@ -118,12 +131,8 @@ class EIdCard extends HTMLElement {
     // The compact face is the same card drawn as a byline (byline.svg), lit and
     // leaning as the card does. Both prerendered per person, kept until they change.
     const compact = this.hasAttribute("compact");
-    const response = await fetch(ORIGIN + "/" + encodeURIComponent(handle) + (compact ? "/byline.svg" : "/card.svg"));
-    if (!response.ok) {
-      console.error("<e-id-card>: " + handle + " answered " + response.status);
-      return;
-    }
-    const svg = await response.text();
+    const svg = await drawing(ORIGIN + "/" + encodeURIComponent(handle) + (compact ? "/byline.svg" : "/card.svg"));
+    if (svg === null) return;
     // Asked again meanwhile, for another card or the other face.
     if (this.getAttribute("handle") !== handle || this.hasAttribute("compact") !== compact) return;
     this.#root.innerHTML = "<style>" + STYLE + "</style><div class=\\"card\\" part=\\"card\\">" + svg + "</div>" +
