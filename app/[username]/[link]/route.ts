@@ -1,6 +1,8 @@
+import { after } from "next/server"
 import { cardLinkOf, getProfile, getPublicLinks } from "@/lib/data"
 import { platformNamed } from "@/lib/link-names"
 import { renamedAnswer } from "@/lib/renamed"
+import { hits, visitsEnabled } from "@/lib/visit-store"
 
 // A LINK'S ROUTE: 👤.to/<username>/<name> opens their link on that platform
 // (github, or gh; lib/link-names), their first public one of its kind: the
@@ -30,6 +32,16 @@ export async function GET(
         (l) => l.platform === platform && l.value,
       )
     : undefined
+  // Counted once answered (lib/visit-store): what was asked for, and what it
+  // opened, null where nothing: a link people want that the person has not got.
+  if (visitsEnabled)
+    after(() =>
+      hits()(request, {
+        owner: profile.id,
+        name: name.toLowerCase(),
+        opened: link ? link.platform : null,
+      }),
+    )
   if (!link) return Response.redirect(new URL(`/${username}`, request.url), 307)
   return Response.redirect(cardLinkOf(link).url, 307)
 }

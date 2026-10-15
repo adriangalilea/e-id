@@ -22,14 +22,33 @@ export const VISITS_SCHEMA = [
   "CREATE TABLE IF NOT EXISTS visits_caller (day TEXT NOT NULL, caller TEXT NOT NULL, visit TEXT NOT NULL, last INTEGER NOT NULL, PRIMARY KEY (day, caller))",
   "CREATE TABLE IF NOT EXISTS visits_visit (id TEXT PRIMARY KEY, site TEXT NOT NULL, day TEXT NOT NULL, started INTEGER NOT NULL, last INTEGER NOT NULL, pages INTEGER NOT NULL, referrer TEXT, source TEXT, country TEXT, viewport TEXT, probe INTEGER NOT NULL, staff INTEGER NOT NULL)",
   "CREATE INDEX IF NOT EXISTS visits_visit_day ON visits_visit (site, day)",
-  "CREATE TABLE IF NOT EXISTS visits_page (span_id TEXT PRIMARY KEY, trace_id TEXT NOT NULL, visit TEXT NOT NULL, seq INTEGER NOT NULL, site TEXT NOT NULL, day TEXT NOT NULL, at INTEGER NOT NULL, host TEXT NOT NULL, path TEXT NOT NULL, place TEXT, route TEXT, nav TEXT NOT NULL, from_path TEXT, build TEXT, dur_ms REAL, reached TEXT, ttfb_ms REAL, lcp_ms REAL, inp_ms REAL, cls REAL)",
+  "CREATE TABLE IF NOT EXISTS visits_page (span_id TEXT PRIMARY KEY, trace_id TEXT NOT NULL, visit TEXT NOT NULL, seq INTEGER NOT NULL, site TEXT NOT NULL, day TEXT NOT NULL, at INTEGER NOT NULL, host TEXT NOT NULL, path TEXT NOT NULL, place TEXT, route TEXT, nav TEXT NOT NULL, from_path TEXT, build TEXT, dur_ms REAL, reached TEXT, ttfb_ms REAL, lcp_ms REAL, inp_ms REAL, cls REAL, owner TEXT, self INTEGER NOT NULL DEFAULT 0)",
   "CREATE INDEX IF NOT EXISTS visits_page_visit ON visits_page (visit, seq)",
   "CREATE INDEX IF NOT EXISTS visits_page_trace ON visits_page (trace_id)",
   "CREATE INDEX IF NOT EXISTS visits_page_day ON visits_page (site, day)",
+  "CREATE INDEX IF NOT EXISTS visits_page_owner ON visits_page (site, owner, day)",
   "CREATE TABLE IF NOT EXISTS visits_event (id INTEGER PRIMARY KEY, visit TEXT NOT NULL, trace_id TEXT NOT NULL, day TEXT NOT NULL, at INTEGER NOT NULL, line TEXT NOT NULL)",
   "CREATE INDEX IF NOT EXISTS visits_event_visit ON visits_event (visit, id)",
   "CREATE INDEX IF NOT EXISTS visits_event_day ON visits_event (day)",
   "CREATE TABLE IF NOT EXISTS visits_views (site TEXT NOT NULL, day TEXT NOT NULL, host TEXT NOT NULL, path TEXT NOT NULL, views INTEGER NOT NULL, PRIMARY KEY (site, day, host, path))",
+  "CREATE TABLE IF NOT EXISTS visits_owner_views (site TEXT NOT NULL, owner TEXT NOT NULL, day TEXT NOT NULL, views INTEGER NOT NULL, PRIMARY KEY (site, owner, day))",
+  "CREATE TABLE IF NOT EXISTS visits_hit (id INTEGER PRIMARY KEY, site TEXT NOT NULL, day TEXT NOT NULL, at INTEGER NOT NULL, owner TEXT NOT NULL, name TEXT NOT NULL, opened TEXT, referrer TEXT, country TEXT, caller TEXT NOT NULL, crawler INTEGER NOT NULL, self INTEGER NOT NULL)",
+  "CREATE INDEX IF NOT EXISTS visits_hit_owner ON visits_hit (site, owner, day)",
+  "CREATE INDEX IF NOT EXISTS visits_hit_caller ON visits_hit (day, caller)",
+  "CREATE TABLE IF NOT EXISTS visits_owner_hits (site TEXT NOT NULL, owner TEXT NOT NULL, day TEXT NOT NULL, name TEXT NOT NULL, opened TEXT NOT NULL, hits INTEGER NOT NULL, PRIMARY KEY (site, owner, day, name, opened))",
+] as const
+
+/** What a store provisioned before a change needs, run once, in order, BEFORE
+ *  VISITS_SCHEMA (which then adds the new tables and indexes). A store made from
+ *  VISITS_SCHEMA after a change's date needs none of it. */
+export const VISITS_MIGRATIONS = [
+  {
+    on: "2026-10-16",
+    statements: [
+      "ALTER TABLE visits_page ADD COLUMN owner TEXT",
+      "ALTER TABLE visits_page ADD COLUMN self INTEGER NOT NULL DEFAULT 0",
+    ],
+  },
 ] as const
 
 export interface VisitsOptions {
@@ -47,6 +66,23 @@ export interface VisitsOptions {
    * only of a batch that starts a page, on the server, where the session is.
    */
   readonly staff?: (request: Request) => boolean | Promise<boolean>
+  /**
+   * Whose a page is, where the site's pages belong to people: an id that never
+   * changes (never a name, which can), or null for the site's own pages. Asked once
+   * for each page kept.
+   */
+  readonly ownerOf?: (
+    host: string,
+    path: string,
+  ) => string | null | Promise<string | null>
+  /**
+   * The owner reading, where the reader is one (signed in): their own pages are
+   * kept, flagged `self`, never counted. Asked only of a batch that starts a page.
+   * Only ever hides a view, so a value the browser could forge is good enough.
+   */
+  readonly readerOf?: (
+    request: Request,
+  ) => string | null | Promise<string | null>
   readonly now?: () => number
 }
 
@@ -181,10 +217,14 @@ export function visitsRoute(
       paging && options.staff !== undefined
         ? await options.staff(request)
         : false
+    const reader =
+      paging && options.readerOf !== undefined
+        ? await options.readerOf(request)
+        : null
     const { visitOf, viewers } = await assign(
       db,
       site,
-      { caller, staff },
+      { caller, staff, reader, ownerOf: options.ownerOf },
       day,
       at,
       events,
@@ -214,7 +254,7 @@ export function visitsRoute(
           viewer = await viewerOf(db, visit)
           viewers.set(visit, viewer)
         }
-        statements.push(...view(viewer, { site, day, host, path }))
+        statements.push(...view(viewer, { site, day, host, path }, false))
       }
       statements.push({
         sql: "INSERT INTO visits_event (visit, trace_id, day, at, line) VALUES (?, ?, ?, ?, ?)",
@@ -259,7 +299,17 @@ function refusal(line: string, services: readonly string[]): string | LogEvent {
 async function assign(
   db: MetricsDriver,
   site: string,
-  { caller, staff }: { caller: Caller; staff: boolean },
+  {
+    caller,
+    staff,
+    reader,
+    ownerOf,
+  }: {
+    caller: Caller
+    staff: boolean
+    reader: string | null
+    ownerOf: VisitsOptions["ownerOf"]
+  },
   day: string,
   at: number,
   events: readonly { e: LogEvent }[],
@@ -290,12 +340,7 @@ async function assign(
   }
   if (starts.length === 0) return { visitOf: (t) => known.get(t), viewers }
 
-  // The site is in the hash: one store can hold several sites, and a person reading
-  // two of them is two callers, never one visit across sites nor a link between them.
-  const hash = await sha256(
-    `${await saltOf(db, day)}\0${site}\0${caller.ip}\0${caller.agent}`,
-  )
-  const id = hash.slice(0, 32)
+  const id = await callerHash(db, site, day, caller)
   const [open] = [
     ...(await db.query({
       sql: "SELECT c.visit, c.last, v.pages FROM visits_caller c JOIN visits_visit v ON v.id = c.visit WHERE c.day = ? AND c.caller = ?",
@@ -323,6 +368,7 @@ async function assign(
         pages: 0,
         flagged: false,
         seen: new Set(),
+        owners: new Set(),
       }
       statements.push({
         sql: "INSERT INTO visits_visit (id, site, day, started, last, pages, referrer, source, country, viewport, probe, staff) VALUES (?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?, ?)",
@@ -345,12 +391,21 @@ async function assign(
     known.set(e.trace_id as string, visit.id)
     const host = str(f.host) ?? ""
     const path = str(f.path) ?? "/"
+    const owner = ownerOf ? await ownerOf(host, path) : null
+    const self = owner !== null && owner === reader
     visit.flagged ||= flag("probe") === 1 || flag("staff") === 1
     viewers.set(visit.id, visit)
-    statements.push(...view(visit, { site, day, host, path }))
+    statements.push(...view(visit, { site, day, host, path }, self))
+    if (owner !== null && !self && !visit.flagged && !visit.owners.has(owner)) {
+      visit.owners.add(owner)
+      statements.push({
+        sql: "INSERT INTO visits_owner_views (site, owner, day, views) VALUES (?, ?, ?, 1) ON CONFLICT (site, owner, day) DO UPDATE SET views = views + 1",
+        args: [site, owner, day],
+      })
+    }
     statements.push(
       {
-        sql: "INSERT OR IGNORE INTO visits_page (span_id, trace_id, visit, seq, site, day, at, host, path, place, route, nav, from_path, build) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        sql: "INSERT OR IGNORE INTO visits_page (span_id, trace_id, visit, seq, site, day, at, host, path, place, route, nav, from_path, build, owner, self) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
         args: [
           e.span_id as string,
           e.trace_id as string,
@@ -366,6 +421,8 @@ async function assign(
           str(f.nav) ?? "navigate",
           str(f.from),
           str(f.build),
+          owner,
+          self ? 1 : 0,
         ],
       },
       {
@@ -383,11 +440,12 @@ async function assign(
 }
 
 /** What a visit has read, for its views: whether it is the staff's or a probe's (never
- *  counted), and each page (host and path) it opened or was shown (a "view" line),
- *  each a view once. */
+ *  counted), each page (host and path) it opened or was shown (a "view" line), each a
+ *  view once, and each owner whose pages it read (not as their owner), each once. */
 interface Viewer {
   flagged: boolean
   readonly seen: Set<string>
+  readonly owners: Set<string>
 }
 
 const viewKey = (host: string, path: string) => `${host}\0${path}`
@@ -404,23 +462,30 @@ async function viewerOf(db: MetricsReader, visit: string): Promise<Viewer> {
     sql: "SELECT host, path FROM visits_page WHERE visit = ? UNION SELECT json_extract(line, '$.fields.host'), json_extract(line, '$.fields.path') FROM visits_event WHERE visit = ? AND json_extract(line, '$.msg') = 'view' AND json_extract(line, '$.phase') IS NULL",
     args: [visit, visit],
   })
+  const owners = await db.query({
+    sql: "SELECT DISTINCT owner FROM visits_page WHERE visit = ? AND owner IS NOT NULL AND self = 0",
+    args: [visit],
+  })
   return {
     flagged: Number(v.probe) === 1 || Number(v.staff) === 1,
     seen: new Set(
       [...read].map((r) => viewKey(String(r.host), String(r.path))),
     ),
+    owners: new Set([...owners].map((r) => String(r.owner))),
   }
 }
 
-/** A page read by a visit: a view of it, the first time this visit reads it. */
+/** A page read by a visit: a view of it, the first time this visit reads it, unless
+ *  its owner is the one reading (`self`). */
 function view(
   viewer: Viewer,
   at: { site: string; day: string; host: string; path: string },
+  self: boolean,
 ): SqlStatement[] {
   const key = viewKey(at.host, at.path)
   const first = !viewer.seen.has(key)
   viewer.seen.add(key)
-  return first && !viewer.flagged
+  return first && !viewer.flagged && !self
     ? [
         {
           sql: "INSERT INTO visits_views (site, day, host, path, views) VALUES (?, ?, ?, ?, 1) ON CONFLICT (site, day, host, path) DO UPDATE SET views = views + 1",
@@ -450,8 +515,14 @@ function pageEnd(e: LogEvent): SqlStatement {
   }
 }
 
+/** Each store's salt of the day as this process last read it: a salt never changes
+ *  within its day. */
+const salted = new WeakMap<MetricsDriver, { day: string; salt: string }>()
+
 /** The day's salt: random, made on the day's first page, deleted once the day is over. */
 async function saltOf(db: MetricsDriver, day: string): Promise<string> {
+  const known = salted.get(db)
+  if (known?.day === day) return known.salt
   await db.transact([
     {
       sql: "INSERT INTO visits_salt (day, salt) VALUES (?, ?) ON CONFLICT (day) DO NOTHING",
@@ -468,7 +539,23 @@ async function saltOf(db: MetricsDriver, day: string): Promise<string> {
   ]
   const salt = row?.salt
   if (typeof salt !== "string") throw new Error(`visits: no salt for ${day}`)
+  salted.set(db, { day, salt })
   return salt
+}
+
+/** The day's hash of a caller on a site: who it is within the day, never across. */
+async function callerHash(
+  db: MetricsDriver,
+  site: string,
+  day: string,
+  caller: Caller,
+): Promise<string> {
+  // The site is in the hash: one store can hold several sites, and a person reading
+  // two of them is two callers, never one visit across sites nor a link between them.
+  const hash = await sha256(
+    `${await saltOf(db, day)}\0${site}\0${caller.ip}\0${caller.agent}`,
+  )
+  return hash.slice(0, 32)
 }
 
 function pruning(at: number): SqlStatement[] {
@@ -488,7 +575,86 @@ function pruning(at: number): SqlStatement[] {
       sql: "DELETE FROM visits_visit WHERE day < ? OR (day < ? AND (probe = 1 OR staff = 1))",
       args: [kept, flagged],
     },
+    {
+      sql: "DELETE FROM visits_hit WHERE day < ? OR (day < ? AND (crawler = 1 OR self = 1))",
+      args: [kept, flagged],
+    },
   ]
+}
+
+// --- hits ----------------------------------------------------------------------
+
+/** A redirect a site answered: whose address it was, the name asked for (`gh`), and
+ *  what it opened (`github`), or null where it opened nothing of theirs. */
+export interface Hit {
+  readonly owner: string
+  readonly name: string
+  readonly opened: string | null
+}
+
+/**
+ * The recorder a site's redirect routes call, after answering (Next's `after`):
+ * each hit a row, and counted once per caller, day, owner and name, never a
+ * crawler's (a link preview fetching the address) or the owner's own.
+ *
+ *     const hits = visitHits({ db, site: "e-id.to", readerOf })
+ *     after(() => hits(request, { owner: user.id, name: "gh", opened: "github" }))
+ */
+export function visitHits(
+  options: Pick<VisitsOptions, "db" | "site" | "caller" | "readerOf" | "now">,
+): (request: Request, hit: Hit) => Promise<void> {
+  const { db, site } = options
+  if (!/^[a-z0-9.-]+$/.test(site))
+    throw new Error(`visits: a site is a domain, got ${site}`)
+  const now = options.now ?? Date.now
+  const callerFrom = options.caller ?? callerOf
+  return async (request, hit) => {
+    const at = now()
+    const day = utcDay(at)
+    const caller = callerFrom(request)
+    const crawler = CRAWLER.test(caller.agent)
+    const self =
+      options.readerOf !== undefined &&
+      (await options.readerOf(request)) === hit.owner
+    const id = await callerHash(db, site, day, caller)
+    const referer = request.headers.get("referer")
+    const outside = referer ? URL.parse(referer)?.host : undefined
+    const statements: SqlStatement[] = []
+    if (pruned !== day) {
+      statements.push(...pruning(at))
+      pruned = day
+    }
+    if (!crawler && !self) {
+      const [again] = [
+        ...(await db.query({
+          sql: "SELECT 1 FROM visits_hit WHERE day = ? AND caller = ? AND site = ? AND owner = ? AND name = ? AND crawler = 0 AND self = 0 LIMIT 1",
+          args: [day, id, site, hit.owner, hit.name],
+        })),
+      ]
+      if (again === undefined)
+        statements.push({
+          sql: "INSERT INTO visits_owner_hits (site, owner, day, name, opened, hits) VALUES (?, ?, ?, ?, ?, 1) ON CONFLICT (site, owner, day, name, opened) DO UPDATE SET hits = hits + 1",
+          args: [site, hit.owner, day, hit.name, hit.opened ?? ""],
+        })
+    }
+    statements.push({
+      sql: "INSERT INTO visits_hit (site, day, at, owner, name, opened, referrer, country, caller, crawler, self) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+      args: [
+        site,
+        day,
+        at,
+        hit.owner,
+        hit.name,
+        hit.opened,
+        outside && !inside(outside, site) ? outside : null,
+        caller.country ?? null,
+        id,
+        crawler ? 1 : 0,
+        self ? 1 : 0,
+      ],
+    })
+    await db.transact(statements)
+  }
 }
 
 // --- reading -------------------------------------------------------------------
@@ -617,6 +783,94 @@ export async function readViews(
   return Object.fromEntries(
     [...rows].map((r) => [String(r.path), Number(r.views)]),
   )
+}
+
+/** One owner's numbers: only counts, never a visit (a visit can cross other people's
+ *  pages). The crawlers', probes', staff's and the owner's own are in none of them. */
+export interface OwnerReport {
+  /** Visits that read any of their pages, each once a day: every one of the last
+   *  `days`, oldest first, a day with none at 0. */
+  readonly days: readonly { day: string; views: number }[]
+  /** The same, all time. */
+  readonly views: number
+  /** What their addresses opened in the last `days`, most first: each name asked
+   *  for and what it opened (null: nothing of theirs, a link they do not have). */
+  readonly opened: readonly {
+    name: string
+    opened: string | null
+    hits: number
+  }[]
+  /** Hits that opened something, all time. */
+  readonly hits: number
+  /** Where the visits that read their pages came from, outside the site (null: no
+   *  referrer, typed or the site's own), in the last `days` up to VISIT_DAYS. */
+  readonly referrers: readonly { referrer: string | null; visits: number }[]
+  /** The same visits' countries (null: unknown). */
+  readonly countries: readonly { country: string | null; visits: number }[]
+}
+
+export async function readOwner(
+  db: MetricsReader,
+  q: { site: string; owner: string; days: number; now?: number },
+): Promise<OwnerReport> {
+  if (!(Number.isInteger(q.days) && q.days >= 1))
+    throw new Error(`visits: days is a whole number of days, got ${q.days}`)
+  const at = q.now ?? Date.now()
+  const since = daysBefore(at, q.days - 1)
+  const owned = [q.site, q.owner]
+  const recent = [...owned, since]
+  const [perDay, all, opened, hits, referrers, countries] = await Promise.all([
+    db.query({
+      sql: "SELECT day, views FROM visits_owner_views WHERE site = ? AND owner = ? AND day >= ?",
+      args: recent,
+    }),
+    db.query({
+      sql: "SELECT COALESCE(SUM(views), 0) AS n FROM visits_owner_views WHERE site = ? AND owner = ?",
+      args: owned,
+    }),
+    db.query({
+      sql: "SELECT name, opened, SUM(hits) AS hits FROM visits_owner_hits WHERE site = ? AND owner = ? AND day >= ? GROUP BY name, opened ORDER BY hits DESC, name",
+      args: recent,
+    }),
+    db.query({
+      sql: "SELECT COALESCE(SUM(hits), 0) AS n FROM visits_owner_hits WHERE site = ? AND owner = ? AND opened != ''",
+      args: owned,
+    }),
+    db.query({
+      sql: "SELECT v.referrer AS key, COUNT(DISTINCT v.id) AS n FROM visits_page p JOIN visits_visit v ON v.id = p.visit WHERE p.site = ? AND p.owner = ? AND p.day >= ? AND p.self = 0 AND v.probe = 0 AND v.staff = 0 GROUP BY v.referrer ORDER BY n DESC",
+      args: recent,
+    }),
+    db.query({
+      sql: "SELECT v.country AS key, COUNT(DISTINCT v.id) AS n FROM visits_page p JOIN visits_visit v ON v.id = p.visit WHERE p.site = ? AND p.owner = ? AND p.day >= ? AND p.self = 0 AND v.probe = 0 AND v.staff = 0 GROUP BY v.country ORDER BY n DESC",
+      args: recent,
+    }),
+  ])
+  const counted = new Map(
+    [...perDay].map((r) => [String(r.day), Number(r.views)]),
+  )
+  const total = (rows: Iterable<Record<string, unknown>>) =>
+    Number([...rows][0]?.n ?? 0)
+  return {
+    days: Array.from({ length: q.days }, (_, i) => {
+      const day = daysBefore(at, q.days - 1 - i)
+      return { day, views: counted.get(day) ?? 0 }
+    }),
+    views: total(all),
+    opened: [...opened].map((r) => ({
+      name: String(r.name),
+      opened: str(r.opened) || null,
+      hits: Number(r.hits),
+    })),
+    hits: total(hits),
+    referrers: [...referrers].map((r) => ({
+      referrer: str(r.key),
+      visits: Number(r.n),
+    })),
+    countries: [...countries].map((r) => ({
+      country: str(r.key),
+      visits: Number(r.n),
+    })),
+  }
 }
 
 /** One visit's page rows and its lines as written, in the order kept: each page's

@@ -1,4 +1,4 @@
-import { SITE, visitDriver } from "@/lib/visit-store"
+import { ownerOf, readerOf, SITE, visitDriver } from "@/lib/visit-store"
 import { visitsRoute } from "@/lib/visits"
 
 // The pages components/page-sensor writes, composed into visits by the ui registry's
@@ -13,6 +13,8 @@ export function POST(request: Request) {
     db: visitDriver(),
     site: SITE,
     services: ["e-id-web"],
+    ownerOf,
+    readerOf,
     staff: (r) => {
       const host = (r.headers.get("host") ?? "").split(":")[0] ?? ""
       return host === "localhost" || host.endsWith(".localhost")

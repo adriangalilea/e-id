@@ -16,6 +16,7 @@ import { type Chip, chipOf } from "@/lib/chip"
 import { writeChip } from "@/lib/chip-server"
 import { countryOf } from "@/lib/country-of"
 import { cardLinkOf, getProfile, getPublicLinks } from "@/lib/data"
+import { isAdmin } from "@/lib/env"
 import { getGithubProfile } from "@/lib/github"
 import { OFFERED } from "@/lib/platforms"
 import { getPresence, getWebsite } from "@/lib/presence"
@@ -23,6 +24,8 @@ import { getSession } from "@/lib/session"
 import { profileTag, USERS_TAG, usernameTag } from "@/lib/tags"
 import { claimUsername, holderOf } from "@/lib/username"
 import { usernameProblem } from "@/lib/username-rules"
+import { SITE, visitDriver, visitsEnabled } from "@/lib/visit-store"
+import { type OwnerReport, readOwner } from "@/lib/visits"
 import type { Unfurl } from "@/lib/web-preview-facts"
 
 // Every export here is an endpoint anyone can call with any arguments: each one
@@ -461,4 +464,30 @@ export async function claimDraft(draft: Written): Promise<Claimed> {
   updateTag(USERS_TAG)
   updateTag(profileTag(user.id))
   return takeHandle(user, draft.handle)
+}
+
+/** A person's own numbers, for their profile: every visit to their pages and every
+ *  link their addresses opened, all time; the last 30 days in full (per day, what
+ *  each name opened, referrers, countries) for an admin only, until Premium says
+ *  whose they are (README). Null signed out, or while visits are off. */
+export type OwnStats = {
+  views: number
+  hits: number
+  detail: OwnerReport | null
+}
+
+export async function ownStats(): Promise<OwnStats | null> {
+  if (!visitsEnabled) return null
+  const session = await getSession()
+  if (!session) return null
+  const report = await readOwner(visitDriver(), {
+    site: SITE,
+    owner: session.user.id,
+    days: 30,
+  })
+  return {
+    views: report.views,
+    hits: report.hits,
+    detail: isAdmin(session.user.id) ? report : null,
+  }
 }

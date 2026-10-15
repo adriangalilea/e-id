@@ -2,13 +2,22 @@ import "server-only"
 
 import { libsqlDriver } from "@adriangalilea/utils/metrics/libsql"
 import { createClient } from "@libsql/client"
+import { parseChip } from "@/lib/chip"
+import { forbiddenUsernames } from "@/lib/const"
+import { getProfile, renamedTo } from "@/lib/data"
+import { visitHits } from "@/lib/visits"
 
 // e-id's visits, kept by the ui registry's visits (lib/visits) in the Turso database at
 // VISITS_DATABASE_URL, apart from the site's own (the `visits_*` tables,
 // provisioned once with VISITS_SCHEMA through the Turso CLI, never on a
 // request). Off until VISITS_DATABASE_URL is set: the layout
-// mounts no sensor and nothing posts to /api/events. On, every page a person
-// sees ends in one POST there, a function invocation.
+// mounts no sensor, nothing posts to /api/events and no redirect is recorded. On,
+// every page a person sees ends in one POST there, a function invocation, and every
+// `/you/<name>` writes one row after answering.
+//
+// A person's pages are theirs by their user id (`ownerOf`), so a rename or an old
+// name keeps one history; their own reading, as the display cookie says who they
+// are, is never counted.
 
 export const SITE = "e-id.to"
 
@@ -24,4 +33,34 @@ export function visitDriver() {
     )
   driver ??= libsqlDriver(createClient({ url, authToken }))
   return driver
+}
+
+/** The user a name is, under it or an old name of theirs; null for none. */
+async function userNamed(name: string): Promise<string | null> {
+  if (!name || forbiddenUsernames.includes(name.toLowerCase())) return null
+  const profile = await getProfile(name)
+  if (profile) return profile.id
+  const now = await renamedTo(name)
+  return now ? ((await getProfile(now))?.id ?? null) : null
+}
+
+/** Whose a page is: the person whose address it is under (`/adrian`,
+ *  `/adrian/…`), by their user id; null for the site's own pages. */
+export function ownerOf(_host: string, path: string): Promise<string | null> {
+  return userNamed(path.split("/")[1] ?? "")
+}
+
+/** Who is reading, as the display cookie says (lib/chip): never trusted for
+ *  anything but leaving a person's own reading uncounted. */
+export function readerOf(request: Request): Promise<string | null> {
+  const chip = parseChip(request.headers.get("cookie") ?? "")
+  return chip?.u ? userNamed(chip.u) : Promise.resolve(null)
+}
+
+let recorder: ReturnType<typeof visitHits> | undefined
+/** The recorder of `/you/<name>` redirects, built on the first one, so a build
+ *  reads no credentials. */
+export function hits(): ReturnType<typeof visitHits> {
+  recorder ??= visitHits({ db: visitDriver(), site: SITE, readerOf })
+  return recorder
 }
