@@ -41,3 +41,6 @@ next-env.d.ts
 
 # database backups
 backup*.sql
+
+# `pnpm captures`' scratch folder, left only by a run that was killed
+.capture-*

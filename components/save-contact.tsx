@@ -16,6 +16,7 @@ export function CardSave({ username }: { username: string }) {
     <a
       href={`/${username}.vcf`}
       download={`${username}.vcf`}
+      data-slot="card-save"
       aria-label="save contact (vCard)"
       title="save contact"
       className={cn(

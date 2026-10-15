@@ -5,7 +5,7 @@ import type { BrowserCapture } from "@/lib/browser-capture";
 
 /** Where one route of the address lands: its end (app/[username]/[link]: /gh),
  *  where it redirects, and what is there: the site as it really looks (`shot`,
- *  captured by `pnpm links`), or, where nothing is captured (an email's compose
+ *  captured by `pnpm captures`), or, where nothing is captured (an email's compose
  *  window), drawn here. */
 export type Landing = {
   end: string;

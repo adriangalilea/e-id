@@ -84,7 +84,7 @@ export async function Features() {
 
 /** Where each of the holder's routes lands (link-map): the first link of each
  *  platform, the one its route opens, as its page really looks, captured in both
- *  schemes by `pnpm links` (lib/link-shots.json); an email as the compose window
+ *  schemes by `pnpm captures` (captures.ts); an email as the compose window
  *  it opens. A link with no route (a link of their own) or no capture (a site
  *  that refuses a headless browser, X) is left out rather than drawn as something
  *  it is not. */
@@ -93,8 +93,8 @@ function landingsOf(holder: Holder): Landing[] {
   const first = links.filter(
     (l, i) => links.findIndex((m) => m.platform === l.platform) === i,
   );
-  // Captured for one handle, the home's lead; another lead has none until
-  // `pnpm links <handle>` runs.
+  // Captured for one handle, the home's lead (captures.ts); another lead has
+  // none until the plan names them and `pnpm captures` runs.
   const captured = SHOTS.handle === holder.username ? SHOTS.shots : {};
   return first.flatMap((link): Landing[] => {
     const end = shortName(link.platform);
@@ -147,9 +147,9 @@ function Compose({ to }: { to: string }) {
 }
 
 /** The visit's first page, what the address with no end opens: the holder's
- *  profile as it really looks, captured by `pnpm links` with their links. A lead
- *  not captured yet (the showcase's lead changed since) shows their card alone
- *  until `pnpm links <handle>` runs, rather than someone else's page. */
+ *  profile as it really looks, captured by `pnpm captures` with their links. A
+ *  lead not captured yet (the showcase's lead changed since) shows their card
+ *  alone until the plan names them, rather than someone else's page. */
 function profileOf(holder: Holder): React.ReactNode {
   if (SHOTS.handle === holder.username)
     return <BrowserCapturePage capture={SHOTS.profile} />;
@@ -170,7 +170,7 @@ function pressOf(holder: Holder): { x: number; y: number } | undefined {
 }
 
 /** The holder's profile as a phone shows it: the page itself on a phone, its
- *  mobile layout, ground and all, captured by `pnpm links` with where its save
+ *  mobile layout, ground and all, captured by `pnpm captures` with where its save
  *  button is (`found.save`), which the story presses: a finger's light laid on
  *  the button in the picture while the page round it is `data-pressing`. A lead
  *  not captured yet shows their card alone, as `profileOf` does. */

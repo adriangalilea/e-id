@@ -19,6 +19,46 @@ export interface BrowserCapture {
   light: MediaAsset
 }
 
+/** One page a site captures, as its declaration says it (`CapturePlan`). */
+export interface CaptureSpec {
+  url: string
+  /** On a phone (its mobile layout, one screen tall), else a desktop `width`. */
+  phone?: boolean
+  /** CSS px (1280), a desktop's. */
+  width?: number
+  /** How many screens down it is captured (2.5 on a desktop, 1 on a phone). */
+  tall?: number
+  /** Things the page must show, by name and selector: their places are kept
+   *  (`found`), and the capture fails when one is missing (an old deploy). */
+  find?: Record<string, string>
+  /** A page that may refuse a headless browser (X does): left out, its reason
+   *  kept in the manifest's `missing`, instead of failing the run. */
+  optional?: boolean
+}
+
+/** A SITE'S CAPTURES AS CODE: what `mise capture <file>` (the registry's checkout)
+ *  makes. Its pictures go to `folder` (under the site's `public/`, served at
+ *  its root), its manifest to `manifest`, which the site imports as it is. Run
+ *  again, it makes the same thing: a page unchanged keeps its address (the
+ *  content's hash), a page no longer declared loses its files. The file's
+ *  default export is the plan, or a function making it (a plan read from
+ *  the site's own data). */
+export interface CapturePlan<Meta = Record<string, never>> {
+  folder: string
+  manifest: string
+  /** What the site keeps with the captures (whose they are). */
+  meta: Meta
+  shots: Record<string, CaptureSpec>
+}
+
+/** What `mise capture` writes: the plan's `meta`, each shot by its name, and
+ *  each optional shot that was refused with why. */
+export interface CaptureManifest<Meta = Record<string, never>> {
+  meta: Meta
+  captures: Record<string, BrowserCapture>
+  missing: Record<string, string>
+}
+
 /** The thing called `name` on the page. Screams when the capture did not look
  *  for it: a story pointing at nothing is wrong, never empty. */
 export function foundOn(capture: BrowserCapture, name: string): CaptureBox {

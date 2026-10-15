@@ -20,7 +20,7 @@ const nextConfig: NextConfig = {
   // The share image's renderer is a native addon (lib/card-image): loaded from
   // node_modules at run time, never bundled.
   serverExternalPackages: ["@resvg/resvg-js"],
-  // The home's captures (public/links, `pnpm links`) are named with their
+  // The home's captures (public/links, `pnpm captures`) are named with their
   // content's hash as a query (`?v=`), so one taken again is a new address to
   // the image loader's cache; every other local picture has none.
   images: {
