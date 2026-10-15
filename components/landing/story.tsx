@@ -85,8 +85,10 @@ const MACBOOK = 1.48;
 /** The laptop's menu bar under its notch, as tall as macOS draws it beside one. */
 const MENU_BAR = 30;
 
-/** How far a device stands out of its card, past its top and its foot. */
-const OUT = "2.5rem";
+/** How far a device stands out of its card, past its top and its foot: by the
+ *  window (`--story-out`, on the story), well out on a wide one, barely on a
+ *  phone, where the card takes the window's height. */
+const OUT = "var(--story-out)";
 
 /** A window's page a step lighter than the site's ground (globals.css: 0.12; a
  *  card's surface 0.21), as the theme's own `--background` round it, so its page
@@ -211,6 +213,9 @@ export function Story(props: StoryProps) {
       label="what an e-ID does"
       chapters={chapters}
       picker="labels"
+      // Played by the scroll on a phone too: at rest each chapter showed only
+      // its end (one link frozen on its last route).
+      pin="all"
       pace="110svh"
       tail="30svh"
       clear={{ top: "5.5rem", bottom: "1.5rem" }}
@@ -218,7 +223,10 @@ export function Story(props: StoryProps) {
       deck={{ bleed: true }}
       // The window under the bar, less the room a device stands out by above
       // and below its card and the picker under the deck.
-      className="[--card-h:clamp(28rem,calc(100svh-19rem),44rem)]"
+      // On a phone, every bit of the window between the bar and the picker: the
+      // words stand over the scene there, the device takes what is left and
+      // stands out of nothing, so the room kept for that is a step only.
+      className="[--card-h:clamp(28rem,calc(100svh-19rem),44rem)] [--story-out:2.5rem] max-lg:[--card-h:calc(100svh-14.5rem)] max-lg:[--story-out:0.5rem]"
     />
   );
 }
