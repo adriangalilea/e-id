@@ -72,7 +72,9 @@ export async function Features() {
         // The domain reserved for examples (RFC 2606): the address is live, and
         // any other would be someone's.
         address: "example.com",
-        page: <EmbedPage username={holder.username} />,
+        snippet: embedOf(holder.username),
+        // The real script and element working, as they do on someone's site.
+        card: <LiveEmbed handle={holder.username} width="100%" />,
         code: <EmbedCode username={holder.username} />,
       }}
     />
@@ -232,16 +234,6 @@ async function contactOf(
   };
 }
 
-/** Someone's own site with the card on it: the real script and element working
- *  (`LiveEmbed`), centred, at most half the window's width so it sits on the page
- *  the way an embed does. */
-function EmbedPage({ username }: { username: string }) {
-  return (
-    <div className="@container grid min-h-full place-items-center p-6">
-      <LiveEmbed handle={username} width="min(26rem, 55cqw)" />
-    </div>
-  );
-}
 
 /** The embed's two lines (`embedOf`) as the code a site pastes in (@ag/code,
  *  glass, its copy in its bar). Cached: the highlighter reads the clock as it

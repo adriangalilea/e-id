@@ -13,6 +13,9 @@ export type BrowserStep = (
   | { kind: "go"; url: string }
   /** The back button: the page before loads again. */
   | { kind: "back" }
+  /** The reload button: the page loads again from its server, which may serve it
+   *  changed (a file saved since): the frame's `serving` counts it. */
+  | { kind: "reload" }
   /** The page scrolled to `to`, 0 (its top) to 1 (its foot), over `ms`. */
   | { kind: "scroll"; to: number; ms?: number }
 ) & { delay?: number }
@@ -61,6 +64,10 @@ export interface BrowserFrame {
   load: BrowserLoad | null
   /** How far down the drawn page is, 0..1. */
   scroll: number
+  /** Which load of the drawn page's address is shown, 0 the first: each typed,
+   *  followed or reloaded load of it counts one, back (from the cache) none. A page
+   *  whose server changes between loads draws the serving it is on. */
+  serving: number
   /** Whether back and forward have anywhere to go. */
   back: boolean
   forward: boolean
@@ -112,6 +119,8 @@ function stepMs(s: BrowserStep): number {
       return LOAD_MS
     case "back":
       return CACHED_MS
+    case "reload":
+      return LOAD_MS
     case "scroll":
       return s.ms ?? SCROLL_MS
   }
@@ -152,6 +161,8 @@ export function browserTimeline(
         if (here === 0)
           throw new Error("browser-session: back with no page before")
         here--
+      } else if (s.kind === "reload") {
+        // The same page, in the same place in the history.
       } else {
         history.splice(here + 1, Infinity, destination(s))
         here++
@@ -211,6 +222,8 @@ export function browserFrameAt(
   let load: BrowserLoad | null = null
   let scroll = 0
   let step = -1
+  /** How many times each address has loaded, the start once. */
+  const loads: Record<string, number> = { [timeline.start]: 0 }
   // A finished load's bar still fading at `ms`.
   const fading = (end: number): BrowserLoad | null =>
     ms < end + FADE_MS
@@ -251,9 +264,13 @@ export function browserFrameAt(
       }
     }
     const target =
-      s.kind === "back" ? (history[here - 1] as string) : destination(s)
+      s.kind === "back"
+        ? (history[here - 1] as string)
+        : s.kind === "reload"
+          ? (history[here] as string)
+          : destination(s)
     if (s.kind === "back") here--
-    else {
+    else if (s.kind !== "reload") {
       history.splice(here + 1, Infinity, target)
       here++
     }
@@ -264,9 +281,12 @@ export function browserFrameAt(
       s.kind === "type" && s.to !== undefined && p < COMMIT
         ? s.text
         : (timeline.spelled[target] ?? target)
-    if (p >= COMMIT && url !== target) {
+    if (p >= COMMIT) {
+      // A reload keeps the place on the page, as a browser restores it.
+      if (url !== target) scroll = 0
       url = target
-      scroll = 0
+      // Back draws the page from the cache: the serving it last showed.
+      if (s.kind !== "back") loads[target] = (loads[target] ?? -1) + 1
     }
     load = p < 1 ? { progress: loadCurve(p), opacity: 1 } : fading(to)
   }
@@ -277,6 +297,7 @@ export function browserFrameAt(
     selected,
     load,
     scroll,
+    serving: loads[url] as number,
     back: here > 0,
     forward: here < history.length - 1,
     step,

@@ -846,8 +846,13 @@ export interface BrowserSessionProps
   /** The page the visit opens on. */
   start: string
   steps: BrowserStep[]
-  /** Every page the visit reaches, by its URL (any spelling `urlOf` reads the same). */
-  pages: Record<string, React.ReactNode>
+  /** Every page the visit reaches, by its URL (any spelling `urlOf` reads the same).
+   *  A page its server changes between loads (a file saved, then a `reload`) is a
+   *  function of the serving: 0 the first load of its address, 1 the next. */
+  pages: Record<
+    string,
+    React.ReactNode | ((serving: number) => React.ReactNode)
+  >
   /** The moment drawn, 0..1 of the visit, for a still. Inside a driver (a Player)
    *  omit it: the driver provides the moment. */
   progress?: number
@@ -885,6 +890,8 @@ export function BrowserSession({
     return byUrl
   }, [pages, timeline])
   const f = browserFrameAt(timeline, usePlayhead(progress).at * timeline.total)
+  const page = drawn.get(f.url)
+  const shown = typeof page === "function" ? page(f.serving) : page
   // The page drawn, as it was written, as a real address: what `linked` opens.
   const written = timeline.spelled[f.url] ?? f.url
   const link = linked
@@ -912,10 +919,10 @@ export function BrowserSession({
     >
       {linked ? (
         <div inert aria-hidden className="contents">
-          {drawn.get(f.url)}
+          {shown}
         </div>
       ) : (
-        drawn.get(f.url)
+        shown
       )}
     </Browser>
   )

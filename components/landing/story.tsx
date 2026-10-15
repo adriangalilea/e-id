@@ -20,7 +20,13 @@ import {
 import { type Landing, routePages } from "@/components/landing/link-map";
 import { Scaled } from "@/components/landing/scaled";
 import { EMOJI_DOMAIN } from "@/lib/const";
+import { IdeSession } from "@/components/ui/ide";
 import { type BrowserStep, browserTimeline } from "@/lib/browser-session";
+import {
+  type CodeFile,
+  type CodeStep,
+  codeTimeline,
+} from "@/lib/code-session";
 import { cn } from "@/lib/utils";
 
 // WHAT A CARD DOES, told on the scroll (@ag/scroll-story), a card per chapter
@@ -49,7 +55,17 @@ type StoryProps = {
     page: React.ReactNode;
   };
   data: Page;
-  embed: Page & { code: React.ReactNode };
+  embed: {
+    /** The site the card is embedded on. */
+    address: string;
+    /** The two lines a site pastes in (lib/card-schema `embedOf`), typed into
+     *  the site's page. */
+    snippet: string;
+    /** The card as the embed draws it on the site. */
+    card: React.ReactNode;
+    /** The same two lines, to copy. */
+    code: React.ReactNode;
+  };
 };
 
 /** The laptop's screen, CSS px, before it is scaled to where it is shown: a small
@@ -83,7 +99,7 @@ type Visit = {
 
 export function Story(props: StoryProps) {
   const story = useStory(props);
-  const { routes, laptop, contact } = story;
+  const { routes, laptop, contact, site } = story;
   const chapters = useMemo(
     (): StoryChapter[] => [
       {
@@ -155,7 +171,7 @@ export function Story(props: StoryProps) {
               <Fit ratio={MACBOOK}>
                 <Laptop
                   visit={laptop}
-                  at={(p * laptop.typed) / laptop.total}
+                  at={p}
                   alt="a laptop's browser at the card's data, scrolled through"
                 />
               </Fit>
@@ -167,7 +183,7 @@ export function Story(props: StoryProps) {
         id: "embed",
         label: "embed",
         mark: <Code />,
-        play: 0.7,
+        play: 0.75,
         hold: 0.9,
         content: ({ p }) => (
           <StoryCard
@@ -178,21 +194,14 @@ export function Story(props: StoryProps) {
             overflow
             scene={
               <Fit ratio={MACBOOK}>
-                <Laptop
-                  visit={laptop}
-                  at={
-                    (laptop.typed + p * (laptop.total - laptop.typed)) /
-                    laptop.total
-                  }
-                  alt="a laptop's browser on a site with the card embedded"
-                />
+                <Desk site={site} at={p} />
               </Fit>
             }
           />
         ),
       },
     ],
-    [story, routes, laptop, contact],
+    [story, routes, laptop, contact, site],
   );
   return (
     <ScrollStory
@@ -258,13 +267,7 @@ function useStory({
     } satisfies Visit & { starts: number[] };
     const laptopSteps: BrowserStep[] = [
       { kind: "scroll", to: 1, ms: 3200, delay: 600 },
-      { kind: "type", text: embed.address, delay: 900 },
     ];
-    const laptopTimeline = browserTimeline(data.address, laptopSteps);
-    // Where the site's address starts being typed: the data's chapter ends there.
-    const typed = laptopTimeline.starts[1];
-    if (typed === undefined)
-      throw new Error("story: the laptop types no address");
     return {
       // Every route, the one link's own first: its address and its icon.
       stops: [
@@ -280,12 +283,59 @@ function useStory({
       laptop: {
         start: data.address,
         steps: laptopSteps,
-        pages: { [data.address]: data.page, [embed.address]: embed.page },
-        total: laptopTimeline.total,
-        typed,
+        pages: { [data.address]: data.page },
+        total: browserTimeline(data.address, laptopSteps).total,
       },
+      site: siteOf(embed),
     };
   }, [username, profile, landings, contact, data, embed]);
+}
+
+/** A site's page before the card: the file the embed's two lines are typed into. */
+const SITE_FILE = `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>my site</title>
+  </head>
+  <body>
+    <h1>hello</h1>
+  </body>
+</html>
+`;
+
+/** The embed as a site's owner does it, on one clock: the page opened in the
+ *  editor, the script typed into its head and the card into its body, saved; the
+ *  site in the browser beside it reloaded once the save lands, the card on it. */
+function siteOf(embed: StoryProps["embed"]) {
+  const [script, element, ...rest] = embed.snippet.split("\n");
+  if (!script || !element || rest.length > 0)
+    throw new Error(`story: the embed is not two lines: ${embed.snippet}`);
+  const files: CodeFile[] = [{ path: "index.html", text: SITE_FILE }];
+  // A line is counted in the file as it is when its step starts: the script goes
+  // after the title (5), the card after the heading (9, the script one line in).
+  const steps: CodeStep[] = [
+    { kind: "open", path: "index.html" },
+    { kind: "type", line: 5, text: `\n    ${script}`, delay: 600 },
+    { kind: "type", line: 9, text: `\n    ${element}`, delay: 400 },
+    { kind: "save", delay: 400 },
+  ];
+  const saved = codeTimeline(files, steps).ends.at(-1);
+  if (saved === undefined) throw new Error("story: the edit has no steps");
+  const visit: BrowserStep[] = [{ kind: "reload", delay: saved + 300 }];
+  const timeline = browserTimeline(embed.address, visit);
+  const reload = timeline.starts[0];
+  if (reload === undefined) throw new Error("story: the site never reloads");
+  return {
+    address: embed.address,
+    files,
+    steps,
+    visit,
+    card: embed.card,
+    /** The one clock both windows run on: the edit, then the reload. */
+    clock: timeline.total,
+    reload,
+  };
 }
 
 /** A thing of one shape (`ratio`, width over height) as large as it fits in the
@@ -452,6 +502,28 @@ function Phone({
  *  its moment, 0..1). */
 function Laptop({ visit, at, alt }: { visit: Visit; at: number; alt: string }) {
   return (
+    <Screen app="Safari">
+      <div className="min-h-0 flex-1">
+        <BrowserSession
+          material="glass"
+          full
+          linked
+          progress={at}
+          start={visit.start}
+          steps={visit.steps}
+          pages={visit.pages}
+          alt={alt}
+          className="aspect-auto h-full w-full rounded-none shadow-none"
+        />
+      </div>
+    </Screen>
+  );
+}
+
+/** The laptop's screen, a real screen scaled whole: the menu bar under the notch,
+ *  led by the app in front, and what is open under it. */
+function Screen({ app, children }: { app: string; children: React.ReactNode }) {
+  return (
     <MacbookFrame className={GROUND}>
       <Scaled {...SCREEN} className="w-full">
         <div className="absolute inset-0 flex flex-col bg-black">
@@ -463,27 +535,82 @@ function Laptop({ visit, at, alt }: { visit: Visit; at: number; alt: string }) {
               fontFamily: "-apple-system, system-ui, sans-serif",
             }}
           >
-            <span className="font-semibold">Safari</span>
+            <span className="font-semibold">{app}</span>
             <span>File</span>
             <span>Edit</span>
             <span>View</span>
-            <span>History</span>
+            <span>Window</span>
           </div>
-          <div className="min-h-0 flex-1">
-            <BrowserSession
-              material="glass"
-              full
-              linked
-              progress={at}
-              start={visit.start}
-              steps={visit.steps}
-              pages={visit.pages}
-              alt={alt}
-              className="aspect-auto h-full w-full rounded-none shadow-none"
-            />
-          </div>
+          {children}
         </div>
       </Scaled>
     </MacbookFrame>
+  );
+}
+
+/** Room between the desk's windows, and round them. */
+const DESK_GAP = 12;
+
+/** The editor's share of the screen's width: room for the script's line, the
+ *  longest the edit types, unwrapped. */
+const EDITOR_WIDTH = 590;
+
+/** The embed done on a laptop (`siteOf`, `at` the chapter's moment): the editor
+ *  on the left typing the two lines into the site's page and saving it, the
+ *  browser on the right on the site, reloaded once the save lands, the card on
+ *  it. The menu bar follows the hand, the editor's until the reload. */
+function Desk({ site, at }: { site: Story["site"]; at: number }) {
+  const browsing = at * site.clock >= site.reload;
+  const pages = useMemo(
+    () => ({
+      [site.address]: (serving: number) => (
+        <Site card={serving > 0 ? site.card : null} />
+      ),
+    }),
+    [site],
+  );
+  const window = { top: DESK_GAP, bottom: DESK_GAP };
+  return (
+    <Screen app={browsing ? "Safari" : "Code"}>
+      <div className="relative min-h-0 flex-1">
+        <IdeSession
+          project="my-site"
+          files={site.files}
+          steps={site.steps}
+          progress={at}
+          duration={site.clock}
+          explorer={false}
+          scheme="dark"
+          alt="an editor: the embed's script typed into the head of index.html and its card into the body, then saved"
+          className="absolute aspect-auto"
+          style={{ ...window, left: DESK_GAP, width: EDITOR_WIDTH }}
+        />
+        <BrowserSession
+          material="glass"
+          progress={at}
+          start={site.address}
+          steps={site.visit}
+          pages={pages}
+          alt="the site in a browser beside it, reloaded after the save, the card on it"
+          className="absolute aspect-auto"
+          style={{
+            ...window,
+            left: DESK_GAP * 2 + EDITOR_WIDTH,
+            width: SCREEN.width - DESK_GAP * 3 - EDITOR_WIDTH,
+          }}
+        />
+      </div>
+    </Screen>
+  );
+}
+
+/** Someone's own site: a heading, and the card under it once embedded, as wide
+ *  as the page's column. */
+function Site({ card }: { card: React.ReactNode | null }) {
+  return (
+    <div className="min-h-full p-6">
+      <h1 className="font-semibold text-3xl">hello</h1>
+      {card && <div className="mt-6">{card}</div>}
+    </div>
   );
 }

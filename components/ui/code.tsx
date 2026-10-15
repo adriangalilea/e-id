@@ -7,6 +7,7 @@ import {
   transformerNotationWordHighlight,
 } from "@shikijs/transformers"
 import { type BundledLanguage, codeToHtml } from "shiki"
+import { CODE_THEMES } from "@/lib/code-tokens"
 import { Copy } from "@/components/ui/copy"
 import { Glass } from "@/components/ui/material-glass"
 import "./code.css"
@@ -94,7 +95,7 @@ export async function Code({
   const marked = highlight ? parseLines(highlight) : null
   const html = await codeToHtml(source, {
     lang,
-    themes: { light: "github-light", dark: "github-dark" },
+    themes: CODE_THEMES,
     defaultColor: false,
     transformers: [
       // The notations travel INSIDE the source, so they survive an edit that moves a
