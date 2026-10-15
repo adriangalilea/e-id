@@ -1,5 +1,5 @@
-import Link from "next/link"
 import { EmojiDomain } from "@/components/brand"
+import { HomeLink } from "@/components/footer/home-link"
 import { Glass } from "@/components/ui/material-glass"
 
 import FooterUser from "./footer_user"
@@ -19,14 +19,13 @@ export default function Footer() {
         shape="bar"
         className="pointer-events-auto mx-auto flex w-full max-w-md justify-between pl-4 [--glass-size:3.5rem] md:max-w-6xl md:[--glass-size:3.25rem]"
       >
-        <Link
-          href="/"
+        <HomeLink
           aria-label="home"
           // The wordmark's size is the bar's one (`--wordmark`, globals.css).
           className="text-(length:--wordmark) flex items-center font-light tracking-[-0.02em] transition-opacity [--logo-size:calc(var(--wordmark-logo)*1cap)] hover:opacity-80"
         >
           <EmojiDomain logo />
-        </Link>
+        </HomeLink>
         {/* The bar's right end: the account alone. What e-ID is and does is
             the home's to say, never a page of questions. */}
         <FooterUser />
