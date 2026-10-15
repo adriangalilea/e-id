@@ -72,6 +72,17 @@ export type AccountMenuSize = "md" | "lg"
  *  less the 4 px it is inset by (`pl-1`). */
 const FACE: Record<AccountMenuSize, string> = { md: "size-6", lg: "size-8" }
 
+/** The signed-out face's line, in Lucide's 24-unit grid, so that drawn at the
+ *  face's size it is the chevron's line on screen: Lucide's 2 at the chevron's
+ *  16 px, 1.33 px. At its default it was 2 px at `lg`, heavier than everything
+ *  beside it. */
+const FACE_LINE: Record<AccountMenuSize, number> = { md: 4 / 3, lg: 1 }
+
+/** The chevron at the pill's end, concentric with its round end as the face is
+ *  with the start: the end padding is half the pill's height less half the 16 px
+ *  chevron (the button's own `px-4` left it 20 px of air to the face's 4). */
+const END: Record<AccountMenuSize, string> = { md: "pr-2", lg: "pr-3" }
+
 /** A brand's mark from a 24-unit path (simple-icons' shape: `{ path }`), in the
  *  current colour, sized by whatever holds it (a button's icon slot, a menu row). */
 export function ProviderGlyph({
@@ -224,17 +235,13 @@ function SignedOut<P extends string>({
           size={size}
           loading={waiting || busy}
           icon={
-            // A 1.5 px line on screen at every size: the face is drawn larger
-            // than Lucide's 24 px grid (32 px at lg), where a relative 1.5 came
-            // out a 2 px line, heavy beside the words.
             <CircleUserRound
-              strokeWidth={1.5}
-              absoluteStrokeWidth
+              strokeWidth={FACE_LINE[size]}
               className={cn(FACE[size], "-my-1")}
             />
           }
           iconEnd={CHEVRON}
-          className={cn("group pl-1", className)}
+          className={cn("group pl-1", END[size], className)}
         >
           {label ?? "sign in"}
         </Button>
@@ -274,7 +281,7 @@ function SignedIn({
             size={size}
             loading={busy}
             iconEnd={CHEVRON}
-            className={cn("group gap-2 pl-1", className)}
+            className={cn("group gap-2 pl-1", END[size], className)}
           >
             <span
               data-slot="account-menu-avatar"
