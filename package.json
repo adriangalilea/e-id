@@ -20,8 +20,6 @@
     "@libsql/client": "^0.18.0",
     "@resvg/resvg-js": "2.6.2",
     "@shikijs/transformers": "^4.5.0",
-    "@vercel/analytics": "^2.0.1",
-    "@vercel/speed-insights": "^2.0.0",
     "better-auth": "^1.7.7",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",

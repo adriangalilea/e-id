@@ -1,8 +1,6 @@
 import type { Metadata } from "next"
 import { FONT_VARIABLES } from "./fonts"
 import "./globals.css"
-import { Analytics } from "@vercel/analytics/react"
-import { SpeedInsights } from "@vercel/speed-insights/next"
 import Footer from "@/components/footer/footer"
 import { PageLight } from "@/components/light"
 import { SitePageSensor } from "@/components/page-sensor"
@@ -65,8 +63,7 @@ export default async function RootLayout({
             click (a shortcut, a modifier, switching windows) never rings what the
             click focused. */}
         <FocusSource />
-        <Analytics />
-        <SpeedInsights />
+        {/* The site's visits are its own (lib/visit-store), no third party's. */}
         {visitsEnabled && <SitePageSensor />}
       </body>
     </html>
