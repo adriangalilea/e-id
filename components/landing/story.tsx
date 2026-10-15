@@ -1,6 +1,14 @@
 "use client";
 
-import { IdCard } from "lucide-react";
+import {
+  Braces,
+  Code,
+  Contact,
+  IdCard,
+  type LucideIcon,
+  Route as RouteIcon,
+} from "lucide-react";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { useMemo } from "react";
 import { BrowserSession } from "@/components/ui/browser";
 import { ContactsApp, contactsAppScreen } from "@/components/ui/contacts-app";
@@ -31,6 +39,8 @@ import { cn } from "@/lib/utils";
 /** One act: its headline in two tones (`lead` bright, `rest` dimmer), its line,
  *  and the press it is about. */
 export type StoryAct = {
+  /** What the act is about, at a glance, beside its name in the acts' bar. */
+  Icon: LucideIcon;
   lead: string;
   rest: string;
   body?: React.ReactNode;
@@ -188,19 +198,21 @@ function useStory({
         typed,
       },
       acts: [
-        { lead: "one link", rest: "to route them all" },
+        { Icon: RouteIcon, lead: "one link", rest: "to route them all" },
         {
+          Icon: Contact,
           lead: "easy",
           rest: "to save",
           body: "Your e-ID generates a vCard so people can save you as a contact.",
           action: contact.save,
         },
         {
+          Icon: Braces,
           lead: "for programs",
           rest: "too",
           body: "just add /json to any profile",
         },
-        { lead: "embed", rest: "on your website" },
+        { Icon: Code, lead: "embed", rest: "on your website" },
       ] satisfies StoryAct[],
     };
   }, [username, profile, landings, contact, data, embed]);
@@ -446,28 +458,21 @@ function Acts({
   onPick: (act: number) => void;
 }) {
   return (
-    <ol className="col-span-2 flex flex-wrap gap-x-5 gap-y-2">
-      {acts.map((act, i) => (
-        <li key={act.lead}>
-          <button
-            type="button"
-            aria-current={i === active ? "step" : undefined}
-            onClick={() => onPick(i)}
-            className={cn(
-              `flex cursor-pointer items-baseline gap-2 rounded-md text-sm
-              transition-colors outline-none focus-visible:ring-2
-              focus-visible:ring-foreground/40`,
-              i === active
-                ? "text-foreground"
-                : "text-foreground/40 hover:text-foreground/70",
-            )}
-          >
-            <span className="font-mono text-xs tabular-nums">0{i + 1}</span>
+    <div className="col-span-2 flex justify-center">
+      <ToggleGroup
+        size="lg"
+        aria-label="what an e-ID does"
+        value={String(active)}
+        onValueChange={(v) => onPick(Number(v))}
+      >
+        {acts.map((act, i) => (
+          <ToggleGroupItem key={act.lead} value={String(i)}>
+            <act.Icon />
             {act.lead}
-          </button>
-        </li>
-      ))}
-    </ol>
+          </ToggleGroupItem>
+        ))}
+      </ToggleGroup>
+    </div>
   );
 }
 
