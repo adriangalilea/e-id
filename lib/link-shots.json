@@ -8,22 +8,22 @@
       "width": 2560,
       "height": 1600,
       "mime": "image/webp",
-      "bytes": 112958,
-      "blurDataURL": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAKCAIAAAAy3EnLAAAACXBIWXMAAAPoAAAD6AG1e1JrAAAA/0lEQVQYlXWQu07EMBBFU26isWPvPOy85I2STZYFBF9AQUGHRMdHUFPzN3wnWpuEgMSRO8/xHd8MEeu65gUiwgVrrYmUZZlulVIZETE7lppQCKXzXkSGYVin1W8yZn59eft4/zwe5/P5ZhwnZg6H2UeTIikwyRkidv3V9d0D7plQrEUienp8Pp1O0zR5790CEV2Edb/1GWNMCKHv+xBC27ZV01VN+BEAwEbSqNZaKSVds+9rM3szVvuptrcN3Tdy8Bchz3NrrXNOIswMAJdAYXaSDlUsB48SW9rtds45YwwAFBsAINWiF75bKooCEZ1z6X8pIfGvoLUuN/wRtgDAF1feJtYpb363AAAAAElFTkSuQmCC",
+      "bytes": 112728,
+      "blurDataURL": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAKCAIAAAAy3EnLAAAACXBIWXMAAAPoAAAD6AG1e1JrAAABAUlEQVQYlV2RO07EMBCGU8bR2LEzM7bzkhMlZLMgBCegoKBDouMQ1NTchnOi2GQ38Mmd59M/jwwRm6bhHSLCHWOMjpRlmX6llBkRMTu2DVaMFffeW2unabpUy79kzPz+9vH1+T1NN+vpdp4XZg7DyUeTIikwyRki9uP57uEJKya0xiARvTy/ruu6LIv33u0Q0SZc+jv2HUIYxzGE0HVd3fZ1G64CABznU0pJKW3fVmOjT17PdbU05r6lx9YOfhOEEMYY55yNMDMAbIGW2dn0qGY7eLRxS3meO+e01gBQHACAtBa187slIQQiOufSfCkhcay+CkVRKKXKSLrRUfgHAPwAQ30mz5p1/HIAAAAASUVORK5CYII=",
       "average": "#141515",
-      "src": "/links/adriangalilea/profile.dark.webp?v=ccfbce74ec",
-      "poster": "/links/adriangalilea/profile.dark.webp?v=ccfbce74ec"
+      "src": "/links/adriangalilea/profile.dark.webp?v=03883cc601",
+      "poster": "/links/adriangalilea/profile.dark.webp?v=03883cc601"
     },
     "light": {
       "kind": "image",
       "width": 2560,
       "height": 1600,
       "mime": "image/webp",
-      "bytes": 112784,
-      "blurDataURL": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAKCAIAAAAy3EnLAAAACXBIWXMAAAPoAAAD6AG1e1JrAAAA/klEQVQYlXWQu07EMBBFU2ajsWNnHnZecqLNZpcFBF9AQUGHRMdHUFPzN3wnWpuEgMSRO8/RnbkZIjZNwwtEhBEbMZGyLNOvUiojImbH0hAKofTei8h+v1+n1W8yZn59eft4/zwcjufzzTTNzByGo48mRVJmkjNE7Mer67sHrJhQrEUienp8Pp1O8zx7790CEV2Edb91dWNMCGEcxxBC13V129dt+BEAYHuf1lopJX1bjY05ejPV1dzY25buWxn8RdjtdtZa55xEmBkALoHC7CQ9qlkGjxJbyvPcOWeMAYBiAwCkWvTCd0tFUSCicy7dlxIS/wpa63LDH2ELAHwBUD0m0zPap0IAAAAASUVORK5CYII=",
+      "bytes": 112316,
+      "blurDataURL": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAKCAIAAAAy3EnLAAAACXBIWXMAAAPoAAAD6AG1e1JrAAAA/UlEQVQYlXWQwU6FMBBFWQKZlpaZaUuB9BEQeBqjX+DChTsTd36Ea9f+jd9paOWJJp50157c25shoveed4gId7TWKlJVVboVQmRExGzZeKwZa+6dM8aM43h5LX6TMfPry9vH++c4Xq3L9TTNzBxOi4smRVJgkjNE7Ifzzd0D1kxotEYienp8Xtd1nmfnnN0hok249Dv2DiEMwxBC6LquafumDT8CAOhIaiylFEKYvq0Hrxanpqaevb5t6b41J7cJRVFora21JsLMALAFGmZr0qGGzcmhiSvleW6tVUoBQHkAANIscud7pbIsEdFam/6XEhL/ClLK6sAf4QgAfAE9zibGzcBwxwAAAABJRU5ErkJggg==",
       "average": "#141515",
-      "src": "/links/adriangalilea/profile.light.webp?v=b7fa482ba9",
-      "poster": "/links/adriangalilea/profile.light.webp?v=b7fa482ba9"
+      "src": "/links/adriangalilea/profile.light.webp?v=d885d00a61",
+      "poster": "/links/adriangalilea/profile.light.webp?v=d885d00a61"
     }
   },
   "phone": {
@@ -32,9 +32,9 @@
     "found": {
       "save": {
         "x": 168.40625,
-        "y": 223.109375,
-        "width": 112.75,
-        "height": 26.78125
+        "y": 236.5,
+        "width": 103.296875,
+        "height": 23.890625
       }
     },
     "dark": {
@@ -42,22 +42,22 @@
       "width": 804,
       "height": 1748,
       "mime": "image/webp",
-      "bytes": 56204,
-      "blurDataURL": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAcAAAAQCAIAAABV4/KnAAAACXBIWXMAAAPoAAAD6AG1e1JrAAAA+klEQVQYlTXOS07EMAyA4VyAJK6dOE1TMk2fiHZmOkIIgWAFZ+AAsGHHEgkuwBG4LZpO51v+tiwL7z0z4yKEUJZRay2IyJwREQAopYS1ljlnzgktoTXGBEcihH5/89r0j3XdXg3X47h1zomn+5ff77/Pt59YN7GqrHWYGZH7ajw8V/XeGDaGMTMAKBCRiE4/ICIArD8ws16ohZRSeO+naULE0wAAjlVKaQxb67TOpJTrrlKqTgd7RkTHu1rrj/ev3Xae57ltW2YGgGMtitwtmNk5t9au61JKm9QUsfFhs9ZQxyKVvr8shpi35Vrl4C7GXN8W2UNp7yoA+AckeiPpMmNkrgAAAABJRU5ErkJggg==",
-      "average": "#1a1c1d",
-      "src": "/links/adriangalilea/phone.dark.webp?v=6019e3a3bc",
-      "poster": "/links/adriangalilea/phone.dark.webp?v=6019e3a3bc"
+      "bytes": 56698,
+      "blurDataURL": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAcAAAAQCAIAAABV4/KnAAAACXBIWXMAAAPoAAAD6AG1e1JrAAAA+UlEQVQYlTXOS07EMAyA4VyAJK6dOM1jyvSNaGemI4QQCFZwBg4AG3YskeACHIHbonY63/K3ZVl475kZFzHGlAqttSAic0ZEAKCUEtZa5pw5J7SE1hjjLYoYu8PNa909VlVz1V8Pw845J57uX36//z7fflIqgk/WOsyMyP12OD4X9cEYNoYxMwAoEJGITj8gIgCsPzCzXiil5EJ478dxRMTTAADmKqU0hq11WmdSytO6UEpV5dGeEdF8V2v98f61303TNDVNw8wAMNcQcrdgZufcWtu2LcvysqxDUfu4WWusilAm321CX+RNWqvs3cWQ69uQPSR7twWAf//jI8KsgYh8AAAAAElFTkSuQmCC",
+      "average": "#1a1b1c",
+      "src": "/links/adriangalilea/phone.dark.webp?v=0220d3e729",
+      "poster": "/links/adriangalilea/phone.dark.webp?v=0220d3e729"
     },
     "light": {
       "kind": "image",
       "width": 804,
       "height": 1748,
       "mime": "image/webp",
-      "bytes": 57210,
-      "blurDataURL": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAcAAAAQCAIAAABV4/KnAAAACXBIWXMAAAPoAAAD6AG1e1JrAAAA+UlEQVQYlTXOS07EMAyA4VyAJK6dOE1TMk2fiHZmOgIJgWAFZ+AAsGHHEgkuwBG4LZpO51v+tiUL7z0z4yKEUJZRay2IyJwREQAopYS1ljlnzgktoTXGeIsihH5/89r0j3XdXg3X47h1zomn+5ff77/Pt59YN7GqrHWYGZH7ajw8V/XeGDaGMTMAKBCRiE4/ICIArD8ws16ohZRSeO+naSKi0wAAjlVKaQxb67TOpJTrrlKqTgd7djoSWuuP96/ddp7nuW1bZgaAYy2K3C2Y2Tm31q7rUkqb1BSx8WGz1lDHIpW+vyyGmLflWuXgLsYcbovsobR3FQD8AyDSI+d0sEAAAAAAAElFTkSuQmCC",
-      "average": "#1a1c1d",
-      "src": "/links/adriangalilea/phone.light.webp?v=1dbed13f69",
-      "poster": "/links/adriangalilea/phone.light.webp?v=1dbed13f69"
+      "bytes": 56692,
+      "blurDataURL": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAcAAAAQCAIAAABV4/KnAAAACXBIWXMAAAPoAAAD6AG1e1JrAAAA90lEQVQYlTXOS07DMBCAYV8A2xOPPX6SxnkikrapEEIgWMEZOABs2LFEggtwBG6Lmqbf8p8ZaZj3nojUIsaYUimlZIiozxARAIQQzBhD5IgcKoPKaK2jRRZjv795bfrHum6vhutx3Fpr2dP9y+/33+fbT0pl8MkYqwrNnK/Gw3NV77UmrUkVGkAxpRQinn5QSgHA+gMRyYVYcM6Z936aJkQ8DQDgWDnnWpMxVsqCc77uCiHqfDBnpyMmpfx4/9pt53me27YlIgA41hCcXRCRtXatXdflnDe5CWXj42atsS5DTr6/DEPp2rRWPtiL0cnbUDwkc1cBwD8K9iPQXhcI1gAAAABJRU5ErkJggg==",
+      "average": "#1a1b1c",
+      "src": "/links/adriangalilea/phone.light.webp?v=d1e183b791",
+      "poster": "/links/adriangalilea/phone.light.webp?v=d1e183b791"
     }
   },
   "shots": {
@@ -69,22 +69,22 @@
         "width": 2560,
         "height": 3526,
         "mime": "image/webp",
-        "bytes": 281180,
-        "blurDataURL": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAAQCAIAAACtAwlQAAAACXBIWXMAAAPoAAAD6AG1e1JrAAABaElEQVQokWWQO0sDQRSFtwjRmMyM89q588rs5mHWQDQEFUGxSSEI2qQLiL29NjZiKdZ2/gk7/53EGzaKcBjuZb7LOZyMcbHToag2YW3CWu1Oo7ndaG5vtXbwNzuaXd0u3xc3T+BLbZOCKE1QEBVEKgCVvTy8Pj++fX58haJSELlyXLkVF4a4MmmzWO4fny9GkxNuutIPpAlMWqG9tgkPfqB+FftjGwZoJLTnyq0g12PSru20TeBLKkC5lLtCmkB4zqRl0hKeo7Lry+v7u+X87Ehoz6Jj0dHSky6QwrGhZ5XnKWYn81M8UhC1L3aNJTlQZToGqAPR3xPFJMNohOfgS2yBK1cbCV/txsOs3rVNrj+to3CxGjDiBlIQIY21TVRAnR3nDSS0t6GXuwJ8qSASnlP1D5ImHJ9e7E9mo/F0UB2kXhXLEbpvICoAg2ubhPaodU+/7aQJ0gRuukx6KuBPJiYtFlEP9YvQN2GxOu1Hhe64AAAAAElFTkSuQmCC",
+        "bytes": 281774,
+        "blurDataURL": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAAQCAIAAACtAwlQAAAACXBIWXMAAAPoAAAD6AG1e1JrAAABaklEQVQokWWRu0pDQRCGTxHUmOxu9nZ29pY9JxdzDESDmCAoNhaCEJtUCtr7ANrYiKVY2/kSdr6dxJETRfhZZthv+H9mMsbFdpuiWoS1CGu22o2NrcbG1mZzG3+zw4OLm+u35eUj+FLbpCBKExREBZEKQGXP9y9PD68f75+hqBRErhxXbsWFIbZM2iyWu7OT5Wgy56Yr/UCawKQV2mubcOAb6lexP7ZhgEZCe67cCnI9Ju2PnbYJfEkFKJdyV0gTCM+ZtExawnNUtjhf3N1enR0fCu1ZdCw6WnrSBVI4NvSs8jzFbH52hEMKovZFx1iSA1WmbYA6EP0dUUwyjEZ4Dr60oYd5ayPhq07cz+pe2+T60zoKF6sCI64hBRHSWNtEBdTZsV5DQnsberkrwJcKIuE5Vf8gacLs6HR3cjAaTwfVXupVsRyh+xqiAvB82iahPepnT7/tpAnSBG66THoq4E8mJi0uoi7qF6EvYLg67bvo97EAAAAASUVORK5CYII=",
         "average": "#151a1f",
-        "src": "/links/adriangalilea/github.dark.webp?v=bde46a659d",
-        "poster": "/links/adriangalilea/github.dark.webp?v=bde46a659d"
+        "src": "/links/adriangalilea/github.dark.webp?v=0bf5462c4c",
+        "poster": "/links/adriangalilea/github.dark.webp?v=0bf5462c4c"
       },
       "light": {
         "kind": "image",
         "width": 2560,
         "height": 3526,
         "mime": "image/webp",
-        "bytes": 298196,
+        "bytes": 298502,
         "blurDataURL": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAAQCAIAAACtAwlQAAAACXBIWXMAAAPoAAAD6AG1e1JrAAABV0lEQVQokV2Rz0rDQBCH9ymlUHPoWbx6EwSvPoBHPegTeBD05MWLB6EolIhB0aZNbZM02Z0/O5uVZGta/Mghy36Z+WVGjUajKIr2O6KO4XC41zEYDMKteh1PDw+uri+fAAARaYemw3uvxo+Tk6Ozm4u7ddVK3IFs8wo1kFhxzqm39+T49Pz2/sEgF3VbQKwg22AwcyuVZVlWa0Q0yKFSuKsNhnZN0ygA0Fo3TaOBAICIvPeuw/+h8lmWTp6recLMGazmZvlhvqe4+DLzSZW85PG8/lELk4ZfIKJKa82mFgDhtdRLKuJVliy0Cvm996YDEcVK32hZ8eeSVH82yNOV6aM00r6EiFuJiBZlW6nvLlY2w+wlZtZaA4AxJhRg2STZlSSO4zRNZ7NZlmV5nhdF8V9qR6V1iE9EYT+bOfWSWAl7NSjWtd8457aZnHNhR865MBGxEp4g/QLyaBIeidxh2wAAAABJRU5ErkJggg==",
         "average": "#eaecec",
-        "src": "/links/adriangalilea/github.light.webp?v=53b2d3dda9",
-        "poster": "/links/adriangalilea/github.light.webp?v=53b2d3dda9"
+        "src": "/links/adriangalilea/github.light.webp?v=d52599e5f4",
+        "poster": "/links/adriangalilea/github.light.webp?v=d52599e5f4"
       }
     },
     "website": {
@@ -95,22 +95,22 @@
         "width": 2560,
         "height": 4000,
         "mime": "image/webp",
-        "bytes": 420710,
+        "bytes": 420704,
         "blurDataURL": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAQCAIAAACgHXkXAAAACXBIWXMAAAPoAAAD6AG1e1JrAAABdUlEQVQYlU2Q624TMRCF/QBAIRt7PfZ4Pb5mbw7spuUSVYoQ0FZUAkF/cvmD+g59MB4QbYIEf0ZHmtH55hwmFJ1VcFbBk5U8icfPxEk/esoZoNc2CkUu9RwsBxRoJVqXekDPpHaAnoPVNkrtYrvtyszBAvqqRqZMQmqVSbF9gdQCekAvFFnfcrCMgxXKSx3aYaeb7FPxqQBGF0ehiFEY+nIBuODX0uRuMq4TinI3aRuZUHQ0aKxvpXYrrldcr6URiha21A4praXhYKsaUx5zNyEln4fl87AZz18dVBOez/uQt8dsi5lqHAdkPg+bfkZK2+mNi+PNu+u7Lz9+vY2/75uHG8OMS7kv2i7RqxqHcc7d5F2cSwnOs093X7///Pb++ipsRkCPlKR2HOxf9u3Hw+fby6sPh7LbUy6AXmqnmkDhuD6fuv1FN/ZZNUEo2nQvx+FSqKW4tTT/Oj9N4zaySdrGsnvtUs8UUi2RAyKlqkbVhP+v/wAsikEDDD2UUgAAAABJRU5ErkJggg==",
         "average": "#202226",
-        "src": "/links/adriangalilea/website.dark.webp?v=10601418b1",
-        "poster": "/links/adriangalilea/website.dark.webp?v=10601418b1"
+        "src": "/links/adriangalilea/website.dark.webp?v=3ab19af947",
+        "poster": "/links/adriangalilea/website.dark.webp?v=3ab19af947"
       },
       "light": {
         "kind": "image",
         "width": 2560,
         "height": 4000,
         "mime": "image/webp",
-        "bytes": 432386,
+        "bytes": 432382,
         "blurDataURL": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAQCAIAAACgHXkXAAAACXBIWXMAAAPoAAAD6AG1e1JrAAABmUlEQVQYlT1Ry2oVQRDtL/EHdONKkCwDClmIG0UMAYWEuBJURJBAMF+Q4MKFLnyhIIJoLhqiKJKQLBQ15N6b+5o7PTPdXd1dXd3z+ACZtLgpDlTVqXNOMS7AWG8xIFUWQwR4jJ2vmdIODBnr00wiVbPn506fOfvy1ZspF0o7ZqyP2xIQDD1+8nTj4aODwyMw1G4LZYWyUlEcj2TSOJ4rYz0DLAFLqf3RiEvt0wx4riVgmsm2Pc2gO5hK7QFL7apxKqUiY8vhOCuEZVEqoC+EbnVQhaFu6zFopUlApIpCQ6HJuJxyIZRNMwmGWJIWvw96xvpefxS9UWh4rrq9YZIWjOciSQsw1B9M8gKWri0uzC+v37y4uXji2a1zrD9KuoMJF+B8TaHZ3v76/sPW7s7e/vdvf379ZPdW7s8vXO18+lgI7Xwd03C+/nf7zu3lC3Mznc23kyRT2knAGI4EtBjY2urdG9cvb3XeRVeXriydOjnz+csOUtWG+v9dSMGXLWckGI5TCciev3i9+mBtb/9HvC2UVdrFn1Jo/gKvKpJy/3mmwQAAAABJRU5ErkJggg==",
         "average": "#d5d6d9",
-        "src": "/links/adriangalilea/website.light.webp?v=91368cfe6c",
-        "poster": "/links/adriangalilea/website.light.webp?v=91368cfe6c"
+        "src": "/links/adriangalilea/website.light.webp?v=fc0a75072c",
+        "poster": "/links/adriangalilea/website.light.webp?v=fc0a75072c"
       }
     },
     "youtube": {
@@ -121,22 +121,22 @@
         "width": 2560,
         "height": 2176,
         "mime": "image/webp",
-        "bytes": 160114,
-        "blurDataURL": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAOCAIAAACpTQvdAAAACXBIWXMAAAPoAAAD6AG1e1JrAAABj0lEQVQokWOQEBbVV1QWFBTk5+cXERERRAUiIiKysrLCwsL8/PxCYpJCIhIMEhISoqLiXu6FZkZerq6uFhYWZmZmEP1YAYOEhISetkFLzcTq/Ho1LV0JGXkRERFcqvn5+RkgNioo60rJyBUWFsrJyeFRzc/PzyAmJiYFBgLEAQZ+fn5bc73WCv26Ik91ZQX8xvPz84M02Fgap0WZx/hay8rKEqVBTFBYWlqaBCcpKKmlxYSkBjv5eTj7WuuG22lbS/PbSUpYaSrHhNgkhxirKcmj2BDg57N+RueanoLNi3ruXjm6r7s4UF5gTn1BoLXpoXWhpbE61rb2KBoiQv1PbFm0e0bZtXO7Pnx6tnNKn6OCpL2iQqiHx74Vvhs7TAJNDFA0hPrYb55WOqcydfaExjnTJm5ePM1ORT7dVlNXXnbpBJu2VHYXIzEUDcZ66oEe1n62xtHh/nFR4WFB/gaqSiZyUkbKMk7ePm72inpqiNADaRAVFZWRkREUFITEoLCwsIyMDCQhysrKiouLIwcrAJ04bm1WJJmQAAAAAElFTkSuQmCC",
-        "average": "#2f2a25",
-        "src": "/links/adriangalilea/youtube.dark.webp?v=babb22f822",
-        "poster": "/links/adriangalilea/youtube.dark.webp?v=babb22f822"
+        "bytes": 160666,
+        "blurDataURL": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAOCAIAAACpTQvdAAAACXBIWXMAAAPoAAAD6AG1e1JrAAABlUlEQVQokWOQEBbVV1QWFBTk5+cXERERRAUiIiKysrLCwsL8/PxCYpKCohIMEhISoqLiXu6FZkZerq6uFhYWZmZmEP1YAYOEhISetkFLzcTq/Ho1LV0JGXkRERFcqvn5+RkgNioo60rJKBQUFMjJyeFRzc/PzyAmJiYFBvz8/AJEAAZ+fn5bc73WCv26Ik91ZQX8xvPz84M02Fgap0abx/hay8rKEqVBTFBYWlqaGPcIQJykrKgUGRoUHejp7+nia60dbqdtLyVgrSjpqaEYE2KTHGKspiSPYoOHs/PC/q5VUxp2rJx898rRfd3FfqJsqZoqtY6mh9aFlsbqWNvao2gI8fHYNHfCvsWtd67s+/Dp2c4pffaiXB258dUeDvtW+G7sMAk0MUDREBNkd3JF47ZJ5YtndMyZNnHz4mm+WopJltrxNmZLJ9i0p7C7GImhhpKZbmacb5ibZUxEQHx0RFiQv7Gyiq6CtK6KipO3j5u9op4aIvRAGkRFRWVkZAQFBSExKCwsLCMjA0mIsrKy4uLiyMEKAAZkb9fbKuIRAAAAAElFTkSuQmCC",
+        "average": "#302a25",
+        "src": "/links/adriangalilea/youtube.dark.webp?v=6f02420b6f",
+        "poster": "/links/adriangalilea/youtube.dark.webp?v=6f02420b6f"
       },
       "light": {
         "kind": "image",
         "width": 2560,
         "height": 2176,
         "mime": "image/webp",
-        "bytes": 149508,
-        "blurDataURL": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAOCAIAAACpTQvdAAAACXBIWXMAAAPoAAAD6AG1e1JrAAABsUlEQVQokWP48+X72/sP//79+////58/f/5DBX///v369StE9suP3z9+/mX49u3br19/5sw6cv7045MnT167du3mzZsQFVgBw7dv3758/NZWN/nw9uOPnr1+//nHr1+/cKn+//8/w8ePH//8/nPs5JUnz57Pmzfvw4cPeFT///+f4cePH1/B4B9xgOH////3b16Y0+82tSvh/u0b+I3///8/SMObF49XL6jdsKD/yZMnRGn49/PX58+fSXDSvdt3tq5bc2jHhgO7969ZsmbprEXr+5uXNjZsXDDr6N4lZ/bOvn39MooND+7cXtjftWpKQ19jfU1+VYRbYJqJ6pz6goxgn0PrQktjdQ4dOYai4e2TBxvmTdi3uHVCVfbpI9vba8rDTPXsFRXyEhL2rfDd2GFyY/cOFA1fX10/uaJx26Ty5VPb2lO9Xj+9EGxpkm6r6WphunSCTXsK++mdc1E0fH739MjOZef2bVyxZv3M6VOfnjs2sa15YnX5uvkzpy9YuGll78tHN1E0/Pz589OnT3///v327dvXr1///P7z6dOnP7///P3799OnTz9+/EAOVgDRZUKdLKoGtQAAAABJRU5ErkJggg==",
-        "average": "#e1dcd8",
-        "src": "/links/adriangalilea/youtube.light.webp?v=83913d3fa4",
-        "poster": "/links/adriangalilea/youtube.light.webp?v=83913d3fa4"
+        "bytes": 156702,
+        "blurDataURL": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAOCAIAAACpTQvdAAAACXBIWXMAAAPoAAAD6AG1e1JrAAABpklEQVQokZWQyy8DURSHZ+ePsLCx8ViKRCKxs6sViY0Qj6WlkHgkaCgJJfVWNaJNUOqRouIRpcp4NkE7k0YGHfWOmdvONTOd2yvYmATh257fd87Jj1Cjr8/sFUIIYyzLclwLQkgUxc9pVIpBBREQQkVRzUOek4MQRVF+v59hmM/EtxAQwqgAWxpM28u71+HHl4ikKMpPaYwxIQiCGlO91BkXvrVYLDzP/5LGGBOSJIkfxP8GgTFmGZ/ZmNvbXsIG6d/XY4zfhae70DRZP0caOY77kxCXlUgk8o+XXrjLPdfM4rTd5ZxbHO9xT/Q6jXprW9Pm6MDOuvVwfTgYONVcuL84PZoxUbNm9wIZPN9xd1aXpSZWpCT3FOq2HAVVRelbHq9G4OgT+3Cnb88t3AV4EF7r685PTTJUFptKCjcmdPOGDHrVpRFCgeOuxlo2cOxxOcx93Uu2wdKczNKstJr8PFtXdmt5wsHKiEbgH27Yw03A0Re0b8Fh3/dum5r1hrrqSXKsnxybn+q4v2Y0gizLAACEEIRQFEU1pgIA1JiKEAIASJL0tdY3RmdKnl+XG9AAAAAASUVORK5CYII=",
+        "average": "#e5dfda",
+        "src": "/links/adriangalilea/youtube.light.webp?v=591d908b5d",
+        "poster": "/links/adriangalilea/youtube.light.webp?v=591d908b5d"
       }
     },
     "telegram": {
@@ -147,22 +147,22 @@
         "width": 2560,
         "height": 1600,
         "mime": "image/webp",
-        "bytes": 260102,
-        "blurDataURL": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAKCAIAAAAy3EnLAAAACXBIWXMAAAPoAAAD6AG1e1JrAAAA8klEQVQYlXVQO08DMQyO6keKlOGiSBzDnSPBiQnBUDEdnChCggEGGMp/QP3/M7Ldhi5YlhMn38NJkJv7aZrO/4m+771eXN9dfvzI9jsAEQBgZIxMRF3XDcOwPDy+PD+N45hzJqIYiRmtclghrBCAyGvOWURet2+f718iknNmCwCwFUOD+sYJ8zwvyyIipRQiFWZGslAHjOwEsJFqrZvdfrPb11rNAT0PBICDPFlNKZVSytWtZikpJT1XQX2qEpxnrb+/mbX4QwNA8B84mip0fcYqaieKWysSI2LUqYLfxWjOxmnkJnHcqHTw61Of02z81v4CEW0YpIrTadcAAAAASUVORK5CYII=",
+        "bytes": 259908,
+        "blurDataURL": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAKCAIAAAAy3EnLAAAACXBIWXMAAAPoAAAD6AG1e1JrAAAA9ElEQVQYlXWPP0sEMRDFw86fnJAiIeBa7E5AFyvR4rBab9HD4g600OL8DnLfv5bJYDwRhyG7Sd7vvYyTm/tpms7/qb7vbb24vrt8/ZSnDwdEAICe0TMRxRiHYVgeNs/bx3EcU0pE5D0xs62uQ+gQFKudUhKR3Xb/9vIuIiklrgUA9Yua0IAOwYB5npdlEZGcM5EaMyOzPkET0HNLiDGWUtaH4/pwLKXUBGxqBQB+3gNEIYScc7661c45hEBEoIY6qgLG1a3N39hfZWoAcHV2C0WTrs5YTeuJ6laqRI/o0RL0zvuaXJkGN4vvH7V2dn2ac9p/+S8jnBivgZP+fAAAAABJRU5ErkJggg==",
         "average": "#0c0e0e",
-        "src": "/links/adriangalilea/telegram.dark.webp?v=2470af9e13",
-        "poster": "/links/adriangalilea/telegram.dark.webp?v=2470af9e13"
+        "src": "/links/adriangalilea/telegram.dark.webp?v=bdf6bcfc6d",
+        "poster": "/links/adriangalilea/telegram.dark.webp?v=bdf6bcfc6d"
       },
       "light": {
         "kind": "image",
         "width": 2560,
         "height": 1600,
         "mime": "image/webp",
-        "bytes": 172178,
-        "blurDataURL": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAKCAIAAAAy3EnLAAAACXBIWXMAAAPoAAAD6AG1e1JrAAABx0lEQVQYlSXLbU/aUAAF4P7iJRLHEhPjsO29LaMDN0QpSkwQLC8dxWFmS6nWlQJ9WSvQjREoUdRFcX6eCeldlOTJyflwDiZYxsWgfXnV92be71tvcjec3o9m89Gfx8nDoz9/msyfJg9/x+50yKoO13WxdZ7ZFBJ4Lf6hnkyKu51R93nxzx+PZtf+YvF8c+9Zv2rmT8EYVFu9suJy2ApHrXJ0uEyv8bENgVGHbYRQOskeZvMIoendQHWLiss1naNTK1czs9ibArlSgCEOrBbhuxItexpCyPf98XiMEOpf25V2tqxnynqG09lDbQcLcSDEEW85MlwC4RKQPS0IghPnpm7fBkFgTjtpJf6KSStMSolhaxVincc3quC9ADcFsqAfmb7xxb6o/tDsK4O3iowEGAkkJJiQICMBLFoHH0/AZxHuSBTbgBn5JXdluN2gtiQyLhIxEX9FLmGsTObOyOJ3im+BWhsedyi+RZQ0mFPJPYVMNcktKZJo4IwYWT6xigbrbUo04blNaw7dcqOqQ8kW+GrAig7yGnmg4uwZnlLwbZn4JOPYaZdaTjuXtNGjzX7U6L10zYFNm/pmweMuqOhEXsMP1Mj+OfEfK09NW/dQ/OYAAAAASUVORK5CYII=",
-        "average": "#adc8a1",
-        "src": "/links/adriangalilea/telegram.light.webp?v=37a7d045f1",
-        "poster": "/links/adriangalilea/telegram.light.webp?v=37a7d045f1"
+        "bytes": 172074,
+        "blurDataURL": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAKCAIAAAAy3EnLAAAACXBIWXMAAAPoAAAD6AG1e1JrAAABxUlEQVQYlS3La2/SUACA4f5hEyUEE5cscW3PORUKOKdI2ZYZRcqlzUDJ1gItZb1BqaVr2YJiN8HNy4yfXUJ6DM7kzfvtIQTHUn3DvQj8L8F0OZ1dTaNvs8WPT9c385+/opvfn+/yL2d72qQ+8oiHtfSGyG6KWbKZy7Sf6zPzdvVn/nG2XESr1e3ye+idtz6cNZ2zQysUT4I6cb8CH/AoyTOpOvNIyPTPTYxxcYd7s1/GGF9ch9qkrk2q2qTa8yrH49fEvTK1NhU6wYNkFXbCE4xxFEXz+RxjHCzchrUvDPca1m7dLFWMIpHgQYKnklU6VQOpGuhO9TiO297X9+5VHMejyCoqOU7Nc2qWU7MFlSU2BLAp0luHNNkEZBNU7LdONBLdgegOxpfDhsOzMmBlkJdhXoasDIhsGzyTYKEDSl1U6oFdBXJdutAB2x2Y79A5CWQkMiPRGYlOH1HpI4o4UAA/gIIBmhZsD5mWjQSD4nVw0KeLCrXTBaz0OCdvpY//R7RsJDmw7zK6xxg+MnykeUgeo5aNeJ16NaA5lXyhkNtd8qm8lkTPRbrH2D4cnTJO8MQN1zdPmX8MvBvBhkmVdfJOvlSpv7g0TRNbHkFbAAAAAElFTkSuQmCC",
+        "average": "#acc8a1",
+        "src": "/links/adriangalilea/telegram.light.webp?v=32da2545bf",
+        "poster": "/links/adriangalilea/telegram.light.webp?v=32da2545bf"
       }
     }
   }
