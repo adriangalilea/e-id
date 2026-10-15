@@ -97,8 +97,7 @@ export function createSlideTrack(o: SlideTrackOptions): SlideTrack {
    *  which the snapping then took back as a jump. */
   const measure = () => {
     const gap = Number.parseFloat(getComputedStyle(el).columnGap)
-    slot =
-      el.getBoundingClientRect().width + (Number.isFinite(gap) ? gap : 0)
+    slot = el.getBoundingClientRect().width + (Number.isFinite(gap) ? gap : 0)
   }
   const slotW = () => slot
   const landed = () =>
