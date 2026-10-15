@@ -20,6 +20,7 @@ import { EMOJI_DOMAIN } from "@/lib/const";
 import { FOIL as FOIL_SPEC } from "@/lib/foil";
 import { HOLO_ART, type HoloArt } from "@/lib/holo";
 import { MARK_BOX, MARK_PATH } from "@/lib/mark";
+import { nameFit } from "@/lib/name-fit";
 
 // THE SHARE IMAGE: a person's card (lib/card) drawn as the card the profile shows,
 // as one SVG, rasterised by resvg. The same geometry as components/id-card, every
@@ -247,9 +248,12 @@ export async function cardSvg(card: Card, frame: CardFrame = "share"): Promise<s
         .join("")
     : "";
 
-  const nameSize = L.name * u;
+  // On one line whenever it can be, as the site's card sets it (lib/name-fit).
+  const fit = nameFit(card.name, 100 - L.pad - textX, L.name);
+  const nameSize = fit.size * u;
   const nameFits = (s: string) => measure(s, SANS, 500, nameSize) <= textWidth;
-  const nameLines = wrap(card.name, textWidth, 2, nameFits);
+  const nameLines =
+    fit.lines === 1 ? [card.name] : wrap(card.name, textWidth, 2, nameFits);
   const lineStep = 1.02 * nameSize;
   const name = nameLines
     .map((line, i) => {
@@ -401,10 +405,24 @@ export async function compactSvg(card: Card): Promise<string> {
   const portrait = photo
     ? `<image href="${photo}" x="${f(pad)}" y="${f(pad)}" width="${f(ps)}" height="${f(ps)}" preserveAspectRatio="xMidYMid slice" clip-path="url(#photo)"/>`
     : `<g opacity="0.15">${mark(pad + ps / 2 - (ps / 2) * (MARK_BOX.w / MARK_BOX.h) / 2, pad + ps * 0.75, ps / 2, "#fff")}</g>`;
+  // The ghost, as on the card: the same face again, line-screened, dissolving,
+  // at the strip's far end behind the words, a little taller than the strip as
+  // the card's is taller than its photo.
+  const gs = 1.15 * H;
+  const gx = W - gs + 0.1 * gs;
+  const gy = (H - gs) / 2;
+  const ghost = photo
+    ? `<image href="${photo}" x="${f(gx)}" y="${f(gy)}" width="${f(gs)}" height="${f(gs)}" preserveAspectRatio="xMidYMid slice" filter="url(#ghost)" mask="url(#ghost-mask)" opacity="0.3"/>`
+    : "";
   const band = LIGHT * 100;
   const foilBox = { x: -LIGHT_HOOKS.foilTravel * LIGHT, w: 4 * CARD_W };
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${f(W)}" height="${H}" viewBox="0 0 ${f(W)} ${H}" role="group" aria-label="${esc(`${card.name}'s e-ID`)}">
 <defs>
+  <radialGradient id="ghost-fade" cx="0.5" cy="0.5" r="0.5"><stop offset="0.35" stop-color="#fff"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
+  <pattern id="screen" width="3" height="3" patternUnits="userSpaceOnUse"><rect width="3" height="1" fill="#fff"/></pattern>
+  <mask id="screen-mask"><rect x="${f(gx)}" y="${f(gy)}" width="${f(gs)}" height="${f(gs)}" fill="url(#screen)"/></mask>
+  <mask id="ghost-mask"><g mask="url(#screen-mask)"><rect x="${f(gx)}" y="${f(gy)}" width="${f(gs)}" height="${f(gs)}" fill="url(#ghost-fade)"/></g></mask>
+  <filter id="ghost" color-interpolation-filters="sRGB"><feColorMatrix type="saturate" values="0"/><feComponentTransfer><feFuncR type="linear" slope="1.25" intercept="-0.125"/><feFuncG type="linear" slope="1.25" intercept="-0.125"/><feFuncB type="linear" slope="1.25" intercept="-0.125"/></feComponentTransfer></filter>
   <linearGradient id="body" ${cssLine(135, 0, 0, W, H)}><stop offset="0" stop-color="#1e1e21"/><stop offset="0.55" stop-color="#131315"/><stop offset="1" stop-color="#0d0d0e"/></linearGradient>
   <linearGradient id="rim" ${cssLine(135, 0, 0, W, H)}><stop offset="0" stop-color="#fff" stop-opacity="0.4"/><stop offset="0.35" stop-color="#fff" stop-opacity="0.08"/><stop offset="0.75" stop-color="#fff" stop-opacity="0.04"/><stop offset="1" stop-color="#fff" stop-opacity="0.18"/></linearGradient>
   <linearGradient id="foil" ${cssLine(115, foilBox.x, 0, foilBox.w, H)}>${foilStops()}</linearGradient>
@@ -420,6 +438,7 @@ export async function compactSvg(card: Card): Promise<string> {
 <a href="${esc(card.id)}" target="_blank" rel="me noopener">
 <rect width="${f(W)}" height="${H}" rx="${f(radius)}" fill="url(#body)"/>
 <g clip-path="url(#card)">
+  ${ghost}
   <g id="${LIGHT_HOOKS.holo}" mask="url(#band-mask)" opacity="0.06" style="mix-blend-mode:screen">
     <rect width="${f(W)}" height="${H}" fill="url(#foil)" mask="url(#laminate)"/>
   </g>

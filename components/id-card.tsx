@@ -13,6 +13,7 @@ import { Glass } from "@/components/ui/material-glass";
 import { SocialProfile } from "@/components/ui/social-profile";
 import type { ProfileFacts } from "@/lib/social-profile-core";
 import { CARD_LAYOUT, cqw } from "@/lib/card-layout";
+import { nameFit } from "@/lib/name-fit";
 import { type HoloPrint, MARK_EMBLEM } from "@/lib/holo";
 import type { LinkPlatform } from "@/db/schema";
 import { type CardLink, handleOf, valueOf } from "@/lib/link-names";
@@ -174,6 +175,10 @@ function Flair({ links }: { links: HolderLink[] }) {
  *  and its top 44.25 from the card's foot; its right edge 36 from the left. */
 const SEAL = "bottom-[37cqw] left-[29cqw] size-[14cqw]";
 
+/** The name's column, beside the photo, in the card's width's shares. */
+const NAME_COLUMN =
+  100 - 2 * CARD_LAYOUT.pad - CARD_LAYOUT.photo - CARD_LAYOUT.gap;
+
 /** The name as the card sets it. */
 const NAME =
   "line-clamp-2 text-(length:--card-name) leading-[1.02] font-medium tracking-[-0.03em] text-balance [text-box:trim-start_cap_alphabetic]";
@@ -196,9 +201,13 @@ export function IdCard({
   heading = "h1",
   holo,
   slots,
+  save,
   className,
 }: {
   holder: Holder;
+  /** The card saved as a contact (`CardSave`), on its photo: for a card that is
+   *  someone's, shown where it can be kept. */
+  save?: React.ReactNode;
   /** The name's element: the profile's h1, a sample's p. */
   heading?: "h1" | "p";
   /** The security print (`Hologram`), for a card someone can turn. */
@@ -209,6 +218,8 @@ export function IdCard({
 }) {
   const Name = heading;
   const name = holder.name || `@${holder.username}`;
+  // On one line whenever it can be (lib/name-fit): the column beside the photo.
+  const fit = nameFit(name, NAME_COLUMN, CARD_LAYOUT.name);
   const links = holder.links ?? [];
   const head = (
     <header
@@ -238,7 +249,16 @@ export function IdCard({
     <>
       {head}
       <div className="relative my-auto flex items-stretch gap-(--card-gap)">
-        <Portrait holder={holder} stand={slots?.photo} />
+        <div className="relative shrink-0">
+          <Portrait holder={holder} stand={slots?.photo} />
+          {/* The card's own action, on the person it saves: centred on the
+              photo's foot, half over it. */}
+          {save && (
+            <div className="absolute bottom-0 left-1/2 z-20 -translate-x-1/2 translate-y-1/2">
+              {save}
+            </div>
+          )}
+        </div>
         <div
           // The rest of the card's width beside the photo, so a field written in
           // its stead has the room the written line would; as tall as the
@@ -250,7 +270,9 @@ export function IdCard({
           )}
         >
           {slots?.name ?? (
-            <Name className={NAME}>{name}</Name>
+            <Name className={cn(NAME, fit.lines === 1 && "whitespace-nowrap")}>
+              {name}
+            </Name>
           )}
           {slots?.flair ?? <Flair links={links} />}
         </div>
@@ -276,7 +298,7 @@ export function IdCard({
             "--card-flag": cqw(CARD_LAYOUT.flag),
             "--card-photo": cqw(CARD_LAYOUT.photo),
             "--card-gap": cqw(CARD_LAYOUT.gap),
-            "--card-name": cqw(CARD_LAYOUT.name),
+            "--card-name": cqw(fit.size),
             "--card-icon": cqw(CARD_LAYOUT.icon),
             // What the glass does to what lies behind it, its blur unless the
             // card says otherwise (`--id-card-backdrop`): a solid card shows
