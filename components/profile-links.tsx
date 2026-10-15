@@ -5,13 +5,7 @@ import { Copy } from "@/components/ui/copy"
 import { GithubProfileCard } from "@/components/ui/github"
 import { Panel } from "@/components/ui/panel"
 import { SocialProfile } from "@/components/ui/social-profile"
-import {
-  Tabs,
-  TabsList,
-  TabsPanel,
-  TabsPanels,
-  TabsTab,
-} from "@/components/ui/tabs"
+import { Tabs, TabsList, TabsPanel, TabsTab } from "@/components/ui/tabs"
 import { Tweet } from "@/components/ui/tweet"
 import { WebPreview } from "@/components/ui/web-preview"
 import { YouTube } from "@/components/ui/youtube"
@@ -136,21 +130,17 @@ export function ProfileLinks({
           </TabsList>
         }
       >
-        {/* A track (@ag/tabs `TabsPanels`): a finger or a trackpad swipes from
-            one link to the next, one a gesture. */}
-        <TabsPanels>
-          {links.map((link) => (
-            <TabsPanel
-              key={link.id}
-              value={link.id}
-              className="flex flex-col gap-4"
-            >
-              <LinkLine link={link} />
-              {link.note && <Quote text={link.note} />}
-              <PresenceOf link={link} presence={presence} />
-            </TabsPanel>
-          ))}
-        </TabsPanels>
+        {links.map((link) => (
+          <TabsPanel
+            key={link.id}
+            value={link.id}
+            className="flex flex-col gap-4"
+          >
+            <LinkLine link={link} />
+            {link.note && <Quote text={link.note} />}
+            <PresenceOf link={link} presence={presence} />
+          </TabsPanel>
+        ))}
       </Panel>
     </Tabs>
   )
