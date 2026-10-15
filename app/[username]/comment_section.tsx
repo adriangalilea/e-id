@@ -37,11 +37,14 @@ export function CommentInteraction({
 
   if (!chip || !thread) return null
 
-  if (thread.isOwner && thread.comments.length === 0) return null
+  // The form only where its owner takes vouches: a closed page shows nothing to
+  // write in, and the vouches a visitor left before stay theirs to remove.
+  const writing = !thread.isOwner && thread.open
+  if (!writing && thread.comments.length === 0) return null
 
   return (
     <div className="relative animate-fade-in">
-      {!thread.isOwner && (
+      {writing && (
         <CommentForm profileUserId={profileUserId} onPosted={reload} />
       )}
       <div className="my-2 flex flex-col gap-2">

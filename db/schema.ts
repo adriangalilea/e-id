@@ -31,9 +31,11 @@ export const users = sqliteTable(
     username_normalized: text("username_normalized").unique(),
     bio: text("bio"),
     country_code: text("country_code").default("XX").notNull(),
+    // Whether people can leave a vouch on their page: on unless they turn it off
+    // (the card editor). Pinned vouches stay shown either way.
     allow_comments: integer("allow_comments", { mode: "boolean" })
       .notNull()
-      .default(false),
+      .default(true),
   },
   (table) => {
     return {

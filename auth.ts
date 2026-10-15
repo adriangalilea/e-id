@@ -180,10 +180,12 @@ export const auth = betterAuth({
         required: true,
         defaultValue: "XX",
       },
+      // Vouches: on for a new account, its owner's to turn off (card editor).
       allow_comments: {
         type: "boolean",
         required: true,
-        defaultValue: false,
+        defaultValue: true,
+        input: false,
       },
     },
   },

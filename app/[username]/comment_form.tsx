@@ -1,6 +1,6 @@
 "use client"
 import { SendHorizontal } from "lucide-react"
-import { useActionState, useEffect } from "react"
+import { useActionState, useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { type CommentFormState, createComment } from "@/db/actions"
@@ -14,13 +14,18 @@ export default function CommentForm({
   profileUserId: string
   onPosted: () => void
 }) {
-  const [state, formAction] = useActionState(
+  const [state, formAction, sending] = useActionState(
     createComment.bind(null, profileUserId),
     initialState,
   )
+  // What is written so far: the send waits for words (the server refuses an
+  // empty vouch too, since anyone can call the action).
+  const [body, setBody] = useState("")
 
   useEffect(() => {
-    if (state.resetKey) onPosted()
+    if (!state.resetKey) return
+    setBody("")
+    onPosted()
   }, [state.resetKey, onPosted])
 
   return (
@@ -36,9 +41,14 @@ export default function CommentForm({
           size="lg"
           aria-label="vouch"
           placeholder="I want everyone to know..."
+          value={body}
+          onChange={(e) => setBody(e.target.value)}
         />
         <Button
           type="submit"
+          aria-label="send"
+          disabled={body.trim() === ""}
+          loading={sending}
           className="z-10 shrink-0 grow-0 bg-zinc-500/20 shadow-md backdrop-blur-md"
           variant="ghost"
           size="icon-lg"

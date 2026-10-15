@@ -60,6 +60,8 @@ export type ThreadComment = {
 export type CommentThread = {
   viewer: Chip
   isOwner: boolean
+  /** Whether the profile takes new vouches (its owner's choice). */
+  open: boolean
   comments: ThreadComment[]
 }
 
@@ -96,10 +98,16 @@ export async function loadComments(
           ),
     )
     .orderBy(desc(comments.created_at))
+  const [profile] = await db
+    .select({ open: users.allow_comments })
+    .from(users)
+    .where(eq(users.id, profileUserId))
+  if (!profile) throw new Error(`loadComments: no user ${profileUserId}`)
 
   return {
     viewer: chipOf(viewer),
     isOwner,
+    open: profile.open,
     comments: rows.map((row) => ({
       commentId: row.commentId,
       body: row.body,
@@ -205,6 +213,7 @@ export async function cardToEdit(): Promise<CardEdit> {
       username: users.username,
       country: users.country_code,
       bio: users.bio,
+      vouches: users.allow_comments,
     })
     .from(users)
     .where(eq(users.id, user.id))
@@ -219,6 +228,7 @@ export async function cardToEdit(): Promise<CardEdit> {
     handle: row.username,
     country: row.country ?? "XX",
     bio: row.bio ?? "",
+    vouches: row.vouches,
     links: owned.map((link) => ({
       id: link.id,
       platform: link.platform,
@@ -266,6 +276,7 @@ export async function saveCard(input: unknown): Promise<SaveResult> {
           name: card.name || null,
           bio: card.bio || null,
           country_code: card.country.toUpperCase(),
+          allow_comments: card.vouches,
         })
         .where(eq(users.id, user.id))
       const gone = owned.filter((l) => !named.has(l.id)).map((l) => l.id)

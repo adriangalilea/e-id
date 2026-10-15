@@ -57,6 +57,8 @@ export const cardEditSchema = z.object({
     .string()
     .refine((code) => code === "XX" || hasFlag(code), "No such country."),
   bio: z.string().trim().max(500, "A bio is at most 500 characters."),
+  /** Whether people can leave a vouch on their page. */
+  vouches: z.boolean(),
   /** In the card's order: one per known platform (the editor's rule, so a
    *  platform's route has one destination), any number of `link`s. */
   links: z

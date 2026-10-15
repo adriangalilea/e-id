@@ -138,6 +138,19 @@ export function CardEditor({
               />
             )}
           </form.Field>
+          <form.Field
+            name="vouches"
+            label="vouches"
+            aside="people can leave a word on your page"
+            orientation="horizontal"
+          >
+            {(c) => (
+              <Switch
+                checked={c.value}
+                onCheckedChange={(checked) => c.onValueChange(checked)}
+              />
+            )}
+          </form.Field>
           <FormSummary material="glass" />
           <div className="flex items-center justify-end gap-2">
             <Button
