@@ -23,7 +23,7 @@ import { getSession } from "@/lib/session"
 import { profileTag, USERS_TAG, usernameTag } from "@/lib/tags"
 import { claimUsername, holderOf } from "@/lib/username"
 import { usernameProblem } from "@/lib/username-rules"
-import type { Unfurl } from "@/lib/web-preview-unfurl"
+import type { Unfurl } from "@/lib/web-preview-facts"
 
 // Every export here is an endpoint anyone can call with any arguments: each one
 // reads the session itself and acts only on what that user owns. A profile's

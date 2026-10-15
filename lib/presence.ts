@@ -10,7 +10,8 @@ import { fetchGithubProfile } from "@/lib/social-profile-github"
 import { fetchTelegramProfile } from "@/lib/social-profile-telegram"
 import { fetchYoutubeChannel } from "@/lib/social-profile-youtube"
 import { fetchTweet, type Tweet } from "@/lib/tweet-data"
-import { type Unfurl, unfurl } from "@/lib/web-preview-unfurl"
+import type { Unfurl } from "@/lib/web-preview-facts"
+import { unfurl } from "@/lib/web-preview-unfurl"
 import { type YouTubeFacts, youtubeFacts } from "@/lib/youtube-data"
 
 /** A profile's presence behind each of its links, as the registry's items draw

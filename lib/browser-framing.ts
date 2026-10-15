@@ -1,4 +1,6 @@
-import { type Unfurl, unfurl } from "@/lib/web-preview-unfurl"
+import { publicFetch } from "@/lib/public-fetch"
+import { hrefOf, type Unfurl } from "@/lib/web-preview-facts"
+import { unfurl } from "@/lib/web-preview-unfurl"
 
 /** A page for the browser to show live: framed, or, refused, drawn from its facts. */
 export type LivePage =
@@ -33,14 +35,13 @@ function admits(source: string, origin: URL): boolean {
  *  served after redirects. THROWS on a page that does not answer 2xx: a frame of an
  *  error page is no live page. */
 export async function framing(url: string, origin?: string): Promise<Framing> {
-  const href = /^https?:\/\//.test(url) ? url : `https://${url}`
-  const res = await fetch(href, {
+  const href = hrefOf(url)
+  const res = await publicFetch(href, {
     headers: {
       "user-agent":
         "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.0 Safari/605.1.15",
       accept: "text/html,application/xhtml+xml",
     },
-    redirect: "follow",
   })
   if (!res.ok) throw new Error(`framing ${href}: HTTP ${res.status}`)
   await res.body?.cancel()
@@ -77,7 +78,7 @@ export async function livePage(
   url: string,
   origin?: string,
 ): Promise<LivePage> {
-  const href = /^https?:\/\//.test(url) ? url : `https://${url}`
+  const href = hrefOf(url)
   const f = await framing(href, origin)
   return f.frames
     ? { url: href, frames: true }

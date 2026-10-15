@@ -1,7 +1,8 @@
 "use client"
 
-// A LINK'S UNFURL, as a card, from five facts and nothing else: `web-preview-unfurl`
-// owns the facts and the one fetch; this is a pure function of them, so the same link
+// A LINK'S UNFURL, as a card, from its facts and nothing else (`web-preview-facts`;
+// `web-preview-unfurl`, a server's, reads them from the page): a pure function of
+// them, so the same link
 // draws identically in a chat bubble, in an article and in a feed.
 //
 // FOUR STYLES, one component, chosen by the page it sits on:
@@ -35,7 +36,7 @@ import {
 } from "@/components/ui/material"
 import { Panel, useInFrame } from "@/components/ui/panel"
 import { cn } from "@/lib/utils"
-import { hostOf, type Unfurl } from "@/lib/web-preview-unfurl"
+import { hostOf, type Unfurl } from "@/lib/web-preview-facts"
 
 export type WebPreviewStyle = "card" | "compact" | "telegram" | "x"
 

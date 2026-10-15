@@ -3,7 +3,7 @@
 import { Suspense, use } from "react"
 import { WebPreview } from "@/components/ui/web-preview"
 import { websiteOf } from "@/db/actions"
-import type { Unfurl } from "@/lib/web-preview-unfurl"
+import type { Unfurl } from "@/lib/web-preview-facts"
 
 // WHO OR WHAT IS BEHIND A MARK ON THE CARD, while the hand rests on it, for the marks
 // that are no profile (id-card, `Flair`): a website as its preview's compact row

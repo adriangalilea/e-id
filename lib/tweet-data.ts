@@ -1,5 +1,5 @@
 import type { Person } from "@/lib/person"
-import type { Unfurl } from "@/lib/web-preview-unfurl"
+import type { Unfurl } from "@/lib/web-preview-facts"
 
 export interface TweetAuthor extends Person {
   handle: string

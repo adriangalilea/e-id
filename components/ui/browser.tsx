@@ -57,7 +57,7 @@ import {
   urlOf,
 } from "@/lib/browser-session"
 import { cn } from "@/lib/utils"
-import { hostOf } from "@/lib/web-preview-unfurl"
+import { hostOf } from "@/lib/web-preview-facts"
 
 /** The browser depicted. Each is a chrome in `CHROMES`: `safari` a Mac's window,
  *  `safari-ios` Safari on an iPhone (iOS 26), filling the screen of the box it is
@@ -416,7 +416,7 @@ function SafariToolbar({
           "grid items-center gap-3 px-4 [grid-template-columns:minmax(max-content,1fr)_minmax(0,560px)_minmax(max-content,1fr)]",
           glass
             ? "text-foreground/75"
-            : "border-black/10 scheme-dark:border-black/60 border-b bg-[#f6f6f6] scheme-dark:bg-[#2b2b2d] scheme-dark:text-white/55 text-black/55",
+            : "border-black/10 border-b bg-[#f6f6f6] text-black/55 scheme-dark:border-black/60 scheme-dark:bg-[#2b2b2d] scheme-dark:text-white/55",
         )}
         style={{ height: SAFARI_TOOLBAR }}
       >
@@ -501,10 +501,10 @@ function AddressField({
         "group/address relative flex min-w-0 items-center overflow-hidden whitespace-nowrap text-[13px]",
         editing
           ? "justify-start px-3"
-          : "justify-center gap-1.5 @lg/browser:px-9 px-3",
+          : "justify-center gap-1.5 px-3 @lg/browser:px-9",
         glass
           ? cn(CAPSULE, "text-foreground")
-          : "h-[30px] rounded-[9px] bg-black/[0.055] scheme-dark:bg-white/[0.09] scheme-dark:text-white/85 text-black/85",
+          : "h-[30px] rounded-[9px] bg-black/[0.055] text-black/85 scheme-dark:bg-white/[0.09] scheme-dark:text-white/85",
         !glass && editing && "bg-white scheme-dark:bg-[#1c1c1e]",
         editing && "shadow-[0_0_0_3px_rgb(10_132_255/0.45)]",
       )}
@@ -555,7 +555,7 @@ function AddressField({
                 href={link}
                 target="_blank"
                 rel="noreferrer"
-                className="pointer-events-auto absolute inset-0 rounded-[inherit] focus-visible:outline-2 focus-visible:outline-[#0a84ff] focus-visible:outline-offset-2"
+                className="pointer-events-auto absolute inset-0 rounded-[inherit] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0a84ff]"
               >
                 <span className="sr-only">open {shownAt(address, true)}</span>
               </a>
@@ -603,7 +603,7 @@ function SafariTabs({
         "flex items-stretch text-[12px]",
         glass
           ? "items-center gap-1 px-4 pb-1"
-          : "border-black/10 scheme-dark:border-black/60 border-b bg-[#e8e8ea] scheme-dark:bg-[#232325] scheme-dark:text-white/55 text-black/55",
+          : "border-black/10 border-b bg-[#e8e8ea] text-black/55 scheme-dark:border-black/60 scheme-dark:bg-[#232325] scheme-dark:text-white/55",
       )}
       style={{ height: SAFARI_TABS }}
     >
@@ -620,7 +620,7 @@ function SafariTabs({
                 ? cn(CAPSULE, "h-7 [--glass-radius:14px]")
                 : "h-7 text-foreground/60"
               : i === tab
-                ? "bg-[#f6f6f6] scheme-dark:bg-[#2b2b2d] scheme-dark:text-white/85 text-black/85"
+                ? "bg-[#f6f6f6] text-black/85 scheme-dark:bg-[#2b2b2d] scheme-dark:text-white/85"
                 : cn(i > 0 && i !== tab + 1 && "border-black/10 border-l"),
           )}
         >
@@ -686,7 +686,7 @@ function SafariIosToolbar({
       data-slot="browser-address"
       data-editing={editing || undefined}
       className={cn(
-        "text-(length:--ag-ios-type) relative flex h-full min-w-0 flex-1 items-center gap-(--ag-ios-gap) px-(--ag-ios-gap)",
+        "relative flex h-full min-w-0 flex-1 items-center gap-(--ag-ios-gap) px-(--ag-ios-gap) text-(length:--ag-ios-type)",
         glass
           ? IOS_GLASS
           : "rounded-[calc(var(--ag-ios-bar)/2)] bg-black/[0.06] scheme-dark:bg-white/[0.1]",
@@ -727,7 +727,7 @@ function SafariIosToolbar({
           href={link}
           target="_blank"
           rel="noreferrer"
-          className="pointer-events-auto absolute inset-0 rounded-[inherit] focus-visible:outline-2 focus-visible:outline-[#0a84ff] focus-visible:outline-offset-2"
+          className="pointer-events-auto absolute inset-0 rounded-[inherit] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0a84ff]"
         >
           <span className="sr-only">open {shownAt(address, true)}</span>
         </a>
@@ -759,7 +759,7 @@ function SafariIosToolbar({
         "select-none",
         glass
           ? "text-foreground"
-          : "border-black/10 scheme-dark:border-white/10 border-t bg-[#f6f6f6] scheme-dark:bg-[#1c1c1e] scheme-dark:text-white/85 text-black/80",
+          : "border-black/10 border-t bg-[#f6f6f6] text-black/80 scheme-dark:border-white/10 scheme-dark:bg-[#1c1c1e] scheme-dark:text-white/85",
       )}
       style={{
         ...vars,
@@ -774,7 +774,7 @@ function SafariIosToolbar({
       >
         <span
           className={cn(
-            "aspect-square h-full shrink-0",
+            "h-full shrink-0 aspect-square",
             glass ? IOS_GLASS : "flex items-center justify-center",
             !back && "[&>svg]:opacity-35",
           )}
@@ -784,7 +784,7 @@ function SafariIosToolbar({
         {field}
         <span
           className={cn(
-            "aspect-square h-full shrink-0",
+            "h-full shrink-0 aspect-square",
             glass ? IOS_GLASS : "flex items-center justify-center",
           )}
         >
@@ -804,7 +804,7 @@ const CHROMES: Record<BrowserLook, Chrome> = {
       // Dark, the hairline alone: a wide soft shadow on a near-black ground
       // falls through too few greys and bands; the window's depth there is the
       // light round it, the page's to give.
-      "scheme-dark:shadow-[0_0_0_0.5px_rgb(255_255_255/0.16)] shadow-[0_0_0_0.5px_rgb(0_0_0/0.22),0_24px_60px_-16px_rgb(0_0_0/0.45)]",
+      "shadow-[0_0_0_0.5px_rgb(0_0_0/0.22),0_24px_60px_-16px_rgb(0_0_0/0.45)] scheme-dark:shadow-[0_0_0_0.5px_rgb(255_255_255/0.16)]",
     ),
     insets: ({ glass, tabbed }) => ({
       top: `${glass ? SAFARI_TOOLBAR + (tabbed ? SAFARI_TABS : 0) : 0}px`,
@@ -998,7 +998,7 @@ export function BrowserCapturePage({
               "block h-auto w-full",
               scheme === "light"
                 ? "scheme-dark:hidden"
-                : "scheme-dark:block hidden",
+                : "hidden scheme-dark:block",
             )}
           />
         )
