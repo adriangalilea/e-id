@@ -54,12 +54,14 @@ import {
   type CodeColours,
   type CodeThemes,
   langOf,
+  linesOf,
   runsOf,
 } from "@/lib/code-tokens"
 import { type Scheme, useSurfaceScheme } from "@/components/ui/material"
 import { schemeOf } from "@/components/ui/material-glass"
 import { usePlayhead } from "@/components/ui/playback"
 import { useCodeColours } from "@/components/ui/use-code-colours"
+import "./ide.css"
 
 /** VS Code's default themes' token colours: Dark Modern and Light Modern are built
  *  on Dark+ and Light+. */
@@ -163,6 +165,13 @@ export interface IdeProps
   dirty?: string[]
   /** The caret, in the file in front (both from 1). Absent: the file's start. */
   caret?: { line: number; column: number }
+  /** Lines of the file in front to mark, as `code` spells them: `"2"` or
+   *  `"1,4-6"`, from 1. What a still points at (the lines a reader pastes). */
+  highlight?: string
+  /** The caret blinks, as VS Code's does in a focused editor: for a still, where
+   *  a caret held on reads as a stuck frame. Off while an edit plays (VS Code
+   *  holds it on as keys land). */
+  blink?: boolean
   /** The explorer beside the editor. Off, the editor takes the room (a narrow
    *  window); the activity bar stays. */
   explorer?: boolean
@@ -177,6 +186,8 @@ export function Ide({
   open,
   dirty = [],
   caret,
+  highlight,
+  blink = false,
   explorer = true,
   ...rest
 }: IdeProps) {
@@ -184,6 +195,11 @@ export function Ide({
   if (active && !file)
     throw new Error(`ide: active ${active} is not one of files`)
   const text = file?.text ?? ""
+  const marked = highlight ? linesOf(highlight) : undefined
+  const count = text.split("\n").length
+  for (const n of marked ?? [])
+    if (n < 1 || n > count)
+      throw new Error(`ide: highlight ${n} is outside ${active ?? "no file"}`)
   let offset = 0
   if (caret) {
     const lines = text.split("\n")
@@ -211,6 +227,8 @@ export function Ide({
       source={text}
       origin={undefined}
       caret={offset}
+      marked={marked}
+      blink={blink}
       dirty={dirty}
       explorer={explorer}
       {...rest}
@@ -221,7 +239,14 @@ export function Ide({
 export interface IdeSessionProps
   extends Omit<
     IdeProps,
-    "active" | "open" | "dirty" | "caret" | "role" | "aria-label"
+    | "active"
+    | "open"
+    | "dirty"
+    | "caret"
+    | "highlight"
+    | "blink"
+    | "role"
+    | "aria-label"
   > {
   steps: CodeStep[]
   /** The instant drawn, 0..1 of the edit, for a still. Inside a driver (a Player)
@@ -265,6 +290,8 @@ export function IdeSession({
       source={f.active ? (timeline.final[f.active] as string) : ""}
       origin={f.origin}
       caret={f.caret}
+      marked={undefined}
+      blink={false}
       dirty={f.dirty}
       explorer={explorer}
       role="img"
@@ -286,6 +313,9 @@ interface WindowProps extends Omit<React.ComponentProps<"div">, "children"> {
   /** Each drawn character's offset in `source`; absent, its own. */
   origin: number[] | undefined
   caret: number
+  /** The lines marked, from 1. */
+  marked: Set<number> | undefined
+  blink: boolean
   dirty: string[]
   explorer: boolean
   scheme?: Scheme
@@ -300,6 +330,8 @@ function IdeWindow({
   source,
   origin,
   caret,
+  marked,
+  blink,
   dirty,
   explorer,
   scheme,
@@ -342,6 +374,8 @@ function IdeWindow({
                 origin={origin}
                 colours={colours}
                 caret={place}
+                marked={marked}
+                blink={blink}
               />
             </>
           ) : (
@@ -597,6 +631,11 @@ function Breadcrumbs({ path }: { path: string }) {
   )
 }
 
+/** A marked line, as `code` marks one (code.css `.line.highlighted`): a wash of the
+ *  ink, and a bar of it at the line's left edge. */
+const MARKED =
+  "bg-[color-mix(in_oklab,var(--brand,var(--foreground))_10%,transparent)] shadow-[inset_2px_0_0_color-mix(in_oklab,var(--brand,var(--foreground))_55%,transparent)]"
+
 /** The editor: the gutter's numbers, each line's runs in their ink, the current
  *  line's frame and the caret. It keeps the caret's line in view as VS Code does,
  *  scrolling by whole lines once the caret would pass the foot. */
@@ -605,11 +644,15 @@ function Editor({
   origin,
   colours,
   caret,
+  marked,
+  blink,
 }: {
   text: string
   origin: number[] | undefined
   colours: CodeColours | null
   caret: { line: number; column: number }
+  marked: Set<number> | undefined
+  blink: boolean
 }) {
   const lines = React.useMemo(
     () => runsOf(text, colours, origin),
@@ -652,7 +695,8 @@ function Editor({
               // biome-ignore lint/suspicious/noArrayIndexKey: a line is its number
               key={i}
               data-slot="ide-line"
-              className="flex h-(--ag-ide-line)"
+              data-highlighted={marked?.has(n) || undefined}
+              className={cn("flex h-(--ag-ide-line)", marked?.has(n) && MARKED)}
             >
               <span
                 data-slot="ide-line-number"
@@ -698,7 +742,11 @@ function Editor({
                 {here && (
                   <span
                     data-slot="ide-caret"
-                    className="absolute top-0 h-full w-[2px] bg-black scheme-dark:bg-[#aeafad]"
+                    className={cn(
+                      "absolute top-0 h-full w-[2px] bg-black scheme-dark:bg-[#aeafad]",
+                      blink &&
+                        "animate-[ag-ide-blink_1.06s_infinite] motion-reduce:animate-none",
+                    )}
                     style={{ left: `${caret.column - 1}ch` }}
                   />
                 )}

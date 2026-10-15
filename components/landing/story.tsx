@@ -20,13 +20,9 @@ import {
 import { type Landing, routePages } from "@/components/landing/link-map";
 import { Scaled } from "@/components/landing/scaled";
 import { EMOJI_DOMAIN } from "@/lib/const";
-import { IdeSession } from "@/components/ui/ide";
+import { Ide } from "@/components/ui/ide";
 import { type BrowserStep, browserTimeline } from "@/lib/browser-session";
-import {
-  type CodeFile,
-  type CodeStep,
-  codeTimeline,
-} from "@/lib/code-session";
+import { AmbientLight } from "@/components/ui/ambient-light";
 import { cn } from "@/lib/utils";
 
 // WHAT A CARD DOES, told on the scroll (@ag/scroll-story), a card per chapter
@@ -183,9 +179,8 @@ export function Story(props: StoryProps) {
         id: "embed",
         label: "embed",
         mark: <Code />,
-        play: 0.75,
-        hold: 0.9,
-        content: ({ p }) => (
+        // A still: nothing plays, so nothing to hold.
+        content: () => (
           <StoryCard
             title={<StoryTitle lead="embed" rest="on your website" />}
             // The two lines to paste, beside the laptop, never over it: a long
@@ -194,7 +189,7 @@ export function Story(props: StoryProps) {
             overflow
             scene={
               <Fit ratio={MACBOOK}>
-                <Desk site={site} at={p} />
+                <Desk site={site} />
               </Fit>
             }
           />
@@ -291,50 +286,34 @@ function useStory({
   }, [username, profile, landings, contact, data, embed]);
 }
 
-/** A site's page before the card: the file the embed's two lines are typed into. */
-const SITE_FILE = `<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <title>my site</title>
-  </head>
-  <body>
-    <h1>hello</h1>
-  </body>
-</html>
-`;
-
-/** The embed as a site's owner does it, on one clock: the page opened in the
- *  editor, the script typed into its head and the card into its body, saved; the
- *  site in the browser beside it reloaded once the save lands, the card on it. */
+/** The embed done: a site's page with the two lines in it, the script in its
+ *  head and the card in its body, both marked, the caret after the card. */
 function siteOf(embed: StoryProps["embed"]) {
   const [script, element, ...rest] = embed.snippet.split("\n");
   if (!script || !element || rest.length > 0)
     throw new Error(`story: the embed is not two lines: ${embed.snippet}`);
-  const files: CodeFile[] = [{ path: "index.html", text: SITE_FILE }];
-  // A line is counted in the file as it is when its step starts: the script goes
-  // after the title (5), the card after the heading (9, the script one line in).
-  const steps: CodeStep[] = [
-    { kind: "open", path: "index.html" },
-    { kind: "type", line: 5, text: `\n    ${script}`, delay: 600 },
-    { kind: "type", line: 9, text: `\n    ${element}`, delay: 400 },
-    { kind: "save", delay: 400 },
+  const lines = [
+    "<!doctype html>",
+    '<html lang="en">',
+    "  <head>",
+    '    <meta charset="utf-8" />',
+    "    <title>my site</title>",
+    `    ${script}`,
+    "  </head>",
+    "  <body>",
+    "    <h1>hello</h1>",
+    `    ${element}`,
+    "  </body>",
+    "</html>",
   ];
-  const saved = codeTimeline(files, steps).ends.at(-1);
-  if (saved === undefined) throw new Error("story: the edit has no steps");
-  const visit: BrowserStep[] = [{ kind: "reload", delay: saved + 300 }];
-  const timeline = browserTimeline(embed.address, visit);
-  const reload = timeline.starts[0];
-  if (reload === undefined) throw new Error("story: the site never reloads");
+  const at = (line: string) => lines.indexOf(line) + 1;
+  const card = at(`    ${element}`);
   return {
     address: embed.address,
-    files,
-    steps,
-    visit,
+    file: { path: "index.html", text: `${lines.join("\n")}\n` },
+    highlight: `${at(`    ${script}`)},${card}`,
+    caret: { line: card, column: `    ${element}`.length + 1 },
     card: embed.card,
-    /** The one clock both windows run on: the edit, then the reload. */
-    clock: timeline.total,
-    reload,
   };
 }
 
@@ -520,16 +499,18 @@ function Laptop({ visit, at, alt }: { visit: Visit; at: number; alt: string }) {
   );
 }
 
-/** The laptop's screen, a real screen scaled whole: the menu bar under the notch,
- *  led by the app in front, and what is open under it. */
+/** The laptop's screen, a real screen scaled whole: the desktop's wallpaper, the
+ *  menu bar on it under the notch led by the app in front, as macOS 26 draws it
+ *  (no bar of its own, the words on the wallpaper), and what is open under it. */
 function Screen({ app, children }: { app: string; children: React.ReactNode }) {
   return (
     <MacbookFrame className={GROUND}>
       <Scaled {...SCREEN} className="w-full">
-        <div className="absolute inset-0 flex flex-col bg-black">
+        <div className="absolute inset-0 flex flex-col">
+          <Wallpaper />
           <div
-            className="flex shrink-0 items-center gap-6 px-5 font-medium
-              text-[13px] text-white/90"
+            className="relative flex shrink-0 items-center gap-6 px-5 font-medium
+              text-[13px] text-white [text-shadow:0_1px_2px_rgb(0_0_0/0.35)]"
             style={{
               height: MENU_BAR,
               fontFamily: "-apple-system, system-ui, sans-serif",
@@ -541,76 +522,130 @@ function Screen({ app, children }: { app: string; children: React.ReactNode }) {
             <span>View</span>
             <span>Window</span>
           </div>
-          {children}
+          <div className="relative flex min-h-0 flex-1 flex-col">
+            {children}
+          </div>
         </div>
       </Scaled>
     </MacbookFrame>
   );
 }
 
-/** Room between the desk's windows, and round them. */
-const DESK_GAP = 12;
-
-/** The editor's share of the screen's width: room for the script's line, the
- *  longest the edit types, unwrapped. */
-const EDITOR_WIDTH = 590;
-
-/** The embed done on a laptop (`siteOf`, `at` the chapter's moment): the editor
- *  on the left typing the two lines into the site's page and saving it, the
- *  browser on the right on the site, reloaded once the save lands, the card on
- *  it. The menu bar follows the hand, the editor's until the reload. */
-function Desk({ site, at }: { site: Story["site"]; at: number }) {
-  const browsing = at * site.clock >= site.reload;
-  const pages = useMemo(
-    () => ({
-      [site.address]: (serving: number) => (
-        <Site card={serving > 0 ? site.card : null} />
-      ),
-    }),
-    [site],
+/** The desktop under the windows: the site's own light (components/light), no
+ *  hue, a few steps brighter than a window's ground (`GROUND`, 0.17), so the
+ *  menu bar's words and the windows' edges stand off it as on a real Mac. */
+function Wallpaper() {
+  return (
+    <div aria-hidden className="absolute inset-0">
+      <AmbientLight
+        ground="oklch(0.26 0 0)"
+        glows={[
+          {
+            color: "oklch(0.5 0 0)",
+            x: 0.15,
+            y: 0,
+            rx: 0.8,
+            ry: 0.7,
+            strength: 0.6,
+          },
+          {
+            color: "oklch(0.4 0 0)",
+            x: 0.95,
+            y: 0.6,
+            rx: 0.6,
+            ry: 0.8,
+            strength: 0.4,
+          },
+        ]}
+      />
+    </div>
   );
+}
+
+/** Room between the desk's windows, and round them. */
+const DESK_GAP = 8;
+
+/** The editor's width: room for the script's line, the file's longest, unwrapped
+ *  (a wider screen held it with room to spare, and shrank the code past reading
+ *  at the size a laptop is drawn here). */
+const EDITOR_WIDTH = 592;
+
+/** The embed done, a still (`siteOf`): the editor on the left with the site's page
+ *  and the two lines in it marked, the caret blinking after the card; the browser
+ *  on the right on the site, the card on it. */
+function Desk({ site }: { site: Story["site"] }) {
   const window = { top: DESK_GAP, bottom: DESK_GAP };
   return (
-    <Screen app={browsing ? "Safari" : "Code"}>
-      <div className="relative min-h-0 flex-1">
-        <IdeSession
-          project="my-site"
-          files={site.files}
-          steps={site.steps}
-          progress={at}
-          duration={site.clock}
-          explorer={false}
-          scheme="dark"
-          alt="an editor: the embed's script typed into the head of index.html and its card into the body, then saved"
-          className="absolute aspect-auto"
-          style={{ ...window, left: DESK_GAP, width: EDITOR_WIDTH }}
-        />
-        <BrowserSession
-          material="glass"
-          progress={at}
-          start={site.address}
-          steps={site.visit}
-          pages={pages}
-          alt="the site in a browser beside it, reloaded after the save, the card on it"
-          className="absolute aspect-auto"
-          style={{
-            ...window,
-            left: DESK_GAP * 2 + EDITOR_WIDTH,
-            width: SCREEN.width - DESK_GAP * 3 - EDITOR_WIDTH,
-          }}
-        />
-      </div>
+    <Screen app="Code">
+      <Ide
+        project="my-site"
+        files={[site.file]}
+        active={site.file.path}
+        highlight={site.highlight}
+        caret={site.caret}
+        blink
+        explorer={false}
+        scheme="dark"
+        role="img"
+        aria-label="an editor: the embed's script in the head of index.html and its card in the body, marked"
+        className="absolute aspect-auto"
+        style={{ ...window, left: DESK_GAP, width: EDITOR_WIDTH }}
+      />
+      <Browser
+        url={`https://${site.address}`}
+        material="glass"
+        className="absolute aspect-auto"
+        style={{
+          ...window,
+          left: DESK_GAP * 2 + EDITOR_WIDTH,
+          width: SCREEN.width - DESK_GAP * 3 - EDITOR_WIDTH,
+        }}
+      >
+        <Site card={site.card} />
+      </Browser>
     </Screen>
   );
 }
 
-/** Someone's own site: a heading, and the card under it once embedded, as wide
- *  as the page's column. */
-function Site({ card }: { card: React.ReactNode | null }) {
+/** A bar standing in for a line of a site's text, as wide as `w` of its column. */
+function Bone({ w, className }: { w: string; className?: string }) {
   return (
-    <div className="min-h-full p-6">
-      <h1 className="font-semibold text-3xl">hello</h1>
-      {card && <div className="mt-6">{card}</div>}
+    <div
+      className={cn("h-2.5 rounded-full bg-foreground/10", className)}
+      style={{ width: w }}
+    />
+  );
+}
+
+/** Someone's own site, its words still to be written (bars standing in for them),
+ *  and the one thing on it that is real: the card, embedded where it would go,
+ *  between what they say of themselves. */
+function Site({ card }: { card: React.ReactNode }) {
+  return (
+    <div className="flex min-h-full flex-col gap-7 px-6 py-5">
+      <header className="flex items-center justify-between">
+        <div className="size-6 rounded-full bg-foreground/15" />
+        <div className="flex gap-4">
+          <Bone w="2rem" />
+          <Bone w="2.5rem" />
+          <Bone w="2rem" />
+        </div>
+      </header>
+      <div className="flex flex-col gap-2.5">
+        <Bone w="75%" className="h-5 bg-foreground/15" />
+        <Bone w="50%" className="h-5 bg-foreground/15" />
+      </div>
+      <div className="flex flex-col gap-2.5">
+        <Bone w="100%" />
+        <Bone w="92%" />
+        <Bone w="60%" />
+      </div>
+      {card}
+      <div className="flex flex-col gap-2.5">
+        <Bone w="96%" />
+        <Bone w="88%" />
+        <Bone w="40%" />
+      </div>
     </div>
   );
 }

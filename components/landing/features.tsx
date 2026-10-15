@@ -74,7 +74,7 @@ export async function Features() {
         address: "example.com",
         snippet: embedOf(holder.username),
         // The real script and element working, as they do on someone's site.
-        card: <LiveEmbed handle={holder.username} width="100%" />,
+        card: <LiveEmbed key="card" handle={holder.username} width="100%" />,
         code: <EmbedCode username={holder.username} />,
       }}
     />

@@ -3,6 +3,21 @@ export const CODE_THEMES = {
   dark: "github-dark",
 } as const
 
+/** Lines to mark, as every code view here spells them: `"2"` or `"1,4-6"`, counted
+ *  from 1. Screams at anything else. */
+export function linesOf(spec: string): Set<number> {
+  const out = new Set<number>()
+  for (const part of spec.split(",")) {
+    const range = part.trim()
+    if (!range) continue
+    const [a, b = a] = range.split("-").map((n) => Number(n.trim()))
+    if (!Number.isInteger(a) || !Number.isInteger(b) || a === undefined)
+      throw new Error(`code: "${range}" is not a line or a range of lines`)
+    for (let n = a; n <= (b as number); n++) out.add(n)
+  }
+  return out
+}
+
 /** A pair of Shiki theme ids, light and dark. */
 export interface CodeThemes {
   light: string

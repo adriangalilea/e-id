@@ -7,7 +7,7 @@ import {
   transformerNotationWordHighlight,
 } from "@shikijs/transformers"
 import { type BundledLanguage, codeToHtml } from "shiki"
-import { CODE_THEMES } from "@/lib/code-tokens"
+import { CODE_THEMES, linesOf } from "@/lib/code-tokens"
 import { Copy } from "@/components/ui/copy"
 import { Glass } from "@/components/ui/material-glass"
 import "./code.css"
@@ -50,20 +50,6 @@ export interface CodeProps {
   className?: string
 }
 
-/** `"1,4-6"` to the set {1,4,5,6}. Screams rather than silently marking nothing. */
-function parseLines(spec: string): Set<number> {
-  const out = new Set<number>()
-  for (const part of spec.split(",")) {
-    const range = part.trim()
-    if (!range) continue
-    const [a, b = a] = range.split("-").map((n) => Number(n.trim()))
-    if (!Number.isInteger(a) || !Number.isInteger(b) || a === undefined)
-      throw new Error(`code: "${range}" is not a line or a range of lines`)
-    for (let n = a; n <= (b as number); n++) out.add(n)
-  }
-  return out
-}
-
 /** Strip the shortest indentation any non-blank line has, and the blank first and
  *  last lines a template literal always brings. */
 function dedent(src: string): string {
@@ -92,7 +78,7 @@ export async function Code({
   className,
 }: CodeProps) {
   const source = dedent(children)
-  const marked = highlight ? parseLines(highlight) : null
+  const marked = highlight ? linesOf(highlight) : null
   const html = await codeToHtml(source, {
     lang,
     themes: CODE_THEMES,
