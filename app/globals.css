@@ -7,6 +7,11 @@
 /* e-id is dark, always: the page wears `.dark` (app/layout), so `dark:` is the class's
    and the registry's `scheme-dark:` and tones (tokens.css) read the same scheme. */
 @custom-variant dark (&:where(.dark, .dark *));
+/* Held: the hand on it, or on something it opened (a link mark's hover card,
+   which stands outside it in its own layer). A card in the home's pile stays in
+   focus while the hand reads what one of its marks showed, rather than blurring
+   back under it the moment the hand crosses onto the popup. */
+@custom-variant held (&:is(:hover, :has([data-popup-open])));
 
 /* Three layers, each a clear step lighter than the one it stands on: the page
    (background), what stands on the page (card: a panel, a list, a testimonial), and

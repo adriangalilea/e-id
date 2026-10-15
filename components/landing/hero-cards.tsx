@@ -793,7 +793,7 @@ function under(depth: number, float: number) {
  *  and settles back flat. Worn by a `ShimmerLift` (@ag/shimmer): the shimmer
  *  parts round the card as it rises, following it. */
 const PICKED =
-  "relative transition-[transform,box-shadow] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/card:shadow-[0_2rem_3.5rem_-0.75rem_rgb(0_0_0/0.7)] group-hover/card:[transform:perspective(1200px)_translateZ(2rem)_rotateY(calc((var(--px,0.5)-0.5)*18deg))_rotateX(calc((var(--py,0.5)-0.5)*-14deg))] motion-reduce:transition-none motion-reduce:group-hover/card:[transform:none]"
+  "relative transition-[transform,box-shadow] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-held/card:shadow-[0_2rem_3.5rem_-0.75rem_rgb(0_0_0/0.7)] group-held/card:[transform:perspective(1200px)_translateZ(2rem)_rotateY(calc((var(--px,0.5)-0.5)*18deg))_rotateX(calc((var(--py,0.5)-0.5)*-14deg))] motion-reduce:transition-none motion-reduce:group-held/card:[transform:none]"
 
 /** A card on the home and where pressing it goes (lib/data, `getShowcase`): a
  *  person's profile, or an example's one link. */
@@ -838,7 +838,7 @@ function Pile({ people, away }: { people: Shown[]; away: boolean }) {
             // focus, but keeps its depth in the pile: never over a card that
             // lies above it. On one column the top card stands alone: there is
             // no room round it to spread into.
-            className="group/card absolute top-[calc(50%+var(--dy))] left-[calc(50%+var(--dx))] z-0 w-(--lw) animate-[card-float_ease-in-out_infinite_alternate] blur-(--bl) [transform:translate(-50%,-50%)_rotate(var(--r))] [transition:filter_1s_cubic-bezier(0.22,1,0.36,1)] hover:blur-none motion-reduce:animate-none motion-reduce:transition-none max-lg:hidden"
+            className="group/card absolute top-[calc(50%+var(--dy))] left-[calc(50%+var(--dx))] z-0 w-(--lw) animate-[card-float_ease-in-out_infinite_alternate] blur-(--bl) [transform:translate(-50%,-50%)_rotate(var(--r))] [transition:filter_1s_cubic-bezier(0.22,1,0.36,1)] held:blur-none motion-reduce:animate-none motion-reduce:transition-none max-lg:hidden"
             style={under(depth, UNDER[depth - 1] as number)}
           >
             {/* Its own light, so it alone tilts toward the hand on it, its
@@ -857,7 +857,7 @@ function Pile({ people, away }: { people: Shown[]; away: boolean }) {
                   aria-hidden
                   className={cn(
                     CORNER,
-                    `pointer-events-none absolute inset-0 bg-background opacity-(--fade) transition-opacity duration-1000 group-hover/card:opacity-0`,
+                    `pointer-events-none absolute inset-0 bg-background opacity-(--fade) transition-opacity duration-1000 group-held/card:opacity-0`,
                   )}
                 />
               </ShimmerLift>
@@ -877,7 +877,7 @@ function Pile({ people, away }: { people: Shown[]; away: boolean }) {
             the pile does (`PICKED`), with a light of its own. */}
         <div className="[transform:rotate(3deg)]">
           <HoloLight>
-            <div className="group/card blur-[3.2px] transition-[filter] duration-1000 ease-[cubic-bezier(0.22,1,0.36,1)] hover:blur-none motion-reduce:transition-none">
+            <div className="group/card blur-[3.2px] transition-[filter] duration-1000 ease-[cubic-bezier(0.22,1,0.36,1)] held:blur-none motion-reduce:transition-none">
               <ShimmerLift className={cn(CORNER, PICKED)}>
                 <IdCard
                   holder={top.holder}
@@ -892,7 +892,7 @@ function Pile({ people, away }: { people: Shown[]; away: boolean }) {
                   aria-hidden
                   className={cn(
                     CORNER,
-                    `pointer-events-none absolute inset-0 bg-background opacity-30 transition-opacity duration-1000 group-hover/card:opacity-0`,
+                    `pointer-events-none absolute inset-0 bg-background opacity-30 transition-opacity duration-1000 group-held/card:opacity-0`,
                   )}
                 />
               </ShimmerLift>
