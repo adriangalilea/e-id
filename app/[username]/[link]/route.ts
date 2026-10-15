@@ -7,24 +7,25 @@ import { platformNamed } from "@/lib/link-names"
 // Temporary (307): a person changes their links, and a browser that kept the
 // old one would send people to it. The card's own files (card.json, card.svg,
 // card.vcf) are named routes beside this one, and win over it.
+//
+// A name that opens nothing of theirs (no such platform, a typo, a platform they
+// have no public link on) goes to their profile: the person was the point, and a
+// 404 left the visitor with nothing. Only a person who does not exist is a 404.
 
 export async function GET(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ username: string; link: string }> },
 ) {
   const { username, link: name } = await params
-  const platform = platformNamed(name)
-  if (!platform)
-    return new Response(`no link is called ${name}`, { status: 404 })
   const profile = await getProfile(username)
   if (!profile)
     return new Response(`no e-ID is called ${username}`, { status: 404 })
-  const link = (await getPublicLinks(profile.id)).find(
-    (l) => l.platform === platform && l.value,
-  )
-  if (!link)
-    return new Response(`${username} has no public ${platform}`, {
-      status: 404,
-    })
+  const platform = platformNamed(name)
+  const link = platform
+    ? (await getPublicLinks(profile.id)).find(
+        (l) => l.platform === platform && l.value,
+      )
+    : undefined
+  if (!link) return Response.redirect(new URL(`/${username}`, request.url), 307)
   return Response.redirect(cardLinkOf(link).url, 307)
 }
