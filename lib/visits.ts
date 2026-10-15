@@ -56,6 +56,10 @@ export interface VisitsOptions {
   readonly db: MetricsDriver
   /** The registrable domain whose pages these are: its subdomains share its visits. */
   readonly site: string
+  /** The other domains the same pages are served on (a short domain, an emoji
+   *  one in punycode): their pages are the site's, never another site's, and
+   *  a visit coming from one has no outside referrer. */
+  readonly domains?: readonly string[]
   /** The services the site's pages write as (`garden-web`); any other line is refused. */
   readonly services: readonly string[]
   /** Who called, from the request. The default reads Cloudflare's, then Vercel's, then any proxy's headers. */
@@ -133,15 +137,27 @@ async function sha256(text: string): Promise<string> {
   )
 }
 
-/** Inside the site: the domain, a subdomain, or a local development host. */
-function inside(host: string, site: string): boolean {
+/** Inside the site: one of its domains, a subdomain of one, or a local development
+ *  host. */
+function inside(host: string, domains: readonly string[]): boolean {
   const name = host.replace(/:\d+$/, "")
   return (
-    name === site ||
-    name.endsWith(`.${site}`) ||
+    domains.some((d) => name === d || name.endsWith(`.${d}`)) ||
     name === "localhost" ||
     name.endsWith(".localhost")
   )
+}
+
+/** Every domain a site's pages are served on: `site` and its `domains`, each
+ *  checked as a domain (an emoji domain in its punycode). */
+function domainsOf(site: string, more: readonly string[] = []): string[] {
+  const all = [site, ...more]
+  for (const d of all)
+    if (!/^[a-z0-9.-]+$/.test(d))
+      throw new Error(
+        `visits: a site's domain is a domain (punycode for an emoji one), got ${d}`,
+      )
+  return all
 }
 
 export interface Rejection {
@@ -167,8 +183,7 @@ export function visitsRoute(
   options: VisitsOptions,
 ): (request: Request) => Promise<Response> {
   const { db, site, services } = options
-  if (!/^[a-z0-9.-]+$/.test(site))
-    throw new Error(`visits: a site is a domain, got ${site}`)
+  const ours = domainsOf(site, options.domains)
   if (services.length === 0)
     throw new Error("visits: name the services the site's pages write as")
   const now = options.now ?? Date.now
@@ -183,7 +198,7 @@ export function visitsRoute(
     if (!type.startsWith("text/plain"))
       return json(415, { why: "want Content-Type: text/plain;charset=utf-8" })
     const origin = request.headers.get("origin")
-    if (origin && !inside(new URL(origin).host, site))
+    if (origin && !inside(new URL(origin).host, ours))
       return json(403, { why: "a page of another site" })
     const body = await request.arrayBuffer()
     if (body.byteLength > MAX_BYTES)
@@ -224,7 +239,7 @@ export function visitsRoute(
     const { visitOf, viewers } = await assign(
       db,
       site,
-      { caller, staff, reader, ownerOf: options.ownerOf },
+      { caller, staff, reader, ownerOf: options.ownerOf, ours },
       day,
       at,
       events,
@@ -247,7 +262,7 @@ export function visitsRoute(
         e.phase === undefined &&
         host !== null &&
         path?.startsWith("/") &&
-        inside(host, site)
+        inside(host, ours)
       ) {
         let viewer = viewers.get(visit)
         if (viewer === undefined) {
@@ -304,11 +319,13 @@ async function assign(
     staff,
     reader,
     ownerOf,
+    ours,
   }: {
     caller: Caller
     staff: boolean
     reader: string | null
     ownerOf: VisitsOptions["ownerOf"]
+    ours: readonly string[]
   },
   day: string,
   at: number,
@@ -378,7 +395,7 @@ async function assign(
           day,
           at,
           at,
-          referrer !== null && !inside(referrer, site) ? referrer : null,
+          referrer !== null && !inside(referrer, ours) ? referrer : null,
           str(f.source),
           caller.country ?? null,
           str(f.viewport),
@@ -601,11 +618,13 @@ export interface Hit {
  *     after(() => hits(request, { owner: user.id, name: "gh", opened: "github" }))
  */
 export function visitHits(
-  options: Pick<VisitsOptions, "db" | "site" | "caller" | "readerOf" | "now">,
+  options: Pick<
+    VisitsOptions,
+    "db" | "site" | "domains" | "caller" | "readerOf" | "now"
+  >,
 ): (request: Request, hit: Hit) => Promise<void> {
   const { db, site } = options
-  if (!/^[a-z0-9.-]+$/.test(site))
-    throw new Error(`visits: a site is a domain, got ${site}`)
+  const ours = domainsOf(site, options.domains)
   const now = options.now ?? Date.now
   const callerFrom = options.caller ?? callerOf
   return async (request, hit) => {
@@ -646,7 +665,7 @@ export function visitHits(
         hit.owner,
         hit.name,
         hit.opened,
-        outside && !inside(outside, site) ? outside : null,
+        outside && !inside(outside, ours) ? outside : null,
         caller.country ?? null,
         id,
         crawler ? 1 : 0,

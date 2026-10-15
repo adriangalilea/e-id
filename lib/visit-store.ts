@@ -3,7 +3,12 @@ import "server-only"
 import { libsqlDriver } from "@adriangalilea/utils/metrics/libsql"
 import { createClient } from "@libsql/client"
 import { parseChip } from "@/lib/chip"
-import { forbiddenUsernames } from "@/lib/const"
+import {
+  EMOJI_DOMAIN_PUNYCODE,
+  forbiddenUsernames,
+  MAIN_DOMAIN,
+  SHORT_DOMAIN,
+} from "@/lib/const"
 import { getProfile, renamedTo } from "@/lib/data"
 import { forgetOwner, visitHits } from "@/lib/visits"
 
@@ -19,7 +24,11 @@ import { forgetOwner, visitHits } from "@/lib/visits"
 // name keeps one history; their own reading, as the display cookie says who they
 // are, is never counted.
 
-export const SITE = "e-id.to"
+export const SITE = MAIN_DOMAIN
+
+/** The same pages' other domains: Safari is sent to the emoji one, so most of an
+ *  iPhone's visits are posted from there. */
+export const DOMAINS = [SHORT_DOMAIN, EMOJI_DOMAIN_PUNYCODE]
 
 export const visitsEnabled = Boolean(process.env.VISITS_DATABASE_URL)
 
@@ -75,6 +84,11 @@ let recorder: ReturnType<typeof visitHits> | undefined
 /** The recorder of `/you/<name>` redirects, built on the first one, so a build
  *  reads no credentials. */
 export function hits(): ReturnType<typeof visitHits> {
-  recorder ??= visitHits({ db: visitDriver(), site: SITE, readerOf })
+  recorder ??= visitHits({
+    db: visitDriver(),
+    site: SITE,
+    domains: DOMAINS,
+    readerOf,
+  })
   return recorder
 }

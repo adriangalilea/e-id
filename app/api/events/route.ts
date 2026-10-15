@@ -1,4 +1,10 @@
-import { ownerOf, readerOf, SITE, visitDriver } from "@/lib/visit-store"
+import {
+  DOMAINS,
+  ownerOf,
+  readerOf,
+  SITE,
+  visitDriver,
+} from "@/lib/visit-store"
 import { visitsRoute } from "@/lib/visits"
 
 // The pages components/page-sensor writes, composed into visits by the ui registry's
@@ -12,6 +18,7 @@ export function POST(request: Request) {
   route ??= visitsRoute({
     db: visitDriver(),
     site: SITE,
+    domains: DOMAINS,
     services: ["e-id-web"],
     ownerOf,
     readerOf,
