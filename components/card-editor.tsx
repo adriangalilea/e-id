@@ -1,15 +1,12 @@
 "use client"
 
-import { ArrowLeft, ArrowRight, Plus, Star, X } from "lucide-react"
+import { ArrowLeft, ArrowRight, Star } from "lucide-react"
 import { useRouter } from "next/navigation"
-import { useState } from "react"
 import {
   CountryOnCard,
   HandleOnCard,
-  LINK_MARK,
-  LINKS_ON_CARD,
+  LinksOnCard,
   NameOnCard,
-  PlatformChoice,
   WRITTEN_HERE,
 } from "@/components/card-fields"
 import { IdCard } from "@/components/id-card"
@@ -26,18 +23,11 @@ import {
 } from "@/components/ui/form"
 import { HoloLight } from "@/components/ui/holo"
 import { InputGroup } from "@/components/ui/input"
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover"
 import { Switch } from "@/components/ui/switch"
 import { Textarea } from "@/components/ui/textarea"
 import { handleState, saveCard } from "@/db/actions"
 import { type CardEdit, cardEditSchema, type EditLink } from "@/lib/card-edit"
 import { errorAt, isDirty } from "@/lib/form-core"
-import { prefixOf, usernameIn } from "@/lib/link-names"
-import { getLinkIcon, getLinkPlaceholder } from "@/lib/links"
 import { HIGHLIGHTED, type LinkPlatform, OFFERED } from "@/lib/platforms"
 import { cn } from "@/lib/utils"
 
@@ -262,261 +252,153 @@ const BLANK_LINK = (platform: LinkPlatform): EditLink => ({
   public: true,
 })
 
-/** The card's links as marks, each opening to what it holds, and "+" to add
- *  one: the platform first, then its own popover opens on it. */
+/** The card's links, written as every card's are (card-fields, `LinksOnCard`),
+ *  kept in the form: what an owner's card offers besides where is its `detail`,
+ *  where it stands among the others, a note, a highlight, whether it shows. */
 function LinksField({ form }: { form: CardForm }) {
-  // The row just added, its popover open from the start.
-  const [fresh, setFresh] = useState<number | null>(null)
-  return (
-    <form.FieldArray name="links">
-      {(rows, ops) => (
-        <fieldset aria-label="links" className={LINKS_ON_CARD}>
-          {rows.map((row) => (
-            <LinkMark
-              key={row.key}
-              form={form}
-              index={row.index}
-              count={rows.length}
-              startOpen={row.index === fresh}
-              onMove={(to) => ops.move(row.index, to)}
-              onRemove={() => {
-                setFresh(null)
-                ops.remove(row.index)
-              }}
-            />
-          ))}
-          <AddLink
-            form={form}
-            onPick={(platform) => {
-              setFresh(rows.length)
-              ops.append(BLANK_LINK(platform))
-            }}
-          />
-        </fieldset>
-      )}
-    </form.FieldArray>
-  )
-}
-
-/** "+": the platforms on offer not on the card yet, one link each (lib/platforms,
- *  `OFFERED`); gone once every one is there. */
-function AddLink({
-  form,
-  onPick,
-}: {
-  form: CardForm
-  onPick: (platform: LinkPlatform) => void
-}) {
-  const [open, setOpen] = useState(false)
-  const taken = useFormState(form, (s) =>
-    s.values.links.map((l) => l.platform).join(" "),
-  )
-  const rest = OFFERED.filter((p) => !taken.split(" ").includes(p))
-  if (rest.length === 0) return null
-  return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger
-        render={
-          <button
-            type="button"
-            aria-label="add a link"
-            // A mark like the links beside it, a step dimmer: one more to add.
-            className={cn(LINK_MARK, "text-foreground/55")}
-          />
-        }
-      >
-        <Plus />
-      </PopoverTrigger>
-      <PopoverContent align="start" className="w-64 p-2">
-        <PlatformChoice
-          platforms={rest}
-          onPick={(platform) => {
-            setOpen(false)
-            onPick(platform)
-          }}
-        />
-      </PopoverContent>
-    </Popover>
-  )
-}
-
-/** One link: its mark on the card (dim while hidden, red while something on it
- *  is wrong), opening to its address (the platform's before it), a note, a
- *  highlight where the platform has one, whether it shows, and where it stands
- *  among the others. Closed with no address, it was never added. */
-function LinkMark({
-  form,
-  index,
-  count,
-  startOpen,
-  onMove,
-  onRemove,
-}: {
-  form: CardForm
-  index: number
-  count: number
-  startOpen: boolean
-  onMove: (to: number) => void
-  onRemove: () => void
-}) {
-  const path = `links.${index}` as const
-  const link = useFormState(form, (s) => s.values.links[index])
+  const links = useFormState(form, (s) => s.values.links)
+  // Which links have something wrong, as one string ("01…", a link a character):
+  // a selector's answer is compared by value, and a new array every time would
+  // redraw the row on every keystroke anywhere in the form.
   const wrong = useFormState(form, (s) =>
-    (["value", "note", "highlight"] as const).some(
-      (field) => errorAt(s, `${path}.${field}`) !== undefined,
-    ),
+    s.values.links
+      .map((_, i) =>
+        (["value", "note", "highlight"] as const).some(
+          (field) => errorAt(s, `links.${i}.${field}`) !== undefined,
+        )
+          ? "1"
+          : "0",
+      )
+      .join(""),
   )
-  const [open, setOpen] = useState(startOpen)
-  if (!link) return null
-  const { platform } = link
-  const close = () => {
-    setOpen(false)
-    if (!form.get().values.links[index]?.value.trim()) onRemove()
+  const save = (platform: LinkPlatform, value: string) => {
+    const index = form
+      .get()
+      .values.links.findIndex((l) => l.platform === platform)
+    if (index === -1) form.append("links", { ...BLANK_LINK(platform), value })
+    else if (!value) form.remove("links", index)
+    else form.setValue(`links.${index}.value`, value)
   }
   return (
-    <Popover
-      open={open}
-      onOpenChange={(next) => (next ? setOpen(true) : close())}
-    >
-      <PopoverTrigger
-        render={
-          <button
-            type="button"
-            aria-label={`${platform}: ${link.value || "no address yet"}${link.public ? "" : ", hidden"}`}
-            className={cn(
-              LINK_MARK,
-              !link.public && "opacity-35",
-              wrong && "text-tone-bad",
-            )}
+    <LinksOnCard
+      links={links.map((l, i) => ({
+        platform: l.platform,
+        value: l.value,
+        hidden: !l.public,
+        wrong: wrong[i] === "1",
+      }))}
+      offered={OFFERED}
+      onSave={save}
+      detail={(index) => ({
+        head: (
+          <LinkPlace
+            index={index}
+            count={links.length}
+            onMove={(to) => form.move("links", index, to)}
           />
-        }
+        ),
+        body: <LinkMore form={form} index={index} />,
+        error: errorAt(form.get(), `links.${index}.value`),
+      })}
+    />
+  )
+}
+
+/** Where a link stands among the others, a step either way. */
+function LinkPlace({
+  index,
+  count,
+  onMove,
+}: {
+  index: number
+  count: number
+  onMove: (to: number) => void
+}) {
+  return (
+    <>
+      <Button
+        type="button"
+        variant="ghost"
+        size="icon-sm"
+        aria-label="earlier"
+        disabled={index === 0}
+        onClick={() => onMove(index - 1)}
+        className="text-foreground/50"
       >
-        {getLinkIcon(platform)}
-      </PopoverTrigger>
-      <PopoverContent align="start" className="w-80 gap-3 p-3">
-        {/* biome-ignore lint/a11y/noStaticElementInteractions: Enter delegated from the inputs inside (a form inside the card's form is not allowed) */}
-        <div
-          className="flex flex-col gap-3"
-          onKeyDown={(e) => {
-            // Enter in a line keeps it: the popover closes, the card stays open.
-            if (e.key === "Enter" && e.target instanceof HTMLInputElement) {
-              e.preventDefault()
-              close()
-            }
-          }}
+        <ArrowLeft />
+      </Button>
+      <Button
+        type="button"
+        variant="ghost"
+        size="icon-sm"
+        aria-label="later"
+        disabled={index === count - 1}
+        onClick={() => onMove(index + 1)}
+        className="text-foreground/50"
+      >
+        <ArrowRight />
+      </Button>
+    </>
+  )
+}
+
+/** What an owner's card says of a link beyond where: a note shown over it, the
+ *  video or post to show first where the platform has one, whether it shows. */
+function LinkMore({ form, index }: { form: CardForm; index: number }) {
+  const path = `links.${index}` as const
+  const platform = useFormState(form, (s) => s.values.links[index]?.platform)
+  if (!platform) return null
+  return (
+    <>
+      <form.Field
+        name={`${path}.note`}
+        label="note"
+        aside="optional, shown over it"
+      >
+        {(c) => (
+          <Textarea
+            size="sm"
+            rows={2}
+            maxRows={5}
+            placeholder="what to say about it"
+            {...c.input}
+          />
+        )}
+      </form.Field>
+      {HIGHLIGHTED.includes(platform) && (
+        <form.Field
+          name={`${path}.highlight`}
+          label={
+            platform === "youtube"
+              ? "video to show first"
+              : "post to show first"
+          }
+          aside="optional, its id"
         >
-          <div className="flex h-7 items-center gap-2 pl-1 text-foreground/85 text-sm [&_svg]:stroke-[1.5]">
-            <span className="[&_svg]:size-4">{getLinkIcon(platform)}</span>
-            {platform}
-            <span className="ml-auto flex items-center">
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon-sm"
-                aria-label="earlier"
-                disabled={index === 0}
-                onClick={() => onMove(index - 1)}
-                className="text-foreground/50"
-              >
-                <ArrowLeft />
-              </Button>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon-sm"
-                aria-label="later"
-                disabled={index === count - 1}
-                onClick={() => onMove(index + 1)}
-                className="text-foreground/50"
-              >
-                <ArrowRight />
-              </Button>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon-sm"
-                aria-label={`remove ${platform}`}
-                onClick={() => {
-                  setOpen(false)
-                  onRemove()
-                }}
-                className="text-foreground/50"
-              >
-                <X />
-              </Button>
-            </span>
-          </div>
-          <form.Field name={`${path}.value`} label={`${platform} address`}>
-            {(c) => (
-              <InputGroup
-                size="sm"
-                autoFocus
-                {...WRITTEN_HERE}
-                spellCheck={false}
-                autoCapitalize="none"
-                placeholder={getLinkPlaceholder(platform)}
-                {...c.input}
-                // A pasted address is read as the username it ends in.
-                onChange={(e) =>
-                  c.onValueChange(usernameIn(platform, e.target.value))
-                }
-                // The platform's address the username continues, in the same
-                // type: "github.com/adriangalilea", one address.
-                prefix={prefixOf(platform) || undefined}
-              />
-            )}
-          </form.Field>
-          <form.Field
-            name={`${path}.note`}
-            label="note"
-            aside="optional, shown over it"
-          >
-            {(c) => (
-              <Textarea
-                size="sm"
-                rows={2}
-                maxRows={5}
-                placeholder="what to say about it"
-                {...c.input}
-              />
-            )}
-          </form.Field>
-          {HIGHLIGHTED.includes(platform) && (
-            <form.Field
-              name={`${path}.highlight`}
-              label={
-                platform === "youtube"
-                  ? "video to show first"
-                  : "post to show first"
-              }
-              aside="optional, its id"
-            >
-              {(c) => (
-                <InputGroup
-                  size="sm"
-                  {...WRITTEN_HERE}
-                  spellCheck={false}
-                  start={<Star strokeWidth={1.5} />}
-                  {...c.input}
-                />
-              )}
-            </form.Field>
+          {(c) => (
+            <InputGroup
+              size="sm"
+              {...WRITTEN_HERE}
+              spellCheck={false}
+              start={<Star strokeWidth={1.5} />}
+              {...c.input}
+            />
           )}
-          <form.Field
-            name={`${path}.public`}
-            label="on your card"
-            orientation="horizontal"
-          >
-            {(c) => (
-              <Switch
-                size="sm"
-                checked={c.value}
-                onCheckedChange={(checked) => c.onValueChange(checked)}
-              />
-            )}
-          </form.Field>
-        </div>
-      </PopoverContent>
-    </Popover>
+        </form.Field>
+      )}
+      <form.Field
+        name={`${path}.public`}
+        label="on your card"
+        orientation="horizontal"
+      >
+        {(c) => (
+          <Switch
+            size="sm"
+            checked={c.value}
+            onCheckedChange={(checked) => c.onValueChange(checked)}
+          />
+        )}
+      </form.Field>
+    </>
   )
 }

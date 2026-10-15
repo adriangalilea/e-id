@@ -1,15 +1,22 @@
 "use client"
 
-import { ChevronDown } from "lucide-react"
+import { ArrowLeft, ChevronDown, CornerDownLeft, Plus, X } from "lucide-react"
 import { useEffect, useState } from "react"
 import { EmojiDomain } from "@/components/brand"
 import { ON_CARD } from "@/components/card-shape"
 import { CountryFlag } from "@/components/country"
+import { Button } from "@/components/ui/button"
 import { LazyCountryPickerPopover } from "@/components/ui/country-picker-lazy"
 import { Input, InputGroup } from "@/components/ui/input"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
 import { type HandleState, handleState } from "@/db/actions"
 import { toHandle } from "@/lib/card-draft"
-import { getLinkIcon } from "@/lib/links"
+import { prefixOf, usernameIn } from "@/lib/link-names"
+import { getLinkIcon, getLinkPlaceholder } from "@/lib/links"
 import type { LinkPlatform } from "@/lib/platforms"
 import { cn } from "@/lib/utils"
 
@@ -223,6 +230,214 @@ export function PlatformChoice({
         </button>
       ))}
     </div>
+  )
+}
+
+/** A link as its mark on the card shows it: where, what is written there, and
+ *  how the mark is drawn (dim while it does not show, red while something on it is
+ *  wrong). */
+export type MarkedLink = {
+  platform: LinkPlatform
+  value: string
+  hidden?: boolean
+  wrong?: boolean
+}
+
+/** What a card being written on adds to one link's popover beyond its address:
+ *  buttons beside its name (where it stands among the others) and fields under
+ *  the address (a note, a highlight, whether it shows), and what is wrong with
+ *  the address. A blank card adds none: a link there is where, nothing more. */
+export type LinkDetail = {
+  head?: React.ReactNode
+  body?: React.ReactNode
+  error?: string
+}
+
+/** THE CARD'S LINKS, written on: each a mark that opens to it, and "+" to add one
+ *  (the platforms on offer not on it yet, `offered`). One row and one popover for
+ *  every card being written (the home's blank one, an owner's), so a link is
+ *  added, changed and taken off the same way on both. `onSave(platform, value)`
+ *  keeps what was written, "" takes it off; what more a card offers per link is
+ *  `detail`'s. */
+export function LinksOnCard({
+  links,
+  offered,
+  onSave,
+  detail,
+}: {
+  links: readonly MarkedLink[]
+  offered: readonly LinkPlatform[]
+  onSave: (platform: LinkPlatform, value: string) => void
+  detail?: (index: number) => LinkDetail
+}) {
+  const rest = offered.filter((p) => !links.some((l) => l.platform === p))
+  return (
+    <fieldset aria-label="links" className={LINKS_ON_CARD}>
+      {links.map((link, index) => (
+        <LinkPopover
+          key={link.platform}
+          trigger={
+            <button
+              type="button"
+              aria-label={`${link.platform}: ${link.value || "no address yet"}${link.hidden ? ", hidden" : ""}`}
+              className={cn(
+                LINK_MARK,
+                link.hidden && "opacity-35",
+                link.wrong && "text-tone-bad",
+              )}
+            >
+              {getLinkIcon(link.platform)}
+            </button>
+          }
+          platforms={[link.platform]}
+          link={link}
+          onSave={onSave}
+          detail={detail?.(index)}
+        />
+      ))}
+      {rest.length > 0 && (
+        <LinkPopover
+          trigger={
+            <button
+              type="button"
+              aria-label="add a link"
+              // A mark like the links beside it, a step dimmer: one more to add.
+              className={cn(LINK_MARK, "text-foreground/55")}
+            >
+              <Plus />
+            </button>
+          }
+          platforms={rest}
+          onSave={onSave}
+        />
+      )}
+    </fieldset>
+  )
+}
+
+/** One link's popover: with several platforms to choose from, the list first
+ *  (icon and name); then the field for the username there, the platform's address
+ *  before it. What is typed is kept on Enter or when it closes, never per key: a
+ *  link landing on the home's card moves the page under it. A link already on the
+ *  card opens straight to its field, with the way to take it off. */
+function LinkPopover({
+  trigger,
+  platforms,
+  link,
+  onSave,
+  detail,
+}: {
+  trigger: React.ReactElement
+  platforms: readonly LinkPlatform[]
+  link?: MarkedLink
+  onSave: (platform: LinkPlatform, value: string) => void
+  detail?: LinkDetail
+}) {
+  const only = platforms.length === 1 ? (platforms[0] ?? null) : null
+  const [open, setOpen] = useState(false)
+  const [chosen, setChosen] = useState<LinkPlatform | null>(
+    link?.platform ?? only,
+  )
+  const [typed, setTyped] = useState(link?.value ?? "")
+  /** Kept as written; an added link with nothing written was never added. */
+  const keep = () => {
+    if (!chosen) return
+    const value = usernameIn(chosen, typed)
+    if (link ? value !== link.value : value !== "") onSave(chosen, value)
+  }
+  return (
+    <Popover
+      open={open}
+      onOpenChange={(next) => {
+        if (!next) keep()
+        setOpen(next)
+        if (next) {
+          setChosen(link?.platform ?? only)
+          setTyped(link?.value ?? "")
+        }
+      }}
+    >
+      <PopoverTrigger render={trigger} />
+      <PopoverContent align="start" className="w-80 gap-3 p-3">
+        {!chosen ? (
+          <PlatformChoice platforms={platforms} onPick={setChosen} />
+        ) : (
+          // biome-ignore lint/a11y/noStaticElementInteractions: Enter delegated from the inputs inside (a form inside the profile's card form is not allowed)
+          <div
+            className="flex flex-col gap-3"
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && e.target instanceof HTMLInputElement) {
+                e.preventDefault()
+                keep()
+                setOpen(false)
+              }
+            }}
+          >
+            {/* The link named, and at its other end what else is done with it:
+                back to the list while adding; once on the card, where it
+                stands (`detail`) and × to take it off. */}
+            <div className="flex h-7 items-center gap-2 pl-1 text-foreground/85 text-sm [&_svg]:stroke-[1.5]">
+              {!link && platforms.length > 1 && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon-sm"
+                  aria-label="other platforms"
+                  onClick={() => setChosen(null)}
+                  className="-ml-1.5 text-foreground/50"
+                >
+                  <ArrowLeft />
+                </Button>
+              )}
+              <span className="[&_svg]:size-4">{getLinkIcon(chosen)}</span>
+              {chosen}
+              {link && (
+                <span className="ml-auto flex items-center">
+                  {detail?.head}
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon-sm"
+                    aria-label={`remove ${chosen}`}
+                    onClick={() => {
+                      setTyped("")
+                      onSave(link.platform, "")
+                      setOpen(false)
+                    }}
+                    className="text-foreground/50"
+                  >
+                    <X />
+                  </Button>
+                </span>
+              )}
+            </div>
+            <InputGroup
+              size="sm"
+              autoFocus
+              aria-label={`your ${chosen}`}
+              aria-invalid={detail?.error ? true : undefined}
+              placeholder={getLinkPlaceholder(chosen)}
+              {...WRITTEN_HERE}
+              spellCheck={false}
+              autoCapitalize="none"
+              value={typed}
+              // A pasted address is read as the username it ends in.
+              onChange={(e) => setTyped(usernameIn(chosen, e.target.value))}
+              // The platform's address the username continues, in the same
+              // type: "github.com/adriangalilea", one address.
+              prefix={prefixOf(chosen) || undefined}
+              end={<CornerDownLeft className="text-foreground/40" />}
+            />
+            {detail?.error && (
+              <p className="-mt-1.5 px-1 text-sm text-tone-bad">
+                {detail.error}
+              </p>
+            )}
+            {link && detail?.body}
+          </div>
+        )}
+      </PopoverContent>
+    </Popover>
   )
 }
 

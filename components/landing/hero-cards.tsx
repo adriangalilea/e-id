@@ -1,13 +1,6 @@
 "use client"
 
-import {
-  ArrowLeft,
-  ArrowUpRight,
-  CornerDownLeft,
-  Plus,
-  RotateCcw,
-  X,
-} from "lucide-react"
+import { ArrowUpRight, RotateCcw } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import {
@@ -23,12 +16,9 @@ import { BrandLogo } from "@/components/brand"
 import {
   CountryOnCard,
   HandleOnCard,
-  LINK_MARK,
-  LINKS_ON_CARD,
+  LinksOnCard,
   NameOnCard,
-  PlatformChoice,
   useHandleState,
-  WRITTEN_HERE,
 } from "@/components/card-fields"
 import { CORNER, ID1, ON_CARD, PRESS_HINT } from "@/components/card-shape"
 import { type Holder, IdCard } from "@/components/id-card"
@@ -40,12 +30,6 @@ import { useChip } from "@/components/session/use-chip"
 import { SignInMenu } from "@/components/ui/account-menu"
 import { Button } from "@/components/ui/button"
 import { HoloLean, HoloLight } from "@/components/ui/holo"
-import { InputGroup } from "@/components/ui/input"
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover"
 import { ShimmerLift } from "@/components/ui/shimmer"
 import { toast } from "@/components/ui/toast"
 import { useOnScreen } from "@/components/ui/use-on-screen"
@@ -63,8 +47,6 @@ import type { Card } from "@/lib/card-schema"
 import { EMOJI_DOMAIN } from "@/lib/const"
 import { clearDraft, readDraft, useDraft, writeDraft } from "@/lib/draft"
 import type { HandoffProvider } from "@/lib/handoff"
-import { prefixOf, usernameIn } from "@/lib/link-names"
-import { getLinkIcon, getLinkPlaceholder } from "@/lib/links"
 import { knownPlatform, type LinkPlatform, OFFERED } from "@/lib/platforms"
 import type { Presence } from "@/lib/presence"
 import { startSignIn } from "@/lib/sign-in"
@@ -451,160 +433,25 @@ function ClaimButton(props: React.ComponentProps<typeof Button>) {
   )
 }
 
-/** The card's links (id-card, `Flair`): each a press that opens it to change or
- *  take off, and "+" to add one, in a popover (@ag/popover): the platforms on
- *  offer by name (lib/platforms, `OFFERED`), then the username there. */
+/** The card's links (id-card, `Flair`), written as every card's are
+ *  (card-fields, `LinksOnCard`), kept in the draft. A link landing or leaving
+ *  moves the page under the card (`shape`): the profile it makes appears with the
+ *  first. */
 function Links({ links }: { links: DraftLink[] }) {
-  const rest = OFFERED.filter((p) => !links.some((l) => l.platform === p))
-  const mark = LINK_MARK
   const save = (platform: LinkPlatform, value: string) => {
-    const others = readDraft().links.filter((l) => l.platform !== platform)
-    const next = value ? [...others, { platform, value }] : others
+    const now = readDraft().links
+    // Changed where it stands, added at the end, taken off when emptied.
+    const next = !value
+      ? now.filter((l) => l.platform !== platform)
+      : now.some((l) => l.platform === platform)
+        ? now.map((l) => (l.platform === platform ? { platform, value } : l))
+        : [...now, { platform, value }]
     shape(
       next.some((l) => l.value.trim() !== ""),
       () => writeDraft({ links: next }),
     )
   }
-  return (
-    <fieldset aria-label="links" className={LINKS_ON_CARD}>
-      {links.map((link) => (
-        <LinkPopover
-          key={link.platform}
-          trigger={
-            <button
-              type="button"
-              aria-label={`${link.platform}: ${link.value}`}
-              className={mark}
-            >
-              {getLinkIcon(link.platform)}
-            </button>
-          }
-          platforms={[link.platform]}
-          link={link}
-          onSave={save}
-        />
-      ))}
-      {rest.length > 0 && (
-        <LinkPopover
-          trigger={
-            <button
-              type="button"
-              aria-label="add a link"
-              // A mark like the links beside it, a step dimmer: one more to add.
-              className={cn(mark, "text-foreground/55")}
-            >
-              <Plus />
-            </button>
-          }
-          platforms={rest}
-          onSave={save}
-        />
-      )}
-    </fieldset>
-  )
-}
-
-/** One link's popover: with several platforms to choose from, the list first
- *  (icon and name); then the field for the username there, the platform's
- *  address before it, Enter to keep. A link already on the card opens straight
- *  to its field, with the way to take it off. */
-function LinkPopover({
-  trigger,
-  platforms,
-  link,
-  onSave,
-}: {
-  trigger: React.ReactElement
-  platforms: readonly LinkPlatform[]
-  link?: DraftLink
-  onSave: (platform: LinkPlatform, value: string) => void
-}) {
-  const [open, setOpen] = useState(false)
-  const [chosen, setChosen] = useState<LinkPlatform | null>(
-    link?.platform ?? (platforms.length === 1 ? (platforms[0] ?? null) : null),
-  )
-  const [typed, setTyped] = useState(link?.value ?? "")
-  return (
-    <Popover
-      open={open}
-      onOpenChange={(next) => {
-        setOpen(next)
-        if (next) {
-          setChosen(
-            link?.platform ??
-              (platforms.length === 1 ? (platforms[0] ?? null) : null),
-          )
-          setTyped(link?.value ?? "")
-        }
-      }}
-    >
-      <PopoverTrigger render={trigger} />
-      <PopoverContent align="start" className="w-80 gap-3 p-3">
-        {!chosen ? (
-          <PlatformChoice platforms={platforms} onPick={setChosen} />
-        ) : (
-          <form
-            className="flex flex-col gap-3"
-            onSubmit={(e) => {
-              e.preventDefault()
-              onSave(chosen, usernameIn(chosen, typed))
-              setOpen(false)
-            }}
-          >
-            {/* The link named, and at its other end the one thing to do with
-                it besides writing: back to the list while adding, × to take it
-                off the card once it is on it. */}
-            <div className="flex h-7 items-center gap-2 pl-1 text-foreground/85 text-sm [&_svg]:stroke-[1.5]">
-              {!link && platforms.length > 1 && (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon-sm"
-                  aria-label="other platforms"
-                  onClick={() => setChosen(null)}
-                  className="-ml-1.5 text-foreground/50"
-                >
-                  <ArrowLeft />
-                </Button>
-              )}
-              <span className="[&_svg]:size-4">{getLinkIcon(chosen)}</span>
-              {chosen}
-              {link && (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon-sm"
-                  aria-label={`remove ${chosen}`}
-                  onClick={() => {
-                    onSave(link.platform, "")
-                    setOpen(false)
-                  }}
-                  className="ml-auto text-foreground/50"
-                >
-                  <X />
-                </Button>
-              )}
-            </div>
-            <InputGroup
-              size="sm"
-              autoFocus
-              aria-label={`your ${chosen}`}
-              placeholder={getLinkPlaceholder(chosen)}
-              {...WRITTEN_HERE}
-              spellCheck={false}
-              autoCapitalize="none"
-              value={typed}
-              onChange={(e) => setTyped(e.target.value)}
-              // The platform's address the username continues, in the same
-              // type: "github.com/adriangalilea", one address.
-              prefix={prefixOf(chosen) || undefined}
-              end={<CornerDownLeft className="text-foreground/40" />}
-            />
-          </form>
-        )}
-      </PopoverContent>
-    </Popover>
-  )
+  return <LinksOnCard links={links} offered={OFFERED} onSave={save} />
 }
 
 /** The card becomes the account's: when the sign-in the address started comes
