@@ -26,7 +26,9 @@ export default function FooterUser() {
   useSignInError()
   return (
     <AccountMenu
-      size="lg"
+      // A secondary control in the bar: the brand leads it (`--wordmark-logo`
+      // is this size's face).
+      size="md"
       user={
         chip && {
           name: chip.u ?? "no address yet",

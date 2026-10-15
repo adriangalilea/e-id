@@ -22,7 +22,7 @@ export default function Footer() {
         <HomeLink
           aria-label="home"
           // The wordmark's size is the bar's one (`--wordmark`, globals.css).
-          className="text-(length:--wordmark) flex items-center font-light tracking-[-0.02em] transition-opacity [--logo-size:calc(var(--wordmark-logo)*1cap)] hover:opacity-80"
+          className="text-(length:--wordmark) flex items-center font-light tracking-[-0.02em] transition-opacity [--logo-size:var(--wordmark-logo)] hover:opacity-80"
         >
           <EmojiDomain logo />
         </HomeLink>

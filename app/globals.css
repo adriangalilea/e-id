@@ -50,10 +50,12 @@
   /* The bar's wordmark (components/footer): large enough that its logo reads as
      a logo. */
   --wordmark: 1.25rem;
-  /* The logo's disc in the wordmark, in caps of it: larger than the 1.2 it is in
-     a headline, since at the bar's size a disc only a little taller than the
-     capitals reads smaller than the words. */
-  --wordmark-logo: 1.45;
+  /* The logo's disc in the wordmark: the size of the account's face across the
+     bar (AccountMenu `md`, size-6), so the brand's mark is never the smaller of
+     the two round things on it. Sized by the words' capitals (1.45 cap) it was
+     about 20 px beside a 32 px face in a 40 px pill: the sign-in outweighed the
+     brand in every way. */
+  --wordmark-logo: 1.5rem;
 
   /* e-id is glass, and glass places its light by its corner's radius: a square
      glass has no curve to catch it. One radius, the scale below derived from it,
