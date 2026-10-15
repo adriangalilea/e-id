@@ -1,5 +1,31 @@
+import assert from "node:assert/strict"
+import { readdirSync } from "node:fs"
 import type { NextConfig } from "next"
-import { EMOJI_DOMAIN_PUNYCODE, MAIN_DOMAIN, SHORT_DOMAIN } from "./lib/const"
+import {
+  CARD_FILES,
+  CARD_SHORT,
+  EMOJI_DOMAIN_PUNYCODE,
+  MAIN_DOMAIN,
+  SHORT_DOMAIN,
+} from "./lib/const"
+
+// The card's files as the app has them, against the list a person's own link
+// names are refused by (lib/link-names): a route added under a person's address
+// and not listed would let a link of theirs be named after it.
+const cardFiles = readdirSync("app/[username]", { withFileTypes: true })
+  .filter((e) => e.name !== "[link]")
+  .flatMap((e) =>
+    e.isDirectory()
+      ? [e.name]
+      : e.name.startsWith("opengraph-image.")
+        ? ["opengraph-image"]
+        : [],
+  )
+assert.deepEqual(
+  cardFiles.toSorted(),
+  [...CARD_FILES].sort(),
+  "app/[username] has routes lib/const CARD_FILES does not list, or the other way",
+)
 
 // Every path a person can open, never the auth API or the build's assets: the
 // OAuth callback must land on the host it was sent from.
@@ -78,21 +104,16 @@ const nextConfig: NextConfig = {
           ],
           destination: "/:username/card.vcf",
         },
-        // The card as data (lib/card-schema) at `/json` after the address, as
-        // each link is at its route (`/gh`), and at the address itself
-        // when JSON is what is asked for first (a browser asks for HTML first,
-        // so it never gets this).
-        {
-          source: "/:username([A-Za-z0-9_-]+)/json",
-          destination: "/:username/card.json",
-        },
-        // The card as text for a terminal (lib/card-text): at `/txt`, and at the
-        // address itself for a command-line client, which asks for `*/*` and
-        // is told by its name alone.
-        {
-          source: "/:username([A-Za-z0-9_-]+)/txt",
-          destination: "/:username/card.txt",
-        },
+        // The card's files at their short names (`/json`, `/txt`), as each link
+        // is at its route (`/gh`).
+        ...Object.entries(CARD_SHORT).map(([short, file]) => ({
+          source: `/:username([A-Za-z0-9_-]+)/${short}`,
+          destination: `/:username/${file}`,
+        })),
+        // The card as text for a terminal (lib/card-text) at the address itself
+        // for a command-line client, which asks for `*/*` and is told by its
+        // name alone; and as data (lib/card-schema) when JSON is what is asked
+        // for first (a browser asks for HTML first, so it never gets this).
         {
           source: "/:username([A-Za-z0-9_-]+)",
           has: [{ type: "header", key: "user-agent", value: CLI }],

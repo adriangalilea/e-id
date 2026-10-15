@@ -74,5 +74,24 @@ export const EMOJI_DOMAIN_PUNYCODE = "xn--mq8h.to"
 export const EMOJI_URL = `https://${EMOJI_DOMAIN}`
 export const EMOJI_ORIGIN = `https://${EMOJI_DOMAIN_PUNYCODE}`
 
+/** The card's own files under a person's address (app/[username]/<file>): named
+ *  routes, which win over a link of the same name (app/[username]/[link]). A new
+ *  file there is listed here, or a person could name a link of theirs after it. */
+export const CARD_FILES = [
+  "card.json",
+  "card.svg",
+  "card.vcf",
+  "card.txt",
+  "byline.svg",
+  "opengraph-image",
+] as const
+
+/** The short names the card's files are also at (`/you/json`), rewritten to the
+ *  file by next.config. */
+export const CARD_SHORT: Record<string, (typeof CARD_FILES)[number]> = {
+  json: "card.json",
+  txt: "card.txt",
+}
+
 /** How long a sign-in lasts, in seconds: the session and its display cookie (lib/chip). */
 export const SESSION_MAX_AGE = 60 * 60 * 24 * 7

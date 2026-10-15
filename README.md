@@ -5,8 +5,8 @@ Your digital identity: one page at [👤.to/you](https://👤.to) for everywhere
 ## What it does
 
 - **One address, three spellings.** `e-id.to/you`, `eid.to/you` and `👤.to/you` are the same page. Safari shows the emoji in its address bar, so Safari is sent to `👤.to` and every other browser to `e-id.to`; signing in on one is signed in on the other.
-- **Links by name.** `e-id.to/you/github` (or `gh`, `x`, `youtube`, …) opens your link on that platform.
-- **The card as data.** `/you/card.json` in an open format ([its schema](https://e-id.to/card.schema.json)), `/you/card.vcf` for contacts, `/you/card.svg` and `/you/byline.svg` as images.
+- **Links by name, on every card.** Nothing to set up: each link on your card is at its platform's names, `/you/github` or `/you/gh`, `x` (`twitter`, `tw`), `youtube` (`yt`), `instagram` (`ig`), `telegram` (`tg`), `email` (`mail`), `website` (`web`, `site`). The names are one table, `LINK_NAMES` in `lib/link-names`.
+- **The card as data.** `/you/card.json` (or `/you/json`) in an open format ([its schema](https://e-id.to/card.schema.json)), `/you/card.vcf` (or `/you.vcf`) for contacts, `/you/card.svg` and `/you/byline.svg` as images, and `curl eid.to/you` prints it as text (`/you/txt`).
 - **Embeds.** `<e-id-card handle="you">` on any page with one script (`/embed.js`), and oEmbed, so an address pasted into a site that reads it becomes the card.
 - **Vouches.** Visitors leave a word on your page; you pin the one you want shown.
 
@@ -21,13 +21,15 @@ Built with Next.js, better-auth, and Drizzle on Turso. The interface comes from 
 
 ## To do
 
-- [ ] links of your own, `/you/<name>`: named or a generated code (6 characters, always one digit, so never a platform's name), optionally expiring by a date, a number of visits or one use. A name a platform already has, or one of the card's files (`card.json`, `card.svg`, …), is refused.
+- [ ] links of your own, `/you/<name>`, for what is not one of your card's platforms (a CV, a talk, a file): named or a generated code (6 characters, always one digit, so never a platform's name), optionally expiring by a date, a number of visits or one use. The names they cannot take are refused by `refusedLinkName` (`lib/link-names`): a platform's names, the card's files.
+- [ ] an API for them: personal API keys (better-auth's API-key plugin), each scoped to your own links and rate-limited, so a script or a CLI makes one (`curl -H "Authorization: Bearer …" eid.to/api/links -d '{"to":"…","expires":"7d"}'`). Probably Premium.
 - [ ] record what `/you/<name>` opened, or that someone looked for a name that opened nothing: the demand for a link they do not have (needs visits on, below)
 - [ ] visits on in production: the recording exists (`/api/events`, the ui registry's `visits`) and is off until its database is set
 - [ ] vouches: the send button waits for words; a profile can turn vouches off
 - [ ] an optional status line on the profile and its share image
-- [ ] a write API (`card.json` is the read one)
+- [ ] a write API for the card (`card.json` is the read one), on the same API keys
 - [ ] passkeys (better-auth has them)
+- [ ] live activity: a feed (RSS or Atom), a YouTube channel (each has a feed), Bluesky, GitHub, mixed into the latest of what you made, on your page
 
 ### Premium
 
@@ -45,8 +47,6 @@ Built with Next.js, better-auth, and Drizzle on Turso. The interface comes from 
 
 ### Ideas
 
-- live activity: a feed (RSS or Atom), a YouTube channel (each has a feed), Bluesky, mixed into the latest of what you made, on your page
-- `curl eid.to/you` answering with the card in text
 - following people, only if it brings something with it (their card kept current in your contacts)
 - languages and skills, if a card can hold them and stay simple (it starts to be a CV)
 

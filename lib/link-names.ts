@@ -1,3 +1,4 @@
+import { CARD_FILES, CARD_SHORT } from "@/lib/const"
 import { getLinkUrl } from "@/lib/links"
 import type { LinkPlatform } from "@/lib/platforms"
 
@@ -54,6 +55,23 @@ export function platformNamed(
   const wanted = name.toLowerCase()
   for (const [platform, names] of Object.entries(LINK_NAMES))
     if (names.includes(wanted)) return platform as Exclude<LinkPlatform, "link">
+  return null
+}
+
+/** Why `name` cannot be one of a person's own links (`/you/<name>`), or null
+ *  where it can. Every card already answers to its platforms' names, from its
+ *  links, so those are never a person's to give; the card's own files and their
+ *  short names (lib/const) are e-ID's. */
+export function refusedLinkName(name: string): string | null {
+  const wanted = name.toLowerCase()
+  const platform = platformNamed(wanted)
+  if (platform)
+    return `${wanted} opens your ${PLATFORM_NAME[platform]} link on every card`
+  if (
+    (CARD_FILES as readonly string[]).includes(wanted) ||
+    Object.hasOwn(CARD_SHORT, wanted)
+  )
+    return `${wanted} is your card's own file`
   return null
 }
 
