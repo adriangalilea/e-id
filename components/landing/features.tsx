@@ -1,5 +1,9 @@
 import { SaveContact } from "@/components/save-contact";
-import type { Landing, Shot } from "@/components/landing/link-map";
+import {
+  Capture,
+  type Landing,
+  type Shot,
+} from "@/components/landing/link-map";
 import { Story } from "@/components/landing/story";
 import { shortName } from "@/lib/link-names";
 import { cacheLife } from "next/cache";
@@ -16,6 +20,8 @@ import { Code } from "@/components/ui/code";
 import { cardOf } from "@/lib/card";
 import { type Card, embedOf } from "@/lib/card-schema";
 import { vcardOf } from "@/lib/vcard";
+import { fetchPhoto } from "@/lib/photo";
+import { averageOf } from "@/lib/prepare-media";
 
 /** WHAT A CARD DOES, under the hero: the scenes the page scrolls through
  *  (`Story`), each thing the card does shown as it really is (never a picture of
@@ -40,11 +46,18 @@ export async function Features() {
   return (
     <Story
       username={holder.username}
-      card={<HolderCard holder={holder} />}
+      profile={profileOf(holder)}
       landings={landingsOf(holder)}
       contact={{
-        vcard: await contactOf(card),
-        save: <SaveContact username={holder.username} size="lg" className="self-start" />,
+        ...(await contactOf(card)),
+        save: (
+          <SaveContact
+            key="save"
+            username={holder.username}
+            size="lg"
+            className="self-start"
+          />
+        ),
       }}
       data={{
         address: `${at}/json`,
@@ -83,14 +96,16 @@ function landingsOf(holder: Holder): Landing[] {
   return first.flatMap((link): Landing[] => {
     const end = shortName(link.platform);
     if (!end) return [];
+    const icon = getLinkIcon(link.platform);
     if (link.platform === "email")
-      return [{ end, url: link.url, page: <Compose to={link.url} /> }];
+      return [{ end, icon, url: link.url, page: <Compose to={link.url} /> }];
     const shot = captured[link.platform];
     if (!shot) return [];
     const base = `/links/${holder.username}/${link.platform}`;
     return [
       {
         end,
+        icon,
         url: shot.url,
         shot: {
           ...shot,
@@ -101,37 +116,70 @@ function landingsOf(holder: Holder): Landing[] {
   });
 }
 
-/** What an email address opens: the mail app's new message, to it. Drawn, since a
- *  mail app has no page to capture. */
+/** What an email address opens: the mail app's new message, to it, as large as a
+ *  mail window opens on a laptop. Drawn, since a mail app has no page to capture.
+ *  Plain whatever the browser round it wears: it is a window, not a pane of the
+ *  browser's glass. */
 function Compose({ to }: { to: string }) {
   const address = to.replace(/^mailto:/, "");
   return (
-    <div className="grid min-h-full place-items-center p-8">
+    <div className="grid min-h-full place-items-center p-10">
       <Panel
-        material="glass"
-        radius="0.75rem"
-        className="w-full max-w-md"
-        bodyClassName="block p-0 text-sm"
-        head={<span className="font-medium">new message</span>}
+        material="plain"
+        radius="1rem"
+        className="w-full max-w-3xl"
+        bodyClassName="block p-0 text-xl"
+        head={<span className="text-xl font-semibold">new message</span>}
       >
-        <div className="flex gap-2 border-current/10 border-b px-5 py-3">
+        <div
+          className="flex items-center gap-3 border-current/10 border-b px-7
+            py-4"
+        >
           <span className="text-foreground/45">to:</span>
-          <span className="rounded-full bg-[#0a84ff]/20 px-2 text-[#0a84ff]">
+          <span
+            className="rounded-full bg-[#0a84ff]/20 px-3 py-0.5 text-[#0a84ff]"
+          >
             {address}
           </span>
         </div>
-        <div className="flex gap-2 border-current/10 border-b px-5 py-3">
+        <div className="flex gap-3 border-current/10 border-b px-7 py-4">
           <span className="text-foreground/45">subject:</span>
         </div>
-        <div className="h-32 px-5 py-3 text-foreground/30">
-          {getLinkIcon("email")}
+        {/* The body, empty, the caret waiting in it. */}
+        <div className="h-72 px-7 py-5">
+          <span className="inline-block h-6 w-0.5 bg-[#0a84ff]" />
         </div>
       </Panel>
     </div>
   );
 }
 
-/** The card, the visit's first page: the address with no end opens it. */
+/** The visit's first page, what the address with no end opens: the holder's
+ *  profile as it really looks, captured by `pnpm links` with their links. A lead
+ *  not captured yet (the showcase's lead changed since) shows their card alone
+ *  until `pnpm links <handle>` runs, rather than someone else's page. */
+function profileOf(holder: Holder): React.ReactNode {
+  if (SHOTS.handle === holder.username) {
+    const base = `/links/${holder.username}/profile`;
+    return (
+      <Capture
+        shot={{
+          ...SHOTS.profile,
+          src: { dark: `${base}.dark.webp`, light: `${base}.light.webp` },
+        }}
+      />
+    );
+  }
+  return (
+    <div className="grid min-h-full place-items-center p-6">
+      <div className="w-full max-w-[18rem]">
+        <HolderCard holder={holder} />
+      </div>
+    </div>
+  );
+}
+
+/** The holder's card, the profile's stand-in. */
 function HolderCard({ holder }: { holder: Holder }) {
   return (
     <HoloLight className="w-full">
@@ -146,13 +194,20 @@ function HolderCard({ holder }: { holder: Holder }) {
 }
 
 /** The contact the card saves as: the very .vcf the save button downloads
- *  (lib/vcard, `vcardOf`), which the story's phone opens. Cached: the contact
+ *  (lib/vcard, `vcardOf`), which the story's phone opens, and its photo's mean
+ *  colour (prepare-media, `averageOf`), the phone's poster. Cached: the contact
  *  embeds the photo, fetched as it is built, which a page being prerendered may
  *  not do; the card is the key, so a changed card is a new contact. */
-async function contactOf(card: Card): Promise<string> {
+async function contactOf(
+  card: Card,
+): Promise<{ vcard: string; average: string | undefined }> {
   "use cache";
   cacheLife("days");
-  return vcardOf(card);
+  const photo = await fetchPhoto(card.photo, "the home's contact");
+  return {
+    vcard: await vcardOf(card),
+    average: photo ? await averageOf(photo.bytes) : undefined,
+  };
 }
 
 /** Someone's own site with the card on it: the real script and element working
