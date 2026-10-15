@@ -1,4 +1,16 @@
-import { ChevronLeft, Mail, MessageCircle, Phone, Video, X } from "lucide-react"
+import {
+  ChevronLeft,
+  CircleUser,
+  Clock,
+  Compass,
+  Mail,
+  MapPin,
+  MessageCircle,
+  Phone,
+  Search,
+  Video,
+  X,
+} from "lucide-react"
 import type * as React from "react"
 import { cn } from "@/lib/utils"
 import {
@@ -7,73 +19,88 @@ import {
   type VCardField,
 } from "@/lib/vcard-core"
 import { Image } from "@/components/ui/image"
+import { glassVariants } from "@/components/ui/material-glass"
 import "./contacts-app.css"
 
 // APPLE'S CONTACTS APP ON AN IPHONE (iOS 26), drawn from a vCard (lib/vcard-core):
-// a picture of the app, never the app. Two screens: `import`, the sheet iOS raises
-// when a .vcf is opened (the card, then Create New Contact and Add to Existing
-// Contact; `pressed` lights the first, the instant before it saves), and `contact`,
-// the saved card in Contacts (‹ Contacts, Edit, the face, the name, the four round
-// actions dimmed where the card has no channel for them, then each kind of field its
-// own inset group). It fills the positioned box it is put in, an `IphoneFrame`'s
-// screen, and lays out in that box's own width: every length is an iOS point
-// converted to cqw of a 402 pt screen (iPhone 16 Pro), so it is the same screen at
-// any size. The status bar and the island are the frame's; their ink and the
-// screen's ground behind them come from `contactsAppScreen`, since the frame draws
-// them outside this box. One `role="img"`, its insides hidden from assistive tech.
-// No state: it renders on the server.
+// a picture of the app, never the app. iOS 26 sets a contact on a poster in the
+// colour of its photo: the screen that colour, everything on it white, the
+// controls liquid glass. Two screens: `import`, the sheet iOS raises when a .vcf
+// is opened (the card, then Create New Contact and Add to Existing Contact;
+// `pressed` lights the first, the instant before it saves), and `contact`, the
+// saved card in Contacts (the back chevron and Edit in glass, the face, the name,
+// the four glass actions dimmed where the card has no channel for them, each kind
+// of field its own group with its glyph at the end, the tab bar at the foot).
 //
-//   <IphoneFrame style={contactsAppScreen("contact", "dark")}>
-//     <ContactsApp vcard={vcfText} view="contact" />
+// The poster's colour comes from the photo's `average` (prepare-media measures it:
+// a prepared picture's `average`, or `averageOf` on bytes fetched at request
+// time), passed in, since a picture rendered on the server holds no pixels to read
+// it from. Its hue and saturation are kept and its lightness settled where white
+// reads (`settle`), so a grey photo gives a grey poster, as a quote's ground does
+// (quote-card, `toneFrom`). It fills the positioned box it is put in, an
+// `IphoneFrame`'s screen, and lays out in that box's own width: every length is an
+// iOS point as cqw of a 402 pt screen (iPhone 16 Pro). The status bar and the
+// island are the frame's; their ink and the ground under them come from
+// `contactsAppScreen`. One `role="img"`, its insides hidden from assistive tech. No
+// state: it renders on the server.
+//
+//   <IphoneFrame style={contactsAppScreen("contact", average)}>
+//     <ContactsApp vcard={vcfText} view="contact" average={average} />
 //   </IphoneFrame>
 
 export type ContactsAppView = "import" | "contact"
-export type ContactsAppScheme = "light" | "dark"
+
+/** The poster's colour where none is given: iOS's own for a contact with no
+ *  photo, a cool grey. */
+const NO_PHOTO = "#7c8494"
 
 /** The iPhone 16 Pro's screen width in points: every length below is a share of it. */
 const SCREEN_PT = 402
 const cqw = (pt: number) => `${((pt * 100) / SCREEN_PT).toFixed(3)}cqw`
 
-/** UIKit's metrics, in points. */
-const UIKIT = {
+/** iOS 26's metrics, in points. */
+const PT = {
   // Safe areas: the status bar's band, the home indicator's.
   "safe-top": 62,
   "safe-bottom": 34,
-  // Inset grouped lists: the side margin (also a row's text inset and the
-  // separator's), a row's vertical padding, a group's corner and the gap between.
+  // Grouped rows: the side margin (also a row's text inset and the separator's),
+  // a row's vertical padding, a group's corner, the gap between groups, the
+  // glyph at a row's end.
   margin: 16,
-  "row-y": 11,
-  radius: 11,
-  gap: 20,
+  "row-y": 13,
+  radius: 22,
+  gap: 14,
+  trail: 21,
   // A bar's glass button, a capsule or a circle this tall; its glyphs.
-  bar: 44,
-  "bar-x": 14,
-  // The scroll edge's reach past a bar, also the head room under it, so a card
-  // at rest starts where the fade ends.
-  edge: 10,
-  chevron: 24,
+  bar: 48,
+  "bar-x": 18,
+  chevron: 26,
   close: 20,
   // The header: the photo, its monogram, the name, the line under it.
-  photo: 120,
-  monogram: 48,
-  "photo-gap": 12,
-  title: 30,
-  "title-leading": 36,
-  // The four actions: a circle, its glyph, its label, the gap between.
-  action: 50,
-  icon: 22,
-  "action-gap": 6,
-  "head-gap": 20,
-  // Dynamic Type at Large: body 17/22, subheadline 15/20, footnote 13/18,
-  // caption 12/16.
-  body: 17,
-  "body-leading": 22,
-  sub: 15,
-  "sub-leading": 20,
-  footnote: 13,
-  "footnote-leading": 18,
-  caption: 12,
-  "caption-leading": 16,
+  photo: 186,
+  monogram: 72,
+  "photo-gap": 20,
+  title: 34,
+  "title-leading": 40,
+  // The four glass actions: a circle, its glyph, the gap between.
+  action: 62,
+  icon: 26,
+  "action-gap": 12,
+  "head-gap": 22,
+  // A row's two lines: the label, the value.
+  label: 16,
+  "label-leading": 21,
+  value: 19,
+  "value-leading": 24,
+  sub: 17,
+  "sub-leading": 22,
+  // The tab bar: its height, how far it stands off the foot and the sides, the
+  // search circle beside it, a tab's glyph and word.
+  tab: 64,
+  "tab-bottom": 26,
+  "tab-gap": 10,
+  "tab-icon": 26,
+  "tab-word": 11,
   // The page sheet: the presenting screen pushed back behind it (its top, its
   // sides, its corner), the sheet's top and corner, its bar's top.
   "behind-top": 56,
@@ -86,106 +113,59 @@ const UIKIT = {
   home: 140,
   "home-h": 5,
   "home-bottom": 8,
-} as const
-
-/** Every length the screens use: UIKit's, and the ones made of them. */
-const PT = {
-  ...UIKIT,
-  // Where a card at rest starts and the scroll edge ends: under the page's bar,
-  // or under the sheet's.
-  "head-page": UIKIT["safe-top"] + UIKIT.bar + UIKIT.edge,
-  "head-sheet": UIKIT["sheet-bar-top"] + UIKIT.bar + UIKIT.edge,
-  // The room after the last group: the home indicator's band and a gap.
-  foot: UIKIT["safe-bottom"] + UIKIT.gap,
-  // The back capsule's chevron sits half a padding from its round end.
-  "back-x": UIKIT["bar-x"] / 2,
-  // The sheet's title keeps clear of the close button on both sides, so it is
-  // centred on the sheet.
-  "title-x": UIKIT.bar + UIKIT.margin,
 }
 
-/** UIKit's semantic colours, per appearance and per level: a page sits on the
- *  base level; a sheet is raised, which in dark lifts every grey a step. */
-interface Palette {
-  ground: string
-  cell: string
-  pressed: string
-  separator: string
-  label: string
-  secondary: string
-  dim: string
-  tint: string
-  glass: string
-  "glass-shadow": string
+/** Where a card at rest starts: under the page's bar, or under the sheet's. */
+const HEAD = {
+  page: PT["safe-top"] + PT.bar + 18,
+  sheet: PT["sheet-bar-top"] + PT.bar + 18,
 }
 
-const DARK_INK = {
-  label: "#fff",
-  secondary: "rgb(235 235 245 / 0.6)",
-  dim: "rgb(235 235 245 / 0.3)",
-  tint: "#0a84ff",
-  glass: "rgb(255 255 255 / 0.1)",
-  "glass-shadow":
-    "inset 0 0.5px 0 rgb(255 255 255 / 0.22), inset 0 0 0 0.5px rgb(255 255 255 / 0.06)",
+/** The room after the last group: the tab bar and its gap on the page, the home
+ *  indicator's band on the sheet. */
+const FOOT = {
+  page: PT.tab + PT["tab-bottom"] + PT.gap,
+  sheet: PT["safe-bottom"] + PT.gap,
 }
 
-const LIGHT: Palette = {
-  ground: "#f2f2f7",
-  cell: "#fff",
-  pressed: "#d1d1d6",
-  separator: "rgb(60 60 67 / 0.29)",
-  label: "#000",
-  secondary: "rgb(60 60 67 / 0.6)",
-  dim: "rgb(60 60 67 / 0.3)",
-  tint: "#007aff",
-  glass: "rgb(255 255 255 / 0.82)",
-  "glass-shadow":
-    "0 2px 10px rgb(0 0 0 / 0.08), inset 0 0 0 0.5px rgb(0 0 0 / 0.04)",
-}
+/** Any colour as the poster can carry it: everything on the poster is white, so
+ *  its lightness is held where white reads on it (OKLCH 0.40 to 0.56) and its
+ *  chroma muted as iOS mutes a photo's (at most 0.12), its hue kept. A bright sky
+ *  or a pale wall comes out the same colour, deep enough. */
+const settle = (tint: string) =>
+  `oklch(from ${tint} clamp(0.4, l, 0.56) min(c, 0.12) h)`
 
-const PALETTE: Record<ContactsAppScheme, Record<"page" | "sheet", Palette>> = {
-  dark: {
-    page: {
-      ...DARK_INK,
-      ground: "#000",
-      cell: "#1c1c1e",
-      pressed: "#2c2c2e",
-      separator: "#38383a",
-    },
-    sheet: {
-      ...DARK_INK,
-      ground: "#1c1c1e",
-      cell: "#2c2c2e",
-      pressed: "#3a3a3c",
-      separator: "rgb(84 84 88 / 0.6)",
-    },
-  },
-  light: { page: LIGHT, sheet: LIGHT },
-}
+/** The poster's top, a touch lighter: what the status bar stands on. */
+const topOf = (tint: string) =>
+  `color-mix(in oklab, ${settle(tint)}, white 10%)`
 
-/** Behind a page sheet: black round the screen it was raised over, that screen
- *  dimmed and pushed back. */
-const BEHIND: Record<ContactsAppScheme, string> = {
-  dark: "#111113",
-  light: "#bdbdc2",
-}
+/** The poster's ground from its colour: a touch lighter at the top, a touch
+ *  deeper at the foot, as iOS washes a photo's colour down the screen. */
+const posterOf = (tint: string) =>
+  `linear-gradient(180deg, ${topOf(tint)}, ${settle(tint)} 45%, color-mix(in oklab, ${settle(tint)}, black 22%))`
 
 /** What the frame draws outside this box, for the frame's `style`: the status
- *  bar's ink (white over a sheet's black surround in either appearance, as iOS
- *  does) and the screen's ground under it. */
+ *  bar's ink (white over the poster, and over a sheet's black surround) and the
+ *  screen's ground under it, the poster's top. */
 export function contactsAppScreen(
   view: ContactsAppView,
-  scheme: ContactsAppScheme,
+  average: string = NO_PHOTO,
 ): React.CSSProperties {
-  const ground = view === "import" ? "#000" : PALETTE[scheme].page.ground
-  const ink = view === "import" || scheme === "dark" ? "#fff" : "#000"
   return {
-    "--device-status-ink": ink,
-    "--device-screen-background": ground,
+    "--device-status-ink": "#fff",
+    "--device-screen-background": view === "import" ? "#000" : topOf(average),
   } as React.CSSProperties
 }
 
 type Kind = "phone" | "email" | "url" | "address"
+
+/** The glyph at the end of a row, by what it is: call, write, open, find. */
+const TRAIL: Record<Kind, typeof Phone> = {
+  phone: Phone,
+  email: Mail,
+  url: Compass,
+  address: MapPin,
+}
 
 /** iOS's own names for a vCard's types; a field with none is "other". */
 const TYPE_NAME: Record<string, string> = {
@@ -212,38 +192,44 @@ const initials = (name: string) =>
     .map((w) => w[0]?.toUpperCase())
     .join("")
 
-const BODY =
-  "text-(length:--ag-contacts-body) leading-(--ag-contacts-body-leading)"
-const LABEL =
-  "text-(length:--ag-contacts-footnote) leading-(--ag-contacts-footnote-leading) text-(--ag-contacts-secondary)"
-const GLASS =
-  "flex h-(--ag-contacts-bar) items-center justify-center rounded-full bg-(--ag-contacts-glass) text-(--ag-contacts-label) shadow-(--ag-contacts-glass-shadow)"
+/** Liquid glass on the poster: the one material (material-glass), dark so its
+ *  words are white, its face a breath of white over the blur, as iOS's controls
+ *  stand on a poster. Each use states its corner, half its height. */
+const GLASS = cn(
+  glassVariants({ shape: "surface", scheme: "dark" }),
+  "flex items-center justify-center text-white [--glass-tint:rgb(255_255_255/0.14)]",
+)
+/** A bar's round glass button: back, close. */
+const BAR_CIRCLE =
+  "size-(--ag-contacts-bar) [--glass-radius:calc(var(--ag-contacts-bar)/2)]"
+/** A group of rows: a lighter wash of the poster, rounded. */
 const GROUP =
-  "mx-(--ag-contacts-margin) overflow-hidden rounded-(--ag-contacts-radius) bg-(--ag-contacts-cell)"
+  "mx-(--ag-contacts-margin) overflow-hidden rounded-(--ag-contacts-radius) bg-white/[0.14]"
 /** A row after the first carries the hairline above it, inset to the text. */
 const ROW =
-  "relative px-(--ag-contacts-margin) py-(--ag-contacts-row-y) not-first:before:absolute not-first:before:top-0 not-first:before:right-0 not-first:before:left-(--ag-contacts-margin) not-first:before:h-px not-first:before:bg-(--ag-contacts-separator) not-first:before:content-['']"
+  "relative flex items-center gap-(--ag-contacts-margin) px-(--ag-contacts-margin) py-(--ag-contacts-row-y) not-first:before:absolute not-first:before:top-0 not-first:before:right-(--ag-contacts-margin) not-first:before:left-(--ag-contacts-margin) not-first:before:h-px not-first:before:bg-white/20 not-first:before:content-['']"
+const LABEL =
+  "text-(length:--ag-contacts-label) leading-(--ag-contacts-label-leading) text-white"
+const VALUE =
+  "text-(length:--ag-contacts-value) leading-(--ag-contacts-value-leading) text-white"
 
 function Field({ kind, field }: { kind: Kind; field: VCardField }) {
+  const Trail = TRAIL[kind]
   return (
     <div data-slot="contacts-app-row" className={ROW}>
-      <div className={LABEL}>{labelOf(field)}</div>
-      <div
-        className={cn(
-          BODY,
-          "break-words",
-          kind === "address"
-            ? "text-(--ag-contacts-label)"
-            : "text-(--ag-contacts-tint)",
-        )}
-      >
-        {field.value}
+      <div className="min-w-0 flex-1">
+        <div className={LABEL}>{labelOf(field)}</div>
+        <div className={cn(VALUE, "break-words")}>{field.value}</div>
       </div>
+      <Trail
+        className="size-(--ag-contacts-trail) shrink-0 text-white"
+        strokeWidth={2}
+      />
     </div>
   )
 }
 
-/** One inset group per kind of field, in the order the card lists them. */
+/** One group per kind of field, in the order the card lists them. */
 function Fields({ card }: { card: VCard }) {
   const groups: [Kind, VCardField[]][] = [
     ["phone", card.phones],
@@ -265,14 +251,11 @@ function Fields({ card }: { card: VCard }) {
       {card.note && (
         <div data-slot="contacts-app-section" className={GROUP}>
           <div data-slot="contacts-app-row" className={ROW}>
-            <div className={cn(LABEL, "text-(--ag-contacts-label)")}>Notes</div>
-            <div
-              className={cn(
-                BODY,
-                "whitespace-pre-line break-words text-(--ag-contacts-label)",
-              )}
-            >
-              {card.note}
+            <div className="min-w-0 flex-1">
+              <div className={LABEL}>notes</div>
+              <div className={cn(VALUE, "whitespace-pre-line break-words")}>
+                {card.note}
+              </div>
             </div>
           </div>
         </div>
@@ -281,7 +264,7 @@ function Fields({ card }: { card: VCard }) {
   )
 }
 
-/** A group of one-line commands in the tint, `lit` the row under a finger. */
+/** A group of one-line commands, `lit` the row under a finger. */
 function Commands({ rows, lit }: { rows: string[]; lit?: string }) {
   return (
     <div data-slot="contacts-app-section" className={GROUP}>
@@ -290,11 +273,7 @@ function Commands({ rows, lit }: { rows: string[]; lit?: string }) {
           key={row}
           data-slot="contacts-app-row"
           data-pressed={row === lit ? "" : undefined}
-          className={cn(
-            ROW,
-            BODY,
-            "text-(--ag-contacts-tint) data-pressed:bg-(--ag-contacts-pressed)",
-          )}
+          className={cn(ROW, VALUE, "data-pressed:bg-white/20")}
         >
           {row}
         </div>
@@ -316,12 +295,11 @@ function channelsOf(card: VCard) {
 }
 
 function Header({ card }: { card: VCard }) {
-  const who = [card.title, card.org].filter(Boolean).join(" · ")
   return (
     <div className="flex flex-col items-center">
       <div
         data-slot="contacts-app-photo"
-        className="grid size-(--ag-contacts-photo) shrink-0 place-items-center overflow-hidden rounded-full bg-linear-to-b from-[#a5abb9] to-[#858994] font-semibold text-(length:--ag-contacts-monogram) text-white"
+        className="grid size-(--ag-contacts-photo) shrink-0 place-items-center overflow-hidden rounded-full bg-white/20 font-semibold text-(length:--ag-contacts-monogram) text-white"
       >
         {card.photo ? (
           <Image src={card.photo} alt="" className="size-full object-cover" />
@@ -329,43 +307,44 @@ function Header({ card }: { card: VCard }) {
           initials(card.name)
         )}
       </div>
-      <div className="mt-(--ag-contacts-photo-gap) px-(--ag-contacts-margin) text-center font-semibold text-(--ag-contacts-label) text-(length:--ag-contacts-title) leading-(--ag-contacts-title-leading) tracking-[-0.01em]">
+      <div className="mt-(--ag-contacts-photo-gap) px-(--ag-contacts-margin) text-center font-bold text-(length:--ag-contacts-title) leading-(--ag-contacts-title-leading) tracking-[-0.01em] text-white [text-shadow:0_1px_8px_rgb(0_0_0/0.18)]">
         {card.name}
       </div>
-      {who && (
-        <div className="px-(--ag-contacts-margin) text-center text-(--ag-contacts-secondary) text-(length:--ag-contacts-sub) leading-(--ag-contacts-sub-leading)">
-          {who}
+      {card.org && (
+        <div className="px-(--ag-contacts-margin) text-center font-semibold text-(length:--ag-contacts-sub) leading-(--ag-contacts-sub-leading) text-white">
+          {card.org}
         </div>
       )}
       <div
         data-slot="contacts-app-actions"
-        className="mt-(--ag-contacts-head-gap) grid w-full grid-cols-4 px-(--ag-contacts-margin)"
+        className="mt-(--ag-contacts-head-gap) flex justify-center gap-(--ag-contacts-action-gap)"
       >
         {channelsOf(card).map(({ name, Icon, on }) => (
           <div
             key={name}
             data-on={on ? "" : undefined}
-            className="group/action flex flex-col items-center gap-(--ag-contacts-action-gap) text-(--ag-contacts-dim) data-on:text-(--ag-contacts-tint)"
+            className={cn(
+              GLASS,
+              "size-(--ag-contacts-action) [--glass-radius:calc(var(--ag-contacts-action)/2)] *:col-start-1 *:row-start-1",
+              // Off, the glyph is the poster's colour lifted, opaque: dimmed,
+              // never see-through.
+              "grid text-(--ag-contacts-off) data-on:text-white",
+            )}
           >
-            <div className="grid size-(--ag-contacts-action) place-items-center rounded-full bg-(--ag-contacts-cell) *:col-start-1 *:row-start-1">
-              <Icon
-                className="size-(--ag-contacts-icon)"
-                fill="currentColor"
-                strokeWidth={1.4}
+            <Icon
+              className="size-(--ag-contacts-icon)"
+              fill="currentColor"
+              strokeWidth={1.4}
+            />
+            {name === "mail" && (
+              // The flap cut out of the filled envelope, as SF's envelope.fill:
+              // lucide draws its body over the flap, so the flap is drawn again
+              // alone, on top, in the poster's colour.
+              <Mail
+                className="size-(--ag-contacts-icon) text-(--ag-contacts-tint) [&>rect]:hidden"
+                strokeWidth={1.6}
               />
-              {name === "mail" && (
-                // The flap cut out of the filled envelope, as SF's envelope.fill:
-                // lucide draws its body over the flap, so the flap is drawn again
-                // alone, on top, in the circle's colour.
-                <Mail
-                  className="size-(--ag-contacts-icon) text-(--ag-contacts-cell) [&>rect]:hidden"
-                  strokeWidth={1.6}
-                />
-              )}
-            </div>
-            <div className="text-(length:--ag-contacts-caption) leading-(--ag-contacts-caption-leading)">
-              {name}
-            </div>
+            )}
           </div>
         ))}
       </div>
@@ -373,45 +352,112 @@ function Header({ card }: { card: VCard }) {
   )
 }
 
-/** iOS 26's scroll edge: the ground fading in under a bar's glass, so what has
+/** iOS 26's scroll edge: the poster fading in under a bar's glass, so what has
  *  scrolled up passes softly beneath the buttons. */
 function ScrollEdge({ head }: { head: string }) {
   return (
     <div
       className={cn(
-        "pointer-events-none absolute inset-x-0 top-0 bg-linear-to-b from-(--ag-contacts-ground) from-45% to-transparent",
+        "pointer-events-none absolute inset-x-0 top-0 bg-linear-to-b from-(--ag-contacts-top) from-45% to-transparent",
         head,
       )}
     />
   )
 }
 
-function HomeIndicator() {
+/** The keypad's glyph, SF's circle.grid.3x3.fill: three rows of three dots. */
+function Keypad({ className }: { className?: string }) {
   return (
-    <div className="absolute bottom-(--ag-contacts-home-bottom) left-1/2 h-(--ag-contacts-home-h) w-(--ag-contacts-home) -translate-x-1/2 rounded-full bg-(--ag-contacts-label)" />
+    <svg
+      viewBox="0 0 24 24"
+      aria-hidden
+      className={className}
+      fill="currentColor"
+    >
+      {[4, 12, 20].flatMap((y) =>
+        [4, 12, 20].map((x) => (
+          <circle key={`${x}${y}`} cx={x} cy={y} r={2.6} />
+        )),
+      )}
+    </svg>
   )
 }
 
-/** The sheet over the screen it was raised from. Its card scrolls as iOS lets a
- *  finger scroll it: from the top while it fits, and when it does not, to its
- *  foot, where the two commands are. A reversed column is a scroller that starts
- *  at its end; the spacer first in it takes whatever room the card leaves, so a
- *  card that fits stands at the top. Scrolled, the name moves into the bar
- *  (contacts-app.css). */
+/** The tab bar at the foot, glass: Calls, Contacts (the one open, lit), Keypad;
+ *  search a glass circle of its own beside it. */
+function TabBar() {
+  const tabs = [
+    { word: "Calls", Icon: Clock },
+    { word: "Contacts", Icon: CircleUser, open: true },
+    { word: "Keypad", Icon: Keypad },
+  ]
+  return (
+    <div className="absolute inset-x-(--ag-contacts-margin) bottom-(--ag-contacts-tab-bottom) flex h-(--ag-contacts-tab) gap-(--ag-contacts-tab-gap)">
+      <div
+        className={cn(
+          GLASS,
+          "flex-1 gap-0 p-[0.6cqw] [--glass-radius:calc(var(--ag-contacts-tab)/2)]",
+        )}
+      >
+        {tabs.map(({ word, Icon, open }) => (
+          <div
+            key={word}
+            className={cn(
+              "flex h-full flex-1 flex-col items-center justify-center gap-[0.6cqw] rounded-full",
+              open && "bg-white/[0.18]",
+            )}
+          >
+            <Icon className="size-(--ag-contacts-tab-icon)" strokeWidth={2.2} />
+            <span className="font-semibold text-(length:--ag-contacts-tab-word) leading-none">
+              {word}
+            </span>
+          </div>
+        ))}
+      </div>
+      <div
+        className={cn(
+          GLASS,
+          "aspect-square h-full [--glass-radius:calc(var(--ag-contacts-tab)/2)]",
+        )}
+      >
+        <Search className="size-(--ag-contacts-tab-icon)" strokeWidth={2.4} />
+      </div>
+    </div>
+  )
+}
+
+function HomeIndicator() {
+  return (
+    <div className="absolute bottom-(--ag-contacts-home-bottom) left-1/2 h-(--ag-contacts-home-h) w-(--ag-contacts-home) -translate-x-1/2 rounded-full bg-white" />
+  )
+}
+
+/** The sheet over the screen it was raised from, on the same poster. Its card
+ *  scrolls as iOS lets a finger scroll it: from the top while it fits, and when
+ *  it does not, to its foot, where the two commands are. A reversed column is a
+ *  scroller that starts at its end; the spacer first in it takes whatever room
+ *  the card leaves, so a card that fits stands at the top. Scrolled, the name
+ *  moves into the bar (contacts-app.css). */
 function ImportSheet({ card, pressed }: { card: VCard; pressed: boolean }) {
   return (
     <>
-      <div className="absolute inset-x-(--ag-contacts-behind-x) top-(--ag-contacts-behind-top) bottom-0 rounded-t-(--ag-contacts-behind-radius) bg-(--ag-contacts-behind)" />
+      <div className="absolute inset-x-(--ag-contacts-behind-x) top-(--ag-contacts-behind-top) bottom-0 rounded-t-(--ag-contacts-behind-radius) bg-[#2a2a2e]" />
       <div
         data-slot="contacts-app-sheet"
-        className="absolute inset-x-0 top-(--ag-contacts-sheet-top) bottom-0 overflow-hidden rounded-t-(--ag-contacts-sheet-radius) bg-(--ag-contacts-ground)"
+        className="absolute inset-x-0 top-(--ag-contacts-sheet-top) bottom-0 overflow-hidden rounded-t-(--ag-contacts-sheet-radius) bg-(image:--ag-contacts-poster)"
       >
         <div
           data-slot="contacts-app-scroller"
           className="flex h-full flex-col-reverse overflow-hidden"
         >
           <div className="grow" />
-          <div className="flex shrink-0 flex-col gap-(--ag-contacts-gap) pt-(--ag-contacts-head-sheet) pb-(--ag-contacts-foot)">
+          <div
+            className="flex shrink-0 flex-col gap-(--ag-contacts-gap)"
+            style={{
+              paddingTop: cqw(HEAD.sheet),
+              paddingBottom: cqw(FOOT.sheet),
+            }}
+          >
             <Header card={card} />
             <Fields card={card} />
             <Commands
@@ -420,20 +466,21 @@ function ImportSheet({ card, pressed }: { card: VCard; pressed: boolean }) {
             />
           </div>
         </div>
-        <ScrollEdge head="h-(--ag-contacts-head-sheet)" />
+        <ScrollEdge head="h-[var(--ag-contacts-head-sheet)]" />
         <div
           data-slot="contacts-app-nav"
           className="absolute inset-x-(--ag-contacts-margin) top-(--ag-contacts-sheet-bar-top) flex h-(--ag-contacts-bar) items-center"
         >
-          <div className={cn(GLASS, "w-(--ag-contacts-bar) shrink-0")}>
-            <X className="size-(--ag-contacts-close)" strokeWidth={2.4} />
+          <div className={cn(GLASS, BAR_CIRCLE, "shrink-0")}>
+            <X className="size-(--ag-contacts-close)" strokeWidth={2.6} />
           </div>
           <div
             data-slot="contacts-app-title"
             className={cn(
-              BODY,
-              "min-w-0 flex-1 truncate pr-(--ag-contacts-title-x) pl-(--ag-contacts-margin) text-center font-semibold text-(--ag-contacts-label)",
+              VALUE,
+              "min-w-0 flex-1 truncate px-(--ag-contacts-margin) text-center font-semibold",
             )}
+            style={{ paddingRight: cqw(PT.bar + PT.margin) }}
           >
             {card.name}
           </div>
@@ -443,7 +490,7 @@ function ImportSheet({ card, pressed }: { card: VCard; pressed: boolean }) {
   )
 }
 
-function ContactPage({ card }: { card: VCard }) {
+function ContactPage({ card, scroll }: { card: VCard; scroll: number }) {
   const commands = [
     ...(card.phones.length > 0 ? ["Send Message"] : []),
     "Share Contact",
@@ -451,33 +498,48 @@ function ContactPage({ card }: { card: VCard }) {
   ]
   return (
     <>
-      <div className="flex flex-col gap-(--ag-contacts-gap) pt-(--ag-contacts-head-page) pb-(--ag-contacts-foot)">
+      {/* Scrolled `scroll` of the way through, with no measuring: placed that
+          share down the screen and lifted that share of its own height, the
+          card's top meets the screen's at 0 and its foot the screen's at 1. A
+          card no taller than the screen fills it and never moves. */}
+      <div
+        data-slot="contacts-app-card"
+        className="absolute inset-x-0 flex min-h-full flex-col gap-(--ag-contacts-gap)"
+        style={{
+          top: `${scroll * 100}%`,
+          transform: `translateY(${-scroll * 100}%)`,
+          paddingTop: cqw(HEAD.page),
+          paddingBottom: cqw(FOOT.page),
+        }}
+      >
         <Header card={card} />
         <Fields card={card} />
         <Commands rows={commands} />
       </div>
-      <ScrollEdge head="h-(--ag-contacts-head-page)" />
+      <ScrollEdge head="h-[var(--ag-contacts-head-page)]" />
       <div
         data-slot="contacts-app-nav"
         className={cn(
-          BODY,
-          "absolute inset-x-(--ag-contacts-margin) top-(--ag-contacts-safe-top) flex items-center justify-between",
+          VALUE,
+          "absolute inset-x-(--ag-contacts-margin) top-(--ag-contacts-safe-top) flex h-(--ag-contacts-bar) items-center justify-between",
         )}
       >
+        <div className={cn(GLASS, BAR_CIRCLE)}>
+          <ChevronLeft
+            className="size-(--ag-contacts-chevron)"
+            strokeWidth={2.8}
+          />
+        </div>
         <div
           className={cn(
             GLASS,
-            "pr-(--ag-contacts-bar-x) pl-(--ag-contacts-back-x)",
+            "h-full px-(--ag-contacts-bar-x) font-semibold [--glass-radius:calc(var(--ag-contacts-bar)/2)]",
           )}
         >
-          <ChevronLeft
-            className="size-(--ag-contacts-chevron)"
-            strokeWidth={2.6}
-          />
-          Contacts
+          Edit
         </div>
-        <div className={cn(GLASS, "px-(--ag-contacts-bar-x)")}>Edit</div>
       </div>
+      <TabBar />
     </>
   )
 }
@@ -501,7 +563,8 @@ export function ContactsApp({
   vcard,
   view,
   pressed = false,
-  scheme = "dark",
+  scroll = 0,
+  average = NO_PHOTO,
   className,
 }: {
   /** The .vcf's text (lib/vcard-core reads it). */
@@ -511,29 +574,35 @@ export function ContactsApp({
   view: ContactsAppView
   /** `import` only: Create New Contact lit under a finger. */
   pressed?: boolean
-  /** iOS's appearance. */
-  scheme?: ContactsAppScheme
+  /** `contact` only: how far the card is scrolled, 0 its top to 1 its foot (a
+   *  story's scroll driving it). */
+  scroll?: number
+  /** The photo's mean colour (prepare-media's `average`, or `averageOf` on its
+   *  bytes), the poster's colour; iOS's grey for a card with no photo. */
+  average?: string
   className?: string
 }) {
   if (pressed && view !== "import")
     throw new Error(
       "contacts-app: `pressed` is the import sheet's, not the card's",
     )
-  const card = parseVcard(vcard)
-  const palette = PALETTE[scheme][view === "import" ? "sheet" : "page"]
-  const clash = Object.keys(palette).find((k) => k in PT)
-  if (clash)
+  if (scroll !== 0 && view !== "contact")
     throw new Error(
-      `contacts-app: --ag-contacts-${clash} is a size and a colour`,
+      "contacts-app: `scroll` is the card's; the import sheet rests at its foot",
     )
+  if (scroll < 0 || scroll > 1)
+    throw new Error(`contacts-app: \`scroll\` is 0..1, got ${scroll}`)
+  const card = parseVcard(vcard)
   const vars = {
     ...Object.fromEntries(
       Object.entries(PT).map(([k, v]) => [`--ag-contacts-${k}`, cqw(v)]),
     ),
-    ...Object.fromEntries(
-      Object.entries(palette).map(([k, v]) => [`--ag-contacts-${k}`, v]),
-    ),
-    "--ag-contacts-behind": BEHIND[scheme],
+    "--ag-contacts-head-page": cqw(HEAD.page),
+    "--ag-contacts-head-sheet": cqw(HEAD.sheet),
+    "--ag-contacts-tint": settle(average),
+    "--ag-contacts-top": topOf(average),
+    "--ag-contacts-off": `color-mix(in oklab, ${settle(average)}, white 38%)`,
+    "--ag-contacts-poster": posterOf(average),
   } as React.CSSProperties
   return (
     <div
@@ -541,10 +610,9 @@ export function ContactsApp({
       aria-label={describe(card, view, pressed)}
       data-slot="contacts-app"
       data-view={view}
-      data-scheme={scheme}
       className={cn(
         "@container absolute inset-0 overflow-hidden font-[family-name:-apple-system,BlinkMacSystemFont,system-ui,sans-serif] antialiased select-none",
-        view === "import" ? "bg-black" : "bg-(--ag-contacts-ground)",
+        view === "import" ? "bg-black" : "bg-(image:--ag-contacts-poster)",
         className,
       )}
       style={vars}
@@ -553,7 +621,7 @@ export function ContactsApp({
         {view === "import" ? (
           <ImportSheet card={card} pressed={pressed} />
         ) : (
-          <ContactPage card={card} />
+          <ContactPage card={card} scroll={scroll} />
         )}
         <HomeIndicator />
       </div>

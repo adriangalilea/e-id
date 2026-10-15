@@ -4,8 +4,11 @@ import type { Chapter, Clip } from "@/lib/clip"
 export type BrowserStep = (
   | /** Click the address field, type `text`, press return: it loads. `to`: the
    *  address redirects (a short link), one load that lands there, the field
-   *  turning to `to` as the page comes; never a second load. */
-  { kind: "type"; text: string; to?: string }
+   *  turning to `to` as the page comes; never a second load. `pasted`: the
+   *  start of `text` arrives at once, pasted, and only the rest is typed (an
+   *  address known by heart, a route added to it: `👤.to/ada` pasted, `/gh`
+   *  typed). */
+  { kind: "type"; text: string; to?: string; pasted?: string }
   /** A link followed on the page: the address changes and `url` loads. */
   | { kind: "go"; url: string }
   /** The back button: the page before loads again. */
@@ -19,6 +22,8 @@ export type BrowserStep = (
 export const TYPE_MS = 70
 /** The field takes focus and its address is selected before the first key. */
 const FOCUS_MS = 380
+/** A paste landing in the field, before the first key after it. */
+const PASTE_MS = 240
 /** Return pressed after the last key. */
 const RETURN_MS = 260
 /** A page loading, from the request to the bar's end; a page from the cache (back)
@@ -93,10 +98,16 @@ const destination = (
   s: Extract<BrowserStep, { kind: "type" } | { kind: "go" }>,
 ): string => urlOf(s.kind === "type" ? (s.to ?? s.text) : s.url)
 
+/** A type step's keys after the focus: a paste (if any), then each key typed. */
+function keysMs(s: Extract<BrowserStep, { kind: "type" }>): number {
+  const pasted = s.pasted?.length ?? 0
+  return (pasted > 0 ? PASTE_MS : 0) + (s.text.length - pasted) * TYPE_MS
+}
+
 function stepMs(s: BrowserStep): number {
   switch (s.kind) {
     case "type":
-      return FOCUS_MS + s.text.length * TYPE_MS + RETURN_MS + LOAD_MS
+      return FOCUS_MS + keysMs(s) + RETURN_MS + LOAD_MS
     case "go":
       return LOAD_MS
     case "back":
@@ -130,6 +141,10 @@ export function browserTimeline(
       throw new Error(`browser-session: delay ${s.delay} is below zero`)
     if (s.kind === "scroll" && (s.to < 0 || s.to > 1))
       throw new Error(`browser-session: scroll to ${s.to} is outside 0..1`)
+    if (s.kind === "type" && s.pasted && !s.text.startsWith(s.pasted))
+      throw new Error(
+        `browser-session: "${s.pasted}" is pasted, but "${s.text}" does not start with it`,
+      )
     at += s.delay ?? 0
     starts.push(at)
     if (s.kind !== "scroll") {
@@ -216,14 +231,22 @@ export function browserFrameAt(
     // A navigation: where it goes, and when its load starts.
     let loadFrom = from
     if (s.kind === "type") {
-      const typedFrom = from + FOCUS_MS
-      const typedTo = typedFrom + s.text.length * TYPE_MS
-      loadFrom = typedTo + RETURN_MS
+      const focused = from + FOCUS_MS
+      const pasted = s.pasted?.length ?? 0
+      // The first key after the paste (or after the focus, with none).
+      const typedFrom = focused + (pasted > 0 ? PASTE_MS : 0)
+      loadFrom = focused + keysMs(s) + RETURN_MS
       if (ms < loadFrom) {
         editing = true
-        selected = ms < typedFrom
+        selected = ms < focused
         if (!selected)
-          address = s.text.slice(0, Math.floor((ms - typedFrom) / TYPE_MS) + 1)
+          address =
+            ms < typedFrom
+              ? (s.pasted ?? "")
+              : s.text.slice(
+                  0,
+                  pasted + Math.floor((ms - typedFrom) / TYPE_MS) + 1,
+                )
         break
       }
     }
