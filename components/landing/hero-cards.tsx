@@ -22,7 +22,7 @@ import {
   useHandleState,
   WRITTEN_HERE,
 } from "@/components/card-fields"
-import { CORNER, ON_CARD } from "@/components/card-shape"
+import { CORNER, ID1, ON_CARD } from "@/components/card-shape"
 import { type Holder, IdCard } from "@/components/id-card"
 import { partShimmer } from "@/components/landing/shimmer-part"
 import { SubjectLight } from "@/components/light"
@@ -40,6 +40,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover"
 import { toast } from "@/components/ui/toast"
+import { useOnScreen } from "@/components/ui/use-on-screen"
 import { claimDraft, githubCard, previewPresence } from "@/db/actions"
 import {
   asLinks,
@@ -940,7 +941,11 @@ function Pile({ people, away }: { people: Holder[]; away: boolean }) {
   const [top, ...rest] = people
   if (!top) throw new Error("the home's pile has nobody to show")
   return (
-    <div className="relative w-full">
+    // The top card's shape kept before it is drawn: the cards under it are
+    // placed by shares of its box, and the page is painted while its HTML is
+    // still arriving, the top card's after theirs. Left to the card, the box
+    // had no height in that first paint and every card jumped from the middle.
+    <div className={cn(ID1, "relative w-full")}>
       {rest
         .map((holder, i) => ({ holder, depth: i + 1 }))
         .reverse()
@@ -1041,11 +1046,20 @@ const WAITING = { x: -32, y: 2, w: 33, rz: 0 } as const
  *  smaller as further away. */
 const PUSHED = { x: MIDDLE.x + 12, y: MIDDLE.y + 3, w: 26, rz: 0 } as const
 
-/** A slot as the variables a card is laid out by (`PLACED`, `PILED`). */
+/** How near the window's left edge a card may lie: the page's gutter on a wide
+ *  screen (components/frame, `GUTTER`). */
+const EDGE = 2
+
+/** A slot as the variables a card is laid out by (`PLACED`, `PILED`). Its middle
+ *  is a share of the stage from the stage's middle, but its width is the card's
+ *  own, so on the left it overhangs the stage into the window's margin (the
+ *  room outside the stage: the hero's width, `100cqw`, less the stage's,
+ *  `100%`, halved). Where that margin runs out, the card is moved right just
+ *  enough to stay inside the window, and the heading over it with it. */
 function at({ x, y, w, rz }: Slot): React.CSSProperties {
   return {
     "--w": `${w}rem`,
-    "--l": `calc(50% + ${x}%)`,
+    "--l": `max(calc(50% + ${x}%), calc(${w / 2 + EDGE}rem - (100cqw - 100%) / 2))`,
     "--t": `calc(50% + ${y}rem)`,
     "--rz": `${rz}deg`,
   } as React.CSSProperties
@@ -1107,6 +1121,10 @@ export function Stage({
   // anywhere off it: nothing written is ever put down. A popup open on it (the
   // country picker, a link) takes its own Esc and presses first.
   const yours = useRef<HTMLDivElement>(null)
+  // Scrolled past, or the tab hidden, its drifts and lights hold where they
+  // are: blurred cards moving cost the GPU every frame, and nobody sees them.
+  const [stage, setStage] = useState<HTMLDivElement | null>(null)
+  const seen = useOnScreen(stage)
   const putBack = asked && !own && isBlank(draft)
   useEffect(() => {
     if (!putBack) return
@@ -1140,11 +1158,13 @@ export function Stage({
       }}
     >
       <div
+        ref={setStage}
         // Said on the stage, for what lies round it to step back with the pile
         // while the visitor writes (components/light, `HeroShimmer`).
         data-writing={writing && !forming ? "" : undefined}
         className={cn(
           "relative w-full",
+          !seen && "[&_*]:[animation-play-state:paused]",
           forming
             ? cn(PROFILE.grid, PROFILE.frame)
             : `flex flex-col items-center gap-12 py-16 sm:py-20 lg:block lg:h-[50rem] lg:py-0`,

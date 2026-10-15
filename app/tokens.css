@@ -48,8 +48,9 @@
   --alpha-body: 0.55;
   --alpha-title: 0.9;
 
-  /* Motion: one easing, three durations. Nothing animates indefinitely; one-shot or
-     scroll-driven only. */
+  /* Motion: one easing, three durations. Motion that never stops is welcome when
+     subtle and deliberate (a shimmer's sway, a caret's blink); a state is never
+     shown by pulsing or blinking. */
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
   --dur-1: 150ms;
   --dur-2: 300ms;

@@ -1,5 +1,5 @@
 import { BrandMark } from "@/components/brand"
-import { ON_CARD } from "@/components/card-shape"
+import { ID1, ON_CARD } from "@/components/card-shape"
 import { CopyAddress } from "@/components/copy-address"
 import { CountryFlag } from "@/components/country"
 import { CardSave } from "@/components/save-contact"
@@ -48,9 +48,8 @@ const KNOCKOUT =
   "[text-shadow:0_0_0.5cqw_rgb(14_14_16),0_0_1.2cqw_rgb(14_14_16)] [&_svg]:drop-shadow-[0_0_0.6cqw_rgb(14_14_16)]"
 
 /** An ID-1 card, the size of every ID and bank card (ISO/IEC 7810): 85.6 by 53.98
- *  mm, its corners 3.18 mm round. Everything on the card is a share of its width
- *  (cqw), so it is the same card at any size. */
-const ID1_RATIO = "85.6/53.98"
+ *  mm (components/card-shape, `ID1`), its corners 3.18 mm round. Everything on the
+ *  card is a share of its width (cqw), so it is the same card at any size. */
 const ID1_RADIUS = `${(3.18 / 85.6) * 100}cqw`
 
 /** The hologram's print in the card's own unit (@ag/holo, `--holo-print-unit`):
@@ -299,10 +298,12 @@ export function IdCard({
         as="article"
         shape="surface"
         data-slot="id-card"
-        className="flex aspect-(--id1-ratio) w-full flex-col justify-between overflow-hidden p-(--card-pad) [--glass-blur:var(--id-card-blur,9px)] [--glass-radius:var(--id1-radius)] [--glass-thickness:var(--id-card-thickness,0.3)]"
+        className={cn(
+          ID1,
+          "flex w-full flex-col justify-between overflow-hidden p-(--card-pad) [--glass-blur:var(--id-card-blur,9px)] [--glass-radius:var(--id1-radius)] [--glass-thickness:var(--id-card-thickness,0.3)]",
+        )}
         style={
           {
-            "--id1-ratio": ID1_RATIO,
             "--id1-radius": ID1_RADIUS,
             "--holo-print-unit": PRINT_UNIT,
             // The layout (lib/card-layout), the one the share image, the embed

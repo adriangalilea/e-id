@@ -26,7 +26,12 @@ export async function Hero() {
     // it reaches up under the bar (the room the layout keeps for it, 5rem, taken
     // back and given as its own padding): the bar's glass frosts the shimmer,
     // never a band of bare ground above it.
-    <section data-slot="hero" className="relative isolate md:-mt-20 md:pt-20">
+    // A container: the stage reads its width (`cqw`) for how much room the window
+    // leaves round it (hero-cards, `at`).
+    <section
+      data-slot="hero"
+      className="@container relative isolate md:-mt-20 md:pt-20"
+    >
       <HeroShimmer />
       <div
         className={cn(
