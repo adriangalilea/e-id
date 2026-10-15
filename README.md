@@ -25,7 +25,7 @@ Built with Next.js, better-auth, and Drizzle on Turso. The interface comes from 
 - [ ] an API for them: personal API keys (better-auth's API-key plugin), each scoped to your own links and rate-limited, so a script or a CLI makes one (`curl -H "Authorization: Bearer …" eid.to/api/links -d '{"to":"…","expires":"7d"}'`). Probably Premium.
 - [ ] record what `/you/<name>` opened, or that someone looked for a name that opened nothing: the demand for a link they do not have (needs visits on, below)
 - [ ] visits on in production: the recording exists (`/api/events`, the ui registry's `visits`) and is off until its database is set
-- [ ] vouches: the send button waits for words; a profile can turn vouches off
+- [ ] vouches: the send button waits for words (today an empty one is refused only after sending); a profile can turn vouches off (the `allow_comments` column and the server's refusal exist; the setting, and hiding the form where they are off, do not)
 - [ ] an optional status line on the profile and its share image
 - [ ] a write API for the card (`card.json` is the read one), on the same API keys
 - [ ] passkeys (better-auth has them)
