@@ -243,9 +243,11 @@
    (`.lucide`), any drawn in the text's colour (`stroke="currentColor"`, the way a
    hand-drawn icon is written), and any marked `ag-icon`. Inside one, a part painted
    in the text's colour by its own attribute is made opaque too, or the mask would
-   dim it twice. */
+   dim it twice. Opaque is written `/ 1`: a relative colour with its alpha left
+   out keeps its origin's, so `rgb(from currentColor r g b)` was the translucent
+   colour again, the strokes still doubling under a mask that dimmed them twice. */
 svg:is(.lucide, .ag-icon, [stroke="currentColor"]) {
-  stroke: rgb(from currentColor r g b);
+  stroke: rgb(from currentColor r g b / 1);
   mask-image: linear-gradient(
     rgb(from currentColor 0 0 0 / alpha),
     rgb(from currentColor 0 0 0 / alpha)
@@ -256,8 +258,8 @@ svg:is(.lucide, .ag-icon, [stroke="currentColor"]):is(
   [fill="currentColor"]
 ),
 svg:is(.lucide, .ag-icon, [stroke="currentColor"]) [fill="currentColor"] {
-  fill: rgb(from currentColor r g b);
+  fill: rgb(from currentColor r g b / 1);
 }
 svg:is(.lucide, .ag-icon, [stroke="currentColor"]) [stroke="currentColor"] {
-  stroke: rgb(from currentColor r g b);
+  stroke: rgb(from currentColor r g b / 1);
 }
