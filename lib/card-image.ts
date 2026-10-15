@@ -14,7 +14,6 @@ import {
   Mail as mail,
   Send as send,
 } from "lucide"
-import type { LinkPlatform } from "@/db/schema"
 import {
   GITHUB as github,
   INSTAGRAM as instagram,
@@ -22,13 +21,14 @@ import {
   YOUTUBE as youtube,
 } from "@/lib/brand-icons"
 import { CARD_LAYOUT } from "@/lib/card-layout"
-import { type Card, knownPlatform } from "@/lib/card-schema"
+import type { Card } from "@/lib/card-schema"
 import { EMOJI_DOMAIN } from "@/lib/const"
 import { FOIL as FOIL_SPEC } from "@/lib/foil"
 import { HOLO_ART, type HoloArt } from "@/lib/holo"
 import { MARK_BOX, MARK_PATH } from "@/lib/mark"
 import { nameFit } from "@/lib/name-fit"
 import { fetchPhoto } from "@/lib/photo"
+import { knownPlatform, type LinkPlatform } from "@/lib/platforms"
 
 // THE SHARE IMAGE: a person's card (lib/card) drawn as the card the profile shows,
 // as one SVG, rasterised by resvg. The same geometry as components/id-card, every

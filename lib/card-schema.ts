@@ -1,12 +1,14 @@
 import { z } from "zod"
-import { type LinkPlatform, linkPlatforms } from "@/db/schema"
 import { PROD_URL } from "@/lib/const"
+import { embedOf } from "@/lib/embed"
+import { linkPlatforms } from "@/lib/platforms"
 
 // THE OPEN CARD FORMAT, defined once: an e-ID card as data anyone can read. The
 // type the site builds it with (lib/card, `cardOf`) and the JSON Schema it is
 // published by (/card.schema.json) are both this schema, so the two cannot
 // differ. A field is added, never renamed or removed; `version` moves only when a
-// reader would read it wrongly. No server, no React: a page may show it too.
+// reader would read it wrongly. No server, no React; the browser takes its
+// `Card` type only, the schema stays with the server.
 
 /** Where the format's JSON Schema is published, and what each card names in its
  *  `$schema`, so an editor or a validator finds it from a card alone. */
@@ -145,17 +147,6 @@ export const cardSchema = z
 /** A person's card. */
 export type Card = z.infer<typeof cardSchema>
 
-/** The HTML that puts `handle`'s card on any page (app/embed.js): the one
- *  snippet the share menu, the home and oEmbed all give. `compact` is the card
- *  as a byline, for the foot of a post. */
-export function embedOf(
-  handle: string,
-  face: "card" | "compact" = "card",
-): string {
-  const compact = face === "compact" ? " compact" : ""
-  return `<script type="module" src="${PROD_URL}/embed.js"></script>\n<e-id-card handle="${handle}"${compact}></e-id-card>`
-}
-
 /** Where `handle`'s card is in every form (`formats`). */
 export function formatsOf(handle: string): Card["formats"] {
   return {
@@ -164,16 +155,6 @@ export function formatsOf(handle: string): Card["formats"] {
     image: `${PROD_URL}/${handle}/card.svg`,
     embed: embedOf(handle),
   }
-}
-
-/** A platform this site knows, from a card it wrote: one it does not know is a
- *  card from somewhere else, or a platform added here and not yet drawn. */
-export function knownPlatform(platform: string): LinkPlatform {
-  if (!(linkPlatforms as readonly string[]).includes(platform))
-    throw new Error(
-      `a card link on "${platform}", a platform e-ID does not know`,
-    )
-  return platform as LinkPlatform
 }
 
 /** The format as JSON Schema (2020-12), as published. */

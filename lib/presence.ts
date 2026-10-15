@@ -1,9 +1,10 @@
 import "server-only"
 
 import { cacheLife } from "next/cache"
-import type { LinkPlatform, SelectLink } from "@/db/schema"
+import type { SelectLink } from "@/db/schema"
 import { getGithubProfile } from "@/lib/github"
 import type { GithubProfile } from "@/lib/github-data"
+import type { LinkPlatform } from "@/lib/platforms"
 import type { ProfileFacts } from "@/lib/social-profile-core"
 import { fetchGithubProfile } from "@/lib/social-profile-github"
 import { fetchTelegramProfile } from "@/lib/social-profile-telegram"

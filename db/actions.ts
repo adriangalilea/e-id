@@ -10,18 +10,18 @@ import {
   type CardEdit,
   cardEditSchema,
   errorsOf,
-  OFFERED,
   type SaveResult,
 } from "@/lib/card-edit"
 import { type Chip, chipOf } from "@/lib/chip"
 import { writeChip } from "@/lib/chip-server"
 import { countryOf } from "@/lib/country-of"
 import { getGithubProfile } from "@/lib/github"
+import { OFFERED } from "@/lib/platforms"
 import { getPresence } from "@/lib/presence"
 import { getSession } from "@/lib/session"
 import { profileTag, USERS_TAG, usernameTag } from "@/lib/tags"
 import { claimUsername } from "@/lib/username"
-import { usernameSchema } from "@/lib/username-rules"
+import { usernameProblem } from "@/lib/username-rules"
 
 // Every export here is an endpoint anyone can call with any arguments: each one
 // reads the session itself and acts only on what that user owns. A profile's
@@ -305,13 +305,13 @@ export type HandleState = "free" | "taken" | "invalid"
 export async function handleState(
   handle: string,
 ): Promise<{ state: HandleState; why: string | null }> {
-  const parsed = usernameSchema.safeParse(handle)
-  if (!parsed.success)
-    return { state: "invalid", why: parsed.error.issues[0].message }
+  const username = handle.trim()
+  const why = usernameProblem(username)
+  if (why) return { state: "invalid", why }
   const [taken] = await db
     .select({ id: users.id })
     .from(users)
-    .where(eq(users.username_normalized, parsed.data.toLowerCase()))
+    .where(eq(users.username_normalized, username))
   return { state: taken ? "taken" : "free", why: null }
 }
 

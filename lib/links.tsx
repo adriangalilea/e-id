@@ -1,7 +1,7 @@
 import { AtSign, CircleDotDashed, Link, Link2, Mail, Send } from "lucide-react"
 import type { ReactElement } from "react"
-import type { LinkPlatform } from "@/db/schema"
 import { Github, Instagram, Twitter, Youtube } from "@/lib/brand-icons"
+import type { LinkPlatform } from "@/lib/platforms"
 
 // A LINK BY ITS PLATFORM: where its value leads, the glyph it is drawn with, and
 // what its field asks for. A platform's value is a username there, except where

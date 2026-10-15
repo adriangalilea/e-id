@@ -1,5 +1,5 @@
-import type { LinkPlatform } from "@/db/schema"
 import { getLinkUrl } from "@/lib/links"
+import type { LinkPlatform } from "@/lib/platforms"
 
 // A LINK BY NAME, after a person's address: 👤.to/adriangalilea/github opens
 // their GitHub, and so does /gh. The names a platform goes by in an address, the

@@ -41,7 +41,6 @@ import {
 } from "@/components/ui/popover"
 import { toast } from "@/components/ui/toast"
 import { claimDraft, githubCard, previewPresence } from "@/db/actions"
-import type { LinkPlatform } from "@/db/schema"
 import {
   asLinks,
   type Draft,
@@ -51,13 +50,13 @@ import {
   isBlank,
   toHandle,
 } from "@/lib/card-draft"
-import { OFFERED } from "@/lib/card-edit"
-import { type Card, knownPlatform } from "@/lib/card-schema"
+import type { Card } from "@/lib/card-schema"
 import { EMOJI_DOMAIN } from "@/lib/const"
 import { clearDraft, readDraft, useDraft, writeDraft } from "@/lib/draft"
 import type { HandoffProvider } from "@/lib/handoff"
 import { prefixOf, usernameIn } from "@/lib/link-names"
 import { getLinkIcon, getLinkPlaceholder } from "@/lib/links"
+import { knownPlatform, type LinkPlatform, OFFERED } from "@/lib/platforms"
 import type { Presence } from "@/lib/presence"
 import { startSignIn } from "@/lib/sign-in"
 import { cn } from "@/lib/utils"
@@ -428,7 +427,7 @@ function ClaimButton(props: React.ComponentProps<typeof Button>) {
 
 /** The card's links (id-card, `Flair`): each a press that opens it to change or
  *  take off, and "+" to add one, in a popover (@ag/popover): the platforms on
- *  offer by name (lib/card-edit, `OFFERED`), then the username there. */
+ *  offer by name (lib/platforms, `OFFERED`), then the username there. */
 function Links({ links }: { links: DraftLink[] }) {
   const rest = OFFERED.filter((p) => !links.some((l) => l.platform === p))
   const mark = LINK_MARK

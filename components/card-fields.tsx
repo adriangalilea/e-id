@@ -8,9 +8,9 @@ import { CountryFlag } from "@/components/country"
 import { LazyCountryPickerPopover } from "@/components/ui/country-picker-lazy"
 import { Input, InputGroup } from "@/components/ui/input"
 import { type HandleState, handleState } from "@/db/actions"
-import type { LinkPlatform } from "@/db/schema"
 import { toHandle } from "@/lib/card-draft"
 import { getLinkIcon } from "@/lib/links"
+import type { LinkPlatform } from "@/lib/platforms"
 import { cn } from "@/lib/utils"
 
 // WRITING ON A CARD: the fields an e-ID card is written on where it lies, worn as

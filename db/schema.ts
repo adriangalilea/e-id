@@ -6,6 +6,7 @@ import {
   text,
   uniqueIndex,
 } from "drizzle-orm/sqlite-core"
+import { linkPlatforms } from "@/lib/platforms"
 
 // USER TABLE - better-auth core + custom fields
 export const users = sqliteTable(
@@ -155,22 +156,6 @@ export const comments = sqliteTable(
     }
   },
 )
-
-/** Where a link can go: a platform e-ID knows, or `link`, anywhere at all (its
- *  `label` names it). */
-export const linkPlatforms = [
-  "email",
-  "youtube",
-  "github",
-  "twitter",
-  "website",
-  "self",
-  "instagram",
-  "telegram",
-  "link",
-] as const
-
-export type LinkPlatform = (typeof linkPlatforms)[number]
 
 /** A person's links, one row each, in their order (`order`). `value` is the
  *  username there, or the whole address where the platform takes none; `label`

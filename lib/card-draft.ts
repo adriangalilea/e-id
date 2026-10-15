@@ -1,4 +1,5 @@
-import type { LinkPlatform, SelectLink } from "@/db/schema"
+import type { SelectLink } from "@/db/schema"
+import type { LinkPlatform } from "@/lib/platforms"
 
 // The card a visitor fills on the home, as data: its shape and what is computed
 // from it, read by the browser that keeps it (lib/draft) and by the server that

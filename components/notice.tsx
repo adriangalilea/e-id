@@ -11,7 +11,7 @@ import { useChip } from "@/components/session/use-chip"
 import { Button } from "@/components/ui/button"
 import { HoloLean, HoloLight } from "@/components/ui/holo"
 import { writeDraft } from "@/lib/draft"
-import { usernameSchema } from "@/lib/username-rules"
+import { usernameProblem } from "@/lib/username-rules"
 import { cn } from "@/lib/utils"
 
 // The pages that stand in for one that cannot be shown: an address no one holds,
@@ -137,7 +137,7 @@ function handleOf(pathname: string): string | null {
   const segments = pathname.split("/").filter(Boolean)
   if (segments.length !== 1) return null
   const handle = decodeURIComponent(segments[0]).toLowerCase()
-  return usernameSchema.safeParse(handle).success ? handle : null
+  return usernameProblem(handle) === null ? handle : null
 }
 
 /** THE 404. At an address that could be someone's, the card for it, unissued, and

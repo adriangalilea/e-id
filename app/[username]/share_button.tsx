@@ -9,8 +9,8 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
-import { embedOf } from "@/lib/card-schema"
 import { PROD_URL } from "@/lib/const"
+import { embedOf } from "@/lib/embed"
 
 /** One address to share: what it is, the address itself, and the registry's copy
  *  (@ag/copy), which says it copied in place. */

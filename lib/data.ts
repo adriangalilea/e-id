@@ -3,15 +3,10 @@ import "server-only"
 import { and, asc, desc, eq, isNotNull, ne, sql } from "drizzle-orm"
 import { cacheLife, cacheTag } from "next/cache"
 import { db } from "@/db"
-import {
-  comments,
-  type LinkPlatform,
-  links,
-  type SelectLink,
-  users,
-} from "@/db/schema"
+import { comments, links, type SelectLink, users } from "@/db/schema"
 import { linkName } from "@/lib/link-names"
 import { getLinkUrl } from "@/lib/links"
+import type { LinkPlatform } from "@/lib/platforms"
 import { SHOWCASE_EXAMPLES, type ShowcaseCard } from "@/lib/showcase-examples"
 import { profileTag, USERS_TAG, usernameTag } from "@/lib/tags"
 

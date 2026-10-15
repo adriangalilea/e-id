@@ -3,7 +3,7 @@ import "server-only"
 import { eq } from "drizzle-orm"
 import { db } from "@/db"
 import { users } from "@/db/schema"
-import { usernameSchema } from "@/lib/username-rules"
+import { usernameProblem } from "@/lib/username-rules"
 
 /** The database, or a transaction on it: what a write runs on. */
 export type Writer = Pick<typeof db, "update">
@@ -13,14 +13,14 @@ export type Writer = Pick<typeof db, "update">
  *  picks their address on the home's card. Never a made-up variant: an address is
  *  chosen or it is theirs elsewhere already. */
 export async function providedUsername(seed: string): Promise<string | null> {
-  const parsed = usernameSchema.safeParse(seed.toLowerCase())
-  if (!parsed.success) return null
+  const username = seed.trim().toLowerCase()
+  if (usernameProblem(username)) return null
   const [taken] = await db
     .select({ id: users.id })
     .from(users)
-    .where(eq(users.username_normalized, parsed.data))
+    .where(eq(users.username_normalized, username))
     .limit(1)
-  return taken ? null : parsed.data
+  return taken ? null : username
 }
 
 /** Gives a user a username. Throws the validation message for an invalid one and
@@ -33,9 +33,9 @@ export async function claimUsername(
   username: string,
   writer: Writer = db,
 ): Promise<string> {
-  const parsed = usernameSchema.safeParse(username)
-  if (!parsed.success) throw new Error(parsed.error.issues[0].message)
-  const valid = parsed.data
+  const valid = username.trim()
+  const why = usernameProblem(valid)
+  if (why) throw new Error(why)
 
   const updated = await writer
     .update(users)

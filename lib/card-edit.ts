@@ -1,22 +1,13 @@
 import { hasFlag } from "country-flag-icons"
 import { z } from "zod"
-import { type LinkPlatform, linkPlatforms } from "@/db/schema"
-import { usernameSchema } from "@/lib/username-rules"
+import { HIGHLIGHTED, linkPlatforms, OFFERED } from "@/lib/platforms"
+import { usernameProblem } from "@/lib/username-rules"
 
-// A profile's card as its owner edits it in place (components/profile-card),
+// A profile's card as its owner edits it in place (components/card-editor),
 // one schema for both sides: the browser checks the card against it as it is
 // written, the server parses what it is sent with it before writing a thing
-// (db/actions, `saveCard`). No React, no database.
-
-/** The platforms a person can add a link on: every known one. A `link`
- *  (anywhere at all, named by its label) is ready in the data and the card
- *  format, and not offered yet: no picker lists it and no save takes one. */
-export const OFFERED: readonly LinkPlatform[] = linkPlatforms.filter(
-  (p) => p !== "link",
-)
-
-/** The platforms a highlight is read on (components/profile-links). */
-export const HIGHLIGHTED: readonly LinkPlatform[] = ["youtube", "twitter"]
+// (db/actions, `saveCard`). No React, no database. The browser loads it with
+// the editor, only when an owner opens their card.
 
 export const editLinkSchema = z
   .object({
@@ -54,7 +45,13 @@ export const editLinkSchema = z
 
 export const cardEditSchema = z.object({
   name: z.string().trim().max(100, "A name is at most 100 characters."),
-  handle: usernameSchema,
+  handle: z
+    .string()
+    .trim()
+    .superRefine((username, ctx) => {
+      const why = usernameProblem(username)
+      if (why) ctx.addIssue({ code: "custom", message: why })
+    }),
   /** ISO 3166 alpha-2 with a flag, "XX" for none. */
   country: z
     .string()

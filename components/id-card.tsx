@@ -12,12 +12,12 @@ import {
 import { Image } from "@/components/ui/image"
 import { Glass } from "@/components/ui/material-glass"
 import { SocialProfile } from "@/components/ui/social-profile"
-import type { LinkPlatform } from "@/db/schema"
 import { CARD_LAYOUT, cqw } from "@/lib/card-layout"
 import { type HoloPrint, MARK_EMBLEM } from "@/lib/holo"
 import { type CardLink, handleOf, usernameIn } from "@/lib/link-names"
 import { getLinkIcon } from "@/lib/links"
 import { nameFit } from "@/lib/name-fit"
+import type { LinkPlatform } from "@/lib/platforms"
 import type { ProfileFacts } from "@/lib/social-profile-core"
 import { cn } from "@/lib/utils"
 
