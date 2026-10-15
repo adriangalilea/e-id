@@ -5,8 +5,8 @@
     "width": 2560,
     "height": 4000,
     "mime": "image/webp",
-    "bytes": 420312,
-    "blurDataURL": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAQCAIAAACgHXkXAAAACXBIWXMAAAPoAAAD6AG1e1JrAAABdUlEQVQYlU2Q627UMBCF/QBAYbN2PPb4fkmcxAvZbbmsKq0Q0FZUAkF/cvmD+g59MB4QZRcJ/oyONKPzzTmECXvWwFkDT1b8JB4/Yyf96CklgF6ayIR1aaBgKCBDw9G4NAB6wqUD9BSMNJFLF/tNqVsKBtA3LRKhEtpeqBT7F2h7QA/ombDG9xQMoWCY8FyGftxJnX2qPlXA6OLEhCU2jEO9AFzwa65ymZUrTNhcZmkiYcIeDbTxPZduReWKyjVXTNiFzaVDm9ZcUTBNiylPucxok8/j8nnopvNXB6HD8+0+5M0x22ImtKOAxOexG7Zo02Z+4+J08+767suPX2/j73v9cKOIcikPVZoletNiGedcZu/ittbgPPl09/X7z2/vr69CNwF6tIlLR8H8Zd9+PHy+vbz6cKi7vc0V0HPphA42HNfnc9lflGnIQgcmbFdeTuMlE0txa67+dX6aynVcJ2li3b12aSACbcuRAqJNTYtCh/+v/wAp5UD/QkL6SgAAAABJRU5ErkJggg==",
+    "bytes": 420754,
+    "blurDataURL": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAQCAIAAACgHXkXAAAACXBIWXMAAAPoAAAD6AG1e1JrAAABdUlEQVQYlU2Q624TMRCF/QBAIRt7PfZ4Pb5mbw7spuUSVYoQ0FZUAkF/cvmD+g59MB4QbYIEf0ZHmtH55hwmFJ1VcFbBk5U8icfPxEk/esoZoNc2CkUu9RwsBxRoJVqXekDPpHaAnoPVNkrtYrvtyszBAvqqRqZMQmqVSbF9gdQCekAvFFnfcrCMgxXKSx3aYaeb7FPxqQBGF0ehiFEY+nIBuODX0uRuMq4TinI3aRuZUHQ0aKxvpXYrrldcr6URiha21A4praXhYKsaUx5zNyEln4fl87AZz18dVBOez/uQt8dsi5lqHAdkPg+bfkZK2+mNi+PNu+u7Lz9+vY2/75uHG8OMS7kv2i7RqxqHcc7d5F2cSwnOs093X7///Pb++ipsRkCPlKR2HOxf9u3Hw+fby6sPh7LbUy6AXmqnmkDhuD6fuv1FN/ZZNUEo2nQvx+FSqKW4tTT/Oj9N4zaySdrGsnvtUs8UUi2RAyKlqkbVhP+v/wAsikEDDD2UUgAAAABJRU5ErkJggg==",
     "average": "#202226",
     "src": "website.dark.webp",
     "poster": "website.dark.webp"

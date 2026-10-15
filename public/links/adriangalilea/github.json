@@ -3,10 +3,10 @@
   "dark": {
     "kind": "image",
     "width": 2560,
-    "height": 3328,
+    "height": 3526,
     "mime": "image/webp",
-    "bytes": 262042,
-    "blurDataURL": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAAQCAIAAACtAwlQAAAACXBIWXMAAAPoAAAD6AG1e1JrAAABYUlEQVQokV2Ru0oDQRSGFyQE3ezOzmVnzlz3Ek0WXSNKCrESRMXCVu0ULCy1FnwAsfQFfA9r30vGI0kU/uKcOd/M4f8nIZRtjHJUmpE0I+vpaG0wXBsMB8N1nCY7/cnN9fv56aM2TakrAX6hnAEqeX1+f3l6+/z4cnUnwFNhqDBcOekn2BKuk3Y6O728Pzo+pypwu4kDVloBnpWWlTZC42nfdj3YhqrASovvs9JyqJbruHICPOG6kPEersONOYOMyghNun5vtu98I00NYSxDTawmShfaxMIbonRy+3B3dXlxeLDLSlsER7xJg0otbNRytAVk2xfBJdIEwnVGpXbtqm0Ur+d0epZkVKLANlXbRQfCLA6xXkKF9KKZL1r+Y4Ir9wcS4MHG0NFU9CU01kuo1FXVdr6Zgm0E+F/uH8SVc/WWCWOwMQ4MDz0tIcI1xlhIn4sYPeEr6wjX+EfILWgqDELffB06d8TUW1YAAAAASUVORK5CYII=",
+    "bytes": 281186,
+    "blurDataURL": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAAQCAIAAACtAwlQAAAACXBIWXMAAAPoAAAD6AG1e1JrAAABa0lEQVQokWWQO0sDQRSFtxA1JjPjvHbunUdmN5uYNRgUMSGg2KQQhNjYCWJvr42NWIq1nX/Czn8nccJGEQ7Ducx3OYebMS52OjSpTVibsFa7s7G5vbG5vdXaSb/ZyfHl7c379dUTuFJjVBCk8QqCgkAFJGUvD6/Pj2+fH1++qBUErixXdsn5QRqZxCyU+5Oz6+F4yk1Xur40nkkU2mmMaeEHqupQjdD3U5DQjiu7hGyPSVzFaYzgSipA2ZjbQhpPeM4kMomE50nZ4mJxf3czPz0R2rFgWbC0dKQLpLBs4FjteAzZdD5LSwqCdsWuQZIDVaZjgFoQ1Z4oxlmqRngOrkTfS32bIOHq3XCYNbPGaKujpgoXS5MqriEFAeJIY6QCmu7JryGhHfpebgtwpYJAeE7VP0gaP5md74+Ph6OjangQe3Uohyl9DVEBuS00Ro1RaJe0utPvOGm8NJ6bLpOOCvjTiUlMh2hM8yboG2GHOuglUbjJAAAAAElFTkSuQmCC",
     "average": "#151a1f",
     "src": "github.dark.webp",
     "poster": "github.dark.webp"
@@ -14,11 +14,11 @@
   "light": {
     "kind": "image",
     "width": 2560,
-    "height": 3328,
+    "height": 3526,
     "mime": "image/webp",
-    "bytes": 277974,
-    "blurDataURL": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAAQCAIAAACtAwlQAAAACXBIWXMAAAPoAAAD6AG1e1JrAAABVElEQVQokVWRu04DMRBF9wNRJB5Sako6SigQH8A/IFFRICpaaqBDgMRLQHgUEDa7sbPxeGbs2UFeQ0Ku3Ni+c8/YU/T7/dU/rXVaWV5Z6tTr9fJt8fTwvb11cnx0DQCISP/UdlLV4vHibWdz7/TgzE6SiTshh9p65ymGKCLF1c3d+sbu/sEhcjBTQsQYIjM7T7kgmcqqriuDiNClZASF6Pwvrm3bIoUjighyyKU5CRFzQ6mnxo6npmpj8N6PJ2kz5kkTYMKuJjOC2jEU78PncnA/LV+Z+cuNhlB94NcQR6/4edu8XNa3pasSLoaoqs65jPivQUnnT77IVFX13htjAEBEZoe5fm5CDoMqvS5v2ae/IKIFExHNiKrati3H+Pvj8yREY4y1FgBygKpm9EKStbZpGgDw3hMRxzSTBZOIxBBjiEgSJOFEZI4TkTyjbJqtPCVV/QGZkxECQCFdRAAAAABJRU5ErkJggg==",
-    "average": "#eaebec",
+    "bytes": 297956,
+    "blurDataURL": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAAQCAIAAACtAwlQAAAACXBIWXMAAAPoAAAD6AG1e1JrAAABVklEQVQokV2Rv07DMBCH/ZSoUunQGbGyISGx8gCMMMATMCDBxMLCgIRAqoIoIGjShjRJE/v++ByjxCUFPmWI5S93v9yp8Xg8Go22O0Ydw+Fwq2MwGIRb9fQw2905Oz+9AwBEpF80Hd579XA7Odg7uji5WlWtxB3INq9QA4kV55x6fpnuHx5fXt8Y5KJuC4gVZBsMZm6lsizLaoWIBjlUCne1wdCuaRoFAFrrpmk0EAAQkffedfgfVJ4s4sl9NZ8y8wKWc5O9mc8Zph9mPqmmj3k0r79UauLwC0RUaa3Z1AIgvJI6oyJaLl4zo0J+773pQESx0jfKKn7PSPVngzxbmj5KI+1LiLiRiCgt20p9d7GyHmYvMbPWGgCMMaEAyzrJHymKojiOkyRJ0zTP86Io/kvtqLQO8Yko7Gc9p14SK2GvBsW69hvn3CaTcy7syDkXJiJWwhOkb/d3EiNURUSNAAAAAElFTkSuQmCC",
+    "average": "#eaecec",
     "src": "github.light.webp",
     "poster": "github.light.webp"
   }
