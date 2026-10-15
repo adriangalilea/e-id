@@ -124,6 +124,19 @@ const PT = {
   "home-bottom": 8,
 }
 
+/** Where a finger presses the app's controls, in points from the app's top-left
+ *  corner on a 402-point-wide screen (`SCREEN_PT`, an iPhone 16 Pro's): what a
+ *  story taps (`touch`), placed by the app that draws them. */
+export const CONTACTS_APP_CONTROLS = {
+  /** The preview sheet's done, the blue ✓, which saves the contact. */
+  done: {
+    x: PT.margin + PT.bar / 2,
+    y: PT["sheet-top"] + PT["sheet-bar-top"] + PT.bar / 2,
+  },
+  /** The screen's width, in the same points. */
+  width: SCREEN_PT,
+} as const
+
 /** Where a card at rest starts: under the page's bar, or under the sheet's. */
 const HEAD = {
   page: PT["safe-top"] + PT.bar + 18,
@@ -567,6 +580,9 @@ function PreviewSheet({ card, scroll }: { card: VCard; scroll: number }) {
             GLASS,
             BAR_CIRCLE,
             "[--glass-tint:rgb(10_132_255/0.92)]",
+            // Pressed (a story's finger on it, `data-pressing` round the app),
+            // as iOS 26's glass answers a press: it swells.
+            "in-data-pressing:scale-115",
           )}
         >
           <Check className="size-(--ag-contacts-chevron)" strokeWidth={3} />

@@ -59,6 +59,7 @@ export async function Features() {
           />
         ),
         page: phoneOf(holder),
+        press: pressOf(holder),
       }}
       data={{
         address: `${at}/json`,
@@ -182,6 +183,14 @@ function profileOf(holder: Holder): React.ReactNode {
       </div>
     </div>
   );
+}
+
+/** Where a finger saves the contact on the phone's page: the middle of its save
+ *  button, as the capture found it. None for a lead not captured yet. */
+function pressOf(holder: Holder): { x: number; y: number } | undefined {
+  if (SHOTS.handle !== holder.username) return undefined;
+  const { save } = SHOTS.phone.found;
+  return { x: save.x + save.width / 2, y: save.y + save.height / 2 };
 }
 
 /** The holder's profile as a phone shows it: the page itself on a phone, its

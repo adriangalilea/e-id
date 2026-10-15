@@ -9,7 +9,12 @@ import {
 } from "lucide-react";
 import { useMemo } from "react";
 import { Browser, BrowserSession } from "@/components/ui/browser";
-import { ContactsApp, contactsAppScreen } from "@/components/ui/contacts-app";
+import {
+  CONTACTS_APP_CONTROLS,
+  ContactsApp,
+  contactsAppScreen,
+} from "@/components/ui/contacts-app";
+import { Touch, touchPressed } from "@/components/ui/touch";
 import { IphoneFrame, MacbookFrame } from "@/components/ui/device-frame";
 import {
   ScrollStory,
@@ -49,6 +54,9 @@ type StoryProps = {
     average: string | undefined;
     save: React.ReactNode;
     page: React.ReactNode;
+    /** Where the page's save button is, CSS px from the page's top-left, the
+     *  finger's place; absent where the page has none to press. */
+    press?: { x: number; y: number };
   };
   data: Page;
   embed: {
@@ -391,23 +399,33 @@ function Route({
 const PHONE_SCREEN = { width: 402, height: 842 };
 
 /** The save, as it happens on a phone, over the chapter (`at`, 0..1): where each
- *  moment starts. Safari on the profile; "save contact" pressed; iOS 26's sheet
- *  rising with the contact, read down; done; the contact saved, read down. */
+ *  moment starts and how long it lasts. Safari on the profile; "save contact"
+ *  tapped; iOS 26's sheet rising with the contact and resting; done (✓) tapped;
+ *  the contact saved, read down once. */
 const SAVE = {
-  press: 0.18,
-  sheet: 0.26,
-  sheetIn: 0.1,
-  read: 0.38,
-  done: 0.66,
-  saved: 0.72,
+  tap: 0.06,
+  tapFor: 0.12,
+  sheet: 0.2,
+  sheetIn: 0.08,
+  done: 0.34,
+  doneFor: 0.12,
+  saved: 0.48,
+  read: 0.54,
 };
 
 const share = (at: number, from: number, length: number) =>
   Math.min(1, Math.max(0, (at - from) / length));
 
-/** The phone, through the save (`SAVE`, `at` the chapter's moment): the holder's
- *  profile in Safari, its save pressed, the contact iOS raises over it scrolled
- *  through, then saved in Contacts on the poster of its photo's colour. Down as
+/** Where the ✓ is, as a share of the screen's width: placed by Contacts. */
+const DONE = {
+  x: `${(CONTACTS_APP_CONTROLS.done.x / CONTACTS_APP_CONTROLS.width) * 100}cqw`,
+  y: `${(CONTACTS_APP_CONTROLS.done.y / CONTACTS_APP_CONTROLS.width) * 100}cqw`,
+};
+
+/** The phone, through the save (`SAVE`, `at` the chapter's moment), each tap a
+ *  finger shown on the screen (@ag/touch): the holder's profile in Safari, its
+ *  save tapped, the contact iOS raises over it, done tapped, then the contact
+ *  saved in Contacts on the poster of its photo's colour, read down. Forward as
  *  the reader scrolls down, back as they scroll up. */
 function Phone({
   contact,
@@ -418,6 +436,10 @@ function Phone({
   address: string;
   at: number;
 }) {
+  if (PHONE_SCREEN.width !== CONTACTS_APP_CONTROLS.width)
+    throw new Error("story: the phone's screen is not Contacts' width");
+  const saving = share(at, SAVE.tap, SAVE.tapFor);
+  const confirming = share(at, SAVE.done, SAVE.doneFor);
   const saved = at >= SAVE.saved;
   const raised = share(at, SAVE.sheet, SAVE.sheetIn);
   const view = saved ? "contact" : raised > 0 ? "preview" : null;
@@ -430,7 +452,7 @@ function Phone({
             frame's foot, never past it. */}
         <div
           className="absolute inset-0 overflow-clip"
-          data-pressing={(at >= SAVE.press && at < SAVE.sheet) || undefined}
+          data-pressing={touchPressed(saving) || undefined}
         >
           <Browser
             look="safari-ios"
@@ -439,7 +461,16 @@ function Phone({
             url={`https://${address}`}
             full
           >
-            {contact.page}
+            <div className="relative [container-type:inline-size]">
+              {contact.page}
+              {contact.press && (
+                <Touch
+                  x={`${contact.press.x}px`}
+                  y={`${contact.press.y}px`}
+                  tap={saving}
+                />
+              )}
+            </div>
           </Browser>
         </div>
       </Scaled>
@@ -452,7 +483,8 @@ function Phone({
             style={{ opacity: 0.5 * raised }}
           />
           <div
-            className="absolute inset-0"
+            className="absolute inset-0 [container-type:inline-size]"
+            data-pressing={touchPressed(confirming) || undefined}
             style={
               view === "preview"
                 ? { transform: `translateY(${(1 - raised) * 100}%)` }
@@ -462,15 +494,17 @@ function Phone({
             <ContactsApp
               vcard={contact.vcard}
               view={view}
+              // The sheet rests; only the saved contact is read down.
               scroll={
-                view === "preview"
-                  ? share(at, SAVE.read, SAVE.done - SAVE.read)
-                  : share(at, SAVE.saved + 0.04, 1 - SAVE.saved - 0.04)
+                view === "contact" ? share(at, SAVE.read, 1 - SAVE.read) : 0
               }
               average={contact.average}
               // Over Safari, the sheet's surround is the page behind, dimmed.
               className={view === "preview" ? "bg-transparent" : undefined}
             />
+            {view === "preview" && (
+              <Touch x={DONE.x} y={DONE.y} tap={confirming} />
+            )}
           </div>
         </>
       )}
