@@ -36,6 +36,7 @@ import {
   rectOf,
   sameBand,
 } from "@/components/ui/lightbox-viewport"
+import { createSlideTrack } from "@/components/ui/slide-track"
 import { ThumbStrip, type ThumbStripItem } from "@/components/ui/thumb-strip"
 import { Video } from "@/components/ui/video"
 import {
@@ -74,18 +75,11 @@ import {
   assertSize,
   type Band,
   COAST,
-  clamp,
   clampPan,
   EXIT_HANDOFF,
   FIT,
   fit,
-  GLIDE,
-  GLIDE_ENTRY,
-  GLIDE_ENTRY_MIN,
-  GLIDE_MAX,
-  GLIDE_MIN,
   GONE,
-  glide as glide_,
   HAND,
   MACHINE,
   neighbours,
@@ -94,16 +88,10 @@ import {
   project,
   type Sample,
   type Size,
-  SLIDE_GAP,
   type SourceView,
   STILL,
-  SWIPE_END,
   sharpScale,
   sourceView,
-  swipeBreak,
-  swipeCommitPx,
-  swipeEnvelope,
-  swipeGive,
   type Tunings,
   type View,
   WHEEL_GUARD,
@@ -878,9 +866,6 @@ function Stage(props: StageProps) {
       corner: 0,
       /** What last drove the lightbox: a pointer-driven close leaves no focus ring. */
       input: "pointer" as "pointer" | "key",
-      /** Where the accepted steps point, null when the stage is the truth. The
-       *  chrome reads it so the index it shows is never behind the hand. */
-      aimIndex: null as number | null,
       /** The page's own hash at open, restored on close; a `#lb=` hash is ours. */
       hash0: /^#lb=/.test(window.location.hash) ? "" : window.location.hash,
     }
@@ -1002,140 +987,21 @@ function Stage(props: StageProps) {
       writePose()
       writeP()
     }
-    // ---- the track: a real scroll container the ENGINE drives, for every input. Every
-    // slide is mounted and one fills the screen, so the scroll offset IS the index. A
-    // KEY, a button or a thumbnail is animated on the same spring the pose uses, so a
-    // step feels like a step; `scroll-behavior: smooth` has no duration and reads as a
-    // crawl next to the rest of this thing.
-    /** A slide's pitch, CACHED. `clientWidth` is a layout read, and this is asked for
-     *  four or five times per wheel event, each one interleaved with a `scrollLeft`
-     *  write — which is a forced synchronous layout, per event, over every mounted
-     *  slide. Measured with it uncached: wheel events arrived 33 ms apart carrying
-     *  189 px each, because the browser had coalesced four frames' worth while the
-     *  page reflowed. No motion rule survives being fed that. The slides are
-     *  viewport-wide, so only the viewport can change this. */
-    let slot = 0
-    const measureSlot = () => {
-      slot = trackEl.clientWidth + SLIDE_GAP
-    }
-    const slotW = () => slot
-    const landedSlot = () =>
-      Math.min(
-        L.current.ids.length - 1,
-        Math.max(0, Math.round(trackEl.scrollLeft / slotW())),
-      )
-    const commitIndex = (i: number) => {
-      if (i === L.current.index) {
-        // Back on the slide it already called current: whatever it was heading for is
-        // over, and the next step counts from here. Without this, a step cut short by
-        // a gesture leaves its aim standing and the step after it skips a slide.
-        S.aimIndex = null
-        setAim(null)
-        return
-      }
-      aimAt(i)
-      L.current.onIndex(i)
-    }
-    /** THE TRACK HAS ONE WRITER, and this is its two terms. `base` is where the
-     *  machine has the track: a resting slide, or a glide in flight. `swipeTravel` is
-     *  the hand's live offset from it, in px, and it is zero whenever no hand is on
-     *  the track. Everything writes their sum.
-     *
-     *  Splitting them is what lets a commit be seamless. A commit re-bases: the glide
-     *  is aimed at the new slide FROM WHERE THE PICTURES ARE, the hand's offset resets
-     *  to zero, their sum does not move a pixel, and the fingers keep being felt for
-     *  the whole flight. */
-    let base = 0
-    let swipeTravel = 0
-    let glide = 0
-    /** What the slide costs, and how far the pictures lean on the way to it. Bought,
-     *  they lean nothing: they are ON the slide, and leaning off one they have already
-     *  arrived at, toward one they cannot buy, is the drift with a life of its own. */
-    const swipeLine = () => swipeCommitPx(slotW())
-    const give = () => (swipeDone ? 0 : swipeGive(swipeTravel, swipeLine()))
-    const paintTrack = () => {
-      const n = L.current.ids.length
-      trackEl.scrollLeft = clamp(base + give(), 0, (n - 1) * slotW())
-    }
-    /** Hand the track back to the machine where it stands. Any path that takes over
-     *  from a hand calls this, and nothing after it can jump. */
-    const rebase = () => {
-      base = trackEl.scrollLeft
-      swipeTravel = 0
-    }
-    const stopGlide = () => {
-      if (!glide) return
-      cancelAnimationFrame(glide)
-      glide = 0
-      // Cut short between two slides: the magnets come straight back on, and the
-      // browser takes it to the nearest one. Nothing here has to decide which — but
-      // not while a hand is still on the track, where a mandatory container reads
-      // every 1:1 write as a rest and drags the pictures off the fingers.
-      if (!swipe) delete trackEl.dataset.stepping
-    }
-    /** The track arrives at slide `i`. `vx` is the speed it already had, in px per ms,
-     *  so a swipe that commits with the fingers still moving continues at their speed
-     *  instead of stalling and being shoved; a key press hands over nothing and is
-     *  pulled in from rest. Snapping stands down while this runs: a mandatory
-     *  container treats every frame of a JS scroll as a rest and would fight it. */
-    const glideTo = (i: number, vx = 0) => {
-      stopGlide()
-      // MAGNETS DOWN BEFORE ANYTHING READS THE SCROLLER. `scroll-snap-type: mandatory`
-      // re-snaps the container at the next layout, and reading `scrollLeft` forces
-      // that layout — so a read taken between `stopGlide` handing the magnets back and
-      // this move setting them down again does not observe the position, it MOVES it,
-      // to the nearest slide. Mid-flight that is a jump of up to half a picture,
-      // backwards, and it is the seesaw at the start of a gesture.
-      trackEl.dataset.stepping = ""
-      // Derived from the ground truth, every time. The browser moves this scroller
-      // too (a finger's pan, a snap, a resize), and a `base` remembered across that
-      // is a stale number the next glide would jump from.
-      base = trackEl.scrollLeft - give()
-      const to = i * slotW()
-      const from = base
-      const d = to - from
-      if (reduced || Math.abs(d) < 0.5) {
-        base = to
-        paintTrack()
-        commitIndex(i)
-        return
-      }
-      // Far to go, longer to go it; but bounded, and never linear in the distance,
-      // or crossing three slides would take three times as long as crossing one.
-      const ms = clamp(
-        GLIDE * Math.sqrt(Math.abs(d) / slotW()),
-        GLIDE_MIN,
-        GLIDE_MAX,
-      )
-      // In multiples of the move's own average speed, so the bounds read as shapes
-      // rather than as pixel arithmetic, and a hand pulling the other way still
-      // leaves toward the slide instead of away from it.
-      const m0 = d * clamp((vx * ms) / d, GLIDE_ENTRY_MIN, GLIDE_ENTRY)
-      const t0 = performance.now()
-      const step = (t: number) => {
-        const s = Math.min(1, (t - t0) / ms)
-        base = from + glide_(d, m0, s)
-        paintTrack()
-        shootGlide()
-        if (s < 1) {
-          glide = requestAnimationFrame(step)
-          return
-        }
-        // Exactly home, at a time that was known before it started, and on a snap
-        // point, so handing the magnets back is a no-op the reader cannot see.
-        glide = 0
-        base = to
-        paintTrack()
-        shootGlide()
-        if (!swipe) delete trackEl.dataset.stepping
-        commitIndex(i)
-        // One gesture, one table. A swipe still under the fingers has bought a slide,
-        // not finished: reporting here would cut the trace at the first commit and
-        // throw away the half a reader calls slow.
-        if (!swipe) report(`landed on ${i}`)
-      }
-      glide = requestAnimationFrame(step)
-    }
+    // ---- the track: a real scroll container the ENGINE drives, for every input
+    // (ui/slide-track, the one engine tabs swipe on too). Every slide is mounted and
+    // one fills the screen, so the scroll offset IS the index. A key, a button or a
+    // thumbnail glides it on the same curve a swipe ends on.
+    const slides = createSlideTrack({
+      el: trackEl,
+      count: () => L.current.ids.length,
+      current: () => L.current.index,
+      reduced: () => reduced,
+      onAim: setAim,
+      onArrive: (i) => L.current.onIndex(i),
+      trace: (line) => trace(line),
+      report: (table) => L.current.trace(table),
+      debug: () => Boolean(L.current.debug),
+    })
     // The flight ends: the pose IS the target, inline, and the animations go. The
     // inline write lands in the same frame the fill-forwards effect is cancelled, so
     // nothing flashes.
@@ -1390,7 +1256,7 @@ function Stage(props: StageProps) {
         setPhase("exit")
       }
       const sv = clipToSource()
-      stopGlide()
+      slides.stop()
       animate(sv ? sv.view : GONE, 0, MACHINE, vel, "exit")
     }
     /** The picture is flying home to a trigger that the page is SCROLLING away, so it
@@ -1433,12 +1299,6 @@ function Stage(props: StageProps) {
       exitRaf = requestAnimationFrame(followOut)
     }
 
-    // The chrome's index, moved the moment a step is accepted.
-    const aimAt = (to: number) => {
-      S.aimIndex = to
-      setAim(to)
-    }
-
     // A step glides the track to the slide asked for. Presses chain: each one re-aims
     // the glide in flight from where it already is, so a held arrow is one motion and
     // no press is ever lost. A wrap under `loop` is the one cut, because the slide it
@@ -1449,20 +1309,21 @@ function Stage(props: StageProps) {
       const d = to - index
       if (d === 0) return
       // A key is a hand too, and it takes the track off the wheel's.
-      endSwipe()
+      slides.release()
       const step = Math.abs(d) === 1
       // A press chains onto the step already in flight: where the track is HEADING is
       // what the next one counts from. Counting from the committed index instead, which
       // does not move until a step arrives, made every press in a fast run ask for the
       // same slide, so five presses moved one.
-      const from = step ? (S.aimIndex ?? index) : index
+      const from = step ? (slides.aim() ?? index) : index
       if (step) {
         const can = neighbours(from, n, loop)
         if (!(d === 1 ? can.next : can.prev)) return
       }
       const wrapped = step ? (from + d + n) % n : to
       assert(wrapped >= 0 && wrapped < n, `step to ${to} of ${n}`)
-      aimAt(wrapped)
+      // The chrome's index, moved the moment a step is accepted.
+      slides.aimAt(wrapped)
       if (
         pose.value.s !== 1 ||
         pose.value.p !== 1 ||
@@ -1473,11 +1334,11 @@ function Stage(props: StageProps) {
       setZoom(1)
       if (step && Math.abs(wrapped - from) !== 1) {
         // A wrapped step: cut, there is nothing between here and there.
-        trackEl.scrollTo({ left: wrapped * slotW(), behavior: "instant" })
+        slides.jumpTo(wrapped)
         L.current.onIndex(wrapped)
         return
       }
-      glideTo(wrapped)
+      slides.glideTo(wrapped)
     }
 
     // A move computed FROM the pose reads it live: a flight in progress is read and
@@ -1693,8 +1554,7 @@ function Stage(props: StageProps) {
             // A hand on the track, feeding the SAME swipe the wheel feeds: one line,
             // one lean, one slide per gesture, whatever is pushing. The finger moves
             // right, the pictures come from the left, so the travel is its negative.
-            if (!swipe) swipeOpen("finger")
-            swipeFeed(-f.dx, 0)
+            slides.finger(-f.dx)
             break
           case "unpose":
             fly(f.target, MACHINE, undefined, false)
@@ -1729,8 +1589,7 @@ function Stage(props: StageProps) {
       S.input = "pointer"
       // A hand on the track always wins over a glide it started itself, and over a
       // wheel gesture still holding an offset: one hand at a time.
-      endSwipe()
-      stopGlide()
+      slides.drop()
       if (chromeTarget(e.target)) return
       // The native control strip owns its pointers: a scrub is not a drag; the rest
       // of the video is media.
@@ -1769,7 +1628,7 @@ function Stage(props: StageProps) {
       // The hand relocked off the track mid-touch: it is dismissing now, so the swipe
       // hands the pictures back to their slide instead of holding an offset the
       // reader has stopped steering.
-      if (swipe && G.axis === "y") endSwipe()
+      if (G.axis === "y") slides.release()
     }
     // What a tap leaves behind. A hand on a coasting image stops it: a pan flight
     // (coast, wall bounce, key pan: the pending target keeps the scale) settles
@@ -1874,7 +1733,7 @@ function Stage(props: StageProps) {
         case "snap":
           // The hand let the track go. A pointer SAYS when that happened, so there is
           // nothing to infer and nothing to wait for: the swipe ends on the event.
-          endSwipe()
+          slides.release()
           resume()
           return
         default: {
@@ -1895,223 +1754,6 @@ function Stage(props: StageProps) {
     let wheelPhase = phaseStart()
     /** The axis this wheel stream belongs to, once its travel has said. */
     let streamAxis: "x" | "y" | null = null
-    /** Is a wheel stream live on the track? The track follows the fingers 1:1 off the
-     *  slide it is ANCHORED to, and every SWIPE_COMMIT px of finger buys the next one:
-     *  the anchor moves, the offset goes back to zero, and the pictures glide the rest
-     *  of the way while the hand keeps steering. Same price for the first slide, the
-     *  fifth, and the one straight back the way it came. Why it is not read off the
-     *  TOTAL travel since the stream opened: `SWIPE_COMMIT` in `lightbox-motion`.
-     *
-     *  Nothing here detects a release. The hand stops paying the moment the device
-     *  starts coasting, which is a thing the phase detector CAN see, and being wrong
-     *  about it costs a threshold of travel, never a wrong destination. */
-    let swipe = false
-    /** The slide the offset is measured from, and the offset. `swipeHand` is the whole
-     *  stream's travel and is read by nothing but the recorder. `swipeDone` is the
-     *  gesture having bought its one slide: from there it moves nothing and buys
-     *  nothing, and `swipeEnv` is the decaying envelope that tells a hand coming back
-     *  from the tail that is still arriving. */
-    let swipeAnchor = 0
-    let swipeHand = 0
-    let swipeDone = false
-    let swipeEnv = 0
-    /** Which way the slide it bought went. Momentum never turns round, so a delta
-     *  against this is a hand, with certainty rather than by inference. */
-    let swipeDir = 0
-    let swipeTimer = 0
-
-    // ---- the trajectory recorder (debug only). What the hand asked for against what
-    // the pictures actually did, sample by sample, so "it feels slow" becomes a number.
-    //
-    // It records NUMBERS ONLY while the gesture runs and formats once at the end. An
-    // instrument that reads the DOM or touches React per event becomes the thing it is
-    // measuring: this component has already been slowed to a crawl once by a trace
-    // that called getComputedStyle on every wheel event.
-    type Shot = { t: number; dx: number; sum: number; at: number }
-    let shots: Shot[] = []
-    let shotT0 = 0
-    let shotFrom = 0
-    let shotWhy = ""
-    /** Why the LIVE gesture opened, held separately from the recording's copy: the
-     *  next gesture's reason was being written over the one still being reported, so
-     *  nearly every table blamed a split that belonged to the gesture after it. */
-    let swipeWhy = ""
-    /** Wheel arrivals only. A glide frame shares a timestamp with the event that
-     *  started it, and those zero gaps dragged the median to 1 ms and printed
-     *  "1000Hz" over a stream running at thirty. */
-    let shotEvents: number[] = []
-    /** Frames the PAGE actually drew, against the events it was fed. Chrome dispatches
-     *  wheel aligned to the frame, so the two rates are normally the same number and
-     *  the interesting case is when they are not: equal and low is the renderer over
-     *  budget (a 165 ms move gets five frames, and five frames across a whole picture
-     *  is the jag), while events slower than frames is the device. Guessing between
-     *  those two cost a round. */
-    let shotFrames = 0
-    let shotRaf = 0
-    const shotTick = () => {
-      shotFrames++
-      shotRaf = requestAnimationFrame(shotTick)
-    }
-    /** `at` is the value that was JUST WRITTEN, never a read back off the element.
-     *  Reading `scrollLeft` after writing it forces a synchronous layout, and doing
-     *  that once per wheel event made the instrument the thing it was measuring. */
-    const shoot = (dx: number, sum: number, at: number, wheel = true) => {
-      if (!L.current.debug) return
-      const now = performance.now()
-      if (!shots.length) {
-        shotT0 = now
-        shotFrom = swipeAnchor
-        shotWhy = swipeWhy
-        shotFrames = 0
-        shotEvents = []
-        shotRaf = requestAnimationFrame(shotTick)
-      }
-      const t = Math.round(now - shotT0)
-      if (wheel) shotEvents.push(t)
-      shots.push({ t, dx: Math.round(dx), sum, at })
-    }
-    /** Sample the LANDING, where the hand has stopped asking for anything and the
-     *  pictures are still moving. This is the half a reader calls slow. */
-    const shootGlide = () => {
-      if (!L.current.debug || !shots.length) return
-      shoot(0, (shots[shots.length - 1] as Shot).sum, base + give(), false)
-    }
-    /** How many rows a table gets. Enough to see a shape, few enough to paste. */
-    const TRACE_ROWS = 16
-    /** One gesture, compressed. The header carries the verdict and the health of the
-     *  input stream itself; the table is evenly downsampled, because the shape of the
-     *  two columns is the point and every row of it never was.
-     *
-     *  `@` is the median gap between events and the most important number here: this
-     *  device emits every 8 ms, so anything above that is the PAGE dropping frames,
-     *  and a rule fed 33 ms lumps of 189 px cannot be judged at all. */
-    const report = (why: string) => {
-      cancelAnimationFrame(shotRaf)
-      shotRaf = 0
-      if (!L.current.debug || shots.length < 2) {
-        shots = []
-        return
-      }
-      const w = slotW()
-      const last = shots[shots.length - 1] as Shot
-      const first = shots[0] as Shot
-      const hand = Math.abs(last.sum) / w
-      const moved = (last.at - first.at) / w
-      const gaps = shotEvents
-        .slice(1)
-        .map((t, i) => t - (shotEvents[i] as number))
-        .sort((a, b) => a - b)
-      const gap = Math.max(1, (gaps[gaps.length >> 1] ?? 0) as number)
-      // A wheel arrives once per display frame, so the median gap is the REFRESH RATE
-      // and 33 ms is a 30 Hz screen, not a fault. Dropped frames are IRREGULAR: it is
-      // the spread that says the page stalled, never the rate.
-      // The 90th percentile, not the worst: at 125 Hz a single 32 ms gap is one
-      // hiccup in sixty events, and calling that JANK cried wolf over a healthy
-      // stream. A stall shows up across a tenth of the gesture or it did not matter.
-      const worst = (gaps[Math.floor(gaps.length * 0.9)] ?? 0) as number
-      const rate = `@${gap}ms ${Math.round(1000 / gap)}Hz${
-        worst > 2.5 * gap ? ` JANK ${worst}ms` : ""
-      }`
-      const maxDx = Math.max(...shots.map((s) => Math.abs(s.dx)))
-      // The pictures walking BACKWARDS against the hand is the shape of a snap-back
-      // under a finger still moving, so it is measured, not named: the worst single
-      // retreat, in slides.
-      let back = 0
-      for (let i = 1; i < shots.length; i++) {
-        const d = ((shots[i] as Shot).at - (shots[i - 1] as Shot).at) / w
-        if (Math.sign(d) === -Math.sign(last.sum)) back = Math.max(back, -d)
-      }
-      const step = Math.max(1, Math.ceil(shots.length / TRACE_ROWS))
-      const rows = shots
-        .filter((_, i) => i % step === 0 || i === shots.length - 1)
-        .map(
-          (s) =>
-            `${String(s.t).padStart(5)}${String(s.dx).padStart(6)}${((s.sum / w) * 100).toFixed(0).padStart(6)}${(((s.at - first.at) / w) * 100).toFixed(0).padStart(6)}`,
-        )
-      L.current.trace(
-        [
-          `── ${shotFrom}→${swipeAnchor} (${shotWhy}) · ${last.t}ms · ${shots.length}ev ${rate} · ${Math.round((shotFrames * 1000) / Math.max(1, last.t))}fps · maxdx ${maxDx}`,
-          `   hand ${hand.toFixed(2)} · pics ${moved.toFixed(2)} · ${(Math.abs(last.sum) / Math.max(1, last.t)).toFixed(2)}px/ms · back ${back.toFixed(2)} · ${why}`,
-          `   ms    dx hand%track%  (% of a slide, from the start)`,
-          ...rows,
-        ].join("\n"),
-      )
-      shots = []
-    }
-    /** The slide, bought — one per gesture, and the gesture is spent. The pictures do
-     *  not move on this line: the glide is aimed at the new anchor from exactly where
-     *  they stand, and the offset that paid for it is gone. */
-    const buySlide = (dir: number, vx: number) => {
-      const next = clamp(swipeAnchor + dir, 0, L.current.ids.length - 1)
-      if (next === swipeAnchor) {
-        // The end of the reel. Hold the offset at the line so the lean cannot run off
-        // an edge with nothing behind it.
-        swipeTravel = dir * swipeLine()
-        return
-      }
-      swipeDone = true
-      swipeDir = dir
-      swipeAnchor = next
-      rebase()
-      // The chrome moves with the decision, not with the arrival: the counter is the
-      // answer to the gesture, and a stream opening on top of this one anchors here.
-      aimAt(next)
-      trace(`swipe → ${next}`)
-      glideTo(next, vx)
-    }
-    /** A gesture takes the track. The magnets go down before anything reads the
-     *  scroller, and the anchor is where the track is HEADING, so a swipe onto a step
-     *  still in flight counts from the slide it is going to, not one it is flying
-     *  over. */
-    const swipeOpen = (why: string) => {
-      // A gesture opening while the last one's glide runs: read that one out now, or
-      // its rows and this one's share a table and the totals are nonsense.
-      report("cut short by the next")
-      swipeWhy = why
-      swipe = true
-      stopGlide()
-      trackEl.dataset.stepping = ""
-      swipeDone = false
-      swipeDir = 0
-      swipeHand = 0
-      swipeAnchor = S.aimIndex ?? landedSlot()
-      rebase()
-    }
-    /** Travel, from whatever is pushing. ONE rule for the wheel and for a finger: the
-     *  device the gesture arrived on decides nothing about what it costs. */
-    const swipeFeed = (dx: number, vx: number) => {
-      swipeHand += dx
-      // SPENT. The slide is bought, the pictures are on it, and everything still
-      // arriving moves nothing. Letting it lean toward a slide it could not buy is the
-      // drift past the snap point; letting it buy one is the slot machine.
-      if (swipeDone) {
-        shoot(dx, swipeHand, base)
-        return
-      }
-      swipeTravel += dx
-      if (Math.abs(swipeTravel) >= swipeLine())
-        buySlide(Math.sign(swipeTravel), vx)
-      // 1:1 under the band. macOS has already put its own acceleration in these
-      // deltas, and a gain on top of it is a second acceleration that felt like one.
-      paintTrack()
-      shoot(dx, swipeHand, base + give())
-    }
-    const endSwipe = () => {
-      if (!swipe) return
-      swipe = false
-      clearTimeout(swipeTimer)
-      // Whatever the hand had offered and not paid for goes back. Rebase first, or
-      // the offset would be added on top of the slide it is being wound back to.
-      rebase()
-      glideTo(swipeAnchor, 0)
-      if (!glide) report(`ended on ${swipeAnchor}`)
-    }
-    const armSwipeEnd = () => {
-      clearTimeout(swipeTimer)
-      // A fixed window, not the phase's own: a swipe is over when the DEVICE stops
-      // sending, which is a fact, and the phase has no say in anything here.
-      swipeTimer = window.setTimeout(endSwipe, SWIPE_END)
-    }
     const wheelCtx = (): WheelCtx => {
       const { fitted, band, zoomMax, entry } = L.current
       return {
@@ -2227,25 +1869,14 @@ function Stage(props: StageProps) {
         const dx = wheelPx(e.deltaX, e.deltaMode, ctx.band.h)
         // Only ever a hint, to hand the glide a speed. It decides nothing.
         const vx = fed.read.velocity.x
-        // Only a SPENT gesture can be interrupted: one still choosing owns every
-        // delta, and the two signals are about telling a new hand from a dying tail.
-        const broke = swipeDone ? swipeBreak(dx, swipeEnv, swipeDir) : null
-        swipeEnv = swipeEnvelope(dx, swipeEnv)
-        if (swipe && broke) endSwipe()
-        if (!swipe) {
-          swipeOpen(broke ?? "new stream")
-          swipeEnv = Math.abs(dx)
-        }
-        // A wheel never says it is over, so silence has to. A pointer does say, and
-        // its release ends the swipe on the event instead.
-        armSwipeEnd()
         // EVERY DELTA IS TRAVEL, the hand's and the device's alike, and nothing asks
         // which is which. The web does not report a release, so the phase would have
         // to be inferred from the shape of the decay, and that inference lands
         // wherever it lands: measured on two swipes of the same speed, one was called
         // coasting at 142 ms while its deltas were still GROWING, the other at 674 ms
-        // in the middle of a 1 px dribble.
-        swipeFeed(dx, vx)
+        // in the middle of a 1 px dribble. The track (ui/slide-track) breaks a spent
+        // gesture on a surge or a turn and ends it on silence.
+        slides.wheel(dx, vx)
         return
       }
       e.preventDefault()
@@ -2450,9 +2081,9 @@ function Stage(props: StageProps) {
     // is `mandatory`, so where it comes to rest IS a slide.
     const onScrollSettled = () => {
       // Nothing of ours may be moving the track: a `scrollend` fires in any lull, and
-      // a swipe still under the fingers has not finished choosing.
-      if (S.ph !== "idle" || glide || swipe) return
-      commitIndex(landedSlot())
+      // a swipe still under the fingers has not finished choosing (`settle` asks).
+      if (S.ph !== "idle") return
+      slides.settle()
     }
     // The browser says which slide it picked the moment it picks it, mid-flight,
     // rather than when the scrolling stops: the thumbnail lights on the slide that is
@@ -2470,7 +2101,7 @@ function Stage(props: StageProps) {
       if (!passRaf)
         passRaf = requestAnimationFrame(() => {
           passRaf = 0
-          setPassing(landedSlot())
+          setPassing(slides.landed())
         })
       if (hasScrollEnd) return
       clearTimeout(scrollTimer)
@@ -2519,8 +2150,7 @@ function Stage(props: StageProps) {
     engine.current = {
       dispatch,
       settleIndex: () => {
-        S.aimIndex = null
-        setAim(null)
+        slides.aimAt(null)
         // A flight still running on the layer that just stopped being active (the
         // zoom-to-fit under a step) goes with it: the new layer starts at rest.
         if (S.flight) {
@@ -2546,9 +2176,8 @@ function Stage(props: StageProps) {
         const { band, fitted, index } = L.current
         sync()
         // The slides are viewport-wide, so a resize moves every snap point.
-        measureSlot()
-        stopGlide()
-        trackEl.scrollTo({ left: index * slotW(), behavior: "instant" })
+        slides.measure()
+        slides.jumpTo(index)
         // The crop is in layer px and the trigger moved with the page: re-measured
         // in the new fit before the pose is written.
         clipToSource()
@@ -2571,8 +2200,8 @@ function Stage(props: StageProps) {
     // writer of data-z and --lb-p.
     rootEl.dataset.z = S.z
     // The scroller starts under the opened slide, before anything paints.
-    measureSlot()
-    trackEl.scrollTo({ left: L.current.index * slotW(), behavior: "instant" })
+    slides.measure()
+    slides.jumpTo(L.current.index)
     if (!rest) {
       const sv = source()
       assert(sv, "open without a trigger rect")
@@ -2591,8 +2220,7 @@ function Stage(props: StageProps) {
       clearTimeout(tapTimer)
       clearTimeout(wheelTimer)
       clearTimeout(scrollTimer)
-      if (glide) cancelAnimationFrame(glide)
-      if (shotRaf) cancelAnimationFrame(shotRaf)
+      slides.dispose()
       if (exitRaf) cancelAnimationFrame(exitRaf)
       if (passRaf) cancelAnimationFrame(passRaf)
       if (hasSnapEvents)

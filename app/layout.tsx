@@ -67,7 +67,8 @@ export default async function RootLayout({
         <FocusSource />
         <Analytics />
         <SpeedInsights />
-        {visitsEnabled && <SitePageSensor />}      </body>
+        {visitsEnabled && <SitePageSensor />}
+      </body>
     </html>
   )
 }

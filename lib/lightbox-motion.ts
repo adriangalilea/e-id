@@ -31,7 +31,6 @@ export const FIT: View = { x: 0, y: 0, s: 1 }
 /** Exit target when the trigger left the page: a cut, never an abort. */
 export const GONE: View = { x: 0, y: 0, s: 0.92 }
 
-export const SLIDE_GAP = 32
 export const MOMENTUM = 199
 /** A free coast after a flick: the projected rest is `v · MOMENTUM` away, and a
  *  critically damped spring whose ω = 1/MOMENTUM is the exact exponential decay that
