@@ -97,7 +97,7 @@ function landingsOf(holder: Holder): Landing[] {
   );
   // Captured for one handle, the home's lead; another lead has none until
   // `pnpm links <handle>` runs.
-  const captured: Partial<Record<string, Omit<Shot, "src">>> =
+  const captured: Partial<Record<string, Captured>> =
     SHOTS.handle === holder.username ? SHOTS.shots : {};
   return first.flatMap((link): Landing[] => {
     const end = shortName(link.platform);
@@ -107,19 +107,28 @@ function landingsOf(holder: Holder): Landing[] {
       return [{ end, icon, url: link.url, page: <Compose to={link.url} /> }];
     const shot = captured[link.platform];
     if (!shot) return [];
-    const base = `/links/${holder.username}/${link.platform}`;
-    return [
-      {
-        end,
-        icon,
-        url: shot.url,
-        shot: {
-          ...shot,
-          src: { dark: `${base}.dark.webp`, light: `${base}.light.webp` },
-        },
-      },
-    ];
+    return [{ end, icon, url: shot.url, shot: placed(holder, shot) }];
   });
+}
+
+/** A capture as the manifest has it (lib/link-shots.json): each scheme's picture
+ *  with its `src`, its file's name and its content's hash. */
+type Captured = Omit<Shot, "src" | "dark" | "light"> & {
+  dark: Shot["dark"] & { src: string };
+  light: Shot["light"] & { src: string };
+};
+
+/** A capture placed where `pnpm links` wrote it, by the names it recorded, so a
+ *  capture taken again is a new address. */
+function placed(holder: Holder, shot: Captured): Shot {
+  const folder = `/links/${holder.username}`;
+  return {
+    ...shot,
+    src: {
+      dark: `${folder}/${shot.dark.src}`,
+      light: `${folder}/${shot.light.src}`,
+    },
+  };
 }
 
 /** What an email address opens: the mail app's new message, to it, as large as a
@@ -165,17 +174,8 @@ function Compose({ to }: { to: string }) {
  *  not captured yet (the showcase's lead changed since) shows their card alone
  *  until `pnpm links <handle>` runs, rather than someone else's page. */
 function profileOf(holder: Holder): React.ReactNode {
-  if (SHOTS.handle === holder.username) {
-    const base = `/links/${holder.username}/profile`;
-    return (
-      <Capture
-        shot={{
-          ...SHOTS.profile,
-          src: { dark: `${base}.dark.webp`, light: `${base}.light.webp` },
-        }}
-      />
-    );
-  }
+  if (SHOTS.handle === holder.username)
+    return <Capture shot={placed(holder, SHOTS.profile)} />;
   return (
     <div className="grid min-h-full place-items-center p-6">
       <div className="w-full max-w-[18rem]">
@@ -206,18 +206,12 @@ function phoneOf(holder: Holder): React.ReactNode {
       </div>
     );
   const { phone } = SHOTS;
-  const base = `/links/${holder.username}/phone`;
   const save = phone.found.save;
   // A length on the page as a share of the picture's width, which is the page's.
   const share = (px: number) => `${(px / phone.width) * 100}cqw`;
   return (
     <div key="phone" className="relative @container">
-      <Capture
-        shot={{
-          ...phone,
-          src: { dark: `${base}.dark.webp`, light: `${base}.light.webp` },
-        }}
-      />
+      <Capture shot={placed(holder, phone)} />
       <div
         aria-hidden
         className="absolute rounded-full bg-white/0 transition-colors duration-150 in-data-pressing:bg-white/20"

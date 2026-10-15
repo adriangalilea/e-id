@@ -20,6 +20,12 @@ const nextConfig: NextConfig = {
   // The share image's renderer is a native addon (lib/card-image): loaded from
   // node_modules at run time, never bundled.
   serverExternalPackages: ["@resvg/resvg-js"],
+  // The home's captures (public/links, `pnpm links`) are named with their
+  // content's hash as a query (`?v=`), so one taken again is a new address to
+  // the image loader's cache; every other local picture has none.
+  images: {
+    localPatterns: [{ pathname: "/links/**" }, { pathname: "/**", search: "" }],
+  },
   // The card's fonts are read from disk at run time (the share image's renderer,
   // the embed's fonts); the trace is told, since a path built from process.cwd()
   // is not followed.

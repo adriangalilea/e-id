@@ -3,10 +3,10 @@
   "width": 402,
   "found": {
     "save": {
-      "x": 20,
-      "y": 419.890625,
-      "width": 142.1875,
-      "height": 40
+      "x": 65.2890625,
+      "y": 290.0859375,
+      "width": 61.453125,
+      "height": 25.328125
     }
   },
   "dark": {
@@ -14,21 +14,21 @@
     "width": 804,
     "height": 1748,
     "mime": "image/webp",
-    "bytes": 52796,
-    "blurDataURL": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAcAAAAQCAIAAABV4/KnAAAACXBIWXMAAAPoAAAD6AG1e1JrAAAA8klEQVQYlUWOTU7DMBCFfQBwxpkfO45DkjpVm8qlacMKCVZwBi7AjhVsEVskjsBtURKqfrt5eprvKe+9tRZnQghVVQOAIiI+Q0TGmCzLlIhYW1hbEAqhMHNwpELYDHcv3eYhpdv9/rDbJUJRj/fPP5+/H69fx+O4ajsRhzmrwrfp9NTGgdkyW8zZGFSISETLBkQ0xkwbRMQ5txzZjNZaAYD3noiuZq5nlHMupYSISxEApq7WmtmKOID88kFrXfi4CGlmsgHA+9v3cDiN47jdbhfzYnP2zCXt+z7G2MZ1WXdFWf+nN00d2qpcVdW6cU1pjPkD6iAjN4l8wGcAAAAASUVORK5CYII=",
-    "average": "#1a1a1c",
-    "src": "phone.dark.webp",
-    "poster": "phone.dark.webp"
+    "bytes": 56450,
+    "blurDataURL": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAcAAAAQCAIAAABV4/KnAAAACXBIWXMAAAPoAAAD6AG1e1JrAAAA90lEQVQYlTWOS07EMBBEfQFsd7rtdmyHzDi/QSTDBBBCoGHHGTgAbNix5LdgyxG4LZok85avqqQS3ntmxokYY1GUWmtBROYIEQGAUkpYa5lz5pzQzo3oSMTY7a6f6m5fVc3Z5rzvt8458XD3+Pv19/b8DYCYGWsdZkbkfv3x+bO72hvDxjBmBgAFIhLR/AERAWD5wMx6Qk1IKYX3fhgGIpoDADhYKaUxbK3TOpNSLl2lVJUu7ZF5JLTWry/vF9txHMemaZgZAA42hNxNMLNzbrFt26aUVqkOZe3jarGxKkMqfHcaNmXeFIuVG3fS5/omZPeFvV0DwD+4liSQV8u86QAAAABJRU5ErkJggg==",
+    "average": "#1a1c1d",
+    "src": "phone.dark.webp?v=96186bc90c",
+    "poster": "phone.dark.webp?v=96186bc90c"
   },
   "light": {
     "kind": "image",
     "width": 804,
     "height": 1748,
     "mime": "image/webp",
-    "bytes": 52798,
-    "blurDataURL": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAcAAAAQCAIAAABV4/KnAAAACXBIWXMAAAPoAAAD6AG1e1JrAAAA8ElEQVQYlUWOQU7DMBBFfQBwxpnx2HFsktSpmgi3TRtWSLCCM3ABdqxgi9gicQRuixpT9e3m62veF845YwwueO9DaABAEJE+Q0RKqaIoBDMbUxlTEXJueEvC+81099JvHlLabbf7cbglZPF4//zz+fvx+nU4zKuuZ7ZYalG5Lh2fujhpbbQ2WGqlUCAiEeUNiKiUOm1gZmttPooFKaUAAOccEV0tXC8Ia21KCRFzEQBOXSml1obZApSXD1LKysUspIWTDQDe376n/XGe52EYsjnbrDlzScdxjDF2cV03fVWH//SmbXwX6lUI69a2tVLqD+SUIzATEfOqAAAAAElFTkSuQmCC",
-    "average": "#1a1a1c",
-    "src": "phone.light.webp",
-    "poster": "phone.light.webp"
+    "bytes": 56534,
+    "blurDataURL": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAcAAAAQCAIAAABV4/KnAAAACXBIWXMAAAPoAAAD6AG1e1JrAAAA+ElEQVQYlTXOS1LDMAyAYV8A24oky3Ec0uZZhqQ0PGYYmLLjDBwANuxY8lqw5QjclmmSfstf0oxUCEFEcBJjzPPCWquIiI+ICACMMco5J5KKpISO0DFz9KRi7HbXT3W3r6rmbHPe91vvvXq4e/z9+nt7/gZATNg5jwmrNKw/Pn92V3tmYRZMGAAVIhLR/AMiAsDyg4jYiZlorVUIYRgGIpoHAHCoWmtmcc5bm2itl11jTFVeuqP5SFlrX1/eL7bjOI5N04gIABxqlqV+IiLe+6W2bVuW5aqss6IOcbXUWBVZmYfuNNsUaZMvVW/8SZ/CTZbc5+52DQD/ubskkcmtGfgAAAAASUVORK5CYII=",
+    "average": "#1a1c1d",
+    "src": "phone.light.webp?v=713ce98231",
+    "poster": "phone.light.webp?v=713ce98231"
   }
 }
