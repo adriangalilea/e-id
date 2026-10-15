@@ -2,26 +2,18 @@
 
 import { ContactRound } from "lucide-react";
 import { Button, type ButtonSize } from "@/components/ui/button";
-import { foilGradient } from "@/lib/foil";
-
-/** The card's own save (`IdCard`'s `save`), under the name: printed in the card's
- *  material, its edge the hologram's foil, the one thing on the card that wears
- *  it, so it reads as the card's action and never as one of its links. The foil
- *  is fixed to the window as the hologram's is, so it shifts as the card moves,
- *  and lights fully under the hand. Every length a share of the card's width
- *  (its container), so it is the same on every card. */
+/** The card's own save (`IdCard`'s `save`), between the name and the links: a
+ *  quiet pill, a faint fill and a hairline, its words a step under the name's.
+ *  Distinct by being the one filled thing on a card of outlined glyphs, never
+ *  by colour. Every length a share of the card's width (its container), so it
+ *  is the same on every card. */
 export function CardSave({ username }: { username: string }) {
   return (
     <a
       href={`/${username}.vcf`}
       download={`${username}.vcf`}
-      className="group/save relative flex h-[7.4cqw] items-center gap-[1.4cqw] self-start whitespace-nowrap rounded-full bg-white/[0.06] px-[3cqw] font-medium text-[3.2cqw] text-foreground/90 transition-[scale,background-color] duration-150 hover:bg-white/[0.1] active:scale-95 in-data-pressing:scale-95 [&_svg]:size-[3.6cqw] [&_svg]:stroke-[1.6]"
+      className="flex h-[6.6cqw] items-center gap-[1.2cqw] self-start whitespace-nowrap rounded-full bg-white/[0.07] px-[2.6cqw] text-[3cqw] text-foreground/75 shadow-[inset_0_0_0_1px_rgb(255_255_255/0.08)] transition-[scale,background-color,color] duration-150 hover:bg-white/[0.12] hover:text-foreground active:scale-95 in-data-pressing:scale-95 in-data-pressing:bg-white/[0.12] [&_svg]:size-[3.2cqw] [&_svg]:stroke-[1.5]"
     >
-      <span
-        aria-hidden
-        className="pointer-events-none absolute inset-0 rounded-[inherit] p-px opacity-60 transition-opacity duration-300 [mask-composite:exclude] [mask-clip:content-box,border-box] [mask-image:linear-gradient(#000_0_0),linear-gradient(#000_0_0)] group-hover/save:opacity-100 in-data-pressing:opacity-100"
-        style={{ background: `${foilGradient()} fixed` }}
-      />
       <ContactRound />
       save contact
     </a>

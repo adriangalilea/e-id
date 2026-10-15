@@ -235,8 +235,29 @@ export async function cardSvg(card: Card, frame: CardFrame = "share"): Promise<s
 
   const photo = await photoOf(card.photo);
 
+  // On one line whenever it can be, as the site's card sets it (lib/name-fit).
+  const fit = nameFit(card.name, 100 - L.pad - textX, L.name);
+  const nameSize = fit.size * u;
+  const nameFits = (s: string) => measure(s, SANS, 500, nameSize) <= textWidth;
+  const nameLines =
+    fit.lines === 1 ? [card.name] : wrap(card.name, textWidth, 2, nameFits);
+  const lineStep = 1.02 * nameSize;
+
   // The words beside the photo, as tall as it (components/id-card): the name
-  // from its top edge, the links' glyphs ending at its foot.
+  // from its top edge, the links' glyphs ending at its foot; on a card set on
+  // a page, its save between them and the three spaced round each (CSS's
+  // `justify-content: space-around`). The name's box is its capitals to its
+  // last baseline (the site trims it so).
+  const saveH = 6.6 * u;
+  const nameH = 0.7 * nameSize + (nameLines.length - 1) * lineStep;
+  const iconH = L.icon * u;
+  const colTop = cy + bodyTop * u;
+  const colH = (bodyFoot - bodyTop) * u;
+  const around = share ? 0 : (colH - nameH - saveH - iconH) / 3;
+  const nameTop = colTop + around / 2;
+  const saveTop = nameTop + nameH + around;
+  const iconTop = share ? colTop + colH - iconH : saveTop + saveH + around;
+
   // A card this site wrote: every platform on it is one it draws.
   const links = card.links.map((l, at) => ({ ...l, at, platform: knownPlatform(l.platform) }));
   const flair = links.length
@@ -244,7 +265,7 @@ export async function cardSvg(card: Card, frame: CardFrame = "share"): Promise<s
         .slice(0, Math.floor((textWidth + 0.6 * u) / (L.iconStep * u)))
         .map((l, i) => {
           const x = cx + textX * u + i * L.iconStep * u;
-          const y = cy + (bodyFoot - L.icon) * u;
+          const y = iconTop;
           // The hit area is the icon's padded square, as on the site.
           const hit = `<rect x="${f(x - 1.1 * u)}" y="${f(y - 1.1 * u)}" width="${f((L.icon + 2.2) * u)}" height="${f((L.icon + 2.2) * u)}" rx="${f(1.2 * u)}" fill="#fff" fill-opacity="0"/>`;
           return anchor(l.url, hit + icon(ICONS[l.platform], x, y, L.icon * u), {
@@ -255,18 +276,11 @@ export async function cardSvg(card: Card, frame: CardFrame = "share"): Promise<s
         .join("")
     : "";
 
-  // On one line whenever it can be, as the site's card sets it (lib/name-fit).
-  const fit = nameFit(card.name, 100 - L.pad - textX, L.name);
-  const nameSize = fit.size * u;
-  const nameFits = (s: string) => measure(s, SANS, 500, nameSize) <= textWidth;
-  const nameLines =
-    fit.lines === 1 ? [card.name] : wrap(card.name, textWidth, 2, nameFits);
-  const lineStep = 1.02 * nameSize;
   const name = nameLines
     .map((line, i) => {
-      // The first line's capitals start at the photo's top edge (a cap is
-      // about 0.7 of the type's size).
-      const base = cy + bodyTop * u + 0.7 * nameSize + i * lineStep;
+      // The first line's capitals start at the name's top (a cap is about 0.7
+      // of the type's size).
+      const base = nameTop + 0.7 * nameSize + i * lineStep;
       return `<text x="${f(cx + textX * u)}" y="${f(base)}" font-family="${SANS}" font-weight="500" font-size="${f(nameSize)}" letter-spacing="${f(-0.03 * nameSize)}" fill="${INK}">${esc(line)}</text>`;
     })
     .join("");
@@ -304,27 +318,24 @@ export async function cardSvg(card: Card, frame: CardFrame = "share"): Promise<s
   const portrait = photo
     ? `<image href="${photo}" x="${f(px)}" y="${f(py)}" width="${f(ps)}" height="${f(ps)}" preserveAspectRatio="xMidYMid slice" clip-path="url(#photo)"/>`
     : `<g opacity="0.15">${mark(px + ps / 2 - (ps / 2) * (MARK_BOX.w / MARK_BOX.h) / 2, py + ps * 0.75, ps / 2, "#fff")}</g>`;
-  // The card's own save, under the name, its edge the foil (components/
-  // save-contact `CardSave`, in the same shares): on the card set on a page,
-  // where it can be pressed; not on the share image.
-  const saveH = 7.4 * u;
-  const saveText = 3.2 * u;
-  const saveIcon = 3.6 * u;
+  // The card's own save, between the name and the links: a quiet pill, a faint
+  // fill and a hairline (components/save-contact `CardSave`, in the same
+  // shares); on the card set on a page, where it can be pressed, not on the
+  // share image.
+  const saveText = 3 * u;
+  const saveIcon = 3.2 * u;
   const saveWords = "save contact";
   const saveW =
-    2 * 3 * u + saveIcon + 1.4 * u + measure(saveWords, SANS, 500, saveText);
+    2 * 2.6 * u + saveIcon + 1.2 * u + measure(saveWords, SANS, 400, saveText);
   const saveX = cx + textX * u;
-  // Under the name's last line (its capitals start at the photo's top edge),
-  // 3.4 of the card's width below it.
-  const saveY =
-    cy + bodyTop * u + 0.7 * nameSize + (nameLines.length - 1) * lineStep + 3.4 * u;
+  const saveY = saveTop;
   const save = share
     ? ""
     : `<a href="${esc(card.formats.vcard)}" download="${esc(card.handle)}.vcf">` +
-      `<rect x="${f(saveX)}" y="${f(saveY)}" width="${f(saveW)}" height="${f(saveH)}" rx="${f(saveH / 2)}" fill="#fff" fill-opacity="0.06"/>` +
-      `<rect x="${f(saveX + 0.5)}" y="${f(saveY + 0.5)}" width="${f(saveW - 1)}" height="${f(saveH - 1)}" rx="${f(saveH / 2 - 0.5)}" fill="none" stroke="url(#edge-foil)" stroke-opacity="0.6"/>` +
-      icon(contactRound, saveX + 3 * u, saveY + (saveH - saveIcon) / 2, saveIcon, `stroke="${INK}" stroke-opacity="0.9" stroke-width="1.6"`) +
-      `<text x="${f(saveX + 3 * u + saveIcon + 1.4 * u)}" y="${f(saveY + saveH / 2 + 0.36 * saveText)}" font-family="${SANS}" font-weight="500" font-size="${f(saveText)}" fill="${INK}" fill-opacity="0.9">${saveWords}</text></a>`;
+      `<rect x="${f(saveX)}" y="${f(saveY)}" width="${f(saveW)}" height="${f(saveH)}" rx="${f(saveH / 2)}" fill="#fff" fill-opacity="0.07"/>` +
+      `<rect x="${f(saveX + 0.5)}" y="${f(saveY + 0.5)}" width="${f(saveW - 1)}" height="${f(saveH - 1)}" rx="${f(saveH / 2 - 0.5)}" fill="none" stroke="#fff" stroke-opacity="0.08"/>` +
+      icon(contactRound, saveX + 2.6 * u, saveY + (saveH - saveIcon) / 2, saveIcon, `stroke="${INK}" stroke-opacity="0.75" stroke-width="1.5"`) +
+      `<text x="${f(saveX + 2.6 * u + saveIcon + 1.2 * u)}" y="${f(saveY + saveH / 2 + 0.36 * saveText)}" font-family="${SANS}" font-size="${f(saveText)}" fill="${INK}" fill-opacity="0.75">${saveWords}</text></a>`;
   const [gx, gy] = at(100 - 2 - 34, 6);
   const gs = 34 * u;
   const ghost = photo

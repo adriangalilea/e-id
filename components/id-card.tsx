@@ -253,25 +253,23 @@ export function IdCard({
         <div
           // The rest of the card's width beside the photo, so a field written in
           // its stead has the room the written line would; as tall as the
-          // photo, the name from its top edge and the links to its foot, so
-          // the words and the photo make one block with no stray air.
+          // photo. The name and the links alone run from its top edge to its
+          // foot, one block with no stray air; with the save between them the
+          // three share its height, spaced round each.
           className={cn(
-            "flex min-w-0 flex-1 flex-col justify-between gap-[1.5cqw]",
+            "flex min-w-0 flex-1 flex-col gap-[1.5cqw]",
+            save ? "justify-around" : "justify-between",
             KNOCKOUT,
           )}
         >
-          {/* The name, and under it the card's own action, the save: the
-              person, then keeping them; their links at the photo's foot. */}
-          <div className="flex flex-col gap-[3.4cqw]">
-            {slots?.name ?? (
-              <Name
-                className={cn(NAME, fit.lines === 1 && "whitespace-nowrap")}
-              >
-                {name}
-              </Name>
-            )}
-            {save && <div className="relative z-20 flex">{save}</div>}
-          </div>
+          {slots?.name ?? (
+            <Name className={cn(NAME, fit.lines === 1 && "whitespace-nowrap")}>
+              {name}
+            </Name>
+          )}
+          {/* The card's own action, the save, between the person and their
+              links. */}
+          {save && <div className="relative z-20 flex">{save}</div>}
           {slots?.flair ?? <Flair links={links} />}
         </div>
       </div>
