@@ -74,7 +74,10 @@ export async function publicFetch(
     const res = await fetch(at, { ...init, redirect: "manual" })
     const to = res.headers.get("location")
     if (res.status < 300 || res.status > 399 || !to) return res
-    await res.body?.cancel()
+    // Read, never cancelled: a redirect's body is a line, and Next's fetch inside
+    // a `"use cache"` function tees each body to keep it, so one branch cancelled
+    // left the other waiting and the prerender stalled until it timed out.
+    await res.arrayBuffer()
     at = new URL(to, at)
   }
   throw new Error(`publicFetch ${url}: more than ${REDIRECTS} redirects`)
