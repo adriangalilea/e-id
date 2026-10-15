@@ -4,7 +4,7 @@
 // serves them and no function runs; nothing is copied into the site. Installed at
 // app/flags/[shape]/[file]/route.ts.
 
-import { readFile } from "node:fs/promises"
+import { readFileSync } from "node:fs"
 import { join } from "node:path"
 import { countries } from "country-flag-icons"
 
@@ -32,7 +32,10 @@ export async function GET(
     !countries.includes(code)
   )
     return new Response("no such flag", { status: 404 })
-  const svg = await readFile(join(root, shape, `${code}.svg`), "utf8")
+  // Read at once, never awaited: under Cache Components an awaited read is I/O
+  // that makes the route dynamic (a function per flag), and "use cache" exists
+  // only there. A file the size of a flag costs nothing to read in step.
+  const svg = readFileSync(join(root, shape, `${code}.svg`), "utf8")
   return new Response(svg, {
     headers: {
       "content-type": "image/svg+xml; charset=utf-8",
