@@ -131,8 +131,14 @@ function Flair({ links }: { links: HolderLink[] }) {
     <nav
       aria-label="links"
       // Each icon's padding (its hit area) taken back on every side, so the
-      // glyphs, not their boxes, meet the photo's foot and the words' edge.
-      className="-m-[1.1cqw] flex items-center gap-[0.6cqw] text-foreground/70 [&_svg]:size-(--card-icon) [&_svg]:stroke-[1.4]"
+      // glyphs, not their boxes, meet the words' edge. Spread across the
+      // column, the first at its left and the last at its right, as the name
+      // spans it; each link at most its slot (lib/card-layout), so a few
+      // never stand at its two ends.
+      className="-m-[1.1cqw] flex items-center justify-between text-foreground/70 [&_svg]:size-(--card-icon) [&_svg]:stroke-[1.4]"
+      style={{
+        width: `min(calc(100% + 2.2cqw), ${links.length * CARD_LAYOUT.iconSlot}cqw)`,
+      }}
     >
       {links.map(({ platform, name, url, profile: read }) => {
         const profile = read ?? knownOf(platform, url);
@@ -253,10 +259,10 @@ export function IdCard({
         <div
           // The rest of the card's width beside the photo, so a field written in
           // its stead has the room the written line would; as tall as the
-          // photo, the name from its top edge and the links to its foot, so
-          // the words and the photo make one block with no stray air.
+          // photo, the name and the links sharing its height evenly, spaced
+          // round each, rather than pinned to its top edge and its foot.
           className={cn(
-            "flex min-w-0 flex-1 flex-col justify-between gap-[1.5cqw]",
+            "flex min-w-0 flex-1 flex-col justify-around gap-[1.5cqw]",
             KNOCKOUT,
           )}
         >

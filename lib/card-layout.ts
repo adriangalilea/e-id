@@ -24,6 +24,10 @@ export const CARD_LAYOUT = {
   /** A link's icon, and the step from one to the next. */
   icon: 4.6,
   iconStep: 7.4,
+  /** The most one link's mark takes of its row (its hit area included): the
+   *  row spreads across the column, its first mark at the left and its last at
+   *  the right, only when its links fill it, so a few never stand at its ends. */
+  iconSlot: 10,
 } as const;
 
 /** A layout share as the site writes it, in the card's width (`cqw`). */

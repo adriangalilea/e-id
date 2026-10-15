@@ -244,17 +244,27 @@ export async function cardSvg(card: Card, frame: CardFrame = "share"): Promise<s
   const lineStep = 1.02 * nameSize;
 
   // The words beside the photo, as tall as it (components/id-card): the name
-  // from its top edge, the links' glyphs ending at its foot.
-  const nameTop = cy + bodyTop * u;
-  const iconTop = cy + (bodyFoot - L.icon) * u;
+  // and the links' glyphs sharing its height, spaced round each (CSS's
+  // `justify-content: space-around`). The name's box is its capitals to its
+  // last baseline (the site trims it so).
+  const nameH = 0.7 * nameSize + (nameLines.length - 1) * lineStep;
+  const iconH = L.icon * u;
+  const around = ((bodyFoot - bodyTop) * u - nameH - iconH) / 2;
+  const nameTop = cy + bodyTop * u + around / 2;
+  const iconTop = nameTop + nameH + around;
 
   // A card this site wrote: every platform on it is one it draws.
   const links = card.links.map((l, at) => ({ ...l, at, platform: knownPlatform(l.platform) }));
-  const flair = links.length
-    ? links
-        .slice(0, Math.floor((textWidth + 0.6 * u) / (L.iconStep * u)))
+  const shown = links.slice(0, Math.floor((textWidth + 0.6 * u) / (L.iconStep * u)));
+  // Spread across the column, the first glyph at its left and the last at its
+  // right, each link at most its slot (lib/card-layout `iconSlot`, its hit area
+  // included), as the site's row is.
+  const rowW = Math.min(textWidth, (shown.length * L.iconSlot - 2.2) * u);
+  const step = shown.length > 1 ? (rowW - iconH) / (shown.length - 1) : 0;
+  const flair = shown.length
+    ? shown
         .map((l, i) => {
-          const x = cx + textX * u + i * L.iconStep * u;
+          const x = cx + textX * u + i * step;
           const y = iconTop;
           // The hit area is the icon's padded square, as on the site.
           const hit = `<rect x="${f(x - 1.1 * u)}" y="${f(y - 1.1 * u)}" width="${f((L.icon + 2.2) * u)}" height="${f((L.icon + 2.2) * u)}" rx="${f(1.2 * u)}" fill="#fff" fill-opacity="0"/>`;
@@ -308,20 +318,19 @@ export async function cardSvg(card: Card, frame: CardFrame = "share"): Promise<s
   const portrait = photo
     ? `<image href="${photo}" x="${f(px)}" y="${f(py)}" width="${f(ps)}" height="${f(ps)}" preserveAspectRatio="xMidYMid slice" clip-path="url(#photo)"/>`
     : `<g opacity="0.15">${mark(px + ps / 2 - (ps / 2) * (MARK_BOX.w / MARK_BOX.h) / 2, py + ps * 0.75, ps / 2, "#fff")}</g>`;
-  // The card's own save, in its foot's corner on the inner margin: the contact
-  // glyph in a quiet circle (components/save-contact `CardSave`, in the same
-  // shares); on the card set on a page, where it can be pressed, not on the
+  // The card's own save, in its foot's corner on the inner margin, printed as
+  // the head is: `vCard` and the contact glyph in the head's type and ink
+  // (components/save-contact `CardSave`), mirroring the country at the head's
+  // right; on the card set on a page, where it can be pressed, not on the
   // share image.
-  const saveD = 7 * u;
-  const saveIcon = 3.4 * u;
-  const saveX = cx + cw - pad - saveD;
-  const saveY = cy + ch - pad - saveD;
+  const saveIcon = 1.25 * headSize;
+  const saveBase = cy + ch - pad - 0.25 * headSize;
+  const saveIconX = cx + cw - pad - saveIcon;
   const save = share
     ? ""
-    : `<a href="${esc(card.formats.vcard)}" download="${esc(card.handle)}.vcf" aria-label="save contact"><title>save contact</title>` +
-      `<circle cx="${f(saveX + saveD / 2)}" cy="${f(saveY + saveD / 2)}" r="${f(saveD / 2)}" fill="#fff" fill-opacity="0.07"/>` +
-      `<circle cx="${f(saveX + saveD / 2)}" cy="${f(saveY + saveD / 2)}" r="${f(saveD / 2 - 0.5)}" fill="none" stroke="#fff" stroke-opacity="0.08"/>` +
-      icon(contactRound, saveX + (saveD - saveIcon) / 2, saveY + (saveD - saveIcon) / 2, saveIcon, `stroke="${INK}" stroke-opacity="0.75" stroke-width="1.5"`) +
+    : `<a href="${esc(card.formats.vcard)}" download="${esc(card.handle)}.vcf" aria-label="save contact (vCard)"><title>save contact</title>` +
+      `<text x="${f(saveIconX - 1.2 * u)}" y="${f(saveBase)}" text-anchor="end" font-family="${MONO}" font-size="${f(headSize)}" fill="${INK}" fill-opacity="0.6">vCard</text>` +
+      icon(contactRound, saveIconX, saveBase - 0.36 * headSize - saveIcon / 2, saveIcon, `stroke="${INK}" stroke-opacity="0.6" stroke-width="1.5"`) +
       "</a>";
   const [gx, gy] = at(100 - 2 - 34, 6);
   const gs = 34 * u;

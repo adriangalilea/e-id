@@ -2,20 +2,22 @@
 
 import { ContactRound } from "lucide-react";
 import { Button, type ButtonSize } from "@/components/ui/button";
-/** The card's own save (`IdCard`'s `save`), in its foot's corner: the contact
- *  glyph alone in a quiet circle, a faint fill and a hairline. Distinct by
- *  being the one filled thing on a card of outlined glyphs, never by colour.
- *  Every length a share of the card's width (its container), so it is the same
- *  on every card. */
+/** The card's own save (`IdCard`'s `save`), in its foot's corner: printed on
+ *  the card as its head is, the contact glyph and `vCard` in the head's type,
+ *  size and ink (`--card-head`, mono, 60%), mirroring the country at the head's
+ *  right. A field of the card that is also its action, never a button laid on
+ *  it; brighter under the hand. Every length a share of the card's width (its
+ *  container), so it is the same on every card. */
 export function CardSave({ username }: { username: string }) {
   return (
     <a
       href={`/${username}.vcf`}
       download={`${username}.vcf`}
-      aria-label="save contact"
+      aria-label="save contact (vCard)"
       title="save contact"
-      className="grid size-[7cqw] place-items-center rounded-full bg-white/[0.07] text-foreground/75 shadow-[inset_0_0_0_1px_rgb(255_255_255/0.08)] transition-[scale,background-color,color] duration-150 hover:bg-white/[0.12] hover:text-foreground active:scale-95 in-data-pressing:scale-95 in-data-pressing:bg-white/[0.12] [&_svg]:size-[3.4cqw] [&_svg]:stroke-[1.5]"
+      className="flex items-center gap-[1.2cqw] font-mono text-(length:--card-head) text-foreground/60 transition-colors duration-150 hover:text-foreground in-data-pressing:text-foreground [&_svg]:size-[1.25em] [&_svg]:stroke-[1.5]"
     >
+      vCard
       <ContactRound />
     </a>
   );
