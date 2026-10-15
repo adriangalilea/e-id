@@ -83,14 +83,24 @@ export function prefixOf(platform: LinkPlatform): string {
   return /[/@]$/.test(address) ? address : ""
 }
 
+/** The addresses a platform's profiles were at before its own (`prefixOf`), which
+ *  people still paste: X's were Twitter's. */
+const FORMER_PREFIXES: Partial<Record<LinkPlatform, readonly string[]>> = {
+  twitter: ["twitter.com/"],
+}
+
 /** A pasted address read as the username it ends in, where the platform takes a
- *  username ("https://github.com/adrian" on github is "adrian"). */
+ *  username ("https://github.com/adrian" on github is "adrian", and
+ *  "twitter.com/adrian" on X is too). */
 export function usernameIn(platform: LinkPlatform, typed: string): string {
   const prefix = prefixOf(platform)
   const trimmed = typed.trim()
   if (!prefix) return trimmed
-  const bare = trimmed.replace(/^https?:\/\/(www\.)?/, "")
-  return bare.startsWith(prefix) ? bare.slice(prefix.length) : trimmed
+  const bare = trimmed.replace(/^https?:\/\/(www\.|mobile\.)?/, "")
+  const at = [prefix, ...(FORMER_PREFIXES[platform] ?? [])].find((p) =>
+    bare.startsWith(p),
+  )
+  return at ? bare.slice(at.length) : trimmed
 }
 
 /** The username a link holds, where the platform takes one; null for what is
