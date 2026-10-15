@@ -62,6 +62,13 @@ A constant pointer to your ever-changing web presence.
 - [ ] feat: premium claimable username
   - [ ] prevents squatting
   - [ ] allows speculation (?)
+- [ ] feat: premium email address, `you@eid.to`
+  - Why: `eid.to/you/mail` opens your email link in a browser, but a mail client's "To:" refuses it (an address is `name@domain`, never a path). A real address reaches you without showing your own, which is what an e-ID is for.
+  - [ ] gated behind premium: every alias is a relay anyone can write to, and forwarding costs money per domain
+  - [ ] inbound mail on `eid.to`, `e-id.to` and `👤.to` (`xn--mq8h.to`) to a forwarding service that rewrites the sender so forwarded mail passes the receiving server's checks (SRS) and filters spam: [Forward Email](https://forwardemail.net) (open source, alias API, about $3 a month a domain). Not Cloudflare Email Routing: it forwards only to addresses verified inside the account.
+  - [ ] e-ID keeps the aliases: setting, changing or removing the email link creates, moves or deletes `you@eid.to` through the service's API (its key in the deployment's environment, never here)
+  - [ ] decide: the address shown (`eid.to`, the shortest, or `e-id.to`), and whether it needs a public email link or is a private alias for any member
+  - [ ] `e-id.to` forwards a few fixed aliases today: list them before its mail moves, so none is lost
 - [ ] tracking every link / blog rss
   - [ ] default being only the last element
   - [ ] aliveness score
