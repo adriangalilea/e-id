@@ -941,6 +941,11 @@ function bindTrack(
    *  Mac) and an upright one passes, so scrolling the page never waits. */
   const onWheel = (e: WheelEvent) => {
     if (e.ctrlKey) return
+    // Heard on the whole tabs (the tab bar too: a sideways swipe over the tabs is
+    // as much a swipe between them as one over a panel), but never a nested
+    // tabs' own: theirs is theirs.
+    const at = e.target instanceof Element ? e.target : null
+    if (at?.closest("[data-slot=tabs]") !== root) return
     const dx = wheelPx(e.deltaX, e.deltaMode, window.innerHeight)
     const dy = wheelPx(e.deltaY, e.deltaMode, window.innerHeight)
     const now = performance.now()
@@ -949,7 +954,7 @@ function bindTrack(
     if (fed.read.start) {
       const why = upright()
         ? "upright tabs"
-        : claimed(e.target, el)
+        : claimed(e.target, el.contains(at) ? el : root)
           ? "claimed by what is under the hand"
           : null
       axis = why ? "pass" : null
@@ -1054,7 +1059,7 @@ function bindTrack(
   }
   const onSettle = () => track.settle()
 
-  el.addEventListener("wheel", onWheel, { passive: false })
+  root.addEventListener("wheel", onWheel, { passive: false })
   el.addEventListener("pointerdown", onDown)
   el.addEventListener("pointermove", onMove)
   el.addEventListener("pointerup", onUp)
@@ -1062,7 +1067,7 @@ function bindTrack(
   el.addEventListener("click", onClick, { capture: true })
   el.addEventListener("scrollend", onSettle)
   return () => {
-    el.removeEventListener("wheel", onWheel)
+    root.removeEventListener("wheel", onWheel)
     el.removeEventListener("pointerdown", onDown)
     el.removeEventListener("pointermove", onMove)
     el.removeEventListener("pointerup", onUp)
