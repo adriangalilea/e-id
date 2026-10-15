@@ -24,10 +24,15 @@ const HOOKS = ${JSON.stringify(LIGHT_HOOKS)};
 // A count as people say it: 52, 1.4K, 9.3M.
 const COUNT = new Intl.NumberFormat("en", { notation: "compact", maximumFractionDigits: 1 });
 
+// The card's two faces, under names of the embed's own: declared as "Space
+// Grotesk" they replaced the host's own faces of that name, and the host page
+// downloaded both. A face is fetched only once text uses it, and a host that
+// already has them through next/font (e-ID itself: --font-space-grotesk) lends
+// its own instead (STYLE, --e-id-sans), so nothing is fetched twice.
 const FACES = [
-  ["Space Grotesk", 400, "SpaceGrotesk-Regular.ttf"],
-  ["Space Grotesk", 500, "SpaceGrotesk-Medium.ttf"],
-  ["Space Mono", 400, "SpaceMono-Regular.ttf"],
+  ["e-ID Grotesk", 400, "SpaceGrotesk-Regular.woff2"],
+  ["e-ID Grotesk", 500, "SpaceGrotesk-Medium.woff2"],
+  ["e-ID Mono", 400, "SpaceMono-Regular.woff2"],
 ];
 // Fonts declared in a shadow root are not used, so the faces go to the document,
 // once.
@@ -36,18 +41,20 @@ if (!document.querySelector("style[data-e-id-fonts]")) {
   style.dataset.eIdFonts = "";
   style.textContent = FACES.map(([family, weight, file]) =>
     "@font-face{font-family:'" + family + "';font-weight:" + weight +
-    ";font-display:swap;src:url(" + ORIGIN + "/fonts/" + file + ") format('truetype')}").join("");
+    ";font-display:swap;src:url(" + ORIGIN + "/fonts/" + file + ") format('woff2')}").join("");
   document.head.append(style);
 }
 
-const STYLE = \`:host{display:block;position:relative;width:var(--e-id-card-width,28rem);max-width:100%;perspective:2000px}
+const STYLE = \`:host{display:block;position:relative;width:var(--e-id-card-width,28rem);max-width:100%;perspective:2000px;--e-id-sans:var(--font-space-grotesk,'e-ID Grotesk'),system-ui,sans-serif;--e-id-mono:var(--font-space-mono,'e-ID Mono'),ui-monospace,monospace}
+svg [font-family='Space Grotesk']{font-family:var(--e-id-sans)}
+svg [font-family='Space Mono']{font-family:var(--e-id-mono)}
 :host([compact]){display:inline-block;width:auto;vertical-align:middle;perspective:900px}
 :host([compact]) svg{width:auto;max-width:100%;height:var(--e-id-card-height,4.5rem)}
 .lift{position:absolute;z-index:10;left:0;bottom:100%;width:min(26rem,90vw);padding-bottom:.75rem;opacity:0;visibility:hidden;transform:translateY(.35rem);transition:opacity 180ms ease-out 120ms,transform 180ms ease-out 120ms,visibility 0s linear 300ms}
 :host([data-below]) .lift{bottom:auto;top:100%;padding-bottom:0;padding-top:.75rem;transform:translateY(-.35rem)}
 :host(:hover) .lift,:host(:focus-within) .lift{opacity:1;visibility:visible;transform:none;transition-delay:0s}
 @media (prefers-reduced-motion:reduce){.lift{transition:none}}
-.peek{position:absolute;z-index:1;display:flex;align-items:center;gap:.7rem;max-width:min(20rem,100%);padding:.6rem .9rem .6rem .6rem;border-radius:1rem;background:rgb(22 22 24/.82);-webkit-backdrop-filter:blur(14px) saturate(1.3);backdrop-filter:blur(14px) saturate(1.3);box-shadow:inset 0 0 0 1px rgb(255 255 255/.1),0 .8rem 2rem -.6rem rgb(0 0 0/.6);color:#fff;font:400 .8125rem/1.3 'Space Grotesk',system-ui,sans-serif;pointer-events:none;opacity:0;transform:translate(-50%,-.25rem);transition:opacity 160ms ease-out,transform 160ms ease-out}
+.peek{position:absolute;z-index:1;display:flex;align-items:center;gap:.7rem;max-width:min(20rem,100%);padding:.6rem .9rem .6rem .6rem;border-radius:1rem;background:rgb(22 22 24/.82);-webkit-backdrop-filter:blur(14px) saturate(1.3);backdrop-filter:blur(14px) saturate(1.3);box-shadow:inset 0 0 0 1px rgb(255 255 255/.1),0 .8rem 2rem -.6rem rgb(0 0 0/.6);color:#fff;font:400 .8125rem/1.3 var(--font-space-grotesk,'e-ID Grotesk'),system-ui,sans-serif;pointer-events:none;opacity:0;transform:translate(-50%,-.25rem);transition:opacity 160ms ease-out,transform 160ms ease-out}
 .peek[data-open]{opacity:1;transform:translate(-50%,0)}
 .peek img{width:2.25rem;height:2.25rem;flex:none;border-radius:999px;object-fit:cover;background:rgb(255 255 255/.08)}
 .peek b{display:block;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -65,7 +72,7 @@ a{cursor:pointer}a:focus-visible{outline:none}a:focus-visible rect{fill-opacity:
 // element, worn as e-id's: a quiet pill in the text's own colour with the mark, so
 // it reads on any ground and never as the browser's bare blue link.
 const FALLBACK = \`<style>:host{display:block}
-.fallback{display:inline-flex;align-items:center;gap:.45em;padding:.4em .9em;border-radius:999px;border:1px solid color-mix(in srgb,currentColor 22%,transparent);background:color-mix(in srgb,currentColor 5%,transparent);font:500 .875rem/1.2 'Space Grotesk',system-ui,sans-serif;letter-spacing:-.01em}
+.fallback{display:inline-flex;align-items:center;gap:.45em;padding:.4em .9em;border-radius:999px;border:1px solid color-mix(in srgb,currentColor 22%,transparent);background:color-mix(in srgb,currentColor 5%,transparent);font:500 .875rem/1.2 var(--font-space-grotesk,'e-ID Grotesk'),system-ui,sans-serif;letter-spacing:-.01em}
 .fallback svg{height:1cap;width:auto;fill:currentColor;opacity:.75}
 ::slotted(a){color:inherit;text-decoration:none}</style><span class="fallback"><svg viewBox="${MARK_BOX.x} ${MARK_BOX.y} ${MARK_BOX.w} ${MARK_BOX.h}" aria-hidden="true"><path d="${MARK_PATH}"/></svg><slot></slot></span>\`;
 
