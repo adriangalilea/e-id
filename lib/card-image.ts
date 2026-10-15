@@ -150,7 +150,10 @@ function icon(
   x: number,
   y: number,
   size: number,
-  stroke = `stroke="${INK}" stroke-opacity="0.7" stroke-width="1.4"`,
+  stroke = `stroke="${INK}" stroke-width="1.4"`,
+  /** How dim it is, on the glyph's group: as one shape, so its crossing strokes
+   *  never paint twice (a `stroke-opacity` dims each stroke on its own). */
+  opacity = 0.7,
 ): string {
   const parts = node
     .map(([tag, attrs]) => {
@@ -161,7 +164,7 @@ function icon(
       return `<${tag} ${a}/>`;
     })
     .join("");
-  return `<g transform="translate(${f(x)} ${f(y)}) scale(${f(size / 24)})" fill="none" ${stroke} stroke-linecap="round" stroke-linejoin="round">${parts}</g>`;
+  return `<g transform="translate(${f(x)} ${f(y)}) scale(${f(size / 24)})" fill="none" ${stroke} opacity="${opacity}" stroke-linecap="round" stroke-linejoin="round">${parts}</g>`;
 }
 
 const dataUri = (mime: string, bytes: Uint8Array) =>
@@ -318,20 +321,19 @@ export async function cardSvg(card: Card, frame: CardFrame = "share"): Promise<s
   const portrait = photo
     ? `<image href="${photo}" x="${f(px)}" y="${f(py)}" width="${f(ps)}" height="${f(ps)}" preserveAspectRatio="xMidYMid slice" clip-path="url(#photo)"/>`
     : `<g opacity="0.15">${mark(px + ps / 2 - (ps / 2) * (MARK_BOX.w / MARK_BOX.h) / 2, py + ps * 0.75, ps / 2, "#fff")}</g>`;
-  // The card's own save, in its foot's corner on the inner margin, printed as
-  // the head is: `vCard` and the contact glyph in the head's type and ink
-  // (components/save-contact `CardSave`), mirroring the country at the head's
-  // right; on the card set on a page, where it can be pressed, not on the
-  // share image.
-  const saveIcon = 1.25 * headSize;
+  // The card's own save, in its foot's corner on the inner margin, mirroring
+  // the country at its head: `vCard` and the contact glyph in the head's type,
+  // quiet, dimmed as one (components/save-contact `CardSave`); on the card set
+  // on a page, where it can be pressed, not on the share image.
+  const saveIcon = 1.15 * headSize;
   const saveBase = cy + ch - pad - 0.25 * headSize;
   const saveIconX = cx + cw - pad - saveIcon;
   const save = share
     ? ""
-    : `<a href="${esc(card.formats.vcard)}" download="${esc(card.handle)}.vcf" aria-label="save contact (vCard)"><title>save contact</title>` +
-      `<text x="${f(saveIconX - 1.2 * u)}" y="${f(saveBase)}" text-anchor="end" font-family="${MONO}" font-size="${f(headSize)}" fill="${INK}" fill-opacity="0.6">vCard</text>` +
-      icon(contactRound, saveIconX, saveBase - 0.36 * headSize - saveIcon / 2, saveIcon, `stroke="${INK}" stroke-opacity="0.6" stroke-width="1.5"`) +
-      "</a>";
+    : `<a href="${esc(card.formats.vcard)}" download="${esc(card.handle)}.vcf" aria-label="save contact (vCard)"><title>save contact</title><g opacity="0.35">` +
+      `<text x="${f(saveIconX - 1.2 * u)}" y="${f(saveBase)}" text-anchor="end" font-family="${MONO}" font-size="${f(headSize)}" fill="${INK}">vCard</text>` +
+      icon(contactRound, saveIconX, saveBase - 0.36 * headSize - saveIcon / 2, saveIcon, `stroke="${INK}" stroke-width="1.5"`, 1) +
+      "</g></a>";
   const [gx, gy] = at(100 - 2 - 34, 6);
   const gs = 34 * u;
   const ghost = photo

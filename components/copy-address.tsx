@@ -32,7 +32,9 @@ export function CopyAddress({ username }: { username: string }) {
       }
       className={cn(
         ON_CARD,
-        "group/copy -mx-[1.2cqw] flex min-w-0 cursor-pointer items-center gap-[1.2cqw] self-start px-[1.2cqw] py-[0.6cqw] font-mono text-(length:--card-head) text-foreground/50 transition-colors hover:bg-white/[0.06] hover:text-foreground/85 data-copied:text-foreground/85",
+        // Dimmed as one shape (`opacity` over an opaque ink), so the copy
+        // glyph's crossing strokes never paint twice.
+        "group/copy -mx-[1.2cqw] flex min-w-0 cursor-pointer items-center gap-[1.2cqw] self-start px-[1.2cqw] py-[0.6cqw] font-mono text-(length:--card-head) text-foreground opacity-50 transition-[opacity,background-color] hover:bg-white/[0.06] hover:opacity-85 data-copied:opacity-85",
       )}
     >
       <EmojiDomain path={`/${username}`} className="truncate" />

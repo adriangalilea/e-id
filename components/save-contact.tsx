@@ -1,13 +1,17 @@
 "use client";
 
 import { ContactRound } from "lucide-react";
+import { ON_CARD } from "@/components/card-shape";
 import { Button, type ButtonSize } from "@/components/ui/button";
-/** The card's own save (`IdCard`'s `save`), in its foot's corner: printed on
- *  the card as its head is, the contact glyph and `vCard` in the head's type,
- *  size and ink (`--card-head`, mono, 60%), mirroring the country at the head's
- *  right. A field of the card that is also its action, never a button laid on
- *  it; brighter under the hand. Every length a share of the card's width (its
- *  container), so it is the same on every card. */
+import { cn } from "@/lib/utils";
+/** The card's own save (`IdCard`'s `save`), in its foot's corner, mirroring the
+ *  country at its head: `vCard` and the contact glyph in the head's type,
+ *  engraved in the card at rest (a dark lip above, a faint light floor below,
+ *  as the profile's quotes are set into the page) and a step quieter than the
+ *  address. Under the hand it is the address's own (`CopyAddress`): the same
+ *  pill, padding and brightening. Dimmed as one shape (`opacity` over an opaque
+ *  ink), so the glyph's crossing strokes never paint twice. Every length a
+ *  share of the card's width (its container). */
 export function CardSave({ username }: { username: string }) {
   return (
     <a
@@ -15,7 +19,10 @@ export function CardSave({ username }: { username: string }) {
       download={`${username}.vcf`}
       aria-label="save contact (vCard)"
       title="save contact"
-      className="flex items-center gap-[1.2cqw] font-mono text-(length:--card-head) text-foreground/60 transition-colors duration-150 hover:text-foreground in-data-pressing:text-foreground [&_svg]:size-[1.25em] [&_svg]:stroke-[1.5]"
+      className={cn(
+        ON_CARD,
+        "-mx-[1.2cqw] flex items-center gap-[1.2cqw] px-[1.2cqw] py-[0.6cqw] font-mono text-(length:--card-head) text-foreground opacity-35 transition-[opacity,background-color] duration-150 [text-shadow:0_-1px_0_rgb(0_0_0/0.7),0_1px_0_rgb(255_255_255/0.07)] hover:bg-white/[0.06] hover:opacity-85 focus-visible:opacity-85 in-data-pressing:bg-white/[0.06] in-data-pressing:opacity-85 [&_svg]:size-[1.15em] [&_svg]:stroke-[1.5] [&_svg]:drop-shadow-[0_-1px_0_rgb(0_0_0/0.7)]",
+      )}
     >
       vCard
       <ContactRound />

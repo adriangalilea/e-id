@@ -135,7 +135,9 @@ function Flair({ links }: { links: HolderLink[] }) {
       // column, the first at its left and the last at its right, as the name
       // spans it; each link at most its slot (lib/card-layout), so a few
       // never stand at its two ends.
-      className="-m-[1.1cqw] flex items-center justify-between text-foreground/70 [&_svg]:size-(--card-icon) [&_svg]:stroke-[1.4]"
+      // Each glyph dimmed as one shape (its `opacity`, the ink opaque), so its
+      // crossing strokes never paint twice; whole under the hand.
+      className="-m-[1.1cqw] flex items-center justify-between text-foreground [&_a:hover_svg]:opacity-100 [&_svg]:size-(--card-icon) [&_svg]:stroke-[1.4] [&_svg]:opacity-70 [&_svg]:transition-opacity"
       style={{
         width: `min(calc(100% + 2.2cqw), ${links.length * CARD_LAYOUT.iconSlot}cqw)`,
       }}
@@ -149,7 +151,7 @@ function Flair({ links }: { links: HolderLink[] }) {
           "aria-label": name,
           className: cn(
             ON_CARD,
-            "p-[1.1cqw] transition-colors hover:bg-white/[0.08] hover:text-foreground",
+            "p-[1.1cqw] transition-colors hover:bg-white/[0.08]",
           ),
           children: getLinkIcon(platform),
         };
