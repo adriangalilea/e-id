@@ -1,6 +1,5 @@
-import { PartedGrain } from "@/components/landing/shimmer-part"
 import { AmbientLight } from "@/components/ui/ambient-light"
-import { Grain } from "@/components/ui/grain"
+import { Shimmer } from "@/components/ui/shimmer"
 
 /** THE PAGE'S GROUND: never flat black, a composed dark gradient of a few broad,
  *  very soft pools of light, all neutral (no hue, Adrian's rule: colour reads as a
@@ -74,23 +73,27 @@ export function SubjectLight() {
   )
 }
 
-/** How strong a profile's shimmer is, against the hero's (0.75): the home's
- *  surface carried onto the profile, faint enough to stay behind the card. */
-export const PROFILE_SHIMMER = 0.45
+/** The site's shimmer, one surface wherever it lies: its facets a little sparse,
+ *  barely frosted, swaying as the hero's cards float (hero-cards, `card-float`:
+ *  ±0.4rem), and white with only a trace of a diamond's fire (`colour`). */
+const FACETS = { density: 0.45, frost: 0.01, sway: 6, colour: 0.1 } as const
 
-/** THE PROFILE'S SHIMMER: the hero's surface of facets (@ag/grain) across the
+/** How strong the hero's shimmer is: present, never harsh over the cards. */
+const HERO_SHIMMER = 0.5
+
+/** How strong a profile's shimmer is, two thirds of the hero's: the home's
+ *  surface carried onto the profile, faint enough to stay behind the card. */
+const PROFILE_SHIMMER = 0.3
+
+/** THE PROFILE'S SHIMMER: the hero's surface of facets (@ag/shimmer) across the
  *  whole profile, its card and its links alike, so a profile stands in the same
  *  light as the home it came from; the glass of its panels carries it, blurred.
  *  Fixed to the window over the page's ground (`PageLight`, under it) and under
  *  everything on the page, so it is behind whatever is scrolled into view;
  *  fading out toward the window's edges, so it has none of its own. Fainter
  *  than the hero's (`strength`). It takes no pointer. */
-export function ProfileShimmer({
-  strength = PROFILE_SHIMMER,
-}: {
-  strength?: number
-}) {
-  // Its fade is the shader's own (@ag/grain `fade`): a mask or a filter on a
+export function ProfileShimmer() {
+  // Its fade is the shader's own (@ag/shimmer `fade`): a mask or a filter on a
   // layer the size of the window was a pass over all of it every frame.
   return (
     <div
@@ -98,19 +101,16 @@ export function ProfileShimmer({
       aria-hidden
       className="pointer-events-none fixed inset-0 -z-10"
     >
-      <Grain
-        look="shimmer"
-        strength={strength}
-        density={0.45}
-        frost={0.01}
-        sway={6}
+      <Shimmer
+        {...FACETS}
+        strength={PROFILE_SHIMMER}
         fade={{ x: 0.5, y: 0.45, rx: 0.75, ry: 0.7, inner: 0.35 }}
       />
     </div>
   )
 }
 
-/** THE HERO'S SHIMMER (@ag/grain): a surface of facets that flash at rest and
+/** THE HERO'S SHIMMER (@ag/shimmer): a surface of facets that flash at rest and
  *  gather under the hand, faint, for visual interest in the hero. It decays
  *  outward, so it has no edge: a soft ellipse, cut with a fall to nothing well
  *  before the hero's foot, where the page goes on with no line between them. At
@@ -118,9 +118,9 @@ export function ProfileShimmer({
  *  round the visitor's and the visitor's own (`z-[5]`: the cards round it sit
  *  at 0, theirs and the profile it becomes at 10, hero-cards): part of what sets
  *  the others back, sparkling over them. A card come forward under the hand
- *  parts it (landing/shimmer-part): its glitter pushed out to the card's edge
- *  and crowded round it, flowing back as the card settles. It takes no
- *  pointer, so the hand reaches them. */
+ *  lies above it (@ag/shimmer's `ShimmerLift`, hero-cards): clear of it, its
+ *  glitter pushed out to the card's edge, flowing back as the card settles. It
+ *  takes no pointer, so the hand reaches them. */
 export function HeroShimmer() {
   return (
     <div
@@ -129,17 +129,12 @@ export function HeroShimmer() {
       // While the visitor writes on their card (hero-cards, `data-writing`) it
       // steps back with the pile: out of focus and fainter, eased as the cards
       // move. At rest no filter and no mask: its fade is the shader's own
-      // (@ag/grain `fade`), not a pass over the layer every frame.
+      // (@ag/shimmer `fade`), not a pass over the layer every frame.
       className="pointer-events-none absolute inset-0 z-[5] transition-[filter,opacity] duration-[900ms] ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none [[data-slot=hero]:has([data-writing])_&]:opacity-40 [[data-slot=hero]:has([data-writing])_&]:blur-[3px]"
     >
-      {/* Swaying as the cards it lies among float (hero-cards, `card-float`:
-          ±0.4rem), so it moves as one of them. */}
-      <PartedGrain
-        look="shimmer"
-        strength={0.75}
-        density={0.45}
-        frost={0.01}
-        sway={6}
+      <Shimmer
+        {...FACETS}
+        strength={HERO_SHIMMER}
         fade={{ x: 0.45, y: 0.45, rx: 0.7, ry: 0.8, inner: 0.3, foot: 0.55 }}
       />
     </div>

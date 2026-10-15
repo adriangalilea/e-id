@@ -24,7 +24,6 @@ import {
 } from "@/components/card-fields"
 import { CORNER, ID1, ON_CARD } from "@/components/card-shape"
 import { type Holder, IdCard } from "@/components/id-card"
-import { partShimmer } from "@/components/landing/shimmer-part"
 import { SubjectLight } from "@/components/light"
 import { PROFILE } from "@/components/profile-layout"
 import { ProfileLinks } from "@/components/profile-links"
@@ -39,6 +38,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
+import { ShimmerLift } from "@/components/ui/shimmer"
 import { toast } from "@/components/ui/toast"
 import { useOnScreen } from "@/components/ui/use-on-screen"
 import { claimDraft, githubCard, previewPresence } from "@/db/actions"
@@ -913,20 +913,13 @@ function under(depth: number, float: number) {
   } as React.CSSProperties
 }
 
-/** What a card of the pile wears to part the shimmer under the hand
- *  (landing/shimmer-part). */
-const PARTS = {
-  onPointerEnter: (e: React.PointerEvent<HTMLElement>) =>
-    partShimmer(e.currentTarget),
-  onPointerLeave: () => partShimmer(null),
-}
-
 /** A card of the pile under the hand, every one alike, the top one too: it comes
  *  toward the reader (nearer in depth, never up the page, so it never rises over
  *  a card lying above it) and tilts toward the hand, its near edge going down
  *  where the hand presses (±9° across, ±7° up and down), its shadow longer as
  *  it comes off the table. Eased both ways, so it follows with a little weight
- *  and settles back flat. */
+ *  and settles back flat. Worn by a `ShimmerLift` (@ag/shimmer): the shimmer
+ *  parts round the card as it rises, following it. */
 const PICKED =
   "relative transition-[transform,box-shadow] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/card:shadow-[0_2rem_3.5rem_-0.75rem_rgb(0_0_0/0.7)] group-hover/card:[transform:perspective(1200px)_translateZ(2rem)_rotateY(calc((var(--px,0.5)-0.5)*18deg))_rotateX(calc((var(--py,0.5)-0.5)*-14deg))] motion-reduce:transition-none motion-reduce:group-hover/card:[transform:none]"
 
@@ -935,7 +928,7 @@ const PICKED =
  *  the rest under it, all of them under the hero's shimmer (components/light,
  *  z-[5]), only the visitor's card over it. Each card answers the hand alone,
  *  with a light of its own: a hand on one moves nothing else, and parts the
- *  shimmer round it (landing/shimmer-part). `away`, the pile set back while
+ *  shimmer round it (`PICKED`). `away`, the pile set back while
  *  the visitor writes. What a card is, shown whole. */
 function Pile({ people, away }: { people: Holder[]; away: boolean }) {
   const [top, ...rest] = people
@@ -952,7 +945,6 @@ function Pile({ people, away }: { people: Holder[]; away: boolean }) {
         .map(({ holder, depth }) => (
           <div
             key={holder.username}
-            {...PARTS}
             // Its middle placed from the top card's by left and top (shares of
             // the top card's box). Under the hand it comes out of its fade, in
             // focus, but keeps its depth in the pile: never over a card that
@@ -965,7 +957,7 @@ function Pile({ people, away }: { people: Holder[]; away: boolean }) {
                 near edge going down where the hand presses (±9° across, ±7° up
                 and down), lifted a little; flat again when the hand leaves. */}
             <HoloLight>
-              <div className={cn(CORNER, PICKED)}>
+              <ShimmerLift className={cn(CORNER, PICKED)}>
                 <IdCard
                   holder={holder}
                   heading="p"
@@ -979,7 +971,7 @@ function Pile({ people, away }: { people: Holder[]; away: boolean }) {
                     `pointer-events-none absolute inset-0 bg-background opacity-(--fade) transition-opacity duration-1000 group-hover/card:opacity-0`,
                   )}
                 />
-              </div>
+              </ShimmerLift>
             </HoloLight>
           </div>
         ))}
@@ -996,11 +988,8 @@ function Pile({ people, away }: { people: Holder[]; away: boolean }) {
             the pile does (`PICKED`), with a light of its own. */}
         <div className="[transform:rotate(3deg)]">
           <HoloLight>
-            <div
-              {...PARTS}
-              className="group/card blur-[3.2px] transition-[filter] duration-1000 ease-[cubic-bezier(0.22,1,0.36,1)] hover:blur-none motion-reduce:transition-none"
-            >
-              <div className={cn(CORNER, PICKED)}>
+            <div className="group/card blur-[3.2px] transition-[filter] duration-1000 ease-[cubic-bezier(0.22,1,0.36,1)] hover:blur-none motion-reduce:transition-none">
+              <ShimmerLift className={cn(CORNER, PICKED)}>
                 <IdCard
                   holder={top}
                   heading="p"
@@ -1016,7 +1005,7 @@ function Pile({ people, away }: { people: Holder[]; away: boolean }) {
                     `pointer-events-none absolute inset-0 bg-background opacity-30 transition-opacity duration-1000 group-hover/card:opacity-0`,
                   )}
                 />
-              </div>
+              </ShimmerLift>
             </div>
           </HoloLight>
         </div>
