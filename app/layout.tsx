@@ -3,7 +3,6 @@ import { FONT_VARIABLES } from "./fonts"
 import "./globals.css"
 import { Analytics } from "@vercel/analytics/react"
 import { SpeedInsights } from "@vercel/speed-insights/next"
-import { DevAB } from "@/components/dev-ab"
 import Footer from "@/components/footer/footer"
 import { PageLight } from "@/components/light"
 import { SitePageSensor } from "@/components/page-sensor"
@@ -68,9 +67,7 @@ export default async function RootLayout({
         <FocusSource />
         <Analytics />
         <SpeedInsights />
-        {visitsEnabled && <SitePageSensor />}
-        {process.env.NODE_ENV === "development" && <DevAB />}
-      </body>
+        {visitsEnabled && <SitePageSensor />}      </body>
     </html>
   )
 }

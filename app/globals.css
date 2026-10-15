@@ -16,6 +16,11 @@
   --background: oklch(0.12 0 0);
   --foreground: oklch(0.97 0 0);
 
+  /* The glass blurs what is behind it and deepens none of its colour
+     (@ag/material): over a page of greys there is no colour to deepen, so the
+     step would cost the GPU and show nothing (A/B'd by eye, 2026-10-15). */
+  --glass-saturation: 0;
+
   --card: oklch(0.21 0 0);
   --card-foreground: oklch(0.97 0 0);
 
