@@ -6,21 +6,21 @@
     "width": 2560,
     "height": 2176,
     "mime": "image/webp",
-    "bytes": 155808,
-    "blurDataURL": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAOCAIAAACpTQvdAAAACXBIWXMAAAPoAAAD6AG1e1JrAAABjklEQVQokWOQEBbVV1QWFBTk5+cXERERRAUiIiKysrLCwsL8/PxCYpJCIhIMEhISoqLiXu6FZkZerq6uFhYWZmZmEP1YAYOEhISetkFLzcTq/Ho1LV0JGXkRERFcqvn5+RkgNioo60rJyBUWFsrJyeFRzc/PzyAmJiYFBgLEAQZ+fn5bc73WCv26Ik91ZQX8xvPz84M02Fgap0WZx/haE3QPP0SDmKCwtLQ0CU4y1lDNSwj1dXV2sLEMc9CLdtCxlxKwVpT01FCMCbFJDjFWU5JHscHf2ers2skn189ZN7fz3tUTO1ty/UTZUjVVah1ND60LLY3Vsba1R9HgbW+6enbfhRMHb5w/8Ob1gy097faiXB258dUeDvtW+G7sMAk0MUDR4GVrMqGx+v71cyvnTp49tW/d7H5fLcUkS+14G7OlE2zaU9hdjMRQNJgb6jQXpFRmx2dnJKQmxoUG+Bsrq+gqSOuqqDh5+7jbKeqpyaJoEBUVlZGRERQUhMSgsLCwjIwMJCHKysqKi4sjBysAA/BxiDsbkNgAAAAASUVORK5CYII=",
-    "average": "#312b26",
-    "src": "/links/adriangalilea/youtube.dark.webp?v=3502cab4d0",
-    "poster": "/links/adriangalilea/youtube.dark.webp?v=3502cab4d0"
+    "bytes": 155096,
+    "blurDataURL": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAOCAIAAACpTQvdAAAACXBIWXMAAAPoAAAD6AG1e1JrAAABlklEQVQokWOQEBbVV1QWFBTk5+cXERERRAUiIiKysrLCwsL8/PxCYpJCIhIMEhISoqLiXu6FZkZerq6uFhYWZmZmEP1YAYOEhISetkFLzcTq/Ho1LV0JGXkRERFcqvn5+RkgNioo60rJyBUWFsrJyeFRzc/PzyAmJiYFBvz8/AJEAAZ+fn5bc73WCv26Ik91ZQX8xvPz84M02Fgap0abx/hay8rKEqVBTFBYWlqaGPcIQJxkrKGalxDq6+rsaGvla60bbqdtLc1vJylhpakcE2KTHGKspiSPYoO/s9XZtZNPrp+zcmbH3StH93UXB8oLzKkvCLQ2PbQutDRWx9rWHkWDt73p6tl9F04cvHFh34dPz3ZO6XNUkLRXVAj18Ni3wndjh0mgiQGKBi9bkwmN1fevn1s9f9qcaRM3L55mpyKfbqupKy+7dIJNWyq7i5EYigZzQ53mgpTK7PiCrOS4qPCwIH8DVSUTOSkjZRknbx83e0U9NUTogTSIiorKyMgICgpCYlBYWFhGRgaSEGVlZcXFxZGDFQDUAHEFR7qxTAAAAABJRU5ErkJggg==",
+    "average": "#302b26",
+    "src": "/links/adriangalilea/youtube.dark.webp?v=f90e3dc177",
+    "poster": "/links/adriangalilea/youtube.dark.webp?v=f90e3dc177"
   },
   "light": {
     "kind": "image",
     "width": 2560,
     "height": 2176,
     "mime": "image/webp",
-    "bytes": 161450,
-    "blurDataURL": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAOCAIAAACpTQvdAAAACXBIWXMAAAPoAAAD6AG1e1JrAAABp0lEQVQokZWQyy8DURSHZ+ePsLCx8ViKRCKxs2NFYiPEY2kptUC8lYSi9W6rTZF6pGnFo/Uoqq0MggRlUtRjiHq2dzrXzO3cXsHGJAjf9vy+c05+lBR5fQpcYowJIaIoxuRgjHme/5xGhChEmIIQIiRph9x729c0Tft8PoZhPhPfQkEII2HYUqveWNi8un144QSE0E9pQggVDoelqOSlD9mboF6vD4VCv6QJIZQgCPwHsb9BEUICzL5Wld3bXhzwn/y+nhDyLjzeXU8baqwGFcuyfxJiIuI47h8vnftP5yzTLrvVs7o4Z9Ksm3tnVU2jbQ1rIwOeldGdlWH/8YHswsWp36hqn9TU7bumzg49652K0uT48qRETUGOy5JfWZjqcntlwhN7MaPrcpqauYejELhd7uvOS05QVhSpiwuc5hybMu1kyS4T+Ptj2lw/36NYso5o+7rnxwZLstJLMlKq8nLHujJby+K2HTqZwD3fuB3ju04b7XXOWKa2vBvqxiZltWLCYOw3GG2THcErRiaIoggAwBhDCHmel6ISAAAhhDEGAAiC8LXWNzBCSKQG1Ko8AAAAAElFTkSuQmCC",
+    "bytes": 161534,
+    "blurDataURL": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAOCAIAAACpTQvdAAAACXBIWXMAAAPoAAAD6AG1e1JrAAABpklEQVQokZWQyy8DURSHZ+ePsLCx8ViKRCKxs6sViY0Qj6Wl1ALxVhKKVikVbaiUStOKV5Wi2sogSFCdFC1GvVXvdK6Z6dxewcYkCN/2/L5zTn6EGHt9Cl4ghDDGPM8npCCEWJb9nMa4OBQQASEUBFE37N7fuSJJ0ufzURT1mfgWAkIYi8L2BtXm4laIvoswnCAIP6UxxkQ0GhXjopc8osM3Wq02Eon8ksYYExzHsR8k/gaBMQ5SBzpl/kBXWTDg/309xvhdeLy9MuvrrXolTdN/EhK8wDDMP146D5zOW2ZcS1bP2vL8uHrDNDCnbJ3obF4fG/KsTuyujgRODiUXQqcBg7JrWt144DKfHXk2euQV6clVaanqYpnLUlRTkulyeyXCEx2aHe11jrcxD8cvILyi6StMT1FUl6rKip0mmU2R5XcsSQT2/oQ0NS30yx3WMZ2mb8GoLc/LLs/JqC0sMPbmdlQm7dhHJQLzfO22T+45baTXOWsxb3s3VS2tijr5lN4wqDfYprvvLimJwPM8AAAhBCFkWVaMiwAAMS4ihAAAHMd9rfUN+sJIj7h5kJAAAAAASUVORK5CYII=",
     "average": "#e4ded9",
-    "src": "/links/adriangalilea/youtube.light.webp?v=8012bf46d4",
-    "poster": "/links/adriangalilea/youtube.light.webp?v=8012bf46d4"
+    "src": "/links/adriangalilea/youtube.light.webp?v=887c7a2127",
+    "poster": "/links/adriangalilea/youtube.light.webp?v=887c7a2127"
   }
 }

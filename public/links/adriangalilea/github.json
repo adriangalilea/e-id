@@ -6,21 +6,21 @@
     "width": 2560,
     "height": 3526,
     "mime": "image/webp",
-    "bytes": 281636,
-    "blurDataURL": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAAQCAIAAACtAwlQAAAACXBIWXMAAAPoAAAD6AG1e1JrAAABaUlEQVQokWWQO0sDQRSFtwhqTGYm89q588rs5mHWQDSICYJiYyEIsUmloL0/QBsbsRRrO/+Enf9O4pWNIhyGe5nvcg4nY1xstymqRViLsGar3djYamxsbTa38Tc7PLi4uX5bXj6CL7VNCqI0QUFUEKkAVPZ8//L08Prx/hmKSkHkynHlVlwY4sqkzWK5OztZjiZzbrrSD6QJTFqhvbYJD76hfhX7YxsGaCS058qtINdj0v7YaZvAl1SAcil3hTSB8JxJy6QlPEdli/PF3e3V2fGh0J5Fx6KjpSddIIVjQ88qz1PM5mdHeKQgal90jCU5UGXaBqgD0d8RxSTDaITn4EtsgStXGwlfdeJ+Vu/aJtef1lG4WA0YcQ0piJDG2iYqoM6O8xoS2tvQy10BvlQQCc+p+gdJE2ZHp7uTg9F4Oqj2Uq+K5Qjd1xAVgMG1TUJ71E9Pv+2kCdIEbrpMeirgTyYmLRZRD/WL0BddajrqKpVh1AAAAABJRU5ErkJggg==",
+    "bytes": 281498,
+    "blurDataURL": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAAQCAIAAACtAwlQAAAACXBIWXMAAAPoAAAD6AG1e1JrAAABaUlEQVQokWWRO0tDQRCFbxGiMdld93V39pW9Nw9zDURDUBEUmxSCoE26gNjba2MjlmJt55+w899JnHCjCIdlhv2Gc5jJGBc7HYpqE9YmrNXuNJrbjeb2VmsHf7Oj2dXt8n1x8wS+1DYpiNIEBVFBpAJQ2cvD6/Pj2+fHVygqBZErx5VbcWGILZM2i+X+8fliNDnhpiv9QJrApBXaa5tw4AfqV7E/tmGARkJ7rtwKcj0m7dpO2wS+pAKUS7krpAmE50xaJi3hOSq7vry+v1vOz46E9iw6Fh0tPekCKRwbelZ5nmJ2Mj/FIQVR+2LXWJIDVaZjgDoQ/T1RTDKMRngOvrShh3lrI+Gr3XiY1b22yfWndRQuVgVG3EAKIqSxtokKqLNjvYGE9jb0cleALxVEwnOq/kHShOPTi/3JbDSeDqqD1KtiOUL3DUQF4Pm0TUJ71HpPv+2kCdIEbrpMeirgTyYmLS6iLuoXoW9k/zrwkzcCzwAAAABJRU5ErkJggg==",
     "average": "#151a1f",
-    "src": "/links/adriangalilea/github.dark.webp?v=2a8e495a5a",
-    "poster": "/links/adriangalilea/github.dark.webp?v=2a8e495a5a"
+    "src": "/links/adriangalilea/github.dark.webp?v=110d8673f2",
+    "poster": "/links/adriangalilea/github.dark.webp?v=110d8673f2"
   },
   "light": {
     "kind": "image",
     "width": 2560,
     "height": 3526,
     "mime": "image/webp",
-    "bytes": 298192,
-    "blurDataURL": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAAQCAIAAACtAwlQAAAACXBIWXMAAAPoAAAD6AG1e1JrAAABVklEQVQokV2RPUsDQRCG91dKIKZILbZ2gmDrD7DUQn+BhaCVjY2FEBTCiYeiueRicp+787Gzt3K38RJ8uOKWfW7mvRk1Ho9Ho9F+x6hjOBzudQwGg3CrXiezw4Or68snAEBE2qHp8N6ryeP05Ojs5uKurFqJO5BtVqEGEivOOfX2Hh+fnt/ePxjkvG4LiBVkGwxmbqWiKMqyRESDHCqFu9pgaNc0jQIArXXTNBoIAIjIe+86/B8qm6fJ9LlaxMycwnphVh/me4bLL7OYVvFLFi3qH7U0SfgFIqq01mxqARAspV5RHq3TeKlVyO+9Nx2IKFb6RquKP1ek+rNBnq1NH6WR9iVE3EpEtCzaSn13sbIZZi8xs9YaAIwxoQDLJsmuJFEUJUkyn8/TNM2yLM/z/1I7Kq1DfCIK+9nMqZfEStirQbGu/cY5t83knAs7cs6FiYiV8ATpF+//EhwqrhDYAAAAAElFTkSuQmCC",
+    "bytes": 298320,
+    "blurDataURL": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAAQCAIAAACtAwlQAAAACXBIWXMAAAPoAAAD6AG1e1JrAAABV0lEQVQokV2Rz0rDQBCH9ymlUHPoWbx6EwSvPoBHPegTeBD05MWLB6EolIhB0aZNbZM02Z0/O5uVZGta/Mghy36Z+WVGjUajKIr2O6KO4XC41zEYDMKteh1PDw+uri+fAAARaYemw3uvxo+Tk6Ozm4u7ddVK3IFs8wo1kFhxzqm39+T49Pz2/sEgF3VbQKwg22AwcyuVZVlWa0Q0yKFSuKsNhnZN0ygA0Fo3TaOBAICIvPeuw/+h8lmWTp6recLMGazmZvlhvqe4+DLzSZW85PG8/lELk4ZfIKJKa82mFgDhtdRLKuJVliy0Cvm996YDEcVK32hZ8eeSVH82yNOV6aM00r6EiFuJiBZlW6nvLlY2w+wlZtZaA4AxJhRg2STZlSSO4zRNZ7NZlmV5nhdF8V9qR6V1iE9EYT+bOfWSWAl7NSjWtd8457aZnHNhR865MBGxEp4g/QLyaBIeidxh2wAAAABJRU5ErkJggg==",
     "average": "#eaecec",
-    "src": "/links/adriangalilea/github.light.webp?v=94dc0c7a83",
-    "poster": "/links/adriangalilea/github.light.webp?v=94dc0c7a83"
+    "src": "/links/adriangalilea/github.light.webp?v=2cecafc2f6",
+    "poster": "/links/adriangalilea/github.light.webp?v=2cecafc2f6"
   }
 }
