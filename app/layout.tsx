@@ -14,7 +14,9 @@ import { visitsEnabled } from "@/lib/visit-store"
 export const metadata: Metadata = {
   title: {
     template: "%s · e-ID",
-    default: "your page at 👤.to/you",
+    // The hero's own words, the name first: a tab shows the person mark as its
+    // icon, and a title opening with 👤 too read it twice and cut off mid-phrase.
+    default: "e-ID · your digital identity",
   },
   description:
     "one link for everywhere you are online. sign in with github and your page fills itself.",

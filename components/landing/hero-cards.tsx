@@ -140,50 +140,48 @@ export function YourCard() {
     >
       <Claim />
       {chip?.u ? (
-        <>
-          <Suspense
-            fallback={
-              <IdCard
-                heading="p"
-                holo="laminate"
-                className={FRONT}
-                holder={{
-                  name: null,
-                  username: chip.u,
-                  image: chip.i,
-                  country: "XX",
-                  bio: null,
-                }}
+        <Suspense
+          fallback={
+            <IdCard
+              heading="p"
+              holo="laminate"
+              className={FRONT}
+              holder={{
+                name: null,
+                username: chip.u,
+                image: chip.i,
+                country: "XX",
+                bio: null,
+              }}
+            />
+          }
+        >
+          <HoloLean pose="flat" className="max-lg:[transform:none]">
+            <div className={IDLE}>
+              <OwnCard
+                username={chip.u}
+                // Theirs, waiting by the pile: one press to their profile,
+                // where pressing it again takes it up to edit
+                // (components/profile-card); its links still their own.
+                press={
+                  <Link
+                    href={`/${chip.u}`}
+                    aria-label="your page"
+                    className={cn(
+                      CORNER,
+                      "group/press absolute inset-0 cursor-pointer outline-offset-4",
+                    )}
+                  >
+                    <span aria-hidden className={PRESS_HINT}>
+                      <ArrowUpRight strokeWidth={1.5} />
+                      your page
+                    </span>
+                  </Link>
+                }
               />
-            }
-          >
-            <HoloLean pose="flat" className="max-lg:[transform:none]">
-              <div className={IDLE}>
-                <OwnCard
-                  username={chip.u}
-                  // Theirs, waiting by the pile: one press to their profile,
-                  // where pressing it again takes it up to edit
-                  // (components/profile-card); its links still their own.
-                  press={
-                    <Link
-                      href={`/${chip.u}`}
-                      aria-label="your page"
-                      className={cn(
-                        CORNER,
-                        "group/press absolute inset-0 cursor-pointer outline-offset-4",
-                      )}
-                    >
-                      <span aria-hidden className={PRESS_HINT}>
-                        <ArrowUpRight strokeWidth={1.5} />
-                        your page
-                      </span>
-                    </Link>
-                  }
-                />
-              </div>
-            </HoloLean>
-          </Suspense>
-        </>
+            </div>
+          </HoloLean>
+        </Suspense>
       ) : (
         <>
           {/* Leaning to the hand as a profile's card does (user_profile), by
