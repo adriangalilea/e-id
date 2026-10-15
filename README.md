@@ -25,18 +25,20 @@ Built with Next.js, better-auth, and Drizzle on Turso. The interface comes from 
 
 - [ ] links of your own, `/you/<name>`, for what is not one of your card's platforms (a CV, a talk, a file): named or a generated code (6 characters, always one digit, so never a platform's name), optionally expiring by a date, a number of visits or one use. The names they cannot take are refused by `refusedLinkName` (`lib/link-names`): a platform's names, the card's files.
 - [ ] an API for them: personal API keys (better-auth's API-key plugin), each scoped to your own links and rate-limited, so a script or a CLI makes one (`curl -H "Authorization: Bearer …" eid.to/api/links -d '{"to":"…","expires":"7d"}'`). Probably Premium.
-- [ ] visits on in production: built (`/api/events` and every `/you/<name>`, the ui registry's `visits`, each page counted for its owner by user id, their own reading never), off until its database is set: the `visits_*` tables in the shared `metrics` Turso database, `VISITS_DATABASE_URL` and `VISITS_AUTH_TOKEN` in the deployment, and `ADMIN_USER_IDS` for who sees the detail
-- [ ] vouches: the send button waits for words (today an empty one is refused only after sending); a profile can turn vouches off (the `allow_comments` column and the server's refusal exist; the setting, and hiding the form where they are off, do not)
 - [ ] an optional status line on the profile and its share image
 - [ ] a write API for the card (`card.json` is the read one), on the same API keys
 - [ ] passkeys (better-auth has them)
-- [ ] download your data, all of it: `/you/json` is the card; what it lacks (the account's email, the vouches you wrote, your numbers) is asked for by email today, as the privacy page says, answered within a month. A button would hand over both.- [ ] live activity: a feed (RSS or Atom), a YouTube channel (each has a feed), Bluesky, GitHub, mixed into the latest of what you made, on your page
+- [ ] download your data, all of it: `/you/json` is the card; what it lacks (the account's email, the vouches you wrote, your numbers) is asked for by email today, as the privacy page says, answered within a month. A button would hand over both.
+- [ ] live activity: a feed (RSS or Atom), a YouTube channel (each has a feed), Bluesky, GitHub, mixed into the latest of what you made, on your page
 
 ### Premium
 
+Everything here waits on the first item.
+
+- [ ] billing: a way to pay (a provider, a price per item or a plan), and what a lapsed payment takes away
 - [ ] analytics: the detail of your numbers (visits per day, what each `/you/<name>` opened and the names that opened nothing, referrers, countries). Built (`readOwner`) and shown to admins only; everyone sees their totals. Decide what is free and what is Premium once billing exists.
 - [ ] more usernames, sold: each a permanent redirect to your page, so a new main name keeps every old link working. The redirect is built (`username_alias`, `adriangalilea` → `adrian`); buying one, and renaming yourself with the old name kept, are not.
-- [ ] claimable usernames: stops squatting
+- [ ] claiming a squatted username: a request to take an address someone holds and does not use, or that is your own name or brand (the terms already allow taking one back); decide who judges and how long an unused one is held
 - [ ] short usernames (3 and 4 characters) sold, 1 and 2 kept for e-ID; decide the price, and whether a bought name can be resold
 - [ ] an email address, `you@eid.to`
   - Why: `eid.to/you/mail` opens your email link in a browser, but a mail client's "To:" refuses it (an address is `name@domain`, never a path). A real address reaches you without showing your own.
