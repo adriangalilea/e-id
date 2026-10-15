@@ -304,23 +304,27 @@ export async function cardSvg(card: Card, frame: CardFrame = "share"): Promise<s
   const portrait = photo
     ? `<image href="${photo}" x="${f(px)}" y="${f(py)}" width="${f(ps)}" height="${f(ps)}" preserveAspectRatio="xMidYMid slice" clip-path="url(#photo)"/>`
     : `<g opacity="0.15">${mark(px + ps / 2 - (ps / 2) * (MARK_BOX.w / MARK_BOX.h) / 2, py + ps * 0.75, ps / 2, "#fff")}</g>`;
-  // The card's own save, on the photo's foot, half over it (components/
+  // The card's own save, under the name, its edge the foil (components/
   // save-contact `CardSave`, in the same shares): on the card set on a page,
   // where it can be pressed; not on the share image.
-  const saveH = 7 * u;
+  const saveH = 7.4 * u;
   const saveText = 3.2 * u;
   const saveIcon = 3.6 * u;
+  const saveWords = "save contact";
   const saveW =
-    2 * 2.6 * u + saveIcon + 1.2 * u + measure("save", SANS, 500, saveText);
-  const saveX = px + ps / 2 - saveW / 2;
-  const saveY = py + ps - saveH / 2;
+    2 * 3 * u + saveIcon + 1.4 * u + measure(saveWords, SANS, 500, saveText);
+  const saveX = cx + textX * u;
+  // Under the name's last line (its capitals start at the photo's top edge),
+  // 3.4 of the card's width below it.
+  const saveY =
+    cy + bodyTop * u + 0.7 * nameSize + (nameLines.length - 1) * lineStep + 3.4 * u;
   const save = share
     ? ""
-    : `<a href="${esc(card.formats.vcard)}" download="${esc(card.handle)}.vcf" aria-label="save contact">` +
-      `<rect x="${f(saveX)}" y="${f(saveY + 0.8 * u)}" width="${f(saveW)}" height="${f(saveH)}" rx="${f(saveH / 2)}" fill="#000" fill-opacity="0.45" filter="url(#lift)"/>` +
-      `<rect x="${f(saveX)}" y="${f(saveY)}" width="${f(saveW)}" height="${f(saveH)}" rx="${f(saveH / 2)}" fill="#fff"/>` +
-      icon(contactRound, saveX + 2.6 * u, saveY + (saveH - saveIcon) / 2, saveIcon, `stroke="#000" stroke-width="2"`) +
-      `<text x="${f(saveX + 2.6 * u + saveIcon + 1.2 * u)}" y="${f(saveY + saveH / 2 + 0.36 * saveText)}" font-family="${SANS}" font-weight="500" font-size="${f(saveText)}" fill="#000">save</text></a>`;
+    : `<a href="${esc(card.formats.vcard)}" download="${esc(card.handle)}.vcf">` +
+      `<rect x="${f(saveX)}" y="${f(saveY)}" width="${f(saveW)}" height="${f(saveH)}" rx="${f(saveH / 2)}" fill="#fff" fill-opacity="0.06"/>` +
+      `<rect x="${f(saveX + 0.5)}" y="${f(saveY + 0.5)}" width="${f(saveW - 1)}" height="${f(saveH - 1)}" rx="${f(saveH / 2 - 0.5)}" fill="none" stroke="url(#edge-foil)" stroke-opacity="0.6"/>` +
+      icon(contactRound, saveX + 3 * u, saveY + (saveH - saveIcon) / 2, saveIcon, `stroke="${INK}" stroke-opacity="0.9" stroke-width="1.6"`) +
+      `<text x="${f(saveX + 3 * u + saveIcon + 1.4 * u)}" y="${f(saveY + saveH / 2 + 0.36 * saveText)}" font-family="${SANS}" font-weight="500" font-size="${f(saveText)}" fill="${INK}" fill-opacity="0.9">${saveWords}</text></a>`;
   const [gx, gy] = at(100 - 2 - 34, 6);
   const gs = 34 * u;
   const ghost = photo

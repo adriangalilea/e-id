@@ -249,16 +249,7 @@ export function IdCard({
     <>
       {head}
       <div className="relative my-auto flex items-stretch gap-(--card-gap)">
-        <div className="relative shrink-0">
-          <Portrait holder={holder} stand={slots?.photo} />
-          {/* The card's own action, on the person it saves: centred on the
-              photo's foot, half over it. */}
-          {save && (
-            <div className="absolute bottom-0 left-1/2 z-20 -translate-x-1/2 translate-y-1/2">
-              {save}
-            </div>
-          )}
-        </div>
+        <Portrait holder={holder} stand={slots?.photo} />
         <div
           // The rest of the card's width beside the photo, so a field written in
           // its stead has the room the written line would; as tall as the
@@ -269,11 +260,18 @@ export function IdCard({
             KNOCKOUT,
           )}
         >
-          {slots?.name ?? (
-            <Name className={cn(NAME, fit.lines === 1 && "whitespace-nowrap")}>
-              {name}
-            </Name>
-          )}
+          {/* The name, and under it the card's own action, the save: the
+              person, then keeping them; their links at the photo's foot. */}
+          <div className="flex flex-col gap-[3.4cqw]">
+            {slots?.name ?? (
+              <Name
+                className={cn(NAME, fit.lines === 1 && "whitespace-nowrap")}
+              >
+                {name}
+              </Name>
+            )}
+            {save && <div className="relative z-20 flex">{save}</div>}
+          </div>
           {slots?.flair ?? <Flair links={links} />}
         </div>
       </div>
