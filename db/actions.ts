@@ -20,7 +20,7 @@ import { OFFERED } from "@/lib/platforms"
 import { getPresence } from "@/lib/presence"
 import { getSession } from "@/lib/session"
 import { profileTag, USERS_TAG, usernameTag } from "@/lib/tags"
-import { claimUsername } from "@/lib/username"
+import { claimUsername, holderOf } from "@/lib/username"
 import { usernameProblem } from "@/lib/username-rules"
 
 // Every export here is an endpoint anyone can call with any arguments: each one
@@ -308,11 +308,10 @@ export async function handleState(
   const username = handle.trim()
   const why = usernameProblem(username)
   if (why) return { state: "invalid", why }
-  const [taken] = await db
-    .select({ id: users.id })
-    .from(users)
-    .where(eq(users.username_normalized, username))
-  return { state: taken ? "taken" : "free", why: null }
+  return {
+    state: (await holderOf(username)) ? "taken" : "free",
+    why: null,
+  }
 }
 
 /** A GitHub login as GitHub allows one: letters, digits and single hyphens, at

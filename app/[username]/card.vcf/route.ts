@@ -1,6 +1,7 @@
 import { cacheLife } from "next/cache"
 import { cardOf } from "@/lib/card"
 import { getUsernames } from "@/lib/data"
+import { renamedAnswer } from "@/lib/renamed"
 import { vcardOf } from "@/lib/vcard"
 
 // A person's card as a contact (lib/vcard), for a phone to add in one tap. Also
@@ -22,16 +23,19 @@ async function contact(username: string): Promise<string | null> {
 }
 
 export async function GET(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ username: string }> },
 ) {
   const { username } = await params
   const vcard = await contact(username)
   if (!vcard)
-    return new Response(`no e-ID is called ${username}`, {
-      status: 404,
-      headers: CORS,
-    })
+    return (
+      (await renamedAnswer(request, username, "/card.vcf")) ??
+      new Response(`no e-ID is called ${username}`, {
+        status: 404,
+        headers: CORS,
+      })
+    )
   return new Response(vcard, {
     headers: {
       ...CORS,

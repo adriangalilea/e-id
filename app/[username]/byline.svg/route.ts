@@ -2,6 +2,7 @@ import { cacheLife } from "next/cache"
 import { cardOf } from "@/lib/card"
 import { compactSvg, drawingAnswer } from "@/lib/card-image"
 import { getUsernames } from "@/lib/data"
+import { renamedAnswer } from "@/lib/renamed"
 
 // A person's card as a byline, drawn (lib/card-image `compactSvg`), for the embed's
 // compact face (`<e-id-card compact>`, app/embed.js) at the foot of a post.
@@ -19,9 +20,13 @@ async function drawing(username: string): Promise<string | null> {
 }
 
 export async function GET(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ username: string }> },
 ) {
   const { username } = await params
-  return drawingAnswer(await drawing(username), username)
+  const svg = await drawing(username)
+  return (
+    (svg ? null : await renamedAnswer(request, username, "/byline.svg")) ??
+    drawingAnswer(svg, username)
+  )
 }

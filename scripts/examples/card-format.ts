@@ -3,7 +3,7 @@
 // refuses throws here. `bun scripts/examples/card-format.ts`
 import { cardSchema, formatsOf } from "@/lib/card-schema"
 
-const handle = "adriangalilea"
+const handle = "adrian"
 const card = cardSchema.parse({
   $schema: "https://e-id.to/card.schema.json",
   version: 1,

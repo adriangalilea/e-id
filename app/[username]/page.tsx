@@ -1,5 +1,5 @@
 import type { Metadata } from "next"
-import { notFound } from "next/navigation"
+import { notFound, permanentRedirect } from "next/navigation"
 import { Wide } from "@/components/frame"
 import { PROFILE } from "@/components/profile-layout"
 import { Testimonial } from "@/components/quote"
@@ -10,6 +10,7 @@ import {
   getPublicLinks,
   getTestimonials,
   getUsernames,
+  renamedTo,
 } from "@/lib/data"
 import { getPresence } from "@/lib/presence"
 import { inlineJson, profileJsonLd, profileUrl } from "@/lib/profile-ld"
@@ -24,6 +25,14 @@ import UserProfile from "./user_profile"
 // on who is looking is a client island that reads the display cookie (lib/chip),
 // so a visit runs no server function.
 
+/** A name that found nobody: the page of whoever it is an alias of (lib/renamed),
+ *  permanently, else the 404. */
+async function absent(username: string): Promise<never> {
+  const to = await renamedTo(username)
+  if (to) permanentRedirect(`/${to}`)
+  notFound()
+}
+
 export async function generateStaticParams() {
   const usernames = await getUsernames()
   if (usernames.length === 0)
@@ -36,7 +45,7 @@ export async function generateMetadata(props: {
 }): Promise<Metadata> {
   const { username } = await props.params
   const user = await getProfile(username)
-  if (!user) notFound()
+  if (!user) return absent(username)
 
   const links = await getPublicLinks(user.id)
   // Each link as the profile's tabs name it: a platform by its id, a link of
@@ -82,7 +91,7 @@ export default async function Page(props: {
 }) {
   const { username } = await props.params
   const user = await getProfile(username)
-  if (!user) notFound()
+  if (!user) return absent(username)
 
   const [links, testimonials] = await Promise.all([
     getPublicLinks(user.id),

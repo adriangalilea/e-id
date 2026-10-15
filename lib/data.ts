@@ -3,7 +3,13 @@ import "server-only"
 import { and, asc, desc, eq, isNotNull, ne, sql } from "drizzle-orm"
 import { cacheLife, cacheTag } from "next/cache"
 import { db } from "@/db"
-import { comments, links, type SelectLink, users } from "@/db/schema"
+import {
+  comments,
+  links,
+  type SelectLink,
+  usernameAliases,
+  users,
+} from "@/db/schema"
 import { linkName } from "@/lib/link-names"
 import { getLinkUrl } from "@/lib/links"
 import type { LinkPlatform } from "@/lib/platforms"
@@ -54,6 +60,29 @@ export async function getProfile(username: string): Promise<Profile | null> {
   if (!name || !username_normalized)
     throw new Error(`user ${row.id} matched ${normalized} without a username`)
   return { ...row, username: name, username_normalized }
+}
+
+/** The username a name now answers to, when it is someone's alias (a former name,
+ *  one more they hold), else null. Asked only where a name found nobody, so a
+ *  page that exists costs no second read. */
+export async function renamedTo(username: string): Promise<string | null> {
+  "use cache"
+  cacheLife("max")
+  const normalized = username.toLowerCase()
+  cacheTag(usernameTag(normalized))
+  const [row] = await db
+    .select({ id: users.id, username: users.username })
+    .from(usernameAliases)
+    .innerJoin(users, eq(users.id, usernameAliases.user_id))
+    .where(eq(usernameAliases.alias_normalized, normalized))
+    .limit(1)
+  if (!row) return null
+  cacheTag(profileTag(row.id))
+  if (!row.username)
+    throw new Error(
+      `alias ${normalized} points at ${row.id}, who has no username`,
+    )
+  return row.username
 }
 
 /** Links in the order their owner gave them, unordered ones last. */
@@ -186,7 +215,7 @@ export function cardLinkOf(link: SelectLink): {
 const SHOWCASE = 10
 
 /** Whose card leads the home's hero, when it exists: the maker's. */
-const SHOWCASE_LEAD = "adriangalilea"
+const SHOWCASE_LEAD = "adrian"
 
 /** The people whose cards the home shows: the lead card first, then the latest
  *  with a whole card to show (a photo, a name and a country), newest first,

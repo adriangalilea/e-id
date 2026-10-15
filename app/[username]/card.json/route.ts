@@ -1,5 +1,6 @@
 import { cardOf } from "@/lib/card"
 import { getUsernames } from "@/lib/data"
+import { renamedAnswer } from "@/lib/renamed"
 
 // A person's card as data (lib/card), for anything that draws one off the site.
 // Open to every origin: a card is public, and the embed reads it from other
@@ -11,15 +12,18 @@ export async function generateStaticParams() {
 }
 
 export async function GET(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ username: string }> },
 ) {
   const { username } = await params
   const card = await cardOf(username)
   if (!card)
-    return Response.json(
-      { error: `no e-ID is called ${username}` },
-      { status: 404, headers: { "access-control-allow-origin": "*" } },
+    return (
+      (await renamedAnswer(request, username, "/card.json")) ??
+      Response.json(
+        { error: `no e-ID is called ${username}` },
+        { status: 404, headers: { "access-control-allow-origin": "*" } },
+      )
     )
   return Response.json(card, {
     headers: { "access-control-allow-origin": "*" },

@@ -190,6 +190,24 @@ export const links = sqliteTable(
   },
 )
 
+// A NAME A PERSON ALSO ANSWERS TO: a former username, or one more they hold, each a
+// permanent redirect to their page (paths too: /old/gh opens /new/gh), so a new
+// main name keeps every link people already have. Held as a username is: nobody
+// else can take it (lib/username). Migrations: db/migrations.
+export const usernameAliases = sqliteTable(
+  "username_alias",
+  {
+    alias_normalized: text("alias_normalized").notNull().primaryKey(),
+    user_id: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    createdAt: integer("createdAt", { mode: "timestamp" })
+      .default(sql`(unixepoch())`)
+      .notNull(),
+  },
+  (table) => ({ userIdx: index("username_alias_user_idx").on(table.user_id) }),
+)
+
 // Type exports
 export type InsertUser = typeof users.$inferInsert
 export type SelectUser = typeof users.$inferSelect

@@ -2,6 +2,7 @@ import { cacheLife } from "next/cache"
 import { cardOf } from "@/lib/card"
 import { cardSvg, drawingAnswer } from "@/lib/card-image"
 import { getUsernames } from "@/lib/data"
+import { renamedAnswer } from "@/lib/renamed"
 
 // A person's card drawn, for the embed (`<e-id-card>`, app/embed.js) to set on any
 // page: the share image's drawing of the card alone (lib/card-image), its photo
@@ -22,9 +23,13 @@ async function drawing(username: string): Promise<string | null> {
 }
 
 export async function GET(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ username: string }> },
 ) {
   const { username } = await params
-  return drawingAnswer(await drawing(username), username)
+  const svg = await drawing(username)
+  return (
+    (svg ? null : await renamedAnswer(request, username, "/card.svg")) ??
+    drawingAnswer(svg, username)
+  )
 }

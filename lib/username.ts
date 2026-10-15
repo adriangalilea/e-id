@@ -1,12 +1,32 @@
 import "server-only"
 
-import { eq } from "drizzle-orm"
+import { and, eq } from "drizzle-orm"
 import { db } from "@/db"
-import { users } from "@/db/schema"
+import { usernameAliases, users } from "@/db/schema"
 import { usernameProblem } from "@/lib/username-rules"
 
 /** The database, or a transaction on it: what a write runs on. */
-export type Writer = Pick<typeof db, "update">
+export type Writer = Pick<typeof db, "update" | "delete">
+
+/** Who holds `username`, as their username or as an alias of theirs (a former
+ *  name, one more they hold: db/schema `usernameAliases`), or null when nobody
+ *  does. An alias is held as a username is, or the links still pointing at it
+ *  would open a stranger. */
+export async function holderOf(username: string): Promise<string | null> {
+  const normalized = username.trim().toLowerCase()
+  const [user] = await db
+    .select({ id: users.id })
+    .from(users)
+    .where(eq(users.username_normalized, normalized))
+    .limit(1)
+  if (user) return user.id
+  const [alias] = await db
+    .select({ id: usernameAliases.user_id })
+    .from(usernameAliases)
+    .where(eq(usernameAliases.alias_normalized, normalized))
+    .limit(1)
+  return alias?.id ?? null
+}
 
 /** What a provider calls a new account (a GitHub login, an email's local part)
  *  as its username, when it is one and nobody holds it; else null, and the person
@@ -15,12 +35,7 @@ export type Writer = Pick<typeof db, "update">
 export async function providedUsername(seed: string): Promise<string | null> {
   const username = seed.trim().toLowerCase()
   if (usernameProblem(username)) return null
-  const [taken] = await db
-    .select({ id: users.id })
-    .from(users)
-    .where(eq(users.username_normalized, username))
-    .limit(1)
-  return taken ? null : username
+  return (await holderOf(username)) ? null : username
 }
 
 /** Gives a user a username. Throws the validation message for an invalid one and
@@ -36,6 +51,18 @@ export async function claimUsername(
   const valid = username.trim()
   const why = usernameProblem(valid)
   if (why) throw new Error(why)
+  const normalized = valid.toLowerCase()
+  const holder = await holderOf(normalized)
+  if (holder && holder !== userId) throw new Error("Username is taken.")
+  // One of their own aliases taken back as the username: it stops being one.
+  await writer
+    .delete(usernameAliases)
+    .where(
+      and(
+        eq(usernameAliases.alias_normalized, normalized),
+        eq(usernameAliases.user_id, userId),
+      ),
+    )
 
   const updated = await writer
     .update(users)

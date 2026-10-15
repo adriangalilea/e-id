@@ -1,13 +1,66 @@
+/** Names no one can hold: e-ID's own, kept before short names are sold
+ *  (lib/username-rules), since each is a path at the root or an address at
+ *  `@eid.to` someone would otherwise own. */
 export const forbiddenUsernames: string[] = [
   "ninja",
   "null",
   "",
-  "about",
-  // The site's own routes beside the profiles (app/api, app/dev).
+  // The site's own routes beside the profiles (app/api, app/dev, app/flags,
+  // app/embed.js, the old /about).
   "api",
   "dev",
+  "flags",
+  "embed",
+  "about",
   // The address the error page's card reads (components/notice).
   "error",
+  // Paths e-ID will want: an account, its pages, its money, its words.
+  "admin",
+  "app",
+  "www",
+  "help",
+  "login",
+  "logout",
+  "signin",
+  "signup",
+  "auth",
+  "account",
+  "settings",
+  "edit",
+  "new",
+  "me",
+  "you",
+  "card",
+  "cards",
+  "blog",
+  "docs",
+  "status",
+  "terms",
+  "privacy",
+  "pricing",
+  "premium",
+  "support",
+  "static",
+  "assets",
+  // Addresses a mail domain keeps for itself (`you@eid.to`, README).
+  "mail",
+  "email",
+  "postmaster",
+  "hostmaster",
+  "webmaster",
+  "abuse",
+  "security",
+  "noreply",
+  "no-reply",
+  "info",
+  "contact",
+  "hello",
+  // The name itself.
+  "e-id",
+  "eid",
+  "official",
+  "team",
+  "staff",
 ] as const
 
 export const PROD_URL = "https://e-id.to"

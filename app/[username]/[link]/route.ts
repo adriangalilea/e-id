@@ -1,5 +1,6 @@
 import { cardLinkOf, getProfile, getPublicLinks } from "@/lib/data"
 import { platformNamed } from "@/lib/link-names"
+import { renamedAnswer } from "@/lib/renamed"
 
 // A LINK'S ROUTE: 👤.to/<username>/<name> opens their link on that platform
 // (github, or gh; lib/link-names), their first public one of its kind: the
@@ -19,7 +20,10 @@ export async function GET(
   const { username, link: name } = await params
   const profile = await getProfile(username)
   if (!profile)
-    return new Response(`no e-ID is called ${username}`, { status: 404 })
+    return (
+      (await renamedAnswer(request, username, `/${name}`)) ??
+      new Response(`no e-ID is called ${username}`, { status: 404 })
+    )
   const platform = platformNamed(name)
   const link = platform
     ? (await getPublicLinks(profile.id)).find(

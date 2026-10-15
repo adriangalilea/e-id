@@ -1,6 +1,7 @@
 import { cardOf } from "@/lib/card"
 import { cardText } from "@/lib/card-text"
 import { getUsernames } from "@/lib/data"
+import { renamedAnswer } from "@/lib/renamed"
 
 // A person's card as text (lib/card-text), for a terminal: `curl https://eid.to/you`
 // lands here (next.config), as does `/you/txt`. Prerendered for every handle, as
@@ -13,15 +14,18 @@ export async function generateStaticParams() {
 const TEXT = { "content-type": "text/plain; charset=utf-8" }
 
 export async function GET(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ username: string }> },
 ) {
   const { username } = await params
   const card = await cardOf(username)
   if (!card)
-    return new Response(`no e-ID is called ${username}\n`, {
-      status: 404,
-      headers: TEXT,
-    })
+    return (
+      (await renamedAnswer(request, username, "/txt")) ??
+      new Response(`no e-ID is called ${username}\n`, {
+        status: 404,
+        headers: TEXT,
+      })
+    )
   return new Response(cardText(card), { headers: TEXT })
 }
