@@ -8,13 +8,17 @@ import { renamedTo } from "@/lib/data"
 // thing under their username, so every link already out there keeps working.
 
 /** A 308 to `rest` (`/card.json`, `/gh`, or nothing for the page) under the
- *  username `username` now answers to, or null when it answers to nobody. */
+ *  username `username` now answers to, or null when it answers to nobody. The
+ *  address is relative, on whichever host was asked: the card's files are
+ *  prerendered, where reading the request's own URL is refused. */
 export async function renamedAnswer(
-  request: Request,
   username: string,
   rest = "",
 ): Promise<Response | null> {
   const to = await renamedTo(username)
   if (!to) return null
-  return Response.redirect(new URL(`/${to}${rest}`, request.url), 308)
+  return new Response(null, {
+    status: 308,
+    headers: { location: `/${to}${rest}` },
+  })
 }

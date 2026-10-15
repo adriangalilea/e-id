@@ -23,13 +23,13 @@ async function drawing(username: string): Promise<string | null> {
 }
 
 export async function GET(
-  request: Request,
+  _request: Request,
   { params }: { params: Promise<{ username: string }> },
 ) {
   const { username } = await params
   const svg = await drawing(username)
   return (
-    (svg ? null : await renamedAnswer(request, username, "/card.svg")) ??
+    (svg ? null : await renamedAnswer(username, "/card.svg")) ??
     drawingAnswer(svg, username)
   )
 }

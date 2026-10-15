@@ -12,14 +12,14 @@ export async function generateStaticParams() {
 }
 
 export async function GET(
-  request: Request,
+  _request: Request,
   { params }: { params: Promise<{ username: string }> },
 ) {
   const { username } = await params
   const card = await cardOf(username)
   if (!card)
     return (
-      (await renamedAnswer(request, username, "/card.json")) ??
+      (await renamedAnswer(username, "/card.json")) ??
       Response.json(
         { error: `no e-ID is called ${username}` },
         { status: 404, headers: { "access-control-allow-origin": "*" } },

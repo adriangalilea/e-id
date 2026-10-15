@@ -23,14 +23,14 @@ async function contact(username: string): Promise<string | null> {
 }
 
 export async function GET(
-  request: Request,
+  _request: Request,
   { params }: { params: Promise<{ username: string }> },
 ) {
   const { username } = await params
   const vcard = await contact(username)
   if (!vcard)
     return (
-      (await renamedAnswer(request, username, "/card.vcf")) ??
+      (await renamedAnswer(username, "/card.vcf")) ??
       new Response(`no e-ID is called ${username}`, {
         status: 404,
         headers: CORS,

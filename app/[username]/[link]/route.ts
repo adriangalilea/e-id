@@ -21,7 +21,7 @@ export async function GET(
   const profile = await getProfile(username)
   if (!profile)
     return (
-      (await renamedAnswer(request, username, `/${name}`)) ??
+      (await renamedAnswer(username, `/${name}`)) ??
       new Response(`no e-ID is called ${username}`, { status: 404 })
     )
   const platform = platformNamed(name)

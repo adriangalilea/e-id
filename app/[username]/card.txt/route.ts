@@ -14,14 +14,14 @@ export async function generateStaticParams() {
 const TEXT = { "content-type": "text/plain; charset=utf-8" }
 
 export async function GET(
-  request: Request,
+  _request: Request,
   { params }: { params: Promise<{ username: string }> },
 ) {
   const { username } = await params
   const card = await cardOf(username)
   if (!card)
     return (
-      (await renamedAnswer(request, username, "/txt")) ??
+      (await renamedAnswer(username, "/txt")) ??
       new Response(`no e-ID is called ${username}\n`, {
         status: 404,
         headers: TEXT,
