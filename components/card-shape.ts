@@ -11,9 +11,10 @@ export const ID1 = "aspect-[85.6/53.98]"
 
 /** What pressing a card does, said under the hand in its corner ("edit", "your
  *  page"): a glass label inside a press laid over the card, the press named
- *  `group/press`. */
+ *  `group/press`. The bottom-left corner, under the photo, the one a card leaves
+ *  empty: the bottom-right is its vCard's. */
 export const PRESS_HINT =
-  "pointer-events-none absolute right-3 bottom-3 flex items-center gap-1.5 rounded-full bg-background/70 px-3 py-1.5 text-foreground/85 text-sm opacity-0 backdrop-blur-md transition-opacity group-hover/press:opacity-100 group-focus-visible/press:opacity-100 [&_svg]:size-3.5"
+  "pointer-events-none absolute left-3 bottom-3 flex items-center gap-1.5 rounded-full bg-background/70 px-3 py-1.5 text-foreground/85 text-sm opacity-0 backdrop-blur-md transition-opacity group-hover/press:opacity-100 group-focus-visible/press:opacity-100 [&_svg]:size-3.5"
 
 /** A card's own corner (ID-1: 3.18 mm on 85.6 by 53.98), as shares of its box, so
  *  what is laid over a card's box (a press, a shadow) is rounded as the card is
