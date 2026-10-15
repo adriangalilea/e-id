@@ -444,7 +444,10 @@ function ImportSheet({ card, pressed }: { card: VCard; pressed: boolean }) {
       <div className="absolute inset-x-(--ag-contacts-behind-x) top-(--ag-contacts-behind-top) bottom-0 rounded-t-(--ag-contacts-behind-radius) bg-[#2a2a2e]" />
       <div
         data-slot="contacts-app-sheet"
-        className="absolute inset-x-0 top-(--ag-contacts-sheet-top) bottom-0 overflow-hidden rounded-t-(--ag-contacts-sheet-radius) bg-(image:--ag-contacts-poster)"
+        // Its top corners cut by a path, never `overflow-hidden`: a clip with
+        // uneven corners makes Chrome drop the masks of the glass inside it
+        // (device-frame.css, the display).
+        className="absolute inset-x-0 top-(--ag-contacts-sheet-top) bottom-0 rounded-t-(--ag-contacts-sheet-radius) bg-(image:--ag-contacts-poster) [clip-path:inset(0_round_var(--ag-contacts-sheet-radius)_var(--ag-contacts-sheet-radius)_0_0)]"
       >
         <div
           data-slot="contacts-app-scroller"

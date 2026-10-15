@@ -21,9 +21,14 @@
       inset 0 0 0 0.15cqw #494b4e50,
       inset 0 0 0.45cqw #6b6d7030;
   }
+  /* Clipped by a path, never `overflow: hidden`: Chrome clips a box with uneven
+     (or elliptical) corners through a mask of its own, and inside one a glass's
+     masked blur loses its mask and blurs everything under it (a panel's spill
+     blurred the whole page on the display). `clip-path` cuts the same corners and
+     keeps it. */
   .device-desktop .device-display {
     position: relative;
-    overflow: hidden;
+    clip-path: inset(0 round 1cqw 1cqw 0.2cqw 0.2cqw);
     aspect-ratio: 16 / 10;
     border-radius: 1cqw 1cqw 0.2cqw 0.2cqw;
     background: #15191d;

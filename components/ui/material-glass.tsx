@@ -721,7 +721,11 @@ export function bendLayers(
  *  corners the container's), with the same `radius` its `GlassEdge` takes. What it
  *  blurs must not be inside a backdrop root of its own (a masked scroller): it lies
  *  beside it, and nothing between it and the container may be one, or its blur
- *  reads nothing. `--glass-spill-blur` sets the blur. Server-safe. */
+ *  reads nothing. Nor inside a box clipped by `overflow` with uneven or elliptical
+ *  corners (`8px 8px 2px 2px`, `8px / 4px`): Chrome clips one through a mask of its
+ *  own and drops the spill's, which then blurs everything it covers (measured
+ *  2026-10-15, a laptop display's clip); such a box clips with `clip-path: inset(0
+ *  round …)`. `--glass-spill-blur` sets the blur. Server-safe. */
 export function GlassSpill({
   radius,
   width = 10,
