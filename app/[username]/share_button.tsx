@@ -50,10 +50,9 @@ export default function ShareButton({ username }: { username: string }) {
         <Row name="contact card" value={`${PROD_URL}/${username}.vcf`} />
         {/* The card on your own site (app/embed.js): one script, one tag, the
             card drawn there and lit by the hand. */}
-        <Row
-          name="on your website"
-          value={embedOf(username)}
-        />
+        <Row name="on your website" value={embedOf(username)} />
+        {/* The same card as a byline, for the foot of a post or a project. */}
+        <Row name="as a byline" value={embedOf(username, "compact")} />
         {/* The card as data (lib/card-schema), for a program. */}
         <Row name="as data" value={`${PROD_URL}/${username}/json`} />
       </PopoverContent>

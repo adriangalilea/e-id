@@ -72,9 +72,11 @@ export async function Features() {
         // The domain reserved for examples (RFC 2606): the address is live, and
         // any other would be someone's.
         address: "example.com",
-        snippet: embedOf(holder.username),
+        // The card as a byline at the foot of a post: where a site most often
+        // says who made it.
+        snippet: embedOf(holder.username, "compact"),
         // The real script and element working, as they do on someone's site.
-        card: <LiveEmbed key="card" handle={holder.username} width="100%" />,
+        card: <LiveEmbed key="card" handle={holder.username} compact />,
         code: <EmbedCode username={holder.username} />,
       }}
     />
@@ -262,7 +264,7 @@ async function EmbedCode({ username }: { username: string }) {
   cacheLife("max");
   return (
     <Code lang="html" filename="index.html" material="glass">
-      {embedOf(username)}
+      {embedOf(username, "compact")}
     </Code>
   );
 }

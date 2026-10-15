@@ -101,9 +101,14 @@ export const cardSchema = z
 export type Card = z.infer<typeof cardSchema>;
 
 /** The HTML that puts `handle`'s card on any page (app/embed.js): the one
- *  snippet the share menu, the home and oEmbed all give. */
-export function embedOf(handle: string): string {
-  return `<script type="module" src="${PROD_URL}/embed.js"></script>\n<e-id-card handle="${handle}"></e-id-card>`;
+ *  snippet the share menu, the home and oEmbed all give. `compact` is the card
+ *  as a byline, for the foot of a post. */
+export function embedOf(
+  handle: string,
+  face: "card" | "compact" = "card",
+): string {
+  const compact = face === "compact" ? " compact" : "";
+  return `<script type="module" src="${PROD_URL}/embed.js"></script>\n<e-id-card handle="${handle}"${compact}></e-id-card>`;
 }
 
 /** Where `handle`'s card is in every form (`formats`). */

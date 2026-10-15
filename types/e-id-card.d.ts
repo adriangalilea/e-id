@@ -8,7 +8,7 @@ declare module "react" {
       "e-id-card": React.DetailedHTMLProps<
         React.HTMLAttributes<HTMLElement>,
         HTMLElement
-      > & { handle: string };
+      > & { handle: string; compact?: boolean };
     }
   }
 }

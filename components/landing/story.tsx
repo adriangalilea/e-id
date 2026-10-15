@@ -619,12 +619,12 @@ function Bone({ w, className }: { w: string; className?: string }) {
   );
 }
 
-/** Someone's own site, its words still to be written (bars standing in for them),
- *  and the one thing on it that is real: the card, embedded where it would go,
- *  between what they say of themselves. */
+/** Something someone made, a post on their own site, its words still to be
+ *  written (bars standing in for them), and the one thing on it that is real:
+ *  the card as its byline, at its foot, where a site says who made it. */
 function Site({ card }: { card: React.ReactNode }) {
   return (
-    <div className="flex min-h-full flex-col gap-7 px-6 py-5">
+    <div className="flex min-h-full flex-col gap-6 px-6 py-5">
       <header className="flex items-center justify-between">
         <div className="size-6 rounded-full bg-foreground/15" />
         <div className="flex gap-4">
@@ -633,21 +633,19 @@ function Site({ card }: { card: React.ReactNode }) {
           <Bone w="2rem" />
         </div>
       </header>
-      <div className="flex flex-col gap-2.5">
-        <Bone w="75%" className="h-5 bg-foreground/15" />
-        <Bone w="50%" className="h-5 bg-foreground/15" />
+      <div className="flex flex-col gap-2.5 pt-2">
+        <Bone w="80%" className="h-5 bg-foreground/15" />
+        <Bone w="55%" className="h-5 bg-foreground/15" />
+        <Bone w="6rem" className="mt-1 h-2" />
       </div>
       <div className="flex flex-col gap-2.5">
         <Bone w="100%" />
-        <Bone w="92%" />
-        <Bone w="60%" />
+        <Bone w="94%" />
+        <Bone w="97%" />
+        <Bone w="62%" />
       </div>
-      {card}
-      <div className="flex flex-col gap-2.5">
-        <Bone w="96%" />
-        <Bone w="88%" />
-        <Bone w="40%" />
-      </div>
+      <div className="aspect-[16/6] rounded-lg bg-foreground/[0.06]" />
+      <footer className="border-foreground/10 border-t pt-5">{card}</footer>
     </div>
   );
 }
