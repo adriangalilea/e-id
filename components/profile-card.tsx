@@ -1,10 +1,9 @@
 "use client"
 
-import { Pen } from "lucide-react"
 import { createContext, use, useRef, useState } from "react"
 import { flushSync } from "react-dom"
 import type { CardEditor } from "@/components/card-editor"
-import { CORNER, PRESS_HINT } from "@/components/card-shape"
+import { CORNER, EDIT_CURSOR } from "@/components/card-shape"
 import { type Holder, IdCard } from "@/components/id-card"
 import { SubjectLight } from "@/components/light"
 import { useChip } from "@/components/session/use-chip"
@@ -105,7 +104,8 @@ export function ProfileCard({
         </HoloLean>
         {owner && (
           // For its owner the whole card is one press: taking it up to write on.
-          // Under the hand it says so.
+          // The pointer says so as a pen (`EDIT_CURSOR`); the "edit" button
+          // under the card is the same press for whoever does not point.
           <button
             type="button"
             aria-label="edit your card"
@@ -113,16 +113,9 @@ export function ProfileCard({
             onClick={open}
             onPointerEnter={() => void load()}
             onFocus={() => void load()}
-            className={cn(
-              CORNER,
-              "group/press absolute inset-0 z-10 cursor-pointer outline-offset-4",
-            )}
-          >
-            <span aria-hidden className={PRESS_HINT}>
-              <Pen strokeWidth={1.5} />
-              {opening ? "opening" : "edit"}
-            </span>
-          </button>
+            style={{ cursor: opening ? "progress" : EDIT_CURSOR }}
+            className={cn(CORNER, "absolute inset-0 z-10 outline-offset-4")}
+          />
         )}
       </HoloLight>
       {children}
