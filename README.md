@@ -18,6 +18,8 @@ Built with Next.js, better-auth, and Drizzle on Turso. The interface comes from 
 - **One rule for `/you/<name>`:** a platform name opens that link, a name of theirs opens that link, anything else (a typo, a platform they have no link on) opens their profile. Only a person who does not exist is a 404.
 - **No anonymous short links on these domains,** at the root, under a path or on a subdomain. They are what phishing runs on, and once enough bad ones pass through, Safe Browsing and mail filters flag the whole domain, every profile with it. Anonymous shortening, if ever, gets a domain of its own.
 - **e-ID's own names are reserved** in `forbiddenUsernames` (`api`, `dev`, and what comes). Usernames are 5 characters or more today; whether shorter ones are sold is open (Premium).
+- **Keep only what is used.** A session is a token and its dates (never an IP address or a browser); a provider's tokens are read once, at linking, then cleared; visits are counted without cookies and never store an IP address. The [privacy page](https://e-id.to/privacy) says what is kept, and must change when the code does.
+- **Deleting an account takes everything of theirs at once**, numbers included (`forgetPerson`). Their names are held from anyone else for 90 days (`released_name`), so links still out there open nobody else. The vouches they wrote on other pages stay, signed "a former e-ID member": the page's owner keeps them, nothing of the writer does.
 
 ## To do
 
@@ -28,7 +30,8 @@ Built with Next.js, better-auth, and Drizzle on Turso. The interface comes from 
 - [ ] an optional status line on the profile and its share image
 - [ ] a write API for the card (`card.json` is the read one), on the same API keys
 - [ ] passkeys (better-auth has them)
-- [ ] deleting your account: there is no way to yet (better-auth's `deleteUser` is off). When it comes, its visits go with it already (`forgetPerson`, in auth.ts's user delete hook).
+- [ ] download your data: a button with everything e-ID holds about you (your account, the vouches you wrote, your numbers). Until then a request by email is answered within a month, as the privacy page says; `card.json` already carries the public card.
+- [ ] Vercel's and Turso's data processing agreements, accepted in their dashboards
 - [ ] live activity: a feed (RSS or Atom), a YouTube channel (each has a feed), Bluesky, GitHub, mixed into the latest of what you made, on your page
 
 ### Premium
