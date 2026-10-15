@@ -315,8 +315,11 @@ export function Panel({
     throw new Error(
       "Panel: a panel with a head names itself in it (or in a heading above it); `title` and `description` are for one without",
     )
+  // Asked of the material the caller chose, never the one drawn: a glass panel in
+  // a frame draws the inset face, and its light is simply not drawn there. Asked of
+  // the drawn one it threw on a nested glass panel's own tint (garden's /s/lore).
   if (
-    !glass &&
+    own !== "glass" &&
     [backColor, frontColor, rim, rimWidth, rimColor, tint, tintAmount].some(
       (v) => v !== undefined,
     )
