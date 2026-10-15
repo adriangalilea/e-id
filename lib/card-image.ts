@@ -322,25 +322,20 @@ export async function cardSvg(card: Card, frame: CardFrame = "share"): Promise<s
     ? `<image href="${photo}" x="${f(px)}" y="${f(py)}" width="${f(ps)}" height="${f(ps)}" preserveAspectRatio="xMidYMid slice" clip-path="url(#photo)"/>`
     : `<g opacity="0.15">${mark(px + ps / 2 - (ps / 2) * (MARK_BOX.w / MARK_BOX.h) / 2, py + ps * 0.75, ps / 2, "#fff")}</g>`;
   // The card's own save, in its foot's corner on the inner margin, mirroring
-  // the country at its head: `vCard` and the contact glyph in the head's type,
-  // engraved (components/save-contact `CardSave`): cut darker than the card,
-  // opaque, its lower edge a light hairline (a light copy a pixel lower, under
-  // it). On the card set on a page, where it can be pressed, not on the share
-  // image.
+  // the country at its head: VCARD as a small label (capitals, tracked wide,
+  // smaller than the head) and the contact glyph, dimmed as one (components/
+  // save-contact `CardSave`). On the card set on a page, where it can be
+  // pressed, not on the share image.
   const saveIcon = 1.15 * headSize;
   const saveBase = cy + ch - pad - 0.25 * headSize;
   const saveIconX = cx + cw - pad - saveIcon;
-  const engraved = (ink: string, dy: number, opacity: number) =>
-    `<g transform="translate(0 ${dy})" opacity="${opacity}">` +
-    `<text x="${f(saveIconX - 1.2 * u)}" y="${f(saveBase)}" text-anchor="end" font-family="${MONO}" font-size="${f(headSize)}" fill="${ink}">vCard</text>` +
-    icon(contactRound, saveIconX, saveBase - 0.36 * headSize - saveIcon / 2, saveIcon, `stroke="${ink}" stroke-width="1.5"`, 1) +
-    "</g>";
+  const labelSize = 0.72 * headSize;
   const save = share
     ? ""
-    : `<a href="${esc(card.formats.vcard)}" download="${esc(card.handle)}.vcf" aria-label="save contact (vCard)"><title>save contact</title>` +
-      engraved("#fff", 1, 0.16) +
-      engraved("#050506", 0, 1) +
-      "</a>";
+    : `<a href="${esc(card.formats.vcard)}" download="${esc(card.handle)}.vcf" aria-label="save contact (vCard)"><title>save contact</title><g opacity="0.4">` +
+      `<text x="${f(saveIconX - 1.2 * u)}" y="${f(saveBase - 0.36 * headSize + 0.36 * labelSize)}" text-anchor="end" font-family="${MONO}" font-size="${f(labelSize)}" letter-spacing="${f(0.18 * labelSize)}" fill="${INK}">VCARD</text>` +
+      icon(contactRound, saveIconX, saveBase - 0.36 * headSize - saveIcon / 2, saveIcon, `stroke="${INK}" stroke-width="1.5"`, 1) +
+      "</g></a>";
   const [gx, gy] = at(100 - 2 - 34, 6);
   const gs = 34 * u;
   const ghost = photo
