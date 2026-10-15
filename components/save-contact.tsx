@@ -21,7 +21,11 @@ export function CardSave({ username }: { username: string }) {
       title="save contact"
       className={cn(
         ON_CARD,
-        "-mx-[1.2cqw] flex items-center gap-[1.2cqw] px-[1.2cqw] py-[0.6cqw] font-mono text-(length:--card-head) text-foreground opacity-35 transition-[opacity,background-color] duration-150 [text-shadow:0_-1px_0_rgb(0_0_0/0.7),0_1px_0_rgb(255_255_255/0.07)] hover:bg-white/[0.06] hover:opacity-85 focus-visible:opacity-85 in-data-pressing:bg-white/[0.06] in-data-pressing:opacity-85 [&_svg]:size-[1.15em] [&_svg]:stroke-[1.5] [&_svg]:drop-shadow-[0_-1px_0_rgb(0_0_0/0.7)]",
+        // Engraved: cut into the card, so darker than its surface and opaque
+        // (nothing of the print shows through the cut), its lower edge
+        // catching the light as a hairline. Under the hand, the address's.
+        "-mx-[1.2cqw] flex items-center gap-[1.2cqw] px-[1.2cqw] py-[0.6cqw] font-mono text-(length:--card-head) text-[#050506] transition-[color,background-color] duration-150 [text-shadow:0_1px_0_rgb(255_255_255/0.16)] [&_svg]:size-[1.15em] [&_svg]:stroke-[1.5] [&_svg]:drop-shadow-[0_1px_0_rgb(255_255_255/0.16)]",
+        "hover:bg-white/[0.06] hover:text-[#d9d9d9] hover:[text-shadow:none] hover:[&_svg]:drop-shadow-none focus-visible:text-[#d9d9d9] in-data-pressing:bg-white/[0.06] in-data-pressing:text-[#d9d9d9]",
       )}
     >
       vCard
