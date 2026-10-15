@@ -19,14 +19,12 @@ export const GITHUB: IconNode = [
   ["path", { d: "M9 18c-4.51 2-5-2-7-2", key: "9comsn" }],
 ]
 
-export const TWITTER: IconNode = [
-  [
-    "path",
-    {
-      d: "M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z",
-      key: "pff0z6",
-    },
-  ],
+/** X's mark, which Lucide never drew (its bird is Twitter's, retired in 2023):
+ *  Tabler's `brand-x` (MIT, Paweł Kuna), drawn on the same 24 grid in the same
+ *  round 2 stroke, so it sits beside Lucide's outlines as one of them. */
+export const X_LOGO: IconNode = [
+  ["path", { d: "M4 4l11.733 16h4.267l-11.733 -16z", key: "x-bar" }],
+  ["path", { d: "M4 20l6.768 -6.768m2.46 -2.46l6.772 -6.772", key: "x-cut" }],
 ]
 
 export const YOUTUBE: IconNode = [
@@ -61,6 +59,6 @@ export const INSTAGRAM: IconNode = [
 ]
 
 export const Github = createLucideIcon("github", GITHUB)
-export const Twitter = createLucideIcon("twitter", TWITTER)
+export const XLogo = createLucideIcon("x-logo", X_LOGO)
 export const Youtube = createLucideIcon("youtube", YOUTUBE)
 export const Instagram = createLucideIcon("instagram", INSTAGRAM)

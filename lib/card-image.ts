@@ -17,7 +17,7 @@ import {
 import {
   GITHUB as github,
   INSTAGRAM as instagram,
-  TWITTER as twitter,
+  X_LOGO as twitter,
   YOUTUBE as youtube,
 } from "@/lib/brand-icons"
 import { CARD_LAYOUT } from "@/lib/card-layout"

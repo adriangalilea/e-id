@@ -1,6 +1,6 @@
 import { AtSign, CircleDotDashed, Link, Link2, Mail, Send } from "lucide-react"
 import type { ReactElement } from "react"
-import { Github, Instagram, Twitter, Youtube } from "@/lib/brand-icons"
+import { Github, Instagram, XLogo, Youtube } from "@/lib/brand-icons"
 import type { LinkPlatform } from "@/lib/platforms"
 
 // A LINK BY ITS PLATFORM: where its value leads, the glyph it is drawn with, and
@@ -14,7 +14,7 @@ export function getLinkUrl(platform: LinkPlatform, value: string): string {
     link: value,
     github: `https://github.com/${value}`,
     youtube: `https://youtube.com/@${value}`,
-    twitter: `https://twitter.com/${value}`,
+    twitter: `https://x.com/${value}`,
     telegram: `https://t.me/${value}`,
     self: `https://${value}.self.fm`,
     instagram: `https://instagram.com/${value}`,
@@ -40,7 +40,7 @@ export function getLinkIcon(platform: LinkPlatform): ReactElement {
     link: <Link2 {...iconProps} />,
     email: <Mail {...iconProps} />,
     github: <Github {...iconProps} />,
-    twitter: <Twitter {...iconProps} />,
+    twitter: <XLogo {...iconProps} />,
     youtube: <Youtube {...iconProps} />,
     instagram: <Instagram {...iconProps} />,
     self: <CircleDotDashed {...iconProps} />,
