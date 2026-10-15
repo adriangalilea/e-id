@@ -224,8 +224,12 @@ function SignedOut<P extends string>({
           size={size}
           loading={waiting || busy}
           icon={
+            // A 1.5 px line on screen at every size: the face is drawn larger
+            // than Lucide's 24 px grid (32 px at lg), where a relative 1.5 came
+            // out a 2 px line, heavy beside the words.
             <CircleUserRound
               strokeWidth={1.5}
+              absoluteStrokeWidth
               className={cn(FACE[size], "-my-1")}
             />
           }
@@ -282,7 +286,7 @@ function SignedIn({
               <span
                 data-slot="account-menu-initial"
                 aria-hidden
-                className="text-[11px] lowercase leading-none"
+                className="text-[11px] leading-none lowercase"
               >
                 {user.name.charAt(0)}
               </span>
