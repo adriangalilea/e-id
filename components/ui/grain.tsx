@@ -77,6 +77,19 @@ export interface GrainProps {
    *  pointer. With `rest` off it drifts when no hand is there. Both on, the
    *  surface twinkles everywhere and brightens where the hand is. */
   hand?: boolean
+  /** shimmer: its edges faded to nothing in the shader, never by a mask on the
+   *  canvas (a pass over the whole layer each frame): an ellipse centred at `x`,
+   *  `y` with radii `rx`, `ry`, shares of the box (CSS's `radial-gradient(ellipse
+   *  rx ry at x y)`), whole within `inner` of its radius; and `foot`, the share of
+   *  its height from which it fades to nothing at its foot. */
+  fade?: {
+    x: number
+    y: number
+    rx: number
+    ry: number
+    inner: number
+    foot?: number
+  }
   className?: string
 }
 
@@ -229,6 +242,9 @@ uniform float uFlow;
 uniform float uSway;
 uniform vec4 uPart;
 uniform float uPartOpen;
+uniform vec4 uFade;
+uniform float uFadeInner;
+uniform float uFoot;
 
 // The surface as the hand's wake has moved it: each mark in the wake pushes the
 // surface along the way the hand went and curls it round the hand's path, within
@@ -396,7 +412,15 @@ void main() {
     }
   }
   if (light <= 0.0) { gl_FragColor = vec4(0.0); return; }
-  float a = clamp(light * uStrength * nudged.z, 0.0, 1.0);
+  // Its edges, faded here rather than by a mask on the canvas (a pass over the
+  // whole layer every frame): an ellipse, inside it whole, to nothing at its rim,
+  // and toward the foot from uFoot down. Shares of the box, from its top left.
+  vec2 inBox = vec2(gl_FragCoord.x / uSize.x, 1.0 - gl_FragCoord.y / uSize.y);
+  float fade = 1.0;
+  if (uFade.z > 0.0)
+    fade *= 1.0 - smoothstep(uFadeInner, 1.0, length((inBox - uFade.xy) / uFade.zw));
+  if (uFoot < 1.0) fade *= 1.0 - smoothstep(uFoot, 1.0, inBox.y);
+  float a = clamp(light * uStrength * nudged.z * fade, 0.0, 1.0);
   gl_FragColor = vec4(tone / light * a, a);
 }`
 
@@ -437,7 +461,11 @@ type Knobs = Required<
     | "rest"
     | "hand"
   >
-> & { size: number | undefined; part: GrainProps["part"] }
+> & {
+  size: number | undefined
+  part: GrainProps["part"]
+  fade: GrainProps["fade"]
+}
 
 function Shimmer({
   rest = true,
@@ -454,11 +482,13 @@ function Shimmer({
   flow = 0.15,
   sway = 0,
   part = null,
+  fade,
   className,
 }: GrainProps) {
   const ref = React.useRef<HTMLCanvasElement>(null)
   const knobs = React.useRef<Knobs>(null as unknown as Knobs)
   knobs.current = {
+    fade,
     rest,
     hand,
     strength,
@@ -477,7 +507,12 @@ function Shimmer({
   React.useEffect(() => {
     const canvas = ref.current
     if (!canvas) return
-    const gl = canvas.getContext("webgl", { premultipliedAlpha: true })
+    // No antialiasing: one triangle over the whole box has no edge to smooth, and
+    // asking for it kept a multisampled copy of the whole canvas every frame.
+    const gl = canvas.getContext("webgl", {
+      premultipliedAlpha: true,
+      antialias: false,
+    })
     if (!gl) throw new Error("Grain: no WebGL")
     const program = gl.createProgram()
     if (!program) throw new Error("Grain: no program")
@@ -560,6 +595,10 @@ function Shimmer({
       gl.uniform1i(u("uRest"), m.rest ? 1 : 0)
       gl.uniform1f(u("uFlow"), m.flow)
       gl.uniform1f(u("uSway"), m.sway * k)
+      const f = m.fade
+      gl.uniform4f(u("uFade"), f?.x ?? 0, f?.y ?? 0, f?.rx ?? 0, f?.ry ?? 0)
+      gl.uniform1f(u("uFadeInner"), f?.inner ?? 0)
+      gl.uniform1f(u("uFoot"), f?.foot ?? 1)
       const box = canvas.getBoundingClientRect()
       const dt = Math.min(0.1, (now - then) / 1000)
       then = now
@@ -622,16 +661,25 @@ function Shimmer({
     const still = reduced()
     // Thirty frames a second at most: the drift is slow and a flash lasts a
     // fifth of a second, so more would spend the GPU on nothing the eye takes.
+    // Off screen or in a hidden tab it asks for no frames at all, and starts
+    // again when it is seen.
     let frame = 0
     let last = 0
     let shown = true
+    const running = () => shown && !document.hidden
     const tick = (now: number) => {
+      frame = 0
+      if (!running()) return
       frame = requestAnimationFrame(tick)
-      if (!shown || document.hidden || now - last < 32) return
+      if (now - last < 32) return
       last = now
       draw(still ? 4000 : now)
     }
-    frame = requestAnimationFrame(tick)
+    const resume = () => {
+      if (frame === 0 && running()) frame = requestAnimationFrame(tick)
+    }
+    resume()
+    document.addEventListener("visibilitychange", resume)
     const move = (e: PointerEvent) => {
       if (still) return
       const box = canvas.getBoundingClientRect()
@@ -660,12 +708,14 @@ function Shimmer({
     window.addEventListener("pointermove", move, { passive: true })
     const seen = new IntersectionObserver(([entry]) => {
       shown = entry?.isIntersecting ?? true
+      resume()
     })
     seen.observe(canvas)
     const resized = new ResizeObserver(() => fit())
     resized.observe(canvas)
     return () => {
       cancelAnimationFrame(frame)
+      document.removeEventListener("visibilitychange", resume)
       window.removeEventListener("pointermove", move)
       seen.disconnect()
       resized.disconnect()

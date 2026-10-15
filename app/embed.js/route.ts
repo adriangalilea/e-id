@@ -1,5 +1,5 @@
-import { LIGHT_HOOKS } from "@/lib/card-image";
-import { MARK_BOX, MARK_PATH } from "@/lib/mark";
+import { LIGHT_HOOKS } from "@/lib/card-image"
+import { MARK_BOX, MARK_PATH } from "@/lib/mark"
 
 // THE EMBED: `<e-id-card handle="…">` on any page, one script, no framework.
 //
@@ -10,7 +10,8 @@ import { MARK_BOX, MARK_PATH } from "@/lib/mark";
 // shadow root so the host page's styles never reach it, and lit by the hand as the
 // site's card is: it leans a few degrees toward the pointer and the hologram's band
 // follows it (`LIGHT_HOOKS` names what moves), brighter while the hand is on it.
-// `compact` is the same card as a byline (lib/card-image `compactSvg`), for the
+// `compact` is the same card as a byline (lib/card-image `compactSvg`, served as
+// `byline.svg`), for the
 // foot of a post, lit and leaning the same way; it is sized by its height
 // (`--e-id-card-height`), the full card by its width (`--e-id-card-width`).
 // What is inside the element stays shown until the card arrives, and if it never
@@ -35,7 +36,7 @@ if (!document.querySelector("style[data-e-id-fonts]")) {
   style.dataset.eIdFonts = "";
   style.textContent = FACES.map(([family, weight, file]) =>
     "@font-face{font-family:'" + family + "';font-weight:" + weight +
-    ";font-display:swap;src:url(" + ORIGIN + "/api/fonts/" + file + ") format('truetype')}").join("");
+    ";font-display:swap;src:url(" + ORIGIN + "/fonts/" + file + ") format('truetype')}").join("");
   document.head.append(style);
 }
 
@@ -114,10 +115,10 @@ class EIdCard extends HTMLElement {
   async #load() {
     const handle = this.getAttribute("handle");
     if (!handle) throw new Error("<e-id-card> needs a handle: <e-id-card handle=\\"you\\">");
-    // The compact face is the same card drawn as a byline (card.svg?compact),
-    // lit and leaning as the card does.
+    // The compact face is the same card drawn as a byline (byline.svg), lit and
+    // leaning as the card does. Both prerendered per person, kept until they change.
     const compact = this.hasAttribute("compact");
-    const response = await fetch(ORIGIN + "/" + encodeURIComponent(handle) + "/card.svg" + (compact ? "?compact" : ""));
+    const response = await fetch(ORIGIN + "/" + encodeURIComponent(handle) + (compact ? "/byline.svg" : "/card.svg"));
     if (!response.ok) {
       console.error("<e-id-card>: " + handle + " answered " + response.status);
       return;
@@ -236,7 +237,7 @@ class EIdCard extends HTMLElement {
 }
 
 if (!customElements.get("e-id-card")) customElements.define("e-id-card", EIdCard);
-`;
+`
 
 export function GET() {
   return new Response(SCRIPT, {
@@ -250,5 +251,5 @@ export function GET() {
           ? "public, max-age=3600, stale-while-revalidate=86400"
           : "no-store",
     },
-  });
+  })
 }

@@ -1,22 +1,25 @@
-import type { NextConfig } from "next";
-import { EMOJI_DOMAIN_PUNYCODE, MAIN_DOMAIN, SHORT_DOMAIN } from "./lib/const";
+import type { NextConfig } from "next"
+import { EMOJI_DOMAIN_PUNYCODE, MAIN_DOMAIN, SHORT_DOMAIN } from "./lib/const"
 
 // Every path a person can open, never the auth API or the build's assets: the
 // OAuth callback must land on the host it was sent from.
-const PAGES = "/:path((?!api/|_next/).*)";
+const PAGES = "/:path((?!api/|_next/).*)"
 
-const escaped = (domain: string) => domain.replaceAll(".", "\\.");
+const escaped = (domain: string) => domain.replaceAll(".", "\\.")
 const host = (...domains: string[]) =>
-  `(?:www\\.)?(?:${domains.map(escaped).join("|")})`;
+  `(?:www\\.)?(?:${domains.map(escaped).join("|")})`
 
 // Safari shows the emoji domain in its address bar (👤.to) and Chrome does not,
 // so Safari is sent to the emoji domain and everything else to e-id.to. These run
 // in Vercel's router, before any function and before the cache.
-const SAFARI = ".*Version/.*Safari.*";
-const NOT_SAFARI = ".*(?:Chrome|CriOS).*";
+const SAFARI = ".*Version/.*Safari.*"
+const NOT_SAFARI = ".*(?:Chrome|CriOS).*"
 
 const nextConfig: NextConfig = {
   cacheComponents: true,
+  // One prefetch per route (its static shell), shared by every link to it: the
+  // home's pile of cards links to a dozen profiles, which were a prefetch each.
+  partialPrefetching: true,
   // The share image's renderer is a native addon (lib/card-image): loaded from
   // node_modules at run time, never bundled.
   serverExternalPackages: ["@resvg/resvg-js"],
@@ -26,13 +29,30 @@ const nextConfig: NextConfig = {
   images: {
     localPatterns: [{ pathname: "/links/**" }, { pathname: "/**", search: "" }],
   },
-  // The card's fonts are read from disk at run time (the share image's renderer,
-  // the embed's fonts); the trace is told, since a path built from process.cwd()
-  // is not followed.
+  // The card's fonts are read from disk by the renderer that draws it (the share
+  // image, the embed's card and byline); the trace is told, since a path built from
+  // process.cwd() is not followed. Pages that embed a card load the same files
+  // straight from the CDN (`headers`, below).
   outputFileTracingIncludes: {
-    "/[username]/opengraph-image": ["./assets/fonts/*"],
-    "/[username]/card.svg": ["./assets/fonts/*"],
-    "/api/fonts/[file]": ["./assets/fonts/*"],
+    "/[username]/opengraph-image": ["./public/fonts/*.ttf"],
+    "/[username]/card.svg": ["./public/fonts/*.ttf"],
+    "/[username]/byline.svg": ["./public/fonts/*.ttf"],
+  },
+  // The fonts, for pages on other origins (the embed): readable across origins,
+  // and kept a year (their names change with them).
+  async headers() {
+    return [
+      {
+        source: "/fonts/:file*",
+        headers: [
+          { key: "access-control-allow-origin", value: "*" },
+          {
+            key: "cache-control",
+            value: "public, max-age=31536000, immutable",
+          },
+        ],
+      },
+    ]
   },
   // A person's contact (app/[username]/card.vcf) at the address people share
   // with `.vcf` on it, and at the profile's own address when what is asked for
@@ -50,7 +70,9 @@ const nextConfig: NextConfig = {
         },
         {
           source: "/:username([A-Za-z0-9_-]+)",
-          has: [{ type: "header", key: "accept", value: ".*text/(?:x-)?vcard.*" }],
+          has: [
+            { type: "header", key: "accept", value: ".*text/(?:x-)?vcard.*" },
+          ],
           destination: "/:username/card.vcf",
         },
         // The card as data (lib/card-schema) at `/json` after the address, as
@@ -67,13 +89,14 @@ const nextConfig: NextConfig = {
             {
               type: "header",
               key: "accept",
-              value: "(?:application/json|application/vnd\\.e-id\\.card\\+json).*",
+              value:
+                "(?:application/json|application/vnd\\.e-id\\.card\\+json).*",
             },
           ],
           destination: "/:username/card.json",
         },
       ],
-    };
+    }
   },
   async redirects() {
     return [
@@ -91,7 +114,9 @@ const nextConfig: NextConfig = {
       },
       {
         source: PAGES,
-        has: [{ type: "host", value: host(SHORT_DOMAIN, EMOJI_DOMAIN_PUNYCODE) }],
+        has: [
+          { type: "host", value: host(SHORT_DOMAIN, EMOJI_DOMAIN_PUNYCODE) },
+        ],
         missing: [{ type: "header", key: "user-agent", value: SAFARI }],
         destination: `https://${MAIN_DOMAIN}/:path`,
         permanent: true,
@@ -105,8 +130,8 @@ const nextConfig: NextConfig = {
         destination: `https://${MAIN_DOMAIN}/:path`,
         permanent: true,
       },
-    ];
+    ]
   },
-};
+}
 
-export default nextConfig;
+export default nextConfig

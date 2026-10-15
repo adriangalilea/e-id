@@ -1,16 +1,13 @@
 import { hasFlag as known } from "country-flag-icons"
-import * as Square from "country-flag-icons/react/1x1"
-import * as Rect from "country-flag-icons/react/3x2"
-import type * as React from "react"
 import { cn } from "@/lib/utils"
+import { Image } from "@/components/ui/image"
 
 export type FlagShape = "rect" | "square"
 
-type Art = (props: React.SVGProps<SVGSVGElement>) => React.JSX.Element
-
-const SET: Record<FlagShape, Record<string, Art>> = {
-  rect: Rect as unknown as Record<string, Art>,
-  square: Square as unknown as Record<string, Art>,
+/** Where each shape's files are served (flag-route). */
+const FOLDER: Record<FlagShape, string> = {
+  rect: "/flags/3x2",
+  square: "/flags/1x1",
 }
 
 /** A code as the set names it: upper case, a subdivision's hyphen kept. */
@@ -53,15 +50,21 @@ export function Flag({
 }) {
   const c = normal(code)
   if (!known(c)) throw new Error(`flag: no flag for "${code}"`)
-  const Art = SET[shape][c.replace("-", "_")]
-  if (!Art) throw new Error(`flag: no ${shape} art for "${c}"`)
   const said = label ?? countryName(c)
   const look = {
     "data-slot": "flag",
     "data-shape": shape,
     className: cn(FRAME, SIZE[shape], className),
   }
-  const art = <Art aria-hidden className="block size-full" />
+  const art = (
+    <Image
+      src={`${FOLDER[shape]}/${c}.svg`}
+      alt=""
+      fill
+      fit="cover"
+      className="block size-full"
+    />
+  )
   // Named, it is an image with the country's name; unnamed (the name is written
   // beside it), it is decoration and says nothing.
   if (!said)

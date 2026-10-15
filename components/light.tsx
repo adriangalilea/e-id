@@ -1,6 +1,6 @@
-import { AmbientLight } from "@/components/ui/ambient-light";
-import { Grain } from "@/components/ui/grain";
-import { PartedGrain } from "@/components/landing/shimmer-part";
+import { PartedGrain } from "@/components/landing/shimmer-part"
+import { AmbientLight } from "@/components/ui/ambient-light"
+import { Grain } from "@/components/ui/grain"
 
 /** THE PAGE'S GROUND: never flat black, a composed dark gradient of a few broad,
  *  very soft pools of light, all neutral (no hue, Adrian's rule: colour reads as a
@@ -42,7 +42,7 @@ export function PageLight() {
         ]}
       />
     </div>
-  );
+  )
 }
 
 /** THE LIGHT IS THE SUBJECT'S: the one thing a page is about (a person's card,
@@ -71,12 +71,12 @@ export function SubjectLight() {
         ]}
       />
     </div>
-  );
+  )
 }
 
 /** How strong a profile's shimmer is, against the hero's (0.75): the home's
  *  surface carried onto the profile, faint enough to stay behind the card. */
-export const PROFILE_SHIMMER = 0.45;
+export const PROFILE_SHIMMER = 0.45
 
 /** THE PROFILE'S SHIMMER: the hero's surface of facets (@ag/grain) across the
  *  whole profile, its card and its links alike, so a profile stands in the same
@@ -88,13 +88,15 @@ export const PROFILE_SHIMMER = 0.45;
 export function ProfileShimmer({
   strength = PROFILE_SHIMMER,
 }: {
-  strength?: number;
+  strength?: number
 }) {
+  // Its fade is the shader's own (@ag/grain `fade`): a mask or a filter on a
+  // layer the size of the window was a pass over all of it every frame.
   return (
     <div
       data-slot="profile-shimmer"
       aria-hidden
-      className="pointer-events-none fixed inset-0 -z-10 blur-[0.4px] [mask-image:radial-gradient(ellipse_75%_70%_at_50%_45%,black_35%,transparent_100%)]"
+      className="pointer-events-none fixed inset-0 -z-10"
     >
       <Grain
         look="shimmer"
@@ -102,9 +104,10 @@ export function ProfileShimmer({
         density={0.45}
         frost={0.01}
         sway={6}
+        fade={{ x: 0.5, y: 0.45, rx: 0.75, ry: 0.7, inner: 0.35 }}
       />
     </div>
-  );
+  )
 }
 
 /** THE HERO'S SHIMMER (@ag/grain): a surface of facets that flash at rest and
@@ -123,12 +126,11 @@ export function HeroShimmer() {
     <div
       data-slot="hero-shimmer"
       aria-hidden
-      // Nearer than the cards it lies over and further than the visitor's: out
-      // of focus by a hair, so its sparks stay sparks.
       // While the visitor writes on their card (hero-cards, `data-writing`) it
       // steps back with the pile: out of focus and fainter, eased as the cards
-      // move.
-      className="pointer-events-none absolute inset-0 z-[5] blur-[0.4px] transition-[filter,opacity] duration-[900ms] ease-[cubic-bezier(0.22,1,0.36,1)] [mask-composite:intersect] [mask-image:radial-gradient(ellipse_70%_80%_at_45%_45%,black_30%,transparent_100%),linear-gradient(to_bottom,black_55%,transparent)] [[data-slot=hero]:has([data-writing])_&]:opacity-40 [[data-slot=hero]:has([data-writing])_&]:blur-[3px] motion-reduce:transition-none"
+      // move. At rest no filter and no mask: its fade is the shader's own
+      // (@ag/grain `fade`), not a pass over the layer every frame.
+      className="pointer-events-none absolute inset-0 z-[5] transition-[filter,opacity] duration-[900ms] ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none [[data-slot=hero]:has([data-writing])_&]:opacity-40 [[data-slot=hero]:has([data-writing])_&]:blur-[3px]"
     >
       {/* Swaying as the cards it lies among float (hero-cards, `card-float`:
           ±0.4rem), so it moves as one of them. */}
@@ -138,7 +140,8 @@ export function HeroShimmer() {
         density={0.45}
         frost={0.01}
         sway={6}
+        fade={{ x: 0.45, y: 0.45, rx: 0.7, ry: 0.8, inner: 0.3, foot: 0.55 }}
       />
     </div>
-  );
+  )
 }
