@@ -1,5 +1,6 @@
 "use client"
 
+import { LogIn } from "lucide-react"
 import Link from "next/link"
 import { useEffect } from "react"
 import { SIGN_IN_PROVIDERS } from "@/components/session/sign-in-providers"
@@ -29,6 +30,9 @@ export default function FooterUser() {
       // A secondary control in the bar: the brand leads it (`--wordmark-logo`
       // is this size's face).
       size="md"
+      // e-id's mark is a person on a disc: the default face beside it read as a
+      // second logo.
+      icon={<LogIn aria-hidden />}
       user={
         chip && {
           name: chip.u ?? "no address yet",

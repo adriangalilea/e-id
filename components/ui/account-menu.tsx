@@ -84,6 +84,9 @@ const faceLine = (size: AccountMenuSize) => (LINE_PX * 24) / FACE_PX[size]
  *  with the start: the end padding is half the pill's height less half the 16 px
  *  chevron (the button's own `px-4` left it 20 px of air to the face's 4). */
 const END: Record<AccountMenuSize, string> = { md: "pr-2", lg: "pr-3" }
+/** A 16 px icon at the start (one given in place of the face), concentric with
+ *  the round start by the same arithmetic. */
+const START: Record<AccountMenuSize, string> = { md: "pl-2", lg: "pl-3" }
 
 /** A brand's mark from a 24-unit path (simple-icons' shape: `{ path }`), in the
  *  current colour, sized by whatever holds it (a button's icon slot, a menu row). */
@@ -190,6 +193,7 @@ function SignedOut<P extends string>({
   onSignIn,
   waiting,
   label,
+  icon,
   material,
   scheme,
   size,
@@ -199,6 +203,7 @@ function SignedOut<P extends string>({
   onSignIn: (provider: P) => Press
   waiting: boolean
   label?: React.ReactNode
+  icon?: React.ReactNode
   material: Material
   scheme?: Scheme
   size: AccountMenuSize
@@ -237,13 +242,22 @@ function SignedOut<P extends string>({
           size={size}
           loading={waiting || busy}
           icon={
-            <CircleUserRound
-              strokeWidth={faceLine(size)}
-              className={cn(FACE[size], "-my-1")}
-            />
+            icon ?? (
+              <CircleUserRound
+                strokeWidth={faceLine(size)}
+                className={cn(FACE[size], "-my-1")}
+              />
+            )
           }
           iconEnd={CHEVRON}
-          className={cn("group pl-1", END[size], className)}
+          // The face fills the round start; a given 16 px icon is concentric with
+          // it as the chevron is with the end (`START` mirrors `END`).
+          className={cn(
+            "group",
+            icon ? START[size] : "pl-1",
+            END[size],
+            className,
+          )}
         >
           {label ?? "sign in"}
         </Button>
@@ -352,6 +366,11 @@ export type AccountMenuProps<P extends string> = {
   /** The signed-out control's words: default "sign in with <provider>" for one,
    *  "sign in" for several. */
   label?: React.ReactNode
+  /** The signed-out control's icon, for several providers: default a face in the
+   *  round slot the signed-in avatar takes, so the two states line up. Given, it is
+   *  an icon beside the words like any button's: for a site whose own mark is a
+   *  person, where a person here reads as a second logo (e-id's `LogIn`). */
+  icon?: React.ReactNode
   /** Rows of the signed-in menu, between the profile and sign out
    *  (`DropdownMenuItem`, `DropdownMenuLinkItem`). */
   children?: React.ReactNode
@@ -370,6 +389,7 @@ export function AccountMenu<P extends string>({
   onSignIn,
   onSignOut,
   label,
+  icon,
   children,
   material,
   scheme,
@@ -398,6 +418,7 @@ export function AccountMenu<P extends string>({
       onSignIn={onSignIn}
       waiting={user === undefined}
       label={label}
+      icon={icon}
       material={m}
       scheme={scheme}
       size={size}
