@@ -2,11 +2,15 @@
 
 import { LogIn } from "lucide-react"
 import Link from "next/link"
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
+import {
+  DeleteAccount,
+  useDeleteReturn,
+} from "@/components/session/delete-account"
 import { SIGN_IN_PROVIDERS } from "@/components/session/sign-in-providers"
 import { useChip } from "@/components/session/use-chip"
 import { AccountMenu } from "@/components/ui/account-menu"
-import { DropdownMenuLinkItem } from "@/components/ui/menu"
+import { DropdownMenuItem, DropdownMenuLinkItem } from "@/components/ui/menu"
 import { toast } from "@/components/ui/toast"
 import { signOut } from "@/lib/auth-client"
 import {
@@ -25,36 +29,55 @@ import {
 export default function FooterUser() {
   const chip = useChip()
   useSignInError()
+  const back = useDeleteReturn()
+  const [deleting, setDeleting] = useState(false)
+  useEffect(() => {
+    if (back && chip) setDeleting(true)
+  }, [back, chip])
   return (
-    <AccountMenu
-      // A secondary control in the bar: the brand leads it (`--wordmark-logo`
-      // is this size's face).
-      size="md"
-      // e-id's mark is a person on a disc: the default face beside it read as a
-      // second logo.
-      icon={<LogIn aria-hidden />}
-      user={
-        chip && {
-          name: chip.u ?? "no address yet",
-          image: chip.i,
-          href: chip.u ? `/${chip.u}` : undefined,
-        }
-      }
-      providers={SIGN_IN_PROVIDERS}
-      onSignIn={startSignIn}
-      onSignOut={() =>
-        signOut().then(({ error }) => {
-          if (error) throw new Error(`sign out: ${error.message}`)
-          window.location.href = "/"
-        })
-      }
-    >
-      {chip && !chip.u && (
-        <DropdownMenuLinkItem render={<Link href="/" />}>
-          pick your address
-        </DropdownMenuLinkItem>
+    <>
+      {chip && (
+        <DeleteAccount
+          username={chip.u}
+          open={deleting}
+          onOpenChange={setDeleting}
+        />
       )}
-    </AccountMenu>
+      <AccountMenu
+        // A secondary control in the bar: the brand leads it (`--wordmark-logo`
+        // is this size's face).
+        size="md"
+        // e-id's mark is a person on a disc: the default face beside it read as a
+        // second logo.
+        icon={<LogIn aria-hidden />}
+        user={
+          chip && {
+            name: chip.u ?? "no address yet",
+            image: chip.i,
+            href: chip.u ? `/${chip.u}` : undefined,
+          }
+        }
+        providers={SIGN_IN_PROVIDERS}
+        onSignIn={startSignIn}
+        onSignOut={() =>
+          signOut().then(({ error }) => {
+            if (error) throw new Error(`sign out: ${error.message}`)
+            window.location.href = "/"
+          })
+        }
+      >
+        {chip && !chip.u && (
+          <DropdownMenuLinkItem render={<Link href="/" />}>
+            pick your address
+          </DropdownMenuLinkItem>
+        )}
+        {chip && (
+          <DropdownMenuItem destructive onClick={() => setDeleting(true)}>
+            delete account
+          </DropdownMenuItem>
+        )}
+      </AccountMenu>
+    </>
   )
 }
 

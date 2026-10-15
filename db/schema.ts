@@ -208,6 +208,14 @@ export const usernameAliases = sqliteTable(
   (table) => ({ userIdx: index("username_alias_user_idx").on(table.user_id) }),
 )
 
+// A NAME LEFT BY A DELETED ACCOUNT, held from anyone else until `until` (lib/username,
+// RELEASE_HOLD_MS): the links to it still out there would otherwise open a stranger's
+// page the day after. Nothing else of the person is kept: the name alone, unlinked.
+export const releasedNames = sqliteTable("released_name", {
+  name_normalized: text("name_normalized").notNull().primaryKey(),
+  until: integer("until", { mode: "timestamp" }).notNull(),
+})
+
 // Type exports
 export type InsertUser = typeof users.$inferInsert
 export type SelectUser = typeof users.$inferSelect

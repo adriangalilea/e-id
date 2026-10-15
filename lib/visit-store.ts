@@ -2,9 +2,6 @@ import "server-only"
 
 import { libsqlDriver } from "@adriangalilea/utils/metrics/libsql"
 import { createClient } from "@libsql/client"
-import { eq } from "drizzle-orm"
-import { db } from "@/db"
-import { usernameAliases } from "@/db/schema"
 import { parseChip } from "@/lib/chip"
 import { forbiddenUsernames } from "@/lib/const"
 import { getProfile, renamedTo } from "@/lib/data"
@@ -61,23 +58,15 @@ export function readerOf(request: Request): Promise<string | null> {
 }
 
 /** A person's numbers, forgotten with their account (auth.ts, before the user is
- *  deleted, while their old names are still theirs): everything counted for them,
- *  and the views of every address under their username and each old name. */
-export async function forgetPerson(user: {
-  id: string
-  username?: unknown
-}): Promise<void> {
-  const aliases = await db
-    .select({ alias: usernameAliases.alias_normalized })
-    .from(usernameAliases)
-    .where(eq(usernameAliases.user_id, user.id))
-  const names = [
-    ...(typeof user.username === "string" ? [user.username] : []),
-    ...aliases.map((a) => a.alias),
-  ]
+ *  deleted): everything counted for them, and the views of every address under
+ *  `names`, their username and each old name (lib/username `namesOf`). */
+export async function forgetPerson(
+  userId: string,
+  names: readonly string[],
+): Promise<void> {
   await forgetOwner(visitDriver(), {
     site: SITE,
-    owner: user.id,
+    owner: userId,
     paths: names.map((n) => `/${n}`),
   })
 }

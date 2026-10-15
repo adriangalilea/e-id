@@ -15,9 +15,13 @@ import {
 } from "@/lib/const"
 import { required } from "@/lib/env"
 import { profileTag, USERS_TAG, usernameTag } from "@/lib/tags"
-import { providedUsername } from "@/lib/username"
+import { holdReleased, namesOf, providedUsername } from "@/lib/username"
 import { forgetPerson, visitsEnabled } from "@/lib/visit-store"
 import { db } from "./db"
+
+/** A deleted account's names, from its delete hook's `before` (while they are still
+ *  its) to its `after` (where their cached pages expire). */
+const leaving = new Map<string, string[]>()
 
 type LinkedAccount = {
   userId: string
@@ -109,7 +113,10 @@ export const auth = betterAuth({
     `https://${EMOJI_DOMAIN_PUNYCODE}`,
   ],
   secret: required("BETTER_AUTH_SECRET"),
-  session: { expiresIn: SESSION_MAX_AGE },
+  // A session younger than `freshAge` may delete its account (better-auth refuses
+  // an older one): a stolen or forgotten session cannot wipe anyone, and the
+  // person deleting has just proven it is them by signing in again.
+  session: { expiresIn: SESSION_MAX_AGE, freshAge: 10 * 60 },
 
   // One person, one e-ID, whichever provider they come back with: a sign-in whose
   // provider vouches for an email we hold joins that account (both GitHub and
@@ -144,6 +151,9 @@ export const auth = betterAuth({
   },
 
   user: {
+    // A person deletes their own account (the account menu), from a fresh
+    // session (`session.freshAge`); what goes with it is the delete hook's below.
+    deleteUser: { enabled: true },
     additionalFields: {
       // Seeded when the account is made, never sent by a client: set and renamed
       // only by the site's own actions (lib/username). Null until they pick one.
@@ -207,12 +217,27 @@ export const auth = betterAuth({
           revalidateTag(usernameTag(user.username), { expire: 0 })
         },
       },
-      // A deleted account leaves no numbers behind (lib/visit-store): forgotten
-      // before the user goes, while their old names still say they were theirs.
-      // A failure here keeps the account, so nothing is deleted half.
+      // A deleted account (the account menu, lib/delete-account): the database
+      // takes everything of theirs with the user row (sessions, providers, links,
+      // old names, vouches on their page and vouches they wrote). Before it goes,
+      // while their old names still say they were theirs: their numbers are
+      // forgotten (lib/visit-store) and their names held from anyone else
+      // (lib/username). A failure there keeps the account, so nothing goes half.
+      // After, every cached page of theirs expires.
       delete: {
         before: async (user) => {
-          if (visitsEnabled) await forgetPerson(user)
+          const names = await namesOf(user.id)
+          if (visitsEnabled) await forgetPerson(user.id, names)
+          await holdReleased(names)
+          leaving.set(user.id, names)
+        },
+        after: async (user) => {
+          const names = leaving.get(user.id) ?? []
+          leaving.delete(user.id)
+          revalidateTag(USERS_TAG, { expire: 0 })
+          revalidateTag(profileTag(user.id), { expire: 0 })
+          for (const name of names)
+            revalidateTag(usernameTag(name), { expire: 0 })
         },
       },
     },
@@ -230,9 +255,9 @@ export const auth = betterAuth({
   hooks: {
     // The display cookie (lib/chip) follows the session on the host that holds
     // it: written where a sign-in creates one (an OAuth callback on e-id.to, a
-    // handoff claimed on 👤.to), cleared on sign-out.
+    // handoff claimed on 👤.to), cleared on sign-out and on deleting the account.
     after: createAuthMiddleware(async (ctx) => {
-      if (ctx.path === "/sign-out") {
+      if (ctx.path === "/sign-out" || ctx.path === "/delete-user") {
         ctx.setCookie(CHIP_COOKIE, "", { ...CHIP_COOKIE_OPTIONS, maxAge: 0 })
         return
       }

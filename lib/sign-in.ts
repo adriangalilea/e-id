@@ -7,9 +7,13 @@ import { type HandoffProvider, handoffStartUrl } from "@/lib/handoff"
  *  OAuth runs on e-id.to and the session is handed back (lib/handoff); anywhere
  *  else better-auth signs in on this host. Browser only. Settles only if it
  *  fails: on success the page leaves for the provider, so whatever waits on it
- *  (@ag/account-menu's busy press) waits until then. */
-export function startSignIn(provider: HandoffProvider): Promise<void> {
-  const here = window.location.pathname
+ *  (@ag/account-menu's busy press) waits until then. `back`: where to come back
+ *  to, default this page (deleting an account comes back to its confirmation). */
+export function startSignIn(
+  provider: HandoffProvider,
+  back = window.location.pathname,
+): Promise<void> {
+  const here = back
   if (window.location.hostname === EMOJI_DOMAIN_PUNYCODE) {
     window.location.assign(handoffStartUrl(provider, here))
     return new Promise(() => {})
