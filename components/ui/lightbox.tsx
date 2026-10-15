@@ -169,6 +169,10 @@ export interface LightboxProps {
    *  nobody can tell which build produced it, and a stale buffer looks exactly like a
    *  fresh one. Pass a commit SHA. */
   debug?: boolean | string
+  /** With `debug`, every trace line as it is written, for a page that keeps the
+   *  trace somewhere a terminal reads (a dev route appending to a file): the stage
+   *  shows it, this carries it out of the browser. */
+  onTrace?: (line: string) => void
   /** What the dialog is announced as, after the count. */
   label?: string
   children: React.ReactNode
@@ -308,6 +312,7 @@ export function Lightbox({
   onOpenChange,
   label = "media",
   debug = false,
+  onTrace,
   children,
 }: LightboxProps) {
   assert(
@@ -452,6 +457,7 @@ export function Lightbox({
               onFacts={setFacts}
               onClosed={onClosed}
               debug={debug}
+              onTrace={onTrace}
             />
           )}
         </Dialog.Portal>
@@ -562,6 +568,7 @@ type StageProps = {
   onFacts: (f: Facts) => void
   onClosed: () => void
   debug: boolean | string
+  onTrace?: (line: string) => void
 }
 
 const POSE_EPS: Pose = { x: 0.5, y: 0.5, s: 0.001, p: 0.002 }
@@ -586,8 +593,14 @@ function Stage(props: StageProps) {
     onFacts,
     onClosed,
     debug,
+    onTrace,
   } = props
   const count = ids.length
+  // Read at each line, so a sink changing never re-creates the trace's callback.
+  const sink = React.useRef(onTrace)
+  React.useLayoutEffect(() => {
+    sink.current = onTrace
+  }, [onTrace])
   const id = ids[index] as string
   const entry = entryOf(id)
   const media = entry.media
@@ -655,10 +668,9 @@ function Stage(props: StageProps) {
   const logRef = React.useRef<string[]>(TRACE)
   const logRaf = React.useRef(0)
   const pushTrace = React.useCallback((m: string) => {
-    logRef.current = [
-      ...logRef.current.slice(-TRACE_LINES),
-      `${(performance.now() / 1000).toFixed(2)} ${m}`,
-    ]
+    const line = `${(performance.now() / 1000).toFixed(2)} ${m}`
+    sink.current?.(line)
+    logRef.current = [...logRef.current.slice(-TRACE_LINES), line]
     // The buffer OUTLIVES the stage, module-scoped: a bug is reproduced, the
     // lightbox closes, and the evidence has to still be there.
     TRACE = logRef.current
@@ -1754,6 +1766,9 @@ function Stage(props: StageProps) {
     let wheelPhase = phaseStart()
     /** The axis this wheel stream belongs to, once its travel has said. */
     let streamAxis: "x" | "y" | null = null
+    /** A stream opened and the track has not been fed since: the events that read
+     *  its axis are held back, and the track must still hear that a hand is back. */
+    let handBack = false
     const wheelCtx = (): WheelCtx => {
       const { fitted, band, zoomMax, entry } = L.current
       return {
@@ -1848,7 +1863,11 @@ function Stage(props: StageProps) {
         t: input.now,
       })
       wheelPhase = fed.phase
-      if (fed.read.start) streamAxis = null
+      if (fed.read.start) {
+        streamAxis = null
+        handBack = true
+        trace(`wheel stream opens (${fed.read.why})`)
+      }
       // One axis for the whole stream, read off the travel and then LOCKED. Deciding
       // per event handed the same gesture to the track and to the dismiss by turns,
       // which is why it stopped feeling attached to the hand at all.
@@ -1867,16 +1886,10 @@ function Stage(props: StageProps) {
       ) {
         e.preventDefault()
         const dx = wheelPx(e.deltaX, e.deltaMode, ctx.band.h)
-        // Only ever a hint, to hand the glide a speed. It decides nothing.
-        const vx = fed.read.velocity.x
-        // EVERY DELTA IS TRAVEL, the hand's and the device's alike, and nothing asks
-        // which is which. The web does not report a release, so the phase would have
-        // to be inferred from the shape of the decay, and that inference lands
-        // wherever it lands: measured on two swipes of the same speed, one was called
-        // coasting at 142 ms while its deltas were still GROWING, the other at 674 ms
-        // in the middle of a 1 px dribble. The track (ui/slide-track) breaks a spent
-        // gesture on a surge or a turn and ends it on silence.
-        slides.wheel(dx, vx)
+        // Every delta is travel until the track (ui/slide-track) decides: a slide
+        // past its tip, the hand's own pace falling away (the lift), or silence.
+        slides.wheel(dx, handBack, fed.read.momentum)
+        handBack = false
         return
       }
       e.preventDefault()

@@ -452,6 +452,7 @@ export function Panel({
       <InBody.Provider value={{ scroller, filled: height !== undefined }}>
         <div
           data-slot="panel-body"
+          data-panel-pad=""
           className={cn(BODY, height !== undefined && "flex-1", bodyClassName)}
         >
           {held}
@@ -461,6 +462,7 @@ export function Panel({
   ) : parts ? (
     <div
       data-slot="panel-body"
+      data-panel-pad={glide ? undefined : ""}
       className={cn(
         onGlass,
         glide && "overflow-clip",
@@ -475,7 +477,11 @@ export function Panel({
       }
     >
       {glide ? (
-        <div ref={glideBody.setInner} className={cn(BODY, bodyClassName)}>
+        <div
+          ref={glideBody.setInner}
+          data-panel-pad=""
+          className={cn(BODY, bodyClassName)}
+        >
           {held}
         </div>
       ) : (
@@ -552,6 +558,9 @@ export function Panel({
     props: {
       "data-slot": "panel",
       "data-material": m,
+      // The element whose padding is the body's (here, or the body part): what
+      // runs to the panel's edge reads it there (tabs' track).
+      "data-panel-pad": parts ? undefined : "",
       className: cn(
         "relative flex flex-col rounded-(--panel-radius)",
         !parts && [BODY, bodyClassName],

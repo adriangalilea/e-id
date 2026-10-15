@@ -77,12 +77,34 @@ export const GLIDE_MAX = 225
 export const GLIDE_ENTRY_MIN = 2
 export const GLIDE_ENTRY = 3
 
-/** Share of a slide a wheel gesture must travel to buy the next one, with the hand
- *  still on the glass. Embla's number: it commits past `clamp(20% of the viewport,
- *  50, 225)` px, which on a wide screen is about this. Swiper's 0.5 is not
- *  comparable, being applied at release; a threshold crossed mid-gesture has to be
- *  lower, because the reader sees the answer at once instead of finding out after
- *  they let go. Nothing detects a release, so nothing has to.
+/** How long a move lasts once the hand has let go, ms: a FALL. The slides leave at
+ *  the hand's own speed (`glideTo`'s `carry`, never a jump) and gravity takes them
+ *  the rest of the way, faster, to land: from the tip in `CARRY_MAX`, a shorter way
+ *  sooner (a fall's time goes as the square root of its height, the share of the
+ *  tip). A hand faster than that leaves no room to speed up in: the move is
+ *  shortened so it never slows under the hand (`GLIDE_ENTRY` times its average),
+ *  which keeps a flick, and a run of them, quick.
+ *
+ *  Three rounds in the gym (2026-10-15). `GLIDE`'s key bounds took 800 px at
+ *  1.9 px/ms in 119 ms, peaking near 10: "it doesn't move fluently". As long as the
+ *  way took at the hand's speed was 400 ms of the slides moving on their own after
+ *  the lift: "I don't like all the action that happens when I lift my finger...
+ *  gravity pulled faster, tipping either one way or the other". */
+export const CARRY_MAX = 240
+export function carryMs(d: number, v: number, slideW: number): number {
+  assert(slideW > 0, `a slide of ${slideW}`)
+  const share = Math.min(1, Math.abs(d) / (SWIPE_TIP * slideW))
+  const fall = CARRY_MAX * Math.sqrt(share)
+  const fast =
+    v * d > 0
+      ? (GLIDE_ENTRY * Math.abs(d)) / Math.abs(v)
+      : Number.POSITIVE_INFINITY
+  return clamp(Math.min(fall, fast), GLIDE_MIN, CARRY_MAX)
+}
+
+/** Share of a slide's width a WHEEL's hand pays for it (`swipeGain` maps that hand
+ *  to the slide's tip). Embla's number: it commits past `clamp(20% of the viewport,
+ *  50, 225)` px, which on a wide screen is about this.
  *
  *  It is the price of EVERY slide, because the gesture re-anchors on each one: the
  *  first, the fifth and the one straight back the other way all cost exactly this
@@ -92,18 +114,15 @@ export const GLIDE_ENTRY = 3
  *  finger while undoing the first cost 7 px. */
 export const SWIPE_COMMIT = 0.18
 
-/** A swipe PROJECTS NOTHING. There was a `THROW` constant here, the distance a release
- *  would coast per px/ms, and every version of it was wrong for the same reason: on a
- *  wheel there is nothing to project. A trackpad's momentum arrives as deltas, all of
- *  it, and the binder spends it as it comes. Exact beats estimated, it costs one fewer
- *  constant, and a flick delivers about as much again as the hand did, so speed buys
- *  distance without a coefficient existing anywhere. Do not reintroduce it.
- *
- *  (A POINTER release is different and still projects: `project` above, off `MOMENTUM`,
- *  because a finger that lifts really does stop sending and the coast is ours to run.) */
+/** A swipe projects with the lightbox's own coast (`project`, off `MOMENTUM`), and
+ *  only once it ends. Until then a trackpad's momentum arrives as deltas and is
+ *  travel; at the lift (`SWIPE_LIFT`) the coast is under way and still slowing, and
+ *  where it would have come to rest is where the slides come to rest (`swipeTip`).
+ *  There was a `THROW` constant once, projecting a wheel from the hand's speed while
+ *  the coast was still to come; the lift is what makes the projection exact enough. */
 
-/** ONE GESTURE BUYS ONE SLIDE. Cross the line and the pictures go there and stay
- *  there; everything the device sends afterwards is ignored until the stream is over.
+/** ONE GESTURE BUYS ONE SLIDE. Past the tip the pictures go there and stay there;
+ *  everything the device sends afterwards is ignored until the stream is over.
  *
  *  Skipping several on a hard flick was tried twice, flat-priced and then on a
  *  doubling ladder, and both are a slot machine. The boundary between one and two sits
@@ -117,27 +136,76 @@ export const SWIPE_COMMIT = 0.18
  *  Android's `PagerSnapHelper`, Embla with `skipSnaps` off. Three pictures is three
  *  flicks, and three flicks is a second's work and never a surprise. */
 
-/** The pictures LEAN toward the next slide, by this share of the line, and the lean is
- *  the only thing that says how close it is. It is QUADRATIC in the progress, and that
- *  is the whole design.
+/** A SLIDE TIPS PAST ITS HALFWAY POINT, the one rule a reader already knows: a card
+ *  pushed past half falls to the other side, short of it falls back. So the outcome
+ *  is on the screen before it happens, never a line nobody can see.
  *
- *  A trackpad's tail is why. It emits 1-3 px events for HALF A SECOND after a gesture
- *  is over, and they are indistinguishable from a slow deliberate drag — same
- *  magnitude, same cadence — so no rule can tell them apart. Three attempts tried:
- *  a phase detector guessing the release, a magnitude floor, an asymptoting band.
+ *  The gym measured why (2026-10-15): with the slides following a trackpad 1:1 and a
+ *  slide bought at half of `swipeCommitPx`, 198 px of hand moved a 1533 px picture
+ *  13% and it then shot the other 87% to the next: "chooses to go into next frame
+ *  for no reason". Before that the slides leaned (quadratic) toward an invisible
+ *  line and 215 px of hand wound back: "atrociously slow". Both hid the outcome. */
+export const SWIPE_TIP = 0.5
+
+/** How far a WHEEL moves the slides per px of hand: the hand a slide costs
+ *  (`swipeCommitPx`) carries it to its tip. A trackpad is not the picture under the
+ *  fingers, so its cost is free to be the hand's (225 px on a wide screen, the most a
+ *  deliberate swipe reaches) while the picture shows the honest half. A finger IS on
+ *  the picture: it moves the slides 1:1, never by this. */
+export function swipeGain(slideW: number): number {
+  assert(slideW > 0, `a slide of ${slideW}`)
+  return (SWIPE_TIP * slideW) / swipeCommitPx(slideW)
+}
+
+/** Where a gesture lands, as a step from its slide: -1, 0 or 1. The slides at
+ *  `offset` px moving at `v` px a ms come to rest where they would have coasted
+ *  (`project`), and tip if that is past half. One slide at most, whatever the throw. */
+export function swipeTip(offset: number, v: number, slideW: number): number {
+  const rest = project(offset, v)
+  return Math.abs(rest) >= SWIPE_TIP * slideW ? Math.sign(rest) : 0
+}
+
+/** THE LIFT. A wheel never says the fingers left, but its pace does: a hand moves
+ *  at its own, and the moment it lifts the device takes over and only ever slows.
+ *  So a gesture whose pace falls below `SWIPE_LIFT` of its own peak is a hand gone
+ *  (or stopping, which ends it the same), and it decides there. A share of the
+ *  hand's OWN pace, so a slow swipe and a flick lift alike, on any refresh rate.
  *
- *  They differ in exactly one thing, DISTANCE. A deliberate drag goes the whole line;
- *  a tail goes a fraction of it. So the lean is squared, and the fraction is squared
- *  with it. Measured on a swipe that had already arrived, its tail then crept 56 px
- *  past the slide over 520 ms and yanked back: the same tail leans 12 px here, under
- *  1% of a wide slide, which is nothing to see and nothing to wind back. It reads
- *  better at the other end too, where the neighbour ACCELERATES in as the line comes
- *  up instead of creeping the whole way. */
-export const SWIPE_LEAN = 0.85
-export function swipeGive(travel: number, line: number): number {
-  assert(line > 0, `a swipe line of ${line}`)
-  const t = Math.min(1, Math.abs(travel) / line)
-  return Math.sign(travel) * SWIPE_LEAN * line * t * t
+ *  The pace is px an EVENT, never px a ms. Hand and coast both arrive once a
+ *  frame; what a coast changes is each event's size. Time would read a stalled
+ *  frame as the hand slowing, where the browser hands the late travel over as one
+ *  BIGGER delta: by the event, a stall only ever reads faster.
+ *
+ *  Measured in the swipe gym (2026-10-15): a slow swipe at 3-4 px a frame, then
+ *  2, 2, 1, 1, 0 over 600 ms after the lift, the slides inching the whole time and
+ *  then winding back. The phase detector could not see it: it takes RATIOS of
+ *  1-2 px deltas, too coarse to fall inside its decay band. A mean of several
+ *  sums them. */
+export const SWIPE_LIFT = 0.5
+/** How many events the pace is the mean of: 48 ms at 125 Hz, 100 at 60. */
+export const SWIPE_LIFT_EVENTS = 6
+
+/** A COAST NEVER SPEEDS UP. Once a gesture is decided, however (a lift, a tip), a
+ *  pace rising by `SWIPE_AGAIN` over its lowest since, and past `SWIPE_AGAIN_MIN`
+ *  px an event (a tail's 1-2 px jitter), is the hand pushing again: a new gesture.
+ *  A share and not a double, because a pace is a mean of six and moves smoothly: a
+ *  second push of 6 px an event over a 2-3 px tail was swallowed by a doubling, and
+ *  by a rule asking it to match half the first push's 43 (the gym, 2026-10-15:
+ *  "why didn't it move at all when I swiped there?"). */
+export const SWIPE_AGAIN = 1.5
+export const SWIPE_AGAIN_MIN = 2
+export function swipeAgain(pace: number, low: number): boolean {
+  return pace > Math.max(SWIPE_AGAIN_MIN, SWIPE_AGAIN * low)
+}
+
+/** The pace, px an event: the mean size of the last `SWIPE_LIFT_EVENTS` deltas,
+ *  newest last, or null until there are that many. Magnitudes: the lift is the
+ *  hand slowing, whichever way it goes. */
+export function swipePace(deltas: readonly number[]): number | null {
+  if (deltas.length < SWIPE_LIFT_EVENTS) return null
+  let sum = 0
+  for (const d of deltas.slice(-SWIPE_LIFT_EVENTS)) sum += Math.abs(d)
+  return sum / SWIPE_LIFT_EVENTS
 }
 
 /** A swipe is over after this long without a wheel event. Shorter than the wheel
@@ -160,13 +228,16 @@ export const SWIPE_SURGE_DECAY = 0.9
 export const swipeEnvelope = (dx: number, env: number): number =>
   Math.max(Math.abs(dx), env * SWIPE_SURGE_DECAY)
 
-/** THE TWO THINGS A WHEEL STREAM SAYS PLAINLY, and there are only two. It never says
- *  when the fingers left, so nothing may ask.
+/** THE TWO THINGS A WHEEL STREAM SAYS PLAINLY. It never says when the fingers left.
  *
  *  A tail only DECAYS: a delta over `SWIPE_SURGE` times the envelope of the ones
  *  before it is a hand back on the glass. And momentum never REVERSES: a delta
  *  against the direction the gesture just bought is a hand, with certainty rather than
- *  by inference. Either ends the spent gesture and opens the next one.
+ *  by inference. Either ends the spent gesture and opens the next one. The phase
+ *  detector's `start` (a coast cut short against the LAST delta, not an envelope) is
+ *  the third, and the slide track takes it too: measured in the swipe gym, a second
+ *  flick the same way was seen by it 710 ms before the surge saw it, and the 2604 px
+ *  the hand moved in between were swallowed as tail.
  *
  *  Both are needed. Magnitude alone cannot see a reversal — measured, a reader swiped
  *  forward, the slide committed, and they swiped straight back 170% of a slide with

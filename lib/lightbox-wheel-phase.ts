@@ -1,4 +1,4 @@
-import type { Point } from "@/lib/lightbox-motion"
+import { type Point, SWIPE_END } from "@/lib/lightbox-motion"
 
 /** A decaying velocity ratio inside this band is a physics model coasting. Outside
  *  it, something is pushing. */
@@ -31,6 +31,7 @@ export type Phase = {
   opened: boolean
   momentum: boolean
   lastAbs: number
+  lastT: number
   movement: Point
   velocity: Point
   accelerations: readonly Point[]
@@ -39,10 +40,32 @@ export type Phase = {
   endsIn: number
 }
 
+/** A COAST NEVER CHANGES AXIS: the device carries on along the line of the swipe
+ *  that made it. So inside a stream already moving one way (`AXIS_HELD` px on its
+ *  axis), a delta of at least `AXIS_TURN` px that is mostly on the OTHER axis (twice
+ *  its share of this one) is a hand starting a new gesture, and opens a stream.
+ *  Measured in the swipe gym (2026-10-15): a swipe down to dismiss right after a
+ *  sideways swipe waited for the sideways coast to be cut short by size alone, and
+ *  went to the sideways track, spent, until then. A hand's diagonal jitter inside a
+ *  live swipe stays under it: a few px, never twice the swipe's own delta. */
+export const AXIS_HELD = 24
+export const AXIS_TURN = 4
+function turnsAxis(movement: Point, delta: Point): boolean {
+  const alongX = Math.abs(movement.x) >= Math.abs(movement.y)
+  const held = alongX ? Math.abs(movement.x) : Math.abs(movement.y)
+  if (held < AXIS_HELD) return false
+  const on = alongX ? Math.abs(delta.x) : Math.abs(delta.y)
+  const off = alongX ? Math.abs(delta.y) : Math.abs(delta.x)
+  return off >= AXIS_TURN && off > 2 * on
+}
+
 /** What this event says about the stream. */
 export type PhaseRead = {
   /** A stream opened here: the first event, or the hand cutting momentum short. */
   start: boolean
+  /** Why it opened, when it did: the first event, after silence, the hand cutting
+   *  a coast short, or turning to the other axis. */
+  why: "first" | "silence" | "interrupted" | "turned" | null
   /** The device is coasting: this delta is not a person and must move nothing. */
   momentum: boolean
   /** Momentum was interrupted by the hand coming back. */
@@ -66,6 +89,7 @@ export function phaseStart(): Phase {
     opened: false,
     momentum: false,
     lastAbs: Number.POSITIVE_INFINITY,
+    lastT: Number.NEGATIVE_INFINITY,
     movement: { x: 0, y: 0 },
     velocity: { x: 0, y: 0 },
     accelerations: [],
@@ -109,11 +133,26 @@ export function phaseFeed(
   // reported interrupted so its decision is not taken twice.
   const interrupted =
     p.live && p.momentum && reach > Math.max(2, p.lastAbs * HAND_RETURN)
-  let s = !p.live || interrupted ? { ...phaseStart(), live: true } : p
+  // A wheel never says it ended, so silence does, the slide track's `SWIPE_END`: a
+  // phase that outlived its stream read the next one's axis off the last one's
+  // travel and never said `start` again unless a coast was cut short.
+  const over = e.t - p.lastT > SWIPE_END
+  const turned = p.live && turnsAxis(p.movement, delta)
+  const why: PhaseRead["why"] = !p.live
+    ? "first"
+    : over
+      ? "silence"
+      : interrupted
+        ? "interrupted"
+        : turned
+          ? "turned"
+          : null
+  let s = why ? { ...phaseStart(), live: true } : p
 
   s = {
     ...s,
     lastAbs: reach,
+    lastT: e.t,
     movement: add(s.movement, delta),
     merging: [...s.merging, { dx: delta.x, dy: delta.y, t: e.t }],
   }
@@ -160,6 +199,7 @@ export function phaseFeed(
     phase: s,
     read: {
       start,
+      why: start ? why : null,
       momentum: s.momentum,
       interrupted,
       velocity: s.velocity,

@@ -20,7 +20,7 @@ import {
   SLIDE,
   SLIDE_TRACK,
 } from "@/components/ui/slide-track"
-import { INTENT, SWIPE_END, wheelPx } from "@/lib/lightbox-motion"
+import { INTENT, wheelPx } from "@/lib/lightbox-motion"
 import { phaseFeed, phaseStart } from "@/lib/lightbox-wheel-phase"
 import { cn } from "@/lib/utils"
 
@@ -636,7 +636,7 @@ const ARRIVE_TIMING: KeyframeAnimationOptions = {
  *  is off the track, and outside the track's clip, so it is never painted. Never
  *  `content-visibility: auto`: a panel it skipped measured nothing, the track took
  *  that height, and every panel was clipped to none. */
-const SLIDE_PANEL = SLIDE
+const SLIDE_PANEL = cn(SLIDE, "pr-(--slide-pad-r) pl-(--slide-pad-l)")
 
 function PanelFace({
   attrs,
@@ -769,12 +769,17 @@ function claimed(target: EventTarget | null, track: HTMLElement): boolean {
  *    and down and pinches; a touch that starts sideways arrives here whole. A
  *    mouse drag stays a text selection.
  *
- *  Tabs and panels pair in order, one each. Returns the unbinding. */
+ *  Each panel is one tab's, paired by the tab's `aria-controls`. With a sink
+ *  (`TabsPanels` `onTrace`), every decision here and in the engine is one line:
+ *  `tabs …` the binding's (an axis read, a tab chosen, a height), `track …` the
+ *  engine's. Returns the unbinding. */
 function bindTrack(
   el: HTMLElement,
   filled: boolean,
   showNear: (ids: ReadonlySet<string>) => void,
+  sink: () => ((line: string) => void) | undefined,
 ): () => void {
+  const tell = (line: string) => sink()?.(line)
   const root = el.closest<HTMLElement>("[data-slot=tabs]")
   if (!root) throw new Error("TabsPanels: outside Tabs, there are no tabs")
   const list = Array.from(
@@ -804,7 +809,9 @@ function bindTrack(
     )
   const choose = (i: number) => {
     const tab = tabOf(panels()[i])
-    if (!selected(tab)) tab.click()
+    if (selected(tab)) return
+    tell(`tabs choose ${i} (${tab.textContent?.trim()})`)
+    tab.click()
   }
   const near = (i: number) =>
     showNear(
@@ -819,6 +826,34 @@ function bindTrack(
   const reduced = () =>
     window.matchMedia("(prefers-reduced-motion: reduce)").matches
 
+  /** Straight in a panel's padded body (`data-panel-pad`, through any
+   *  `display: contents` wrapper), the track reaches over the body's padding to the
+   *  panel's own edge and each slide puts it back inside itself
+   *  (`--slide-pad-l`/`-r`): the panels run to the edge as they do scrolling, never
+   *  clipped in a line inside the frame, and a swipe there is the track's. The
+   *  padding is read off the body, the one place it is true (a body is `p-5`, `p-4`
+   *  or `p-0` by its `bodyClassName`). Before the track measures its pitch. */
+  const bleed = () => {
+    let frame = el.parentElement
+    while (frame && getComputedStyle(frame).display === "contents")
+      frame = frame.parentElement
+    if (!frame?.hasAttribute("data-panel-pad")) return
+    const pad = getComputedStyle(frame)
+    const l = pad.paddingLeft
+    const r = pad.paddingRight
+    if (
+      el.style.getPropertyValue("--slide-pad-l") === l &&
+      el.style.getPropertyValue("--slide-pad-r") === r
+    )
+      return
+    tell(`tabs bleed over the panel's padding (${l} ${r})`)
+    el.style.marginLeft = `calc(-1 * ${l})`
+    el.style.marginRight = `calc(-1 * ${r})`
+    el.style.setProperty("--slide-pad-l", l)
+    el.style.setProperty("--slide-pad-r", r)
+  }
+  bleed()
+
   const track = createSlideTrack({
     el,
     count: () => panels().length,
@@ -831,13 +866,21 @@ function bindTrack(
       fit()
     },
     onArrive: choose,
+    trace: tell,
+    report: tell,
+    debug: () => sink() !== undefined,
   })
 
   /** The track's height, the panel it is heading for. */
   const fit = () => {
     if (filled) return
-    const p = panels()[track.aim() ?? current()]
-    if (p) el.style.height = `${p.offsetHeight}px`
+    const i = track.aim() ?? current()
+    const p = panels()[i]
+    if (!p) return
+    const h = `${p.offsetHeight}px`
+    if (el.style.height === h) return
+    tell(`tabs height ${h} (panel ${i}, was ${el.style.height || "unset"})`)
+    el.style.height = h
   }
   // A panel's height decides the track's; the track's width decides the slides'
   // pitch. Apart, so setting the height is never read back as a resize; and the
@@ -855,6 +898,7 @@ function bindTrack(
   let wide = el.clientWidth
   const width = new ResizeObserver(() => {
     if (el.clientWidth === wide) return
+    bleed()
     wide = el.clientWidth
     track.measure()
     if (!track.busy()) track.jumpTo(current())
@@ -866,7 +910,11 @@ function bindTrack(
   const follow = () => {
     const i = current()
     fit()
-    if (track.aim() !== i) track.glideTo(i)
+    if (track.aim() === i) return
+    tell(
+      `tabs tab ${i} chosen elsewhere (aim ${track.aim() ?? "-"}): glide there`,
+    )
+    track.glideTo(i)
   }
   const chosen = new MutationObserver(follow)
   chosen.observe(list, {
@@ -883,11 +931,10 @@ function bindTrack(
 
   let phase = phaseStart()
   let axis: "x" | "y" | "pass" | null = null
-  /** When the last wheel event came: a silence of `SWIPE_END` ends a stream, as it
-   *  ends a swipe on the track, so the next one reads its axis afresh, off its
-   *  own travel (`moved`): the phase's may still hold the swipe before it. */
-  let lastWheel = Number.NEGATIVE_INFINITY
-  let moved = { x: 0, y: 0 }
+  /** A stream opened (the phase's `start`: silence, or a hand cutting a coast
+   *  short) and the track has not been fed since: the events that read its axis
+   *  are held back, and the track must still hear that a hand is back. */
+  let handBack = false
   /** A wheel: one axis for the stream, read off its travel (its first event
    *  carries whatever the fingers happened to do). Undecided, a sideways event is
    *  held back from the page (which would scroll it, or go back in history on a
@@ -899,25 +946,35 @@ function bindTrack(
     const now = performance.now()
     const fed = phaseFeed(phase, { dx, dy, t: now })
     phase = fed.phase
-    if (fed.read.start || now - lastWheel > SWIPE_END) {
-      axis = upright() || claimed(e.target, el) ? "pass" : null
-      moved = { x: 0, y: 0 }
+    if (fed.read.start) {
+      const why = upright()
+        ? "upright tabs"
+        : claimed(e.target, el)
+          ? "claimed by what is under the hand"
+          : null
+      axis = why ? "pass" : null
+      handBack = true
+      tell(
+        `tabs wheel stream opens (${fed.read.why})${why ? `: passes, ${why}` : ""}`,
+      )
     }
-    lastWheel = now
     if (axis === "pass" || axis === "y") return
     if (axis === null) {
-      moved = { x: moved.x + dx, y: moved.y + dy }
-      const m = moved
+      const m = fed.read.movement
       if (Math.max(Math.abs(m.x), Math.abs(m.y)) < INTENT) {
         if (Math.abs(dx) > Math.abs(dy)) e.preventDefault()
         return
       }
       axis = Math.abs(m.x) > SIDEWAYS * Math.abs(m.y) ? "x" : "y"
+      tell(
+        `tabs wheel axis ${axis} (moved x ${Math.round(m.x)}, y ${Math.round(m.y)})`,
+      )
       if (axis === "y") return
       swiping()
     }
     e.preventDefault()
-    track.wheel(dx, fed.read.velocity.x)
+    track.wheel(dx, handBack, fed.read.momentum)
+    handBack = false
   }
 
   let touch: {
@@ -932,11 +989,18 @@ function bindTrack(
     if (e.pointerType === "mouse") return
     // A second finger is a pinch, the browser's.
     if (!e.isPrimary) {
+      tell("tabs a second finger: a pinch, the browser's")
       if (touch?.axis === "x") track.release()
       touch = null
       return
     }
-    if (upright() || claimed(e.target, el)) return
+    if (upright() || claimed(e.target, el)) {
+      tell(
+        `tabs ${e.pointerType} down: passes (${upright() ? "upright tabs" : "claimed by what is under it"})`,
+      )
+      return
+    }
+    tell(`tabs ${e.pointerType} down`)
     touch = {
       id: e.pointerId,
       x0: e.clientX,
@@ -953,9 +1017,13 @@ function bindTrack(
       if (Math.abs(tx) + Math.abs(ty) < INTENT) return
       // Upright: the browser is panning the page and will cancel this pointer.
       if (Math.abs(tx) <= Math.abs(ty)) {
+        tell(
+          `tabs finger axis y (x ${Math.round(tx)}, y ${Math.round(ty)}): the page's`,
+        )
         touch = null
         return
       }
+      tell(`tabs finger axis x (x ${Math.round(tx)}, y ${Math.round(ty)})`)
       touch.axis = "x"
       touch.last = e.clientX
       swiping()
@@ -971,6 +1039,9 @@ function bindTrack(
     if (!touch || e.pointerId !== touch.id) return
     const swiped = touch.axis === "x"
     touch = null
+    tell(
+      `tabs finger ${e.type === "pointerup" ? "up" : "CANCELLED by the browser"}`,
+    )
     if (!swiped) return
     if (e.type === "pointerup") quietUntil = e.timeStamp + CLICK_AFTER_SWIPE
     // A finger says when it let go: the swipe ends on the event.
@@ -1008,6 +1079,9 @@ function bindTrack(
 
 export type TabsPanelsProps = Omit<React.ComponentProps<"div">, "className"> & {
   className?: string
+  /** Where the track's trace goes, one line a decision (`bindTrack`): set, it is
+   *  recorded; unset, nothing is. For a page's debug flag. */
+  onTrace?: (line: string) => void
 }
 
 /** The panels' track: the `TabsPanel`s straight inside it, and nothing else, one
@@ -1016,11 +1090,18 @@ export type TabsPanelsProps = Omit<React.ComponentProps<"div">, "className"> & {
  *  of a set height it fills the body, as the panels in it do. */
 export function TabsPanels({
   className,
+  onTrace,
   children,
   ref,
   ...props
 }: TabsPanelsProps) {
   const filled = usePanelBody()?.filled === true
+  // Read by the binding at each decision, so turning the trace on or off never
+  // rebinds the track under a hand.
+  const sink = React.useRef(onTrace)
+  React.useLayoutEffect(() => {
+    sink.current = onTrace
+  }, [onTrace])
   const [near, setNear] = React.useState(NONE)
   const [el, setEl] = React.useState<HTMLDivElement | null>(null)
   const both = React.useCallback(
@@ -1033,7 +1114,7 @@ export function TabsPanels({
   )
   React.useLayoutEffect(() => {
     if (!el) return
-    return bindTrack(el, filled, setNear)
+    return bindTrack(el, filled, setNear, () => sink.current)
   }, [el, filled])
   const track = React.useMemo(() => ({ near }), [near])
   return (
@@ -1042,7 +1123,8 @@ export function TabsPanels({
         ref={both}
         data-slot="tabs-panels"
         // Room between two panels (`gap`), so their edges never touch mid-swipe;
-        // the engine reads it off the track.
+        // the engine reads it off the track. In a panel it reaches to the
+        // panel's edge (`bleed`, in the binding).
         className={cn(
           SLIDE_TRACK,
           "touch-pan-y touch-pinch-zoom gap-6",
