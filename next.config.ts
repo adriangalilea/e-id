@@ -5,6 +5,7 @@ import {
   CARD_FILES,
   CARD_SHORT,
   EMOJI_DOMAIN_PUNYCODE,
+  forbiddenUsernames,
   MAIN_DOMAIN,
   SHORT_DOMAIN,
 } from "./lib/const"
@@ -26,6 +27,22 @@ assert.deepEqual(
   [...CARD_FILES].sort(),
   "app/[username] has routes lib/const CARD_FILES does not list, or the other way",
 )
+
+// The site's own pages at the root (app/privacy, app/terms, app/admin), as the app
+// has them: a name in an address is a person's unless it is one of these, so the
+// rewrites below (a vCard, JSON, a terminal's text) never take /privacy for
+// someone. Each is a reserved username too (lib/const), asserted.
+const SITE_PAGES = readdirSync("app", { withFileTypes: true })
+  .filter((e) => e.isDirectory() && !/^[[(_]/.test(e.name))
+  .filter((e) => readdirSync(`app/${e.name}`).some((f) => /^page\./.test(f)))
+  .map((e) => e.name)
+for (const page of SITE_PAGES)
+  assert.ok(
+    forbiddenUsernames.includes(page),
+    `app/${page} is a page at the root, and lib/const forbiddenUsernames lets someone take it as a username`,
+  )
+/** A person's name in an address: anything but the site's own pages. */
+const PERSON = `/:username((?!(?:${SITE_PAGES.join("|")})(?:$|[./]))[A-Za-z0-9_-]+)`
 
 // Every path a person can open, never the auth API or the build's assets: the
 // OAuth callback must land on the host it was sent from.
@@ -94,11 +111,11 @@ const nextConfig: NextConfig = {
     return {
       beforeFiles: [
         {
-          source: "/:username([A-Za-z0-9_-]+)\\.vcf",
+          source: `${PERSON}\\.vcf`,
           destination: "/:username/card.vcf",
         },
         {
-          source: "/:username([A-Za-z0-9_-]+)",
+          source: PERSON,
           has: [
             { type: "header", key: "accept", value: ".*text/(?:x-)?vcard.*" },
           ],
@@ -107,7 +124,7 @@ const nextConfig: NextConfig = {
         // The card's files at their short names (`/json`, `/txt`), as each link
         // is at its route (`/gh`).
         ...Object.entries(CARD_SHORT).map(([short, file]) => ({
-          source: `/:username([A-Za-z0-9_-]+)/${short}`,
+          source: `${PERSON}/${short}`,
           destination: `/:username/${file}`,
         })),
         // The card as text for a terminal (lib/card-text) at the address itself
@@ -115,12 +132,12 @@ const nextConfig: NextConfig = {
         // name alone; and as data (lib/card-schema) when JSON is what is asked
         // for first (a browser asks for HTML first, so it never gets this).
         {
-          source: "/:username([A-Za-z0-9_-]+)",
+          source: PERSON,
           has: [{ type: "header", key: "user-agent", value: CLI }],
           destination: "/:username/card.txt",
         },
         {
-          source: "/:username([A-Za-z0-9_-]+)",
+          source: PERSON,
           has: [
             {
               type: "header",

@@ -6,7 +6,12 @@ import { PageSensor } from "@/components/ui/page-sensor"
 // A PLACE is what a reader would call where they are; a ROUTE is the path with
 // the username folded, so every profile is one route.
 
-const PLACES: Record<string, string> = { "": "home", admin: "admin" }
+const PLACES: Record<string, string> = {
+  "": "home",
+  admin: "admin",
+  privacy: "privacy",
+  terms: "terms",
+}
 
 function placeOf(path: string) {
   const [, first = ""] = path.split("/")

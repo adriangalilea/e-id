@@ -1,4 +1,5 @@
 import type { Metadata } from "next"
+import Link from "next/link"
 import { FONT_VARIABLES } from "./fonts"
 import "./globals.css"
 import Footer from "@/components/footer/footer"
@@ -57,6 +58,15 @@ export default async function RootLayout({
             className="flex flex-1 flex-col overflow-x-clip pt-[calc(max(env(safe-area-inset-top),0.75rem)+4.5rem)] pb-12 md:pt-20"
           >
             <NextImageLoaderProvider>{children}</NextImageLoaderProvider>
+            {/* What every page owes the people reading it, at its very foot. */}
+            <footer className="mt-auto flex justify-center gap-3 pt-16 font-mono text-foreground/40 text-xs">
+              <Link href="/privacy" className="hover:text-foreground/70">
+                privacy
+              </Link>
+              <Link href="/terms" className="hover:text-foreground/70">
+                terms
+              </Link>
+            </footer>
           </div>
           <Toaster />
           <Footer />
