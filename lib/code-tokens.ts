@@ -3,6 +3,13 @@ export const CODE_THEMES = {
   dark: "github-dark",
 } as const
 
+/** VS Code's default themes' token colours, which `ide` wears: Dark Modern and
+ *  Light Modern are built on Dark+ and Light+. */
+export const VSCODE_THEMES = {
+  light: "light-plus",
+  dark: "dark-plus",
+} as const
+
 /** Lines to mark, as every code view here spells them: `"2"` or `"1,4-6"`, counted
  *  from 1. Screams at anything else. */
 export function linesOf(spec: string): Set<number> {
@@ -45,17 +52,59 @@ export function langOf(path: string): string {
   return /\.([a-z0-9]+)$/i.exec(path)?.[1]?.toLowerCase() ?? "text"
 }
 
+type Core = import("shiki/core").HighlighterCore
+
+/** One highlighter for the page, made on the first call: Shiki's core with its
+ *  JavaScript regex engine, never the WebAssembly one (Oniguruma, 600 KB a browser
+ *  would download to colour a few lines), each language and theme loaded the first
+ *  time it is asked for, alone. */
+let core: Promise<Core> | undefined
+async function highlighter(lang: string, themes: CodeThemes): Promise<Core> {
+  core ??= (async () => {
+    const [{ createHighlighterCore }, { createJavaScriptRegexEngine }] =
+      await Promise.all([
+        import("shiki/core"),
+        import("shiki/engine/javascript"),
+      ])
+    return createHighlighterCore({
+      engine: createJavaScriptRegexEngine(),
+      themes: [],
+      langs: [],
+    })
+  })()
+  const h = await core
+  const [{ bundledLanguages }, { bundledThemes }] = await Promise.all([
+    import("shiki/langs"),
+    import("shiki/themes"),
+  ])
+  const loading: Promise<void>[] = []
+  if (lang !== "text" && !h.getLoadedLanguages().includes(lang)) {
+    const grammar = bundledLanguages[lang as keyof typeof bundledLanguages]
+    if (grammar) loading.push(h.loadLanguage(grammar))
+  }
+  for (const name of [themes.light, themes.dark])
+    if (!h.getLoadedThemes().includes(name)) {
+      const theme = bundledThemes[name as keyof typeof bundledThemes]
+      if (!theme) throw new Error(`code-tokens: no Shiki theme ${name}`)
+      loading.push(h.loadTheme(theme))
+    }
+  await Promise.all(loading)
+  return h
+}
+
 /** Every character of `text` coloured by `lang`'s grammar in both `themes`. A
- *  language Shiki does not know is `text`: one ink, the theme's foreground. */
+ *  language Shiki does not know is `text`: one ink, the theme's foreground. Runs
+ *  where it is called: on the server for a still (passed to a view as its
+ *  `colours`), or in the browser for text that changes. */
 export async function codeColours(
   text: string,
   lang: string,
   themes: CodeThemes = CODE_THEMES,
 ): Promise<CodeColours> {
-  const { bundledLanguages, codeToTokensWithThemes } = await import("shiki")
-  const lines = await codeToTokensWithThemes(text, {
-    lang: (lang in bundledLanguages ? lang : "text") as "text",
-    themes: themes as { light: "github-light"; dark: "github-dark" },
+  const h = await highlighter(lang, themes)
+  const lines = h.codeToTokensWithThemes(text, {
+    lang: h.getLoadedLanguages().includes(lang) ? lang : "text",
+    themes: { light: themes.light, dark: themes.dark },
   })
   const inks: CodeInk[] = []
   const known = new Map<string, number>()

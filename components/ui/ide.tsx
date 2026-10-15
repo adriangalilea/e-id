@@ -55,20 +55,13 @@ import {
 } from "@/lib/code-session"
 import {
   type CodeColours,
-  type CodeThemes,
   langOf,
   linesOf,
   runsOf,
+  VSCODE_THEMES,
 } from "@/lib/code-tokens"
 import { cn } from "@/lib/utils"
 import "./ide.css"
-
-/** VS Code's default themes' token colours: Dark Modern and Light Modern are built
- *  on Dark+ and Light+. */
-export const IDE_THEMES: CodeThemes = {
-  light: "light-plus",
-  dark: "dark-plus",
-}
 
 /** The editor's face on a Mac, as VS Code ships it. */
 const MONO = "Menlo, Monaco, 'Courier New', monospace"
@@ -81,7 +74,7 @@ const LINE_PX = 18
 // (the scheme the window stands in). One constant per surface.
 const BORDER = "border-[#e5e5e5] scheme-dark:border-[#2b2b2b]"
 const CHROME = cn(
-  "bg-[#f8f8f8] scheme-dark:bg-[#181818] scheme-dark:text-[#cccccc] text-[#3b3b3b]",
+  "bg-[#f8f8f8] text-[#3b3b3b] scheme-dark:bg-[#181818] scheme-dark:text-[#cccccc]",
   BORDER,
 )
 const EDITOR =
@@ -175,6 +168,11 @@ export interface IdeProps
    *  a caret held on reads as a stuck frame. Off while an edit plays (VS Code
    *  holds it on as keys land). */
   blink?: boolean
+  /** The file in front's colours, read ahead on the server (lib/code-tokens,
+   *  `codeColours(text, langOf(path), VSCODE_THEMES)`): a still drawn coloured at
+   *  once, and the browser loads no highlighter. Absent, they are read in the
+   *  browser after it renders. */
+  colours?: CodeColours
   /** The explorer beside the editor. Off, the editor takes the room (a narrow
    *  window); the activity bar stays. */
   explorer?: boolean
@@ -191,6 +189,7 @@ export function Ide({
   caret,
   highlight,
   blink = false,
+  colours,
   explorer = true,
   ...rest
 }: IdeProps) {
@@ -232,6 +231,7 @@ export function Ide({
       caret={offset}
       marked={marked}
       blink={blink}
+      colours={colours}
       dirty={dirty}
       explorer={explorer}
       {...rest}
@@ -319,6 +319,8 @@ interface WindowProps extends Omit<React.ComponentProps<"div">, "children"> {
   /** The lines marked, from 1. */
   marked: Set<number> | undefined
   blink: boolean
+  /** The source's colours, read ahead; absent, read in the browser. */
+  colours?: CodeColours
   dirty: string[]
   explorer: boolean
   scheme?: Scheme
@@ -335,6 +337,7 @@ function IdeWindow({
   caret,
   marked,
   blink,
+  colours: given,
   dirty,
   explorer,
   scheme,
@@ -345,7 +348,7 @@ function IdeWindow({
 }: WindowProps) {
   const [worn, root] = useSurfaceScheme<HTMLDivElement>(scheme, ref)
   const lang = active ? langOf(active) : "text"
-  const colours = useCodeColours(source, lang, IDE_THEMES)
+  const colours = useCodeColours(source, lang, VSCODE_THEMES, given)
   const place = placeOf(text, caret)
   return (
     <div
@@ -353,7 +356,7 @@ function IdeWindow({
       data-slot="ide"
       className={cn(
         "relative isolate flex aspect-[16/10] w-full select-none flex-col overflow-hidden rounded-[16px] text-[13px]",
-        "scheme-dark:shadow-[0_0_0_0.5px_rgb(255_255_255/0.16)] shadow-[0_0_0_0.5px_rgb(0_0_0/0.22),0_24px_60px_-16px_rgb(0_0_0/0.45)]",
+        "shadow-[0_0_0_0.5px_rgb(0_0_0/0.22),0_24px_60px_-16px_rgb(0_0_0/0.45)] scheme-dark:shadow-[0_0_0_0.5px_rgb(255_255_255/0.16)]",
         EDITOR,
         schemeOf(worn),
         className,
@@ -428,7 +431,7 @@ function TitleBar({ project }: { project: string }) {
       <div
         data-slot="ide-command-centre"
         className={cn(
-          "flex h-[22px] min-w-0 items-center justify-center gap-1.5 rounded-[6px] border bg-[#ffffff] scheme-dark:bg-[#222222] px-2 text-[12px]",
+          "flex h-[22px] min-w-0 items-center justify-center gap-1.5 rounded-[6px] border bg-[#ffffff] px-2 text-[12px] scheme-dark:bg-[#222222]",
           BORDER,
         )}
       >
@@ -530,7 +533,7 @@ function Explorer({
           key={n.path}
           data-slot="ide-explorer-row"
           className={cn(
-            "flex h-[22px] items-center gap-1.5 whitespace-nowrap pr-2",
+            "flex h-[22px] items-center gap-1.5 pr-2 whitespace-nowrap",
             n.path === active && SELECTED,
           )}
           style={{ paddingLeft: 8 + depth * 8 }}
@@ -590,8 +593,8 @@ function Tabs({
               "relative -mb-px flex min-w-0 items-center gap-1.5 border-r pr-2 pl-3",
               BORDER,
               front
-                ? "bg-white scheme-dark:bg-[#1f1f1f] scheme-dark:text-white text-[#3b3b3b]"
-                : "scheme-dark:text-[#9d9d9d] text-[#868686]",
+                ? "bg-white text-[#3b3b3b] scheme-dark:bg-[#1f1f1f] scheme-dark:text-white"
+                : "text-[#868686] scheme-dark:text-[#9d9d9d]",
             )}
           >
             {front && (
@@ -621,7 +624,7 @@ function Breadcrumbs({ path }: { path: string }) {
   return (
     <div
       data-slot="ide-breadcrumbs"
-      className="flex h-[22px] shrink-0 items-center gap-1 px-4 scheme-dark:text-[#a9a9a9] text-[#616161] text-[12px]"
+      className="flex h-[22px] shrink-0 items-center gap-1 px-4 text-[12px] text-[#616161] scheme-dark:text-[#a9a9a9]"
     >
       {parts.map((p, i) => (
         <React.Fragment key={parts.slice(0, i + 1).join("/")}>
@@ -706,7 +709,7 @@ function Editor({
                 className={cn(
                   "w-(--ag-ide-gutter) shrink-0 pr-[26px] text-right",
                   here
-                    ? "scheme-dark:text-[#cccccc] text-[#171184]"
+                    ? "text-[#171184] scheme-dark:text-[#cccccc]"
                     : "text-[#6e7681]",
                 )}
               >
@@ -716,7 +719,7 @@ function Editor({
                 className={cn(
                   "relative min-w-0 flex-1 whitespace-pre",
                   here &&
-                    "scheme-dark:shadow-[inset_0_0_0_2px_#282828] shadow-[inset_0_0_0_2px_#eeeeee]",
+                    "shadow-[inset_0_0_0_2px_#eeeeee] scheme-dark:shadow-[inset_0_0_0_2px_#282828]",
                 )}
               >
                 {runs.map((r, k) => (
@@ -725,7 +728,7 @@ function Editor({
                     key={k}
                     className={
                       r.ink
-                        ? "scheme-dark:text-(--ag-ide-ink-dark) text-(--ag-ide-ink)"
+                        ? "text-(--ag-ide-ink) scheme-dark:text-(--ag-ide-ink-dark)"
                         : undefined
                     }
                     style={
@@ -767,7 +770,7 @@ function Empty() {
   return (
     <div
       data-slot="ide-empty"
-      className="flex flex-1 flex-col items-center justify-center gap-2 text-[#868686] text-[12px]"
+      className="flex flex-1 flex-col items-center justify-center gap-2 text-[12px] text-[#868686]"
     >
       {[
         ["Show All Commands", "⇧ ⌘ P"],
