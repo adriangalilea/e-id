@@ -35,6 +35,7 @@ import {
 } from "lucide-react"
 import * as React from "react"
 import { cn } from "@/lib/utils"
+import type { BrowserCapture } from "@/lib/browser-capture"
 import type { LivePage } from "@/lib/browser-framing"
 import {
   type BrowserLoad,
@@ -957,6 +958,55 @@ export function BrowserLive({ page }: { page: LivePage }) {
         {hostOf(page.url)} keeps itself out of frames ({page.reason}): its
         preview stands in
       </p>
+    </div>
+  )
+}
+
+// ── a captured page ──
+
+/** A site as it looks, captured (`mise browser-shot`, lib/browser-capture): the
+ *  picture for the scheme it stands in, as wide as the page, read straight from
+ *  the manifest. Put it in a `Browser` (or a session's `pages`). `children` lie
+ *  over the picture in the page's own coordinates (lib/browser-capture
+ *  `atFound`): a press drawn on a button that is in the picture. */
+export function BrowserCapturePage({
+  capture,
+  sizes = "1024px",
+  className,
+  children,
+}: {
+  capture: BrowserCapture
+  /** How wide it is drawn, for the loader (`Image`'s `sizes`). */
+  sizes?: string
+  className?: string
+  children?: React.ReactNode
+}) {
+  return (
+    <div
+      data-slot="browser-capture"
+      className={cn("relative [container-type:inline-size]", className)}
+    >
+      {(["light", "dark"] as const).map((scheme) => {
+        const shot = capture[scheme]
+        return (
+          <Image
+            key={scheme}
+            src={shot.src}
+            alt=""
+            width={shot.width}
+            height={shot.height}
+            blurDataURL={shot.blurDataURL}
+            sizes={sizes}
+            className={cn(
+              "block h-auto w-full",
+              scheme === "light"
+                ? "scheme-dark:hidden"
+                : "hidden scheme-dark:block",
+            )}
+          />
+        )
+      })}
+      {children}
     </div>
   )
 }

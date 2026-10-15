@@ -14,8 +14,8 @@
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import { readFileSync, writeFileSync } from "node:fs";
-
-type Size = { width: number; height: number };
+import type { BrowserCapture } from "../lib/browser-capture";
+import type { LinkShots } from "../lib/link-shots";
 
 async function main() {
   const [handle, site = "https://e-id.to"] = process.argv.slice(2);
@@ -36,8 +36,13 @@ async function main() {
   };
   assert.ok(Array.isArray(card.links), `links: ${handle}'s card has no links`);
 
-  type Captured = { url: string; dark: Size; light: Size };
-  const capture = (url: string, out: string, flags: string[] = []): Captured => {
+  // Each written by the registry's browser-shot, its pictures' addresses in it
+  // (public/ is served at the root).
+  const capture = (
+    url: string,
+    out: string,
+    flags: string[] = [],
+  ): BrowserCapture => {
     execFileSync("bun", [`${ui}/scripts/browser-shot.ts`, url, out, ...flags], {
       stdio: ["ignore", "inherit", "pipe"],
     });
@@ -55,7 +60,7 @@ async function main() {
     "--find",
     `save=a[download="${handle}.vcf"]`,
   ]);
-  const shots: Record<string, Captured> = {};
+  const shots: Record<string, BrowserCapture> = {};
   const refused: string[] = [];
   const firsts = card.links.filter(
     (l, i) => card.links.findIndex((m) => m.platform === l.platform) === i,
@@ -76,10 +81,8 @@ async function main() {
       refused.push(`${platform} (${url}): ${why}`);
     }
   }
-  writeFileSync(
-    "lib/link-shots.json",
-    `${JSON.stringify({ handle, profile, phone, shots }, null, 2)}\n`,
-  );
+  const manifest: LinkShots = { handle, profile, phone, shots };
+  writeFileSync("lib/link-shots.json", `${JSON.stringify(manifest, null, 2)}\n`);
   console.log(`lib/link-shots.json: ${Object.keys(shots).join(", ")}`);
   for (const r of refused) console.log(`no capture: ${r}`);
 }

@@ -6,21 +6,21 @@
     "width": 2560,
     "height": 1600,
     "mime": "image/webp",
-    "bytes": 260114,
-    "blurDataURL": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAKCAIAAAAy3EnLAAAACXBIWXMAAAPoAAAD6AG1e1JrAAAA80lEQVQYlXVPTUsEMQwtk4+u0ENLwfEwk4IOnkQPi6dxB108KOhBD+t/kP3/Z0kzMyyKIYTXl/eS1MnN/TAM5/9E27ZWL67vLt+/5enLAVGDgJ7RMwDEGLuumx52z/vHvu9TSkTkPTGzVdcgNAhmA6KUkoi87F8/3j5FJKXENYhUzYzzBiAyYIZxHKdpEpGc8yo1m27QY6oBiGKMpZTt4bg9HEspdQMyIy3hAObxliGEnHO+utXMOYRARKADF8MCZuOJfWlUdeW1uvp3Xeq9MkSwOWOVVVJ1G+XRI3o9zFnP1PXWWbo+TwChR7eON/Ar//p/AB0fGK0sl/AmAAAAAElFTkSuQmCC",
+    "bytes": 259976,
+    "blurDataURL": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAKCAIAAAAy3EnLAAAACXBIWXMAAAPoAAAD6AG1e1JrAAAA7UlEQVQYlX1PO0sDQRBeMo+NsMUtC57F3SyYw0q0CFZnDg0WCZgiFsl/kPz/WmYnWdPoMHwMM99j18njyzAMt39U27aGdw/P97tveT86IAIA9Iyeiahpmq7rptfVx/qt7/sYIxF5T8xs6GYIMwQgMowxishmvd1/folIjJFLESmbGV2l2mCCcRynaRKRlFKlUilNQM8mgPKknPPycFoeTjnnkoClNUQFAGd7KhhCSCmlxZN2SiEEvarhuVydTHiR/zKuroqu/N1C0ajzG1bTslHeXJnoEb1+w9nNe92apoqrxWVQa2fn65x/mgh+ACkJGLxO1R/mAAAAAElFTkSuQmCC",
     "average": "#0c0e0e",
-    "src": "telegram.dark.webp?v=63783def07",
-    "poster": "telegram.dark.webp?v=63783def07"
+    "src": "/links/adriangalilea/telegram.dark.webp?v=88a85f031d",
+    "poster": "/links/adriangalilea/telegram.dark.webp?v=88a85f031d"
   },
   "light": {
     "kind": "image",
     "width": 2560,
     "height": 1600,
     "mime": "image/webp",
-    "bytes": 172178,
-    "blurDataURL": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAKCAIAAAAy3EnLAAAACXBIWXMAAAPoAAAD6AG1e1JrAAAByElEQVQYlSXLbW/SQAAA4P5hEyVzRpcssb27XqEdOMkIgywzipS3ZuAm6wFlvLSFllq6ggTFboKbLzN+dgnpmc3k+fowymjY9nT3Yux99aer6fxqGnyfL39+vr5Z/Pod3Pz58p93Oc90xyXLY56WxC1F2lZ2UO2FVN8z5ubt+u/i03y1DNbr29WPiTurjWZV++OROVF6fol5mOcfyXhDFp4UhWcV8WxmUErTL7NvDnKU0ovrSWdc6owLba9APuTeO6+ZBzlwd/IwIqONAt+Y9CilQRAsFgtKqb90yuZB2cyWzWzJyOT1NBORUUQGj2W4WUSbRdSc9sMwPHG/HTtXYRhagZnW4vvtxL2dVFtitipoW4Hs0R2uivKDt3ZgKU5Xcbqjy2HZliWCJIIShE8QXiKIkY7hbh2lCM40caaFshq/34SpBkoSPtGAcRWIKieqUFRhrA5idcAcakju8hUdVU3+ZCjUBriiA7mPDs9gWgPJFogTNk5YUeVip2zslGWqpqBaQsvBfVfQPax7uONiMsK1AS4Y8FUXZtvcnsYlW2C3ycUJy7RG0b4rDDzBOhdsP2r72Pajxrlw39A7iy8bIN/j7ufztAb+Acs9TSVCpdEYAAAAAElFTkSuQmCC",
-    "average": "#acc8a1",
-    "src": "telegram.light.webp?v=fd02fc55fd",
-    "poster": "telegram.light.webp?v=fd02fc55fd"
+    "bytes": 172086,
+    "blurDataURL": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAKCAIAAAAy3EnLAAAACXBIWXMAAAPoAAAD6AG1e1JrAAABxUlEQVQYlSXL22/SUACA8f7DGkcIDzOaSM85PazrYAub0jGCUUYZlwGBQEsplPUClKZcOgmKlTA3ZxZ9dgnpMWPJ7/H7qKJlKlN95E3Gq6m7dhe3196vxfr3t7uH5f0f7+Hv92eT1eJMHeeHDhXKs7vF/TdFjq4csrW4tjAeN/+WXxc3a2+zeby5d515dTSvWF/KQ/dSn+apV1lmR8BBIfJ8ducGISQR5z+nMoSQH3euOs6r45w6zrWdbHP0iXqRAS/P4U4WBgQUzDEt94oQ4nnecrkkhMzWdsFMXfbPCmayYCYFg6cCAgoIIJiDoQsUukDyteb7ft35WbNvfd8femZCifKd2NZBQuGo10X0tgTDZUhXEF1B2f655Q1Ldq9k90arQcESOBFzEopJTExiOAlRB3V03IQfJHTaRqk2k1QYXobvW+ioxURFEBUB2wyzDbAvQrYB2Aag0grIXeGyjqt9XB8w1T4u6kDQULoLEwqIy4gT33FN+mnbomomli3ctSOaE9EnWJ9g1cGi9XQKGvjYg3yHPpbDRzJ9KNFRKUxtU6Y/YazZnjXDthuxZnvGNKI6WBqh6gAVDJDRYFql+Q59otD/AaLBTQAGIqQSAAAAAElFTkSuQmCC",
+    "average": "#acc8a0",
+    "src": "/links/adriangalilea/telegram.light.webp?v=c467069fe1",
+    "poster": "/links/adriangalilea/telegram.light.webp?v=c467069fe1"
   }
 }

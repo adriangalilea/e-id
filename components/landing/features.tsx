@@ -1,9 +1,7 @@
 import { SaveContact } from "@/components/save-contact";
-import {
-  Capture,
-  type Landing,
-  type Shot,
-} from "@/components/landing/link-map";
+import type { Landing } from "@/components/landing/link-map";
+import { BrowserCapturePage } from "@/components/ui/browser";
+import { atFound, foundOn, middleOf } from "@/lib/browser-capture";
 import { Story } from "@/components/landing/story";
 import { shortName } from "@/lib/link-names";
 import { cacheLife } from "next/cache";
@@ -11,7 +9,7 @@ import { getShowcase } from "@/lib/data";
 import { Panel } from "@/components/ui/panel";
 import { EMOJI_DOMAIN } from "@/lib/const";
 import { getLinkIcon } from "@/lib/links";
-import SHOTS from "@/lib/link-shots.json";
+import { SHOTS } from "@/lib/link-shots";
 import { IdCard, type Holder } from "@/components/id-card";
 import { HoloLight } from "@/components/ui/holo";
 import { CardData } from "@/components/landing/card-data";
@@ -97,8 +95,7 @@ function landingsOf(holder: Holder): Landing[] {
   );
   // Captured for one handle, the home's lead; another lead has none until
   // `pnpm links <handle>` runs.
-  const captured: Partial<Record<string, Captured>> =
-    SHOTS.handle === holder.username ? SHOTS.shots : {};
+  const captured = SHOTS.handle === holder.username ? SHOTS.shots : {};
   return first.flatMap((link): Landing[] => {
     const end = shortName(link.platform);
     if (!end) return [];
@@ -107,28 +104,8 @@ function landingsOf(holder: Holder): Landing[] {
       return [{ end, icon, url: link.url, page: <Compose to={link.url} /> }];
     const shot = captured[link.platform];
     if (!shot) return [];
-    return [{ end, icon, url: shot.url, shot: placed(holder, shot) }];
+    return [{ end, icon, url: shot.url, shot }];
   });
-}
-
-/** A capture as the manifest has it (lib/link-shots.json): each scheme's picture
- *  with its `src`, its file's name and its content's hash. */
-type Captured = Omit<Shot, "src" | "dark" | "light"> & {
-  dark: Shot["dark"] & { src: string };
-  light: Shot["light"] & { src: string };
-};
-
-/** A capture placed where `pnpm links` wrote it, by the names it recorded, so a
- *  capture taken again is a new address. */
-function placed(holder: Holder, shot: Captured): Shot {
-  const folder = `/links/${holder.username}`;
-  return {
-    ...shot,
-    src: {
-      dark: `${folder}/${shot.dark.src}`,
-      light: `${folder}/${shot.light.src}`,
-    },
-  };
 }
 
 /** What an email address opens: the mail app's new message, to it, as large as a
@@ -175,7 +152,7 @@ function Compose({ to }: { to: string }) {
  *  until `pnpm links <handle>` runs, rather than someone else's page. */
 function profileOf(holder: Holder): React.ReactNode {
   if (SHOTS.handle === holder.username)
-    return <Capture shot={placed(holder, SHOTS.profile)} />;
+    return <BrowserCapturePage capture={SHOTS.profile} />;
   return (
     <div className="grid min-h-full place-items-center p-6">
       <div className="w-full max-w-[18rem]">
@@ -189,8 +166,7 @@ function profileOf(holder: Holder): React.ReactNode {
  *  button, as the capture found it. None for a lead not captured yet. */
 function pressOf(holder: Holder): { x: number; y: number } | undefined {
   if (SHOTS.handle !== holder.username) return undefined;
-  const { save } = SHOTS.phone.found;
-  return { x: save.x + save.width / 2, y: save.y + save.height / 2 };
+  return middleOf(foundOn(SHOTS.phone, "save"));
 }
 
 /** The holder's profile as a phone shows it: the page itself on a phone, its
@@ -205,24 +181,14 @@ function phoneOf(holder: Holder): React.ReactNode {
         <HolderCard holder={holder} />
       </div>
     );
-  const { phone } = SHOTS;
-  const save = phone.found.save;
-  // A length on the page as a share of the picture's width, which is the page's.
-  const share = (px: number) => `${(px / phone.width) * 100}cqw`;
   return (
-    <div key="phone" className="relative @container">
-      <Capture shot={placed(holder, phone)} />
+    <BrowserCapturePage key="phone" capture={SHOTS.phone}>
       <div
         aria-hidden
-        className="absolute rounded-full bg-white/0 transition-colors duration-150 in-data-pressing:bg-white/20"
-        style={{
-          left: share(save.x),
-          top: share(save.y),
-          width: share(save.width),
-          height: share(save.height),
-        }}
+        className="rounded-full bg-white/0 transition-colors duration-150 in-data-pressing:bg-white/20"
+        style={atFound(SHOTS.phone, "save")}
       />
-    </div>
+    </BrowserCapturePage>
   );
 }
 
