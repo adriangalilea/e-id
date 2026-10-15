@@ -107,13 +107,15 @@ export interface ScrollStoryProps {
 
 /** A card's surface and its height, the deck's own (card-gallery) for the stack:
  *  the two layouts draw the same card. */
-const CARD = "rounded-[2rem] bg-(--card-bg)"
+const CARD = "rounded-[2rem] bg-(--card-bg) shadow-(--card-edge)"
 
 /** The story's defaults, as custom properties a consumer overrides by class: the
- *  card's ground a step off the page, its height what the window leaves under a
- *  bar and above the picker. */
+ *  card's ground a step off the page and its edge (a hairline all round and a lit
+ *  top), so a card stands on the page as a layer even where the page's light is
+ *  at its darkest and its corner would otherwise vanish; its height what the
+ *  window leaves under a bar and above the picker. */
 const STORY_VARS =
-  "[--card-bg:color-mix(in_oklab,var(--foreground)_4%,var(--background))] [--card-h:clamp(28rem,calc(100svh-13rem),46rem)]"
+  "[--card-bg:color-mix(in_oklab,var(--foreground)_7%,var(--background))] [--card-edge:inset_0_0_0_1px_color-mix(in_oklab,var(--foreground)_9%,transparent),inset_0_1px_0_color-mix(in_oklab,var(--foreground)_10%,transparent)] [--card-h:clamp(28rem,calc(100svh-13rem),46rem)]"
 
 /** The deck's room above and below its cards: a rem of its own, and as far as a
  *  scene stands out of its card (`--story-overflow`), so nothing standing out is
