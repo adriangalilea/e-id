@@ -17,7 +17,7 @@ Built with Next.js, better-auth, and Drizzle on Turso. The interface comes from 
 - **The person is the namespace.** `eid.to/you` is the product and stays at the root, never under `/u/`. Everything a person makes lives under their name, `eid.to/you/<name>`: a platform (`/you/gh`), a link of theirs (`/you/cv`), a short-lived share. Whoever receives one sees whose it is before opening it, and every link belongs to a signed-in account, so abuse is banned with the account.
 - **One rule for `/you/<name>`:** a platform name opens that link, a name of theirs opens that link, anything else (a typo, a platform they have no link on) opens their profile. Only a person who does not exist is a 404.
 - **No anonymous short links on these domains,** at the root, under a path or on a subdomain. They are what phishing runs on, and once enough bad ones pass through, Safe Browsing and mail filters flag the whole domain, every profile with it. Anonymous shortening, if ever, gets a domain of its own.
-- **Names under 5 characters are not usernames.** The root's short names are e-ID's own (`api`, `dev`, and what comes), reserved in `forbiddenUsernames`.
+- **e-ID's own names are reserved** in `forbiddenUsernames` (`api`, `dev`, and what comes). Usernames are 5 characters or more today; whether shorter ones are sold is open (Premium).
 
 ## To do
 
@@ -34,6 +34,7 @@ Built with Next.js, better-auth, and Drizzle on Turso. The interface comes from 
 - [ ] analytics: your page's visits and what your links opened, each `/you/<name>` counted (visits, when, from where); the whole site's for the admin
 - [ ] more usernames, each a permanent redirect to your page, so a new main name keeps every old link working (`adriangalilea` → `adrian`)
 - [ ] claimable usernames: stops squatting
+- [ ] short usernames (3 and 4 characters) sold, 1 and 2 kept for e-ID; decide the price, and whether a bought name can be resold
 - [ ] an email address, `you@eid.to`
   - Why: `eid.to/you/mail` opens your email link in a browser, but a mail client's "To:" refuses it (an address is `name@domain`, never a path). A real address reaches you without showing your own.
   - Gated: every alias is a relay anyone can write to, and forwarding costs money per domain.
