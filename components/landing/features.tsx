@@ -58,7 +58,7 @@ export async function Features() {
             className="self-start"
           />
         ),
-        page: <PhoneProfile holder={holder} />,
+        page: phoneOf(holder),
       }}
       data={{
         address: `${at}/json`,
@@ -182,22 +182,40 @@ function profileOf(holder: Holder): React.ReactNode {
   );
 }
 
-/** The holder's profile as a phone shows it, built from the profile's own parts
- *  (app/[username]/user_profile, `Identity`): the card, what they say of
- *  themselves, and the button that serves their .vcf, which the story presses
- *  (`data-pressing` on the page round it lights it as a finger does). */
-function PhoneProfile({ holder }: { holder: Holder }) {
+/** The holder's profile as a phone shows it: the page itself on a phone, its
+ *  mobile layout, ground and all, captured by `pnpm links` with where its save
+ *  button is (`found.save`), which the story presses: a finger's light laid on
+ *  the button in the picture while the page round it is `data-pressing`. A lead
+ *  not captured yet shows their card alone, as `profileOf` does. */
+function phoneOf(holder: Holder): React.ReactNode {
+  if (SHOTS.handle !== holder.username)
+    return (
+      <div key="phone" className="px-5 pt-6">
+        <HolderCard holder={holder} />
+      </div>
+    );
+  const { phone } = SHOTS;
+  const base = `/links/${holder.username}/phone`;
+  const save = phone.found.save;
+  // A length on the page as a share of the picture's width, which is the page's.
+  const share = (px: number) => `${(px / phone.width) * 100}cqw`;
   return (
-    <div className="flex min-h-full flex-col gap-6 px-5 pt-6 pb-10">
-      <HolderCard holder={holder} />
-      {holder.bio && (
-        <p className="px-1 text-[17px] leading-relaxed font-light text-pretty text-foreground/80">
-          {holder.bio}
-        </p>
-      )}
-      <SaveContact
-        username={holder.username}
-        className="self-start transition-[scale,filter] duration-150 in-data-pressing:scale-95 in-data-pressing:brightness-150"
+    <div key="phone" className="relative @container">
+      <Capture
+        shot={{
+          ...phone,
+          src: { dark: `${base}.dark.webp`, light: `${base}.light.webp` },
+        }}
+      />
+      <div
+        aria-hidden
+        className="absolute rounded-full bg-white/0 transition-colors duration-150 in-data-pressing:bg-white/20"
+        style={{
+          left: share(save.x),
+          top: share(save.y),
+          width: share(save.width),
+          height: share(save.height),
+        }}
       />
     </div>
   );

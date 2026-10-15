@@ -426,8 +426,10 @@ function Phone({
     // them outside the app's box).
     <IphoneFrame style={contactsAppScreen(view ?? "preview", contact.average)}>
       <Scaled {...PHONE_SCREEN} className="absolute inset-0 w-full">
+        {/* The screen ends the page: a page taller than it goes on under the
+            frame's foot, never past it. */}
         <div
-          className="absolute inset-0"
+          className="absolute inset-0 overflow-clip"
           data-pressing={(at >= SAVE.press && at < SAVE.sheet) || undefined}
         >
           <Browser

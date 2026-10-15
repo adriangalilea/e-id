@@ -37,8 +37,8 @@ async function main() {
   assert.ok(Array.isArray(card.links), `links: ${handle}'s card has no links`);
 
   type Captured = { url: string; dark: Size; light: Size };
-  const capture = (url: string, out: string): Captured => {
-    execFileSync("bun", [`${ui}/scripts/browser-shot.ts`, url, out], {
+  const capture = (url: string, out: string, flags: string[] = []): Captured => {
+    execFileSync("bun", [`${ui}/scripts/browser-shot.ts`, url, out, ...flags], {
       stdio: ["ignore", "inherit", "pipe"],
     });
     return JSON.parse(readFileSync(`${out}.json`, "utf8"));
@@ -48,6 +48,13 @@ async function main() {
     `${site}/${handle}`,
     `public/links/${handle}/profile`,
   );
+  // The same page on a phone, where the vCard chapter saves it: its mobile
+  // layout, and where its save button is, which the story presses.
+  const phone = capture(`${site}/${handle}`, `public/links/${handle}/phone`, [
+    "--phone",
+    "--find",
+    `save=a[download="${handle}.vcf"]`,
+  ]);
   const shots: Record<string, Captured> = {};
   const refused: string[] = [];
   const firsts = card.links.filter(
@@ -71,7 +78,7 @@ async function main() {
   }
   writeFileSync(
     "lib/link-shots.json",
-    `${JSON.stringify({ handle, profile, shots }, null, 2)}\n`,
+    `${JSON.stringify({ handle, profile, phone, shots }, null, 2)}\n`,
   );
   console.log(`lib/link-shots.json: ${Object.keys(shots).join(", ")}`);
   for (const r of refused) console.log(`no capture: ${r}`);
