@@ -8,7 +8,10 @@
 //   - Selecting text is reading, not clicking: a click that ends a selection goes
 //     nowhere.
 //   - Nested cards: the innermost one wins (a quoted post opens the quoted post).
-//   - External places open in a new tab, as every link inside the card does.
+//   - External places open in a new tab, as every link inside the card does. A
+//     place on the same site opens in the same tab, through the site's own router
+//     when it gives one (`navigate`); ⌘ or Ctrl opens it in a new tab, as a link
+//     does.
 //
 // The card itself is NOT a tab stop and has no link role: a keyboard reaches the
 // destination through a real <a> the card already carries (a date, a mark, a name).
@@ -23,10 +26,19 @@ const INTERACTIVE =
 
 export interface CardLinkProps extends React.ComponentProps<"div"> {
   href: string
+  /** How the site goes to a place of its own (its router's push): default the
+   *  browser's. Never asked for another site's. */
+  navigate?: (href: string) => void
+}
+
+/** A place on this site: a path, or an address on this origin. */
+function ownPlace(href: string): boolean {
+  return new URL(href, window.location.href).origin === window.location.origin
 }
 
 export function CardLink({
   href,
+  navigate,
   className,
   onClick,
   children,
@@ -49,7 +61,10 @@ export function CardLink({
         if (target.closest("[data-card-link]") !== e.currentTarget) return
         if (target.closest(INTERACTIVE)) return
         if (!window.getSelection()?.isCollapsed) return
-        window.open(href, "_blank", "noopener,noreferrer")
+        if (!ownPlace(href) || e.metaKey || e.ctrlKey)
+          window.open(href, "_blank", "noopener,noreferrer")
+        else if (navigate) navigate(href)
+        else window.location.assign(href)
       }}
     >
       {children}

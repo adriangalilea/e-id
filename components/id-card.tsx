@@ -2,7 +2,10 @@ import { BrandMark } from "@/components/brand"
 import { ID1, ON_CARD } from "@/components/card-shape"
 import { CopyAddress } from "@/components/copy-address"
 import { CountryFlag } from "@/components/country"
+import { WebsiteHover } from "@/components/mark-hover"
 import { CardSave } from "@/components/save-contact"
+import { CardLink as WholeCardLink } from "@/components/ui/card-link"
+import { EmailAddress } from "@/components/ui/email-address"
 import { FoilEdge, Holo } from "@/components/ui/holo"
 import {
   HoverCard,
@@ -136,11 +139,27 @@ function knownOf(
   return { platform, url, handle, name: handle, kind: "person", counts: [] }
 }
 
+/** Who or what is behind a mark while the hand rests on it: a profile's compact
+ *  row (@ag/social-profile), a website's preview (@ag/web-preview, read then), an
+ *  address's row (@ag/email-address). Null where there is nothing to show. */
+function behindMark(
+  platform: LinkPlatform,
+  url: string,
+  profile: ProfileFacts | undefined,
+  username: string,
+): React.ReactNode {
+  if (profile) return <SocialProfile facts={profile} form="compact" />
+  if (platform === "website")
+    return <WebsiteHover username={username} url={url} />
+  if (platform === "email") return <EmailAddress address={url} frame={false} />
+  return null
+}
+
 /** Where the person is, on the card itself: their links' marks in a row, as an ID
  *  carries its holder's entitlements, each one the way there. With the address,
  *  the card's only touchable parts are what it shows. `rel="me"`: the same person
  *  on both ends, which IndieWeb readers check. */
-function Flair({ links }: { links: HolderLink[] }) {
+function Flair({ links, username }: { links: HolderLink[]; username: string }) {
   if (links.length === 0) return null
   return (
     <nav
@@ -170,12 +189,12 @@ function Flair({ links }: { links: HolderLink[] }) {
           ),
           children: getLinkIcon(platform),
         }
-        // Who they are there, behind the mark while the hand rests on it.
-        return profile ? (
+        const behind = behindMark(platform, url, profile, username)
+        return behind ? (
           <HoverCard key={url}>
             <HoverCardTrigger {...mark} />
             <HoverCardContent material="glass" className="w-80 p-3">
-              <SocialProfile facts={profile} form="compact" />
+              {behind}
             </HoverCardContent>
           </HoverCard>
         ) : (
@@ -219,6 +238,13 @@ export type CardSlots = {
   photo?: React.ReactNode
 }
 
+export type CardPress = {
+  href: string
+  label: string
+  navigate?: (href: string) => void
+  hint?: React.ReactNode
+}
+
 export function IdCard({
   holder,
   heading = "h1",
@@ -234,12 +260,13 @@ export function IdCard({
   holo?: HoloPrint
   /** Fields to write in, instead of the holder's written ones. */
   slots?: CardSlots
-  /** What pressing the card does where it is shown away from its profile (the
-   *  home's pile, a list): a link (or button) laid over its whole face, drawn
-   *  inside the card under what the card itself does, so its own controls (a
-   *  link's mark and who they are there, the address's copy, the save) still
-   *  answer the hand and anywhere else opens the press. `PRESS`, its class. */
-  press?: React.ReactNode
+  /** Where pressing the card goes where it is shown away from its profile (the
+   *  home's pile, a list): the whole card opens `href` (@ag/card-link) while what
+   *  it does itself (a link's mark and who they are there, the address's copy,
+   *  the save) still answers the hand. `label` names the place for a keyboard,
+   *  `navigate` is the site's router for a place of its own, `hint` what is said
+   *  under the hand. */
+  press?: CardPress
   className?: string
 }) {
   const Name = heading
@@ -294,68 +321,90 @@ export function IdCard({
               {name}
             </Name>
           )}
-          {slots?.flair ?? <Flair links={links} />}
+          {slots?.flair ?? <Flair links={links} username={holder.username} />}
         </div>
       </div>
     </>
   )
-  return (
-    <div className={cn("@container w-full", className)}>
-      <Glass
-        as="article"
-        shape="surface"
-        data-slot="id-card"
-        className={cn(
-          ID1,
-          "flex w-full flex-col justify-between overflow-hidden p-(--card-pad) [--glass-blur:var(--id-card-blur,9px)] [--glass-radius:var(--id1-radius)] [--glass-thickness:var(--id-card-thickness,0.3)]",
-          // Pressed through: what is written on it lets the press under it take
-          // the hand, all but what it does itself.
-          press &&
-            "[&>*]:pointer-events-none [&_a]:pointer-events-auto [&_button]:pointer-events-auto",
-        )}
-        style={
-          {
-            "--id1-radius": ID1_RADIUS,
-            "--holo-print-unit": PRINT_UNIT,
-            // The layout (lib/card-layout), the one the share image, the embed
-            // and the link preview draw too: every size on the card reads it.
-            "--card-pad": cqw(CARD_LAYOUT.pad),
-            "--card-head": cqw(CARD_LAYOUT.head),
-            "--card-flag": cqw(CARD_LAYOUT.flag),
-            "--card-photo": cqw(CARD_LAYOUT.photo),
-            "--card-gap": cqw(CARD_LAYOUT.gap),
-            "--card-name": cqw(fit.size),
-            "--card-icon": cqw(CARD_LAYOUT.icon),
-            // What the glass does to what lies behind it, its blur unless the
-            // card says otherwise (`--id-card-backdrop`): a solid card shows
-            // nothing behind it, and a blur of what it hides, done again every
-            // frame a card floats, was the home's whole cost.
-            "--glass-backdrop":
-              "var(--id-card-backdrop, blur(var(--id-card-blur, 9px)) saturate(calc(1 + 0.25 * var(--glass-saturation, 1))))",
-          } as React.CSSProperties
-        }
-      >
-        {/* The prints lie in the card, under everything written on it: drawn
+  const face = (
+    <Glass
+      as="article"
+      shape="surface"
+      data-slot="id-card"
+      className={cn(
+        ID1,
+        "flex w-full flex-col justify-between overflow-hidden p-(--card-pad) [--glass-blur:var(--id-card-blur,9px)] [--glass-radius:var(--id1-radius)] [--glass-thickness:var(--id-card-thickness,0.3)]",
+      )}
+      style={
+        {
+          "--id1-radius": ID1_RADIUS,
+          "--holo-print-unit": PRINT_UNIT,
+          // The layout (lib/card-layout), the one the share image, the embed
+          // and the link preview draw too: every size on the card reads it.
+          "--card-pad": cqw(CARD_LAYOUT.pad),
+          "--card-head": cqw(CARD_LAYOUT.head),
+          "--card-flag": cqw(CARD_LAYOUT.flag),
+          "--card-photo": cqw(CARD_LAYOUT.photo),
+          "--card-gap": cqw(CARD_LAYOUT.gap),
+          "--card-name": cqw(fit.size),
+          "--card-icon": cqw(CARD_LAYOUT.icon),
+          // What the glass does to what lies behind it, its blur unless the
+          // card says otherwise (`--id-card-backdrop`): a solid card shows
+          // nothing behind it, and a blur of what it hides, done again every
+          // frame a card floats, was the home's whole cost.
+          "--glass-backdrop":
+            "var(--id-card-backdrop, blur(var(--id-card-blur, 9px)) saturate(calc(1 + 0.25 * var(--glass-saturation, 1))))",
+        } as React.CSSProperties
+      }
+    >
+      {/* The prints lie in the card, under everything written on it: drawn
             first, and what is written is positioned so it paints over them. */}
-        <Ghost holder={holder} />
-        {/* THE HOLOGRAM, as an ID card's security laminate (@ag/holo): nearly
+      <Ghost holder={holder} />
+      {/* THE HOLOGRAM, as an ID card's security laminate (@ag/holo): nearly
             invisible face on, a band of foil running through its print as the
             card turns. The seal bites the photo's corner, where a real one sits
             so the photo cannot be swapped (`SEAL`). */}
-        {holo && <Holo print={holo} seal={SEAL} emblem={MARK_EMBLEM} />}
-        {/* Under what is written (positioned after it, so it paints over). */}
-        {press}
-        {body}
-        {/* The card's own action, the save, in its foot's corner: on the
+      {holo && <Holo print={holo} seal={SEAL} emblem={MARK_EMBLEM} />}
+      {body}
+      {press && (
+        // The keyboard's way to where the card opens (card-link's contract:
+        // a real link inside), and what is said under the hand.
+        <>
+          <a
+            href={press.href}
+            className="sr-only"
+            {...(press.href.startsWith("/")
+              ? {}
+              : { target: "_blank", rel: "noreferrer" })}
+          >
+            {press.label}
+          </a>
+          {press.hint}
+        </>
+      )}
+      {/* The card's own action, the save, in its foot's corner: on the
             padding, its edges on the card's inner margin, as the flag's are at
             its head. */}
-        {saves && (
-          <div className="absolute right-(--card-pad) bottom-(--card-pad) z-20">
-            <CardSave username={holder.username} />
-          </div>
-        )}
-        <FoilEdge />
-      </Glass>
-    </div>
+      {saves && (
+        <div className="absolute right-(--card-pad) bottom-(--card-pad) z-20">
+          <CardSave username={holder.username} />
+        </div>
+      )}
+      <FoilEdge />
+    </Glass>
+  )
+  const outer = cn("@container w-full", className)
+  // A card that is a press is one card-link (@ag/card-link): `group/press`, for
+  // what it says under the hand (`hint`).
+  return press ? (
+    <WholeCardLink
+      href={press.href}
+      navigate={press.navigate}
+      className={cn("group/press relative", outer)}
+    >
+      {face}
+    </WholeCardLink>
+  ) : (
+    <div className={outer}>{face}</div>
   )
 }

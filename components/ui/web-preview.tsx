@@ -4,7 +4,7 @@
 // owns the facts and the one fetch; this is a pure function of them, so the same link
 // draws identically in a chat bubble, in an article and in a feed.
 //
-// THREE STYLES, one component, chosen by the page it sits on:
+// FOUR STYLES, one component, chosen by the page it sits on:
 //   card      ours, the default. The image at 16:9, the title at reading size, the
 //             description in two lines, the domain as mono metadata with the site's
 //             icon; the whole card is the link. Its surface is a `Panel`'s, plain or
@@ -12,6 +12,9 @@
 //             running to its edge; inside a frame already drawn it draws no box
 //             (`frame` decides when given). Under the pointer plain lifts a touch,
 //             glass catches more light on its rim.
+//   compact   ours in one row, social-profile's compact row's shape: the picture
+//             (else the site's icon on a tile) where a face stands, the title, the
+//             domain under it. For a hover card, a list, a link's mark.
 //   telegram  the client's card inside a bubble: a rule on the left, the site name in
 //             link-blue, bold title, muted text, image on top. Sized in em so it
 //             follows the bubble's type; coloured by the bubble through `--wp-*` (ink,
@@ -34,7 +37,7 @@ import { Panel, useInFrame } from "@/components/ui/panel"
 import { cn } from "@/lib/utils"
 import { hostOf, type Unfurl } from "@/lib/web-preview-unfurl"
 
-export type WebPreviewStyle = "card" | "telegram" | "x"
+export type WebPreviewStyle = "card" | "compact" | "telegram" | "x"
 
 export interface WebPreviewProps {
   facts: Unfurl
@@ -146,6 +149,56 @@ export function WebPreview({
           </div>
         )}
       </a>
+    )
+
+  if (style === "compact")
+    return (
+      <Panel
+        render={
+          <a href={facts.url} target="_blank" rel="noopener noreferrer" />
+        }
+        data-slot="web-preview"
+        data-style={style}
+        material={m}
+        scheme={scheme}
+        frame={framed}
+        bodyClassName={cn(
+          "flex-row items-center gap-3",
+          framed ? "px-3 py-2.5" : "p-0",
+        )}
+        className={cn("font-sans text-sm no-underline", lift, className)}
+      >
+        {/* Where a profile's face stands in social-profile's compact row: the
+            page's picture, else its icon on a tile of the same size. */}
+        {facts.image ? (
+          <Image
+            className="size-10 shrink-0 rounded-lg object-cover"
+            src={facts.image}
+            alt=""
+          />
+        ) : (
+          <span className="grid size-10 shrink-0 place-items-center rounded-lg bg-current/[0.06]">
+            {facts.favicon && (
+              <Image className="size-5 rounded-sm" src={facts.favicon} alt="" />
+            )}
+          </span>
+        )}
+        <div className="min-w-0 flex-1">
+          <div className="truncate font-semibold leading-tight">
+            {facts.title}
+          </div>
+          <div className="flex min-w-0 items-center gap-1.5 truncate text-[13px] text-current/55">
+            {facts.image && facts.favicon && (
+              <Image
+                className="size-3.5 shrink-0 rounded-sm"
+                src={facts.favicon}
+                alt=""
+              />
+            )}
+            <span className="truncate">{host}</span>
+          </div>
+        </div>
+      </Panel>
     )
 
   return (

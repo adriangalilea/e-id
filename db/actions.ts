@@ -15,13 +15,15 @@ import {
 import { type Chip, chipOf } from "@/lib/chip"
 import { writeChip } from "@/lib/chip-server"
 import { countryOf } from "@/lib/country-of"
+import { cardLinkOf, getProfile, getPublicLinks } from "@/lib/data"
 import { getGithubProfile } from "@/lib/github"
 import { OFFERED } from "@/lib/platforms"
-import { getPresence } from "@/lib/presence"
+import { getPresence, getWebsite } from "@/lib/presence"
 import { getSession } from "@/lib/session"
 import { profileTag, USERS_TAG, usernameTag } from "@/lib/tags"
 import { claimUsername, holderOf } from "@/lib/username"
 import { usernameProblem } from "@/lib/username-rules"
+import type { Unfurl } from "@/lib/web-preview-unfurl"
 
 // Every export here is an endpoint anyone can call with any arguments: each one
 // reads the session itself and acts only on what that user owns. A profile's
@@ -341,6 +343,21 @@ export async function githubCard(login: string): Promise<{
     country: profile.location ? countryOf(profile.location) : null,
     website: profile.website ?? null,
   }
+}
+
+/** A person's website as its preview shows it (@ag/web-preview), for the hover on
+ *  their card's website mark wherever the card is (the home's pile, a profile):
+ *  their own first public website, read and cached as their profile reads it
+ *  (lib/presence, `getWebsite`). Asked by their username, never by an address: the
+ *  server fetches only what a person stored, never a URL the browser names. Null
+ *  where they have none or it would not answer. */
+export async function websiteOf(username: string): Promise<Unfurl | null> {
+  const profile = await getProfile(username)
+  if (!profile) return null
+  const site = (await getPublicLinks(profile.id)).find(
+    (l) => l.platform === "website" && l.value,
+  )
+  return site ? getWebsite(cardLinkOf(site).url) : null
 }
 
 /** What the profile would show behind each link on the home's card, before

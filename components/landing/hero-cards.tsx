@@ -1,7 +1,6 @@
 "use client"
 
 import { ArrowUpRight, RotateCcw } from "lucide-react"
-import Link from "next/link"
 import { useRouter } from "next/navigation"
 import {
   createContext,
@@ -21,7 +20,7 @@ import {
   useHandleState,
 } from "@/components/card-fields"
 import { CORNER, ID1, ON_CARD, PRESS_HINT } from "@/components/card-shape"
-import { type Holder, IdCard } from "@/components/id-card"
+import { type CardPress, type Holder, IdCard } from "@/components/id-card"
 import { SubjectLight } from "@/components/light"
 import { PROFILE } from "@/components/profile-layout"
 import { ProfileLinks } from "@/components/profile-links"
@@ -113,6 +112,7 @@ function useForming(): boolean {
 export function YourCard() {
   const chip = useChip()
   const draft = useDraft()
+  const router = useRouter()
   const { writing, open, close } = useWriting()
   // Signed in with no address yet (their provider's handle was taken): the card
   // is taken up for them, to pick one.
@@ -163,21 +163,17 @@ export function YourCard() {
                 // Theirs, waiting by the pile: one press to their profile,
                 // where pressing it again takes it up to edit
                 // (components/profile-card); its links still their own.
-                press={
-                  <Link
-                    href={`/${chip.u}`}
-                    aria-label="your page"
-                    className={cn(
-                      CORNER,
-                      "group/press absolute inset-0 cursor-pointer outline-offset-4",
-                    )}
-                  >
+                press={{
+                  href: `/${chip.u}`,
+                  label: "your page",
+                  navigate: router.push,
+                  hint: (
                     <span aria-hidden className={PRESS_HINT}>
                       <ArrowUpRight strokeWidth={1.5} />
                       your page
                     </span>
-                  </Link>
-                }
+                  ),
+                }}
               />
             </div>
           </HoloLean>
@@ -528,13 +524,7 @@ function cardHolder(username: string): Promise<Holder> {
   return holder
 }
 
-function OwnCard({
-  username,
-  press,
-}: {
-  username: string
-  press: React.ReactNode
-}) {
+function OwnCard({ username, press }: { username: string; press: CardPress }) {
   return (
     <IdCard
       heading="p"
@@ -813,34 +803,24 @@ export type Shown = { holder: Holder; href: string }
 const pressLabel = (holder: Holder) =>
   `${holder.name ?? holder.username}'s card`
 
-/** A card on the home is one press, its face: it opens where it says (`Shown`),
- *  a profile in the site, an example's page in a new tab. Inside the card, under
- *  what it does itself (id-card, `press`): a link's mark still opens that link
- *  and shows who they are there, the address still copies. */
-function CardPress({ href, label }: { href: string; label: string }) {
-  const className = cn(CORNER, "absolute inset-0 cursor-pointer")
-  const named = <span className="sr-only">{label}</span>
-  return href.startsWith("/") ? (
-    <Link href={href} className={className}>
-      {named}
-    </Link>
-  ) : (
-    <a href={href} target="_blank" rel="noreferrer" className={className}>
-      {named}
-    </a>
-  )
-}
-
 /** Real e-id cards in one pile, the maker's on top and then the newest whole ones
  *  (a photo, a name, a country): the top one flat on the table as the rest are,
  *  the rest under it, all of them under the hero's shimmer (components/light,
  *  z-[5]), only the visitor's card over it. Each card answers the hand alone,
  *  with a light of its own: a hand on one moves nothing else, and parts the
- *  shimmer round it (`PICKED`); pressed, it opens (`CardPress`). `away`, the
- *  pile set back while the visitor writes. What a card is, shown whole. */
+ *  shimmer round it (`PICKED`); pressed, it opens where it says (`Shown`: a
+ *  profile in the site, an example's page in a new tab), its own links still
+ *  theirs (id-card, `press`). `away`, the pile set back while the visitor
+ *  writes. What a card is, shown whole. */
 function Pile({ people, away }: { people: Shown[]; away: boolean }) {
   const [top, ...rest] = people
   if (!top) throw new Error("the home's pile has nobody to show")
+  const router = useRouter()
+  const press = ({ holder, href }: Shown): CardPress => ({
+    href,
+    label: pressLabel(holder),
+    navigate: router.push,
+  })
   return (
     // The top card's shape kept before it is drawn: the cards under it are
     // placed by shares of its box, and the page is painted while its HTML is
@@ -871,7 +851,7 @@ function Pile({ people, away }: { people: Shown[]; away: boolean }) {
                   heading="p"
                   holo="laminate"
                   className={SOLID}
-                  press={<CardPress href={href} label={pressLabel(holder)} />}
+                  press={press({ holder, href })}
                 />
                 <div
                   aria-hidden
@@ -904,9 +884,7 @@ function Pile({ people, away }: { people: Shown[]; away: boolean }) {
                   heading="p"
                   holo="laminate"
                   className={FRONT}
-                  press={
-                    <CardPress href={top.href} label={pressLabel(top.holder)} />
-                  }
+                  press={press(top)}
                 />
                 {/* Faded into the page a little, as the cards under it are
                     more; clear under the hand. */}

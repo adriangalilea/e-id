@@ -7,8 +7,8 @@ import { Story } from "@/components/landing/story"
 import { SaveContact } from "@/components/save-contact"
 import { BrowserCapturePage } from "@/components/ui/browser"
 import { Code } from "@/components/ui/code"
+import { EmailAddress } from "@/components/ui/email-address"
 import { HoloLight } from "@/components/ui/holo"
-import { Panel } from "@/components/ui/panel"
 import { atFound, foundOn, middleOf } from "@/lib/browser-capture"
 import { cardOf } from "@/lib/card"
 import type { Card } from "@/lib/card-schema"
@@ -110,34 +110,11 @@ function landingsOf(holder: Holder): Landing[] {
 }
 
 /** What an email address opens: the mail app's new message, to it, as large as a
- *  mail window opens on a laptop. Drawn, since a mail app has no page to capture.
- *  Plain whatever the browser round it wears: it is a window, not a pane of the
- *  browser's glass. */
+ *  mail window opens on a laptop (@ag/email-address, its `window`). */
 function Compose({ to }: { to: string }) {
-  const address = to.replace(/^mailto:/, "")
   return (
     <div className="grid min-h-full place-items-center p-10">
-      <Panel
-        material="plain"
-        radius="1rem"
-        className="w-full max-w-3xl"
-        bodyClassName="block p-0 text-xl"
-        head={<span className="font-semibold text-xl">new message</span>}
-      >
-        <div className="flex items-center gap-3 border-current/10 border-b px-7 py-4">
-          <span className="text-foreground/45">to:</span>
-          <span className="rounded-full bg-[#0a84ff]/20 px-3 py-0.5 text-[#0a84ff]">
-            {address}
-          </span>
-        </div>
-        <div className="flex gap-3 border-current/10 border-b px-7 py-4">
-          <span className="text-foreground/45">subject:</span>
-        </div>
-        {/* The body, empty, the caret waiting in it. */}
-        <div className="h-72 px-7 py-5">
-          <span className="inline-block h-6 w-0.5 bg-[#0a84ff]" />
-        </div>
-      </Panel>
+      <EmailAddress address={to} form="window" />
     </div>
   )
 }
