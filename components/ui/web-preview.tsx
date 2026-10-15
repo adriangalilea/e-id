@@ -39,8 +39,8 @@ export type WebPreviewStyle = "card" | "telegram" | "x"
 export interface WebPreviewProps {
   facts: Unfurl
   style?: WebPreviewStyle
-  /** The card style's surface (a panel). Default drawn, except inside a frame
-   *  already drawn. */
+  /** The card style's surface (a panel). Default drawn: inside a frame already
+   *  drawn, the inset one (Panel). */
   frame?: boolean
   /** The card style's material: default the nearest provider's. */
   material?: Material
@@ -68,8 +68,11 @@ export function WebPreview({
   className,
 }: WebPreviewProps) {
   const m = useMaterial(material)
+  // A preview has its identity, so it draws its own surface; inside a frame
+  // already drawn, Panel makes it the inset one, which answers the hand itself.
   const inFrame = useInFrame()
-  const framed = frame ?? !inFrame
+  const framed = frame ?? true
+  const lift = framed && !inFrame && LIFT[m]
   const host = hostOf(facts.url)
   const shared = {
     href: facts.url,
@@ -85,7 +88,7 @@ export function WebPreview({
         {...shared}
         className={cn(
           ANCHOR,
-          "mt-[0.45em] overflow-hidden rounded-[0.35em] border-[var(--wp-ink,currentColor)] border-l-[3px] bg-[var(--wp-wash,color-mix(in_srgb,currentColor_10%,transparent))] px-[0.65em] py-[0.45em] text-[var(--wp-text,inherit)] hover:bg-[var(--wp-wash-hover,color-mix(in_srgb,currentColor_18%,transparent))]",
+          "mt-[0.45em] overflow-hidden rounded-[0.35em] border-l-[3px] border-[var(--wp-ink,currentColor)] bg-[var(--wp-wash,color-mix(in_srgb,currentColor_10%,transparent))] px-[0.65em] py-[0.45em] text-[var(--wp-text,inherit)] hover:bg-[var(--wp-wash-hover,color-mix(in_srgb,currentColor_18%,transparent))]",
           className,
         )}
       >
@@ -103,7 +106,7 @@ export function WebPreview({
           {facts.title}
         </div>
         {facts.description && (
-          <div className="mt-[0.15em] line-clamp-3 text-[0.9em] text-[var(--wp-muted,inherit)] leading-tight opacity-90">
+          <div className="mt-[0.15em] line-clamp-3 text-[0.9em] leading-tight text-[var(--wp-muted,inherit)] opacity-90">
             {facts.description}
           </div>
         )}
@@ -156,7 +159,7 @@ export function WebPreview({
       // The picture runs to the edge, crisp: glass round media is an edge.
       spill={false}
       bodyClassName="gap-0 p-0"
-      className={cn("no-underline", framed && LIFT[m], className)}
+      className={cn("no-underline", lift, className)}
     >
       {facts.image && (
         <Image

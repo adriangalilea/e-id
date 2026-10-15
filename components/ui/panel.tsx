@@ -179,6 +179,16 @@ export type PanelProps = Omit<
 /** What lays out what a panel holds, unless `bodyClassName` says otherwise. */
 const BODY = "flex flex-col gap-4 p-5"
 
+/** A panel inside a frame already drawn (`useInFrame`: a panel's body, or what
+ *  says so with `InFrame`), in either material: a step of light off the surface
+ *  under it, a hairline and the theme's corner, nothing of glass's own (no blur,
+ *  no rim, no spill: glass inside glass drew two rims, two blurs and two bodies
+ *  where the eye wants one surface and what is on it). A panel that is a link
+ *  brightens a step under the hand. Every box that stands in another (a profile,
+ *  a post, a preview) is this one, drawn once here. */
+const INSET =
+  "rounded-(--panel-radius) border border-current/[0.07] bg-current/[0.035] transition-colors [a&]:hover:bg-current/[0.06]"
+
 /** A plain front's face: recessed, a step darker than the card in both schemes
  *  (black over the card: 4% on a light one, 25% on a dark one, where steps must be
  *  wider apart to read), solid, so what scrolls under it stays hidden. A tab chosen
@@ -274,7 +284,12 @@ export function Panel({
   ref,
   ...props
 }: PanelProps) {
-  const m = useMaterial(material)
+  // Inside a frame already drawn, its surface is the inset one (`INSET`) whatever
+  // the material: its glass would be glass on glass.
+  const inFrame = useInFrame()
+  const own = useMaterial(material)
+  const inset = frame && inFrame
+  const m = inset ? "plain" : own
   const glass = m === "glass"
   const [s, here] = useSurfaceScheme<HTMLElement>(scheme, ref)
   const scroller = React.useRef<HTMLDivElement | null>(null)
@@ -550,9 +565,12 @@ export function Panel({
               // movement (a card lifting under the pointer), which its light
               // follows on the same ease (PANEL_LIGHT).
               "isolate text-foreground scheme-light:text-zinc-950 [transition:translate_500ms_cubic-bezier(0.22,1,0.36,1),scale_500ms_cubic-bezier(0.22,1,0.36,1)] motion-reduce:[transition:none]"
-            : partsFrame
-              ? "shadow-sm"
-              : "border border-border bg-card text-card-foreground shadow-sm",
+            : inset
+              ? INSET
+              : partsFrame
+                ? "shadow-sm"
+                : // A panel that is a link brightens a step under the hand.
+                  "border border-border bg-card text-card-foreground shadow-sm transition-colors [a&]:hover:bg-[color-mix(in_srgb,var(--card),var(--foreground)_3%)]",
         className,
       ),
       style: { ...vars, ...style } as React.CSSProperties,

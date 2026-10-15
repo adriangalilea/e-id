@@ -185,8 +185,8 @@ export interface SocialProfileProps {
   /** The platform's mark, for a platform this family does not know (a page of the
    *  consumer's own); a known one draws its own. */
   mark?: React.ReactNode
-  /** Its own surface (a panel). Default drawn, except inside a frame already
-   *  drawn. */
+  /** Its own surface (a panel). Default drawn: inside a frame already drawn,
+   *  the inset one (Panel). */
   frame?: boolean
   material?: Material
   /** The colour scheme its panel stands in (material): default the nearest
@@ -205,8 +205,11 @@ export function SocialProfile({
   className,
 }: SocialProfileProps) {
   const m = useMaterial(material)
+  // A profile has its identity, so it draws its own surface; inside a frame
+  // already drawn, Panel makes it the inset one, which answers the hand itself.
   const inFrame = useInFrame()
-  const framed = frame ?? !inFrame
+  const framed = frame ?? true
+  const lift = framed && !inFrame && LIFT[m]
   const platform = platformOf(facts.platform)
   const theMark = mark ?? <SocialMark platform={facts.platform} />
   const panel = {
@@ -228,7 +231,7 @@ export function SocialProfile({
           "flex-row items-center gap-3",
           framed ? "px-3 py-2.5" : "p-0",
         )}
-        className={cn("group font-sans text-sm", framed && LIFT[m], className)}
+        className={cn("group font-sans text-sm", lift, className)}
       >
         <Face facts={facts} size="md" />
         <div className="min-w-0 flex-1">
@@ -257,11 +260,7 @@ export function SocialProfile({
     <Panel
       {...panel}
       bodyClassName={framed ? "gap-4 p-4" : "gap-4 p-0"}
-      className={cn(
-        "group font-sans text-[15px]",
-        framed && LIFT[m],
-        className,
-      )}
+      className={cn("group font-sans text-[15px]", lift, className)}
     >
       <div className="flex items-center gap-4">
         <Face facts={facts} size="lg" />

@@ -19,6 +19,7 @@ import {
 import type * as React from "react"
 import { CardLink } from "@/components/ui/card-link"
 import { Image } from "@/components/ui/image"
+import { Panel } from "@/components/ui/panel"
 import { Reactions } from "@/components/ui/reactions"
 import type {
   GithubComment,
@@ -37,8 +38,9 @@ import type {
 import { cn } from "@/lib/utils"
 
 const ANCHOR = { target: "_blank", rel: "noopener noreferrer" } as const
-const CARD =
-  "group rounded-xl border border-border bg-card font-sans text-[15px] text-card-foreground transition-colors hover:bg-[color-mix(in_srgb,var(--card),var(--foreground)_3%)]"
+/** A card's type, on the one surface every box here is (Panel: the card alone,
+ *  the inset one inside a frame already drawn). */
+const CARD = "group font-sans text-[15px]"
 const MUTED = "text-foreground/60"
 const LINK = "text-[#0969da] hover:underline dark:text-[#4493f8]"
 const ICON = "size-4 shrink-0"
@@ -233,15 +235,15 @@ function Label({ label }: { label: GithubLabel }) {
  *  itself; a long line scrolls in it as on GitHub. */
 const MARKDOWN = cn(
   "break-words leading-relaxed [&>:first-child]:mt-0 [&>:last-child]:mb-0",
-  "[&_li]:my-0.5 [&_ol]:my-2 [&_ol]:list-decimal [&_ol]:pl-5 [&_p]:my-2 [&_ul]:my-2 [&_ul]:list-disc [&_ul]:pl-5",
+  "[&_p]:my-2 [&_ul]:my-2 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:my-2 [&_ol]:list-decimal [&_ol]:pl-5 [&_li]:my-0.5",
   "[&_h1]:mt-4 [&_h1]:mb-2 [&_h1]:font-semibold [&_h1]:text-lg [&_h2]:mt-4 [&_h2]:mb-2 [&_h2]:font-semibold [&_h3]:mt-3 [&_h3]:mb-1 [&_h3]:font-semibold",
-  "[&_a:hover]:underline [&_a]:text-[#0969da] dark:[&_a]:text-[#4493f8]",
+  "[&_a]:text-[#0969da] [&_a:hover]:underline dark:[&_a]:text-[#4493f8]",
   "[&_code]:rounded-md [&_code]:bg-foreground/8 [&_code]:px-1 [&_code]:py-0.5 [&_code]:font-mono [&_code]:text-[0.85em]",
   "[&_pre]:my-3 [&_pre]:overflow-x-auto [&_pre]:rounded-lg [&_pre]:bg-foreground/5 [&_pre]:p-3 [&_pre]:font-mono [&_pre]:text-[13px] [&_pre]:leading-normal [&_pre_code]:bg-transparent [&_pre_code]:p-0 [&_pre_code]:text-inherit",
   "[&_blockquote]:my-2 [&_blockquote]:border-foreground/20 [&_blockquote]:border-l-4 [&_blockquote]:pl-3 [&_blockquote]:text-foreground/60",
-  "[&_hr]:my-4 [&_hr]:border-border [&_img]:max-w-full",
-  "[&_.pl-c1]:text-[#0550ae] [&_.pl-c]:text-[#59636e] [&_.pl-en]:text-[#6639ba] [&_.pl-k]:text-[#cf222e] [&_.pl-s]:text-[#0a3069] [&_.pl-smi]:text-inherit",
-  "dark:[&_.pl-c1]:text-[#79c0ff] dark:[&_.pl-c]:text-[#9198a1] dark:[&_.pl-en]:text-[#d2a8ff] dark:[&_.pl-k]:text-[#ff7b72] dark:[&_.pl-s]:text-[#a5d6ff]",
+  "[&_img]:max-w-full [&_hr]:my-4 [&_hr]:border-border",
+  "[&_.pl-k]:text-[#cf222e] [&_.pl-s]:text-[#0a3069] [&_.pl-c1]:text-[#0550ae] [&_.pl-en]:text-[#6639ba] [&_.pl-c]:text-[#59636e] [&_.pl-smi]:text-inherit",
+  "dark:[&_.pl-k]:text-[#ff7b72] dark:[&_.pl-s]:text-[#a5d6ff] dark:[&_.pl-c1]:text-[#79c0ff] dark:[&_.pl-en]:text-[#d2a8ff] dark:[&_.pl-c]:text-[#9198a1]",
 )
 
 function Markdown({ html }: { html: string }) {
@@ -292,10 +294,11 @@ export function GithubRepoCard({
 }) {
   const [owner, name] = repo.name.split("/")
   return (
-    <CardLink
-      href={repo.url}
+    <Panel
+      render={<CardLink href={repo.url} />}
       data-slot="github-repo"
-      className={cn(CARD, "space-y-3 p-4", className)}
+      bodyClassName="gap-3 p-4"
+      className={cn(CARD, className)}
     >
       <div className="flex items-center gap-2">
         <BookMarked aria-hidden="true" className={cn(ICON, MUTED)} />
@@ -374,7 +377,7 @@ export function GithubRepoCard({
       {commits !== undefined && (
         <Commits commits={repo.commits} count={commits} />
       )}
-    </CardLink>
+    </Panel>
   )
 }
 
@@ -397,10 +400,11 @@ export function GithubThreadCard({
   const verb =
     thread.state === "merged" ? "merged" : thread.closedAt ? "closed" : "opened"
   return (
-    <CardLink
-      href={thread.url}
+    <Panel
+      render={<CardLink href={thread.url} />}
       data-slot="github-thread"
-      className={cn(CARD, "space-y-3 p-4", className)}
+      bodyClassName="gap-3 p-4"
+      className={cn(CARD, className)}
     >
       <div className={cn("flex items-center gap-2 text-[13px]", MUTED)}>
         <Avatar user={thread.author} size="size-5" />
@@ -478,7 +482,7 @@ export function GithubThreadCard({
           </span>
         )}
       </div>
-    </CardLink>
+    </Panel>
   )
 }
 
@@ -493,9 +497,10 @@ export function GithubCommentCard({
   className?: string
 }) {
   return (
-    <CardLink
-      href={comment.url}
+    <Panel
+      render={<CardLink href={comment.url} />}
       data-slot="github-comment"
+      bodyClassName="gap-0 p-0"
       className={cn(CARD, "overflow-hidden", className)}
     >
       <div className="border-border border-b px-4 py-2.5">
@@ -523,7 +528,7 @@ export function GithubCommentCard({
           <Given reactions={comment.reactions} />
         </div>
       )}
-    </CardLink>
+    </Panel>
   )
 }
 
@@ -587,10 +592,11 @@ export function GithubProfileCard({
   className?: string
 }) {
   return (
-    <CardLink
-      href={profile.url}
+    <Panel
+      render={<CardLink href={profile.url} />}
       data-slot="github-profile"
-      className={cn(CARD, "space-y-4 p-4", className)}
+      bodyClassName="gap-4 p-4"
+      className={cn(CARD, className)}
     >
       <div className="flex items-center gap-4">
         <Avatar user={profile.user} size="size-16" />
@@ -656,7 +662,7 @@ export function GithubProfileCard({
         )}
       </div>
       <ContributionCalendar calendar={profile.calendar} />
-    </CardLink>
+    </Panel>
   )
 }
 
@@ -676,10 +682,7 @@ const GAP = 3
 const STEP = CELL + GAP
 const LEFT = 28
 const TOP = 16
-const MONTH = new Intl.DateTimeFormat("en", {
-  month: "short",
-  timeZone: "UTC",
-})
+const MONTH = new Intl.DateTimeFormat("en", { month: "short", timeZone: "UTC" })
 
 function dayTitle(d: GithubDay): string {
   const when = date(`${d.date}T00:00:00Z`)

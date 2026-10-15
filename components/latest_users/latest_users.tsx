@@ -2,7 +2,7 @@ import { ArrowUpRight } from "lucide-react"
 import Link from "next/link"
 import { CountryFlag } from "@/components/country"
 import { GUTTER } from "@/components/frame"
-import { SURFACE } from "@/components/surface"
+import { Panel } from "@/components/ui/panel"
 import { RelativeTime } from "@/components/ui/relative-time"
 import { getLatestUsers } from "@/lib/data"
 import { cn } from "@/lib/utils"
@@ -19,18 +19,25 @@ export async function LatestUsers() {
       aria-labelledby="latest-sign-ups"
       className={cn("mx-auto w-full max-w-6xl py-16 sm:py-20", GUTTER)}
     >
-      <div className={cn(SURFACE, "overflow-hidden")}>
-        <header className="flex h-12 items-center justify-between border-white/10 border-b bg-black/20 px-4 sm:px-5">
+      {/* The site's one box (@ag/panel), in the page's glass: its head the
+          ledger's name and count. */}
+      <Panel
+        head={
           <h2
             id="latest-sign-ups"
             className="font-mono text-foreground/60 text-xs"
           >
             latest sign-ups
           </h2>
+        }
+        action={
           <span className="font-mono text-foreground/40 text-xs tabular-nums">
             {String(users.length).padStart(2, "0")}
           </span>
-        </header>
+        }
+        bodyClassName="gap-0 p-0"
+        className="overflow-hidden"
+      >
         <ol
           style={
             {
@@ -82,7 +89,7 @@ export async function LatestUsers() {
             </li>
           ))}
         </ol>
-      </div>
+      </Panel>
     </section>
   )
 }

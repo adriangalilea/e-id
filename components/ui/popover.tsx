@@ -50,7 +50,7 @@ const PLAIN_FACE =
 /** Its motion through the material, which owns the glass's transition. */
 const GLASS_FACE = cn(
   glassVariants({ shape: "surface" }),
-  "[--glass-blur:16px] [--glass-moves:opacity_150ms_var(--ease-out),scale_150ms_var(--ease-out)] [--glass-radius:--theme(--radius-2xl)]",
+  "[--glass-radius:--theme(--radius-2xl)] [--glass-blur:16px] [--glass-moves:opacity_150ms_var(--ease-out),scale_150ms_var(--ease-out)]",
 )
 
 export interface PopoverContentProps
@@ -104,7 +104,7 @@ export function PopoverContent({
             schemeOf(s),
             m === "glass" ? GLASS_FACE : PLAIN_FACE,
             "flex w-72 max-w-full origin-(--transform-origin) flex-col gap-1 p-4 text-sm outline-none",
-            "data-[ending-style]:scale-98 data-[starting-style]:scale-98 data-[ending-style]:opacity-0 data-[starting-style]:opacity-0",
+            "data-[ending-style]:scale-98 data-[ending-style]:opacity-0 data-[starting-style]:scale-98 data-[starting-style]:opacity-0",
             className,
           )}
           {...props}

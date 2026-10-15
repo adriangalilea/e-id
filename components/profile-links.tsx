@@ -1,6 +1,5 @@
 import { ArrowUpRight } from "lucide-react"
 import Link from "next/link"
-import { INSET } from "@/components/surface"
 import { Copy } from "@/components/ui/copy"
 import { GithubProfileCard } from "@/components/ui/github"
 import { Panel } from "@/components/ui/panel"
@@ -26,7 +25,9 @@ const CALENDAR =
   "[&_[data-slot=github-calendar]]:flex [&_[data-slot=github-calendar]]:flex-col [&_[data-slot=github-calendar]]:items-end [&_[data-slot=github-calendar]]:overflow-hidden [&_[data-slot=github-calendar]>figcaption]:self-start [&_[data-slot=github-calendar]>svg:first-of-type]:min-w-[36rem] [&_[data-slot=github-calendar]_rect]:[rx:0]"
 
 /** What a link shows of the person behind it, from what the page read
- *  (lib/presence); nothing where there was nothing to read. */
+ *  (lib/presence); nothing where there was nothing to read. Each is the
+ *  registry's own and draws its own surface, which inside the box of tabs is
+ *  the inset one (@ag/panel): all of them alike, none styled here. */
 function PresenceOf({
   link,
   presence,
@@ -35,22 +36,15 @@ function PresenceOf({
   presence: Presence
 }) {
   if (link.platform === "github" && presence.github)
-    return (
-      <GithubProfileCard
-        profile={presence.github}
-        className={`${INSET} ${CALENDAR}`}
-      />
-    )
+    return <GithubProfileCard profile={presence.github} className={CALENDAR} />
   if (link.platform === "website" && presence.website)
-    return <WebPreview facts={presence.website} className={INSET} />
+    return <WebPreview facts={presence.website} />
   if (link.platform === "youtube" && presence.youtube)
     return <YouTube video={presence.youtube} />
   if (link.platform === "twitter" && presence.tweet)
-    return <Tweet tweet={presence.tweet} className={INSET} />
+    return <Tweet tweet={presence.tweet} />
   const telegram = presence.profiles.find((p) => p.platform === "telegram")
   if (link.platform === "telegram" && telegram)
-    // Stands in the tab's frame, no box of its own (the box of tabs is the
-    // frame; @ag/social-profile draws none inside a Panel by itself).
     return <SocialProfile facts={telegram} />
   return null
 }

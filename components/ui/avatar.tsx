@@ -44,7 +44,7 @@ export function avatarLook({
 } {
   return {
     className: cn(
-      "inline-block size-(--ag-avatar-size) flex-none overflow-hidden rounded-full align-middle",
+      "inline-block flex-none size-(--ag-avatar-size) overflow-hidden rounded-full align-middle",
       tone ? RING : RING_PLAIN,
       className,
     ),
