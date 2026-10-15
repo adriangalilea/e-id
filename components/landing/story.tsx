@@ -679,7 +679,16 @@ function Site({ card }: { card: React.ReactNode }) {
         <Bone w="62%" />
       </div>
       <div className="aspect-[16/6] rounded-lg bg-foreground/[0.06]" />
-      <footer className="border-foreground/10 border-t pt-5">{card}</footer>
+      {/* The byline: the card on the column's left edge, the post's share
+          marks on its right, both centred on one line, under a hairline the
+          column's width. */}
+      <footer className="flex items-center justify-between border-foreground/10 border-t pt-5 [--e-id-card-height:3.25rem]">
+        {card}
+        <div className="flex gap-2">
+          <div className="size-6 rounded-full bg-foreground/10" />
+          <div className="size-6 rounded-full bg-foreground/10" />
+        </div>
+      </footer>
     </div>
   );
 }

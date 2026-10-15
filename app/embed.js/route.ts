@@ -1,6 +1,5 @@
 import { LIGHT_HOOKS } from "@/lib/card-image";
 import { MARK_BOX, MARK_PATH } from "@/lib/mark";
-import { EMOJI_DOMAIN } from "@/lib/const";
 
 // THE EMBED: `<e-id-card handle="…">` on any page, one script, no framework.
 //
@@ -11,6 +10,9 @@ import { EMOJI_DOMAIN } from "@/lib/const";
 // shadow root so the host page's styles never reach it, and lit by the hand as the
 // site's card is: it leans a few degrees toward the pointer and the hologram's band
 // follows it (`LIGHT_HOOKS` names what moves), brighter while the hand is on it.
+// `compact` is the same card as a byline (lib/card-image `compactSvg`), for the
+// foot of a post, lit and leaning the same way; it is sized by its height
+// (`--e-id-card-height`), the full card by its width (`--e-id-card-width`).
 // What is inside the element stays shown until the card arrives, and if it never
 // does. The origin is the script's own, so a copy served elsewhere draws from there.
 // A link's mark, under the hand or the keys, shows who they are there (the card's
@@ -38,6 +40,8 @@ if (!document.querySelector("style[data-e-id-fonts]")) {
 }
 
 const STYLE = \`:host{display:block;position:relative;width:var(--e-id-card-width,28rem);max-width:100%;perspective:2000px}
+:host([compact]){display:inline-block;width:auto;vertical-align:middle;perspective:900px}
+:host([compact]) svg{width:auto;max-width:100%;height:var(--e-id-card-height,4.5rem)}
 .peek{position:absolute;z-index:1;display:flex;align-items:center;gap:.7rem;max-width:min(20rem,100%);padding:.6rem .9rem .6rem .6rem;border-radius:1rem;background:rgb(22 22 24/.82);-webkit-backdrop-filter:blur(14px) saturate(1.3);backdrop-filter:blur(14px) saturate(1.3);box-shadow:inset 0 0 0 1px rgb(255 255 255/.1),0 .8rem 2rem -.6rem rgb(0 0 0/.6);color:#fff;font:400 .8125rem/1.3 'Space Grotesk',system-ui,sans-serif;pointer-events:none;opacity:0;transform:translate(-50%,-.25rem);transition:opacity 160ms ease-out,transform 160ms ease-out}
 .peek[data-open]{opacity:1;transform:translate(-50%,0)}
 .peek img{width:2.25rem;height:2.25rem;flex:none;border-radius:999px;object-fit:cover;background:rgb(255 255 255/.08)}
@@ -59,24 +63,6 @@ const FALLBACK = \`<style>:host{display:block}
 .fallback{display:inline-flex;align-items:center;gap:.45em;padding:.4em .9em;border-radius:999px;border:1px solid color-mix(in srgb,currentColor 22%,transparent);background:color-mix(in srgb,currentColor 5%,transparent);font:500 .875rem/1.2 'Space Grotesk',system-ui,sans-serif;letter-spacing:-.01em}
 .fallback svg{height:1cap;width:auto;fill:currentColor;opacity:.75}
 ::slotted(a){color:inherit;text-decoration:none}</style><span class="fallback"><svg viewBox="${MARK_BOX.x} ${MARK_BOX.y} ${MARK_BOX.w} ${MARK_BOX.h}" aria-hidden="true"><path d="${MARK_PATH}"/></svg><slot></slot></span>\`;
-
-// THE COMPACT FACE (\`compact\`): the card as a byline, for the foot of something
-// someone made (a post, a project): the photo, the name, the address with the
-// mark, on the card's dark ground with its foil along the top, so it reads as an
-// e-id at a glance. The whole of it is the way to the profile.
-const MARK = '<svg viewBox="${MARK_BOX.x} ${MARK_BOX.y} ${MARK_BOX.w} ${MARK_BOX.h}" aria-hidden="true"><path d="${MARK_PATH}"/></svg>';
-const COMPACT = ":host{display:inline-block;max-width:100%;vertical-align:middle}" +
-  "a{position:relative;display:flex;align-items:center;gap:.75rem;padding:.5rem 1.1rem .5rem .5rem;border-radius:.875rem;overflow:hidden;background:linear-gradient(180deg,#1d1d20,#131315);box-shadow:inset 0 0 0 1px rgb(255 255 255/.09),0 .6rem 1.4rem -.6rem rgb(0 0 0/.55);color:#fff;text-decoration:none;font:400 .8125rem/1.25 'Space Grotesk',system-ui,sans-serif;transition:box-shadow 200ms ease-out}" +
-  "a::before{content:'';position:absolute;inset:0 0 auto;height:1px;background:linear-gradient(90deg,transparent 4%,#ff8ac4 22%,#ffd77a 40%,#8affc1 58%,#7ccfff 76%,transparent 96%);opacity:.75}" +
-  "a:hover{box-shadow:inset 0 0 0 1px rgb(255 255 255/.16),0 .6rem 1.4rem -.6rem rgb(0 0 0/.55)}" +
-  "a:focus-visible{outline:2px solid currentColor;outline-offset:2px}" +
-  "img{width:2.5rem;height:2.5rem;flex:none;border-radius:.45rem;object-fit:cover;background:rgb(255 255 255/.06)}" +
-  "div{min-width:0}" +
-  "b{display:block;font-weight:500;font-size:.9375rem;letter-spacing:-.015em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}" +
-  "span{display:flex;align-items:center;gap:.25em;margin-top:.15rem;color:rgb(255 255 255/.55);font:400 .75rem/1.2 'Space Mono',ui-monospace,monospace;white-space:nowrap}" +
-  "svg{height:1cap;width:auto;fill:currentColor}";
-// The address after the person the domain is named for (the mark draws it).
-const DOMAIN_REST = ${JSON.stringify(EMOJI_DOMAIN.slice(EMOJI_DOMAIN.indexOf(".")))};
 
 class EIdCard extends HTMLElement {
   static observedAttributes = ["handle", "compact"];
@@ -102,49 +88,23 @@ class EIdCard extends HTMLElement {
   async #load() {
     const handle = this.getAttribute("handle");
     if (!handle) throw new Error("<e-id-card> needs a handle: <e-id-card handle=\\"you\\">");
-    if (this.hasAttribute("compact")) return this.#compact(handle);
-    const response = await fetch(ORIGIN + "/" + encodeURIComponent(handle) + "/card.svg");
+    // The compact face is the same card drawn as a byline (card.svg?compact),
+    // lit and leaning as the card does.
+    const compact = this.hasAttribute("compact");
+    const response = await fetch(ORIGIN + "/" + encodeURIComponent(handle) + "/card.svg" + (compact ? "?compact" : ""));
     if (!response.ok) {
       console.error("<e-id-card>: " + handle + " answered " + response.status);
       return;
     }
     const svg = await response.text();
-    // Asked again meanwhile, for another card or the compact face.
-    if (this.getAttribute("handle") !== handle || this.hasAttribute("compact")) return;
+    // Asked again meanwhile, for another card or the other face.
+    if (this.getAttribute("handle") !== handle || this.hasAttribute("compact") !== compact) return;
     this.#root.innerHTML = "<style>" + STYLE + "</style><div class=\\"card\\" part=\\"card\\">" + svg + "</div><div class=\\"peek\\" part=\\"profile\\" role=\\"tooltip\\" id=\\"peek\\"></div>";
     this.#links = null;
     this.#root.addEventListener("pointerover", this.#over);
     this.#root.addEventListener("focusin", this.#over);
     this.#root.addEventListener("pointerout", this.#out);
     this.#root.addEventListener("focusout", this.#out);
-  }
-
-  async #compact(handle) {
-    const response = await fetch(ORIGIN + "/" + encodeURIComponent(handle) + "/json");
-    if (!response.ok) {
-      console.error("<e-id-card>: " + handle + " answered " + response.status);
-      return;
-    }
-    const card = await response.json();
-    if (this.getAttribute("handle") !== handle || !this.hasAttribute("compact")) return;
-    const link = document.createElement("a");
-    link.href = card.id;
-    link.rel = "me noopener";
-    link.target = "_blank";
-    link.setAttribute("part", "card");
-    const face = document.createElement("img");
-    face.alt = "";
-    if (card.photo) face.src = card.photo;
-    const name = document.createElement("b");
-    name.textContent = card.name || card.handle;
-    const address = document.createElement("span");
-    address.innerHTML = MARK;
-    address.append(DOMAIN_REST + "/" + card.handle);
-    const words = document.createElement("div");
-    words.append(name, address);
-    link.append(face, words);
-    this.#root.innerHTML = "<style>" + COMPACT + "</style>";
-    this.#root.append(link);
   }
 
   // WHO THEY ARE THERE, on a link's mark: under the hand or the keys, the link's

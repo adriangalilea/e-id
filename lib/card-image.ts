@@ -364,6 +364,77 @@ ${grain}
 </svg>`;
 }
 
+/** The compact card's height in the drawing: every length on it is a share of it
+ *  (`v`, a hundredth). */
+const COMPACT_H = 120;
+
+/** THE COMPACT CARD, the byline (`<e-id-card compact>`): the card made small for
+ *  the foot of something someone made. The same body, rim, foil edge and laminate
+ *  hologram as the card, lit by the same hooks (`LIGHT_HOOKS`: its foil laid at
+ *  the card's own scale, so it moves as the card's does); the photo, the name on
+ *  one line and the address under it, the box as wide as they need. All of it is
+ *  one link, to the profile. */
+export async function compactSvg(card: Card): Promise<string> {
+  const H = COMPACT_H;
+  const v = H / 100;
+  const pad = 16 * v;
+  const ps = H - 2 * pad;
+  const textX = pad + ps + 14 * v;
+  const nameSize = 27 * v;
+  const headSize = 15 * v;
+  const markSize = headSize * 0.72;
+  const tail = `.${EMOJI_DOMAIN.split(".").slice(1).join(".")}/${card.handle}`;
+  // The two lines centred on the photo: the name's capitals (0.7 of its size)
+  // and the address's (its mark's height), 13 apart.
+  const gap = 13 * v;
+  const block = 0.7 * nameSize + gap + markSize;
+  const nameBase = (H - block) / 2 + 0.7 * nameSize;
+  const tailBase = nameBase + gap + markSize;
+  // As wide as its longer line, kept to a byline's length.
+  const room = 520 * v;
+  const nameFits = (s: string) => measure(s, SANS, 500, nameSize) <= room;
+  const nameText = nameFits(card.name) ? card.name : cut(card.name, nameFits);
+  const tailW = markSize + 0.15 * headSize + measure(tail, MONO, 400, headSize);
+  const W = textX + Math.max(measure(nameText, SANS, 500, nameSize), tailW) + 22 * v;
+  const radius = 14 * v;
+  const photo = await photoOf(card.photo);
+  const portrait = photo
+    ? `<image href="${photo}" x="${f(pad)}" y="${f(pad)}" width="${f(ps)}" height="${f(ps)}" preserveAspectRatio="xMidYMid slice" clip-path="url(#photo)"/>`
+    : `<g opacity="0.15">${mark(pad + ps / 2 - (ps / 2) * (MARK_BOX.w / MARK_BOX.h) / 2, pad + ps * 0.75, ps / 2, "#fff")}</g>`;
+  const band = LIGHT * 100;
+  const foilBox = { x: -LIGHT_HOOKS.foilTravel * LIGHT, w: 4 * CARD_W };
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${f(W)}" height="${H}" viewBox="0 0 ${f(W)} ${H}" role="group" aria-label="${esc(`${card.name}'s e-ID`)}">
+<defs>
+  <linearGradient id="body" ${cssLine(135, 0, 0, W, H)}><stop offset="0" stop-color="#1e1e21"/><stop offset="0.55" stop-color="#131315"/><stop offset="1" stop-color="#0d0d0e"/></linearGradient>
+  <linearGradient id="rim" ${cssLine(135, 0, 0, W, H)}><stop offset="0" stop-color="#fff" stop-opacity="0.4"/><stop offset="0.35" stop-color="#fff" stop-opacity="0.08"/><stop offset="0.75" stop-color="#fff" stop-opacity="0.04"/><stop offset="1" stop-color="#fff" stop-opacity="0.18"/></linearGradient>
+  <linearGradient id="foil" ${cssLine(115, foilBox.x, 0, foilBox.w, H)}>${foilStops()}</linearGradient>
+  <linearGradient id="edge-foil" ${cssLine(115, 0, 0, W, H)}>${foilStops()}</linearGradient>
+  <linearGradient id="band" ${cssLine(115, 0, 0, W, H)}><stop offset="${f(Math.max(0, band - 40) / 100)}" stop-color="#fff" stop-opacity="0"/><stop offset="${f((band - 8) / 100)}" stop-color="#fff"/><stop offset="${f((band + 8) / 100)}" stop-color="#fff"/><stop offset="${f(Math.min(100, band + 40) / 100)}" stop-color="#fff" stop-opacity="0"/></linearGradient>
+  ${pattern("guilloche", HOLO_ART.guilloche)}
+  ${pattern("emblems", HOLO_ART.emblems)}
+  <clipPath id="card"><rect width="${f(W)}" height="${H}" rx="${f(radius)}"/></clipPath>
+  <clipPath id="photo"><rect x="${f(pad)}" y="${f(pad)}" width="${f(ps)}" height="${f(ps)}" rx="${f(8 * v)}"/></clipPath>
+  <mask id="band-mask"><rect width="${f(W)}" height="${H}" fill="url(#band)"/></mask>
+  <mask id="laminate"><rect width="${f(W)}" height="${H}" fill="url(#guilloche)"/><rect width="${f(W)}" height="${H}" fill="url(#emblems)"/></mask>
+</defs>
+<a href="${esc(card.id)}" target="_blank" rel="me noopener">
+<rect width="${f(W)}" height="${H}" rx="${f(radius)}" fill="url(#body)"/>
+<g clip-path="url(#card)">
+  <g id="${LIGHT_HOOKS.holo}" mask="url(#band-mask)" opacity="0.06" style="mix-blend-mode:screen">
+    <rect width="${f(W)}" height="${H}" fill="url(#foil)" mask="url(#laminate)"/>
+  </g>
+  <rect x="${f(pad)}" y="${f(pad)}" width="${f(ps)}" height="${f(ps)}" rx="${f(8 * v)}" fill="#fff" fill-opacity="0.05" stroke="#fff" stroke-opacity="0.08"/>
+  ${portrait}
+  <text x="${f(textX)}" y="${f(nameBase)}" font-family="${SANS}" font-weight="500" font-size="${f(nameSize)}" letter-spacing="${f(-0.03 * nameSize)}" fill="${INK}">${esc(nameText)}</text>
+  ${mark(textX, tailBase, markSize, INK)}
+  <text x="${f(textX + markSize + 0.15 * headSize)}" y="${f(tailBase)}" font-family="${MONO}" font-size="${f(headSize)}" fill="${INK}" fill-opacity="0.6">${esc(tail)}</text>
+</g>
+<rect x="0.5" y="0.5" width="${f(W - 1)}" height="${H - 1}" rx="${f(radius - 0.5)}" fill="none" stroke="url(#rim)" pointer-events="none"/>
+<rect x="0.5" y="0.5" width="${f(W - 1)}" height="${H - 1}" rx="${f(radius - 0.5)}" fill="none" stroke="url(#edge-foil)" stroke-opacity="0.16" pointer-events="none"/>
+</a>
+</svg>`;
+}
+
 /** The card as the PNG a link preview shows. */
 export async function cardPng(card: Card): Promise<Uint8Array> {
   const svg = await cardSvg(card);
