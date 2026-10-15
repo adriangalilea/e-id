@@ -8,11 +8,11 @@
 // chapter's progress, the picker's seeking and the stacked alternative where the
 // stage does not pin (a phone, reduced motion) are derived, never kept twice.
 //
-//   <ScrollStory label="what it does" chapters={[
+//   <ScrollStory label="what it does" overflow="3rem" chapters={[
 //     { id: "link", label: "one link", mark: <Route />, span: 2,
 //       content: ({ p }) => (
 //         <StoryCard title={<StoryTitle lead="one link" rest="to route them all" />}
-//           scene={<Laptop at={p} />} overflow="3rem" />
+//           scene={<Laptop at={p} />} overflow />
 //       ) },
 //   ]} />
 //
@@ -24,9 +24,11 @@
 // THE CARD (`StoryCard`) is the words beside the scene: the headline (`StoryTitle`,
 // its lead bright, its rest dimmer), a line, a press, and whatever else the chapter
 // says, in a column of reading width; the scene filling the rest, on either side
-// (`side`). A device may stand taller than the card (`overflow`, how far it
-// reaches past the card's top and foot): it pops out of the card, as a phone held
-// up does. Below lg the words stand over the scene.
+// (`side`) out to the card's edge. A device may stand taller than the card: the
+// story keeps room round its cards (`overflow` on `ScrollStory`, a length) and a
+// card's scene reaches into it (`overflow` on `StoryCard`), so it pops out of the
+// card, as a phone held up does, and nothing cuts it. Below lg the words stand
+// over the scene.
 
 import * as React from "react"
 import { cn } from "@/lib/utils"
@@ -90,6 +92,10 @@ export interface ScrollStoryProps {
   clear?: { top?: number | string; bottom?: number | string }
   /** The picker under the cards: marks alone, or marks with their labels. */
   picker?: "icons" | "labels"
+  /** How far a scene may stand out of its card, past its top and foot, a CSS
+   *  length: the room the deck keeps round its cards, which a `StoryCard`'s
+   *  `overflow` reaches into. */
+  overflow?: string
   /** The deck's own options (card-gallery): reaching the window's edges, room
    *  kept for a sidebar, its parts' classes. */
   deck?: Pick<
@@ -109,6 +115,11 @@ const CARD = "rounded-[2rem] bg-(--card-bg)"
 const STORY_VARS =
   "[--card-bg:color-mix(in_oklab,var(--foreground)_4%,var(--background))] [--card-h:clamp(28rem,calc(100svh-13rem),46rem)]"
 
+/** The deck's room above and below its cards: a rem of its own, and as far as a
+ *  scene stands out of its card (`--story-overflow`), so nothing standing out is
+ *  cut by the deck's edge (its fade masks all outside its box). */
+const DECK_ROOM = "py-[calc(1rem+var(--story-overflow,0px))]"
+
 function beatsOf(chapters: readonly StoryChapter[]): ScrollBeat[] {
   return chapters.map((c) => ({
     span: c.span ?? 1,
@@ -127,6 +138,7 @@ export function ScrollStory({
   tail,
   clear,
   picker = "icons",
+  overflow,
   deck,
   className,
 }: ScrollStoryProps) {
@@ -142,6 +154,16 @@ export function ScrollStory({
     .join(",")
   // biome-ignore lint/correctness/useExhaustiveDependencies: keyed on the timing alone
   const beats = React.useMemo(() => beatsOf(chapters), [timing])
+  const room = overflow
+    ? ({ "--story-overflow": overflow } as React.CSSProperties)
+    : undefined
+  const roomy = {
+    ...deck,
+    classNames: {
+      ...deck?.classNames,
+      viewport: cn(overflow && DECK_ROOM, deck?.classNames?.viewport),
+    },
+  }
   return (
     <ScrollStage
       acts={chapters.length}
@@ -150,11 +172,12 @@ export function ScrollStory({
       tail={tail}
       aria-label={label}
       className={cn(STORY_VARS, className)}
+      style={room}
       stacked={
-        <div className={STORY_VARS}>
+        <div className={STORY_VARS} style={room}>
           {heading}
           <CardGallery
-            {...deck}
+            {...roomy}
             label={label}
             picker={picker}
             items={chapters.map((c) => ({
@@ -180,7 +203,7 @@ export function ScrollStory({
         heading={heading}
         clear={clear}
         picker={picker}
-        deck={deck}
+        deck={roomy}
       />
     </ScrollStage>
   )
@@ -267,7 +290,7 @@ function Stack({
       <section
         data-slot="scroll-story-stack"
         aria-label={label}
-        className="mx-auto w-[min(88cqw,72rem)] space-y-8 py-8"
+        className={cn("mx-auto w-[min(88cqw,72rem)] space-y-8", DECK_ROOM)}
       >
         <div className="grid">
           {chapters.map((c, i) => {
@@ -316,17 +339,34 @@ function Stack({
 // ── the card ──
 
 /** A chapter's headline in two tones: what it is, bright, and the rest, dimmer. */
+/** How wide a character of the headline's face is, in ems, on average over a
+ *  line of words with their spaces (measured on e-id's Space Grotesk semibold,
+ *  0.44; a little over it, so a line always fits). */
+const TITLE_CHAR_EM = 0.47
+
+/** A chapter's headline in two tones: what it is, bright, and the rest, dimmer.
+ *  Each part one unbroken line, so the headline is one line or two, never three
+ *  (a balanced wrap broke "to route them all" across two): sized down from the
+ *  heading's own size until the longer part fits the words' column, in
+ *  characters per line, the unit the fit is felt in. Both share a line where
+ *  there is room. */
 export function StoryTitle({ lead, rest }: { lead: string; rest?: string }) {
+  const chars = Math.max(lead.length, rest?.length ?? 0)
   return (
-    <>
-      <span className="text-foreground">{lead}</span>
+    <span
+      data-slot="story-title"
+      className="flex flex-wrap gap-x-[0.28em] text-[min(1em,calc(100cqi/var(--story-title-chars)))]"
+      style={
+        {
+          "--story-title-chars": `${chars * TITLE_CHAR_EM}`,
+        } as React.CSSProperties
+      }
+    >
+      <span className="whitespace-nowrap text-foreground">{lead}</span>
       {rest && (
-        <>
-          {" "}
-          <span className="text-foreground/45">{rest}</span>
-        </>
+        <span className="whitespace-nowrap text-foreground/45">{rest}</span>
       )}
-    </>
+    </span>
   )
 }
 
@@ -343,14 +383,15 @@ export interface StoryCardProps {
   scene: React.ReactNode
   /** Which side of the card the scene stands on, on a wide screen. */
   side?: "start" | "end"
-  /** How far the scene reaches past the card's top and foot, a CSS length: a
-   *  device standing taller than the card, out of it. */
-  overflow?: string
+  /** The scene stands out of the card, past its top and foot, by the story's
+   *  room (`ScrollStory`'s `overflow`): a device taller than the card. */
+  overflow?: boolean
   className?: string
 }
 
 /** A chapter's card: its words in a column of reading width, its scene filling
- *  the rest, as tall as the story's cards (`--card-h`). */
+ *  the rest out to the card's edge on its side, as tall as the story's cards
+ *  (`--card-h`). */
 export function StoryCard({
   title,
   body,
@@ -358,33 +399,31 @@ export function StoryCard({
   aside,
   scene,
   side = "end",
-  overflow,
+  overflow = false,
   className,
 }: StoryCardProps) {
   return (
     <div
       data-slot="story-card"
       className={cn(
-        "grid h-(--card-h) grid-rows-[auto_minmax(0,1fr)] gap-6 p-6 lg:grid-rows-[minmax(0,1fr)] lg:gap-12 lg:p-10",
+        "grid h-(--card-h) grid-rows-[auto_minmax(0,1fr)] gap-6 p-6 lg:grid-rows-[minmax(0,1fr)] lg:gap-10 lg:p-10",
         side === "end"
-          ? "lg:grid-cols-[clamp(16rem,28%,22rem)_minmax(0,1fr)]"
-          : "lg:grid-cols-[minmax(0,1fr)_clamp(16rem,28%,22rem)]",
+          ? "lg:grid-cols-[clamp(15rem,26%,20rem)_minmax(0,1fr)]"
+          : "lg:grid-cols-[minmax(0,1fr)_clamp(15rem,26%,20rem)]",
         className,
       )}
-      style={
-        overflow
-          ? ({ "--story-overflow": overflow } as React.CSSProperties)
-          : undefined
-      }
     >
+      {/* The words: the headline, then what follows it, a step apart (the 8 px
+          doubling rhythm: 32 after the headline, 24 between what follows). Its
+          own container, the width the headline fits itself to. */}
       <div
         data-slot="story-card-words"
         className={cn(
-          "flex min-w-0 flex-col gap-5",
+          "@container flex min-w-0 flex-col gap-6",
           side === "start" && "lg:col-start-2 lg:row-start-1",
         )}
       >
-        <h3 className="text-balance font-semibold text-3xl leading-[1.05] tracking-tight lg:text-5xl">
+        <h3 className="mb-2 font-semibold text-3xl leading-[1.05] tracking-tight lg:text-5xl">
           {title}
         </h3>
         {body && (
@@ -399,10 +438,14 @@ export function StoryCard({
         data-slot="story-card-scene"
         className={cn(
           "relative min-h-0 min-w-0",
-          side === "start" && "lg:col-start-1 lg:row-start-1",
-          // Reaching past the card's padding and out of it: the card has no
-          // clip, so the scene stands over its edge.
-          overflow && "lg:-my-[calc(2.5rem+var(--story-overflow))]",
+          // Out to the card's edge on its side: the scene's room is the card's,
+          // not the card's padding's.
+          side === "end"
+            ? "lg:-mr-10"
+            : "lg:col-start-1 lg:row-start-1 lg:-ml-10",
+          // Past the card's padding and out of it: the card has no clip, so the
+          // scene stands over its edge.
+          overflow && "lg:-my-[calc(2.5rem+var(--story-overflow,0px))]",
         )}
       >
         {scene}

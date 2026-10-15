@@ -106,7 +106,7 @@ export function Story(props: StoryProps) {
                 }
               />
             }
-            overflow={OUT}
+            overflow
             scene={
               <Fit ratio={MACBOOK}>
                 <Laptop
@@ -131,7 +131,7 @@ export function Story(props: StoryProps) {
             title={<StoryTitle lead="easy" rest="to save" />}
             body="Your e-ID generates a vCard so people can save you as a contact."
             action={contact.save}
-            overflow={OUT}
+            overflow
             scene={
               <Fit ratio={IPHONE}>
                 <Phone contact={contact} address={routes.start} at={p} />
@@ -150,7 +150,7 @@ export function Story(props: StoryProps) {
           <StoryCard
             title={<StoryTitle lead="for programs" rest="too" />}
             body="just add /json to any profile"
-            overflow={OUT}
+            overflow
             scene={
               <Fit ratio={MACBOOK}>
                 <Laptop
@@ -172,27 +172,21 @@ export function Story(props: StoryProps) {
         content: ({ p }) => (
           <StoryCard
             title={<StoryTitle lead="embed" rest="on your website" />}
-            overflow={OUT}
+            // The two lines to paste, beside the laptop, never over it: a long
+            // line scrolls in its own block.
+            action={<div className="min-w-0">{story.code}</div>}
+            overflow
             scene={
-              <div className="relative size-full">
-                <Fit ratio={MACBOOK}>
-                  <Laptop
-                    visit={laptop}
-                    at={
-                      (laptop.typed + p * (laptop.total - laptop.typed)) /
-                      laptop.total
-                    }
-                    alt="a laptop's browser on a site with the card embedded"
-                  />
-                </Fit>
-                {/* The code, in front of the laptop at its foot. */}
-                <div
-                  className="absolute bottom-0 left-0 w-[min(100%,36rem)]
-                    max-lg:static max-lg:pt-4"
-                >
-                  {story.code}
-                </div>
-              </div>
+              <Fit ratio={MACBOOK}>
+                <Laptop
+                  visit={laptop}
+                  at={
+                    (laptop.typed + p * (laptop.total - laptop.typed)) /
+                    laptop.total
+                  }
+                  alt="a laptop's browser on a site with the card embedded"
+                />
+              </Fit>
             }
           />
         ),
@@ -208,8 +202,11 @@ export function Story(props: StoryProps) {
       pace="110svh"
       tail="30svh"
       clear={{ top: "5.5rem", bottom: "1.5rem" }}
+      overflow={OUT}
       deck={{ bleed: true }}
-      className="[--card-h:clamp(30rem,calc(100svh-15rem),44rem)]"
+      // The window under the bar, less the room a device stands out by above
+      // and below its card and the picker under the deck.
+      className="[--card-h:clamp(28rem,calc(100svh-19rem),44rem)]"
     />
   );
 }
@@ -327,12 +324,15 @@ function Route({
 }) {
   const address = stops[current]?.address ?? home;
   return (
-    <div className="flex flex-col gap-5">
-      <p className="truncate font-mono text-xl">
+    // The address, then its routes right under it: one group (16 between them),
+    // the icons' glyphs on the text's left edge (each in a 40 px circle, its
+    // 20 px glyph 10 px in).
+    <div className="flex flex-col gap-4">
+      <p className="truncate font-mono text-base">
         <span className="text-foreground/45">{home}</span>
         <span className="text-foreground">{address.slice(home.length)}</span>
       </p>
-      <ol className="flex gap-1.5" aria-label="the one link's routes">
+      <ol className="-ml-2.5 flex gap-1" aria-label="the one link's routes">
         {stops.map((stop, i) => (
           <li
             key={stop.address}
