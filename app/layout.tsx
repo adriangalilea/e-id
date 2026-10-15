@@ -44,11 +44,14 @@ export default async function RootLayout({
         <PageLight />
         {/* Every control on e-id wears its glass face. */}
         <MaterialProvider material="glass">
-          {/* Room for the site's bar: under it at the top of a wide screen, over it
-              at the foot of a phone. */}
+          {/* Room for the site's bar at the top: its height and its gap, under
+              a phone's status bar where there is one. Cut at the window's sides:
+              a subject's light spreads well past it (components/light), and
+              unclipped it widened a phone's page until the browser zoomed out.
+              `clip`, not `hidden`, so nothing in it stops being sticky. */}
           <div
             data-slot="page"
-            className="flex flex-1 flex-col pb-24 md:pt-20 md:pb-12"
+            className="flex flex-1 flex-col overflow-x-clip pt-[calc(max(env(safe-area-inset-top),0.75rem)+4.5rem)] pb-12 md:pt-20"
           >
             <NextImageLoaderProvider>{children}</NextImageLoaderProvider>
           </div>

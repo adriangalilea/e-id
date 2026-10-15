@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { useMemo } from "react";
-import { BrowserSession } from "@/components/ui/browser";
+import { Browser, BrowserSession } from "@/components/ui/browser";
 import { ContactsApp, contactsAppScreen } from "@/components/ui/contacts-app";
 import { IphoneFrame, MacbookFrame } from "@/components/ui/device-frame";
 import { ScrollStage } from "@/components/ui/scroll-stage";
@@ -57,11 +57,13 @@ type StoryProps = {
   profile: React.ReactNode;
   landings: Landing[];
   /** The card as a contact: the very .vcf the save button downloads, its photo's
-   *  mean colour (the phone's poster), and the press that saves it. */
+   *  mean colour (the phone's poster), the press that saves it, and the profile
+   *  as the phone's Safari shows it, where that press is made. */
   contact: {
     vcard: string;
     average: string | undefined;
     save: React.ReactNode;
+    page: React.ReactNode;
   };
   data: Page;
   embed: Page & { code: React.ReactNode };
@@ -72,7 +74,7 @@ type StoryProps = {
  *  `hold`. The routes take longest: one landing each. */
 const BEATS: readonly ScrollBeat[] = [
   { span: 2.2, play: 0.78, hold: 0.95 },
-  { span: 1.2, play: 0.7, hold: 0.85 },
+  { span: 2, play: 0.85, hold: 0.94 },
   { span: 1.2, play: 0.75, hold: 0.85 },
   { span: 1, play: 0.7, hold: 0.9 },
 ];
@@ -292,7 +294,11 @@ function Scene({ story }: { story: Story }) {
           </Layer>
           <Layer d={distance(offset, 1)}>
             <Fit ratio={IPHONE} className="py-2">
-              <Phone contact={story.contact} scroll={local(1)} />
+              <Phone
+                contact={story.contact}
+                address={routes.start}
+                at={local(1)}
+              />
             </Fit>
           </Layer>
           <Layer d={distance(offset, 2, 3)}>
@@ -485,26 +491,93 @@ function Acts({
   );
 }
 
-/** The phone, the contact saved in its Contacts on the poster of its photo's
- *  colour, scrolled with the page (`scroll`, 0 its top to 1 its foot): down as
- *  the reader scrolls down, back up as they scroll up. */
+/** An iPhone's screen in points (iPhone 16 Pro, inside device-frame's bezel):
+ *  what the phone's Safari is laid out at before it is scaled to the frame, so
+ *  the page reads as it does on a real one. */
+const PHONE_SCREEN = { width: 402, height: 842 };
+
+/** The save, as it happens on a phone, over the act (`at`, 0..1): where each
+ *  moment starts. Safari on the profile; "save contact" pressed; iOS 26's sheet
+ *  rising with the contact, read down; done; the contact saved, read down. */
+const SAVE = {
+  press: 0.18,
+  sheet: 0.26,
+  sheetIn: 0.1,
+  read: 0.38,
+  done: 0.66,
+  saved: 0.72,
+};
+
+const share = (at: number, from: number, length: number) =>
+  Math.min(1, Math.max(0, (at - from) / length));
+
+/** The phone, through the save (`SAVE`, `at` the act's moment): the holder's
+ *  profile in Safari, its save pressed, the contact iOS raises over it scrolled
+ *  through, then saved in Contacts on the poster of its photo's colour. Down as
+ *  the reader scrolls down, back as they scroll up. */
 function Phone({
   contact,
-  scroll,
+  address,
+  at,
 }: {
   contact: Story["contact"];
-  scroll: number;
+  address: string;
+  at: number;
 }) {
+  const saved = at >= SAVE.saved;
+  const raised = share(at, SAVE.sheet, SAVE.sheetIn);
+  const view = saved ? "contact" : raised > 0 ? "preview" : null;
   return (
     // The frame's status bar and screen in the app's colours (the frame draws
     // them outside the app's box).
-    <IphoneFrame style={contactsAppScreen("contact", contact.average)}>
-      <ContactsApp
-        vcard={contact.vcard}
-        view="contact"
-        scroll={Math.min(1, Math.max(0, scroll))}
-        average={contact.average}
-      />
+    <IphoneFrame style={contactsAppScreen(view ?? "preview", contact.average)}>
+      <Scaled {...PHONE_SCREEN} className="absolute inset-0 w-full">
+        <div
+          className="absolute inset-0"
+          data-pressing={(at >= SAVE.press && at < SAVE.sheet) || undefined}
+        >
+          <Browser
+            look="safari-ios"
+            material="glass"
+            scheme="dark"
+            url={`https://${address}`}
+            full
+          >
+            {contact.page}
+          </Browser>
+        </div>
+      </Scaled>
+      {view && (
+        <>
+          {/* Safari dimmed under the sheet as it rises. */}
+          <div
+            aria-hidden
+            className="absolute inset-0 bg-black"
+            style={{ opacity: 0.5 * raised }}
+          />
+          <div
+            className="absolute inset-0"
+            style={
+              view === "preview"
+                ? { transform: `translateY(${(1 - raised) * 100}%)` }
+                : undefined
+            }
+          >
+            <ContactsApp
+              vcard={contact.vcard}
+              view={view}
+              scroll={
+                view === "preview"
+                  ? share(at, SAVE.read, SAVE.done - SAVE.read)
+                  : share(at, SAVE.saved + 0.04, 1 - SAVE.saved - 0.04)
+              }
+              average={contact.average}
+              // Over Safari, the sheet's surround is the page behind, dimmed.
+              className={view === "preview" ? "bg-transparent" : undefined}
+            />
+          </div>
+        </>
+      )}
     </IphoneFrame>
   );
 }
@@ -560,7 +633,7 @@ function Stacked({ story }: { story: Story }) {
       <Laptop visit={routes} at={1} alt="the one link's last route, landed" />
     </div>,
     <div key="phone" className="mx-auto w-64">
-      <Phone contact={story.contact} scroll={0} />
+      <Phone contact={story.contact} address={routes.start} at={SAVE.saved} />
     </div>,
     <div key="data" className="w-full">
       <Laptop
@@ -569,7 +642,7 @@ function Stacked({ story }: { story: Story }) {
         alt="a laptop's browser at the card's data"
       />
     </div>,
-    <div key="site" className="flex w-full flex-col gap-6">
+    <div key="site" className="flex w-full min-w-0 flex-col gap-6">
       <Laptop
         visit={story.laptop}
         at={1}
@@ -581,7 +654,9 @@ function Stacked({ story }: { story: Story }) {
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-24 px-4 py-24">
       {story.acts.map((act, i) => (
-        <article key={act.lead} className="flex flex-col gap-6">
+        // A column of the phone's width at most: the code in it scrolls in its
+        // own box, never widening the page.
+        <article key={act.lead} className="flex min-w-0 flex-col gap-6">
           <h3
             className="text-4xl leading-[1.05] font-semibold tracking-tight
               text-balance"

@@ -5,14 +5,15 @@ import { Glass } from "@/components/ui/material-glass";
 import FooterUser from "./footer_user";
 
 /** The site's one bar, a pill of glass floating over the page: the wordmark home on
- *  its left, the account on its right. At the foot of a phone, where
- *  the thumb is; at the top of a wide screen, where the eye starts. */
+ *  its left, the account on its right. At the top, on every screen: a phone's
+ *  foot is its browser's (Safari's controls float there since iOS 26), and a bar
+ *  of ours there stacked on them. */
 export default function Footer() {
   return (
     <nav
       data-slot="site-nav"
       aria-label="site"
-      className="pointer-events-none fixed inset-x-0 bottom-[max(env(safe-area-inset-bottom),0.75rem)] z-40 px-3 md:top-4 md:bottom-auto md:px-8"
+      className="pointer-events-none fixed inset-x-0 top-[max(env(safe-area-inset-top),0.75rem)] z-40 px-3 md:top-4 md:px-8"
     >
       <Glass
         shape="bar"

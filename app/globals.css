@@ -198,9 +198,9 @@
    down onto the page, and stays. Driven by the scroll itself, so it is where the
    page is, never a step behind it; hidden (`visibility`) only at the very top,
    so nothing invisible there takes a press. Where scroll-driven animations do
-   not exist, and on a phone, where the bar is at the foot for the thumb, it is
-   there from the start. Keyframes and a scroll timeline, which no utility can
-   write. */
+   not exist, and on a phone, where the screen is too small to spare the stage's
+   top, it is there from the start. Keyframes and a scroll timeline, which no
+   utility can write. */
 @supports (animation-timeline: scroll()) {
   @media (width >= 48rem) {
     /* On the glass itself, never on the nav round it: an ancestor whose

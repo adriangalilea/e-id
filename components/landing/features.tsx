@@ -58,6 +58,7 @@ export async function Features() {
             className="self-start"
           />
         ),
+        page: <PhoneProfile holder={holder} />,
       }}
       data={{
         address: `${at}/json`,
@@ -175,6 +176,27 @@ function profileOf(holder: Holder): React.ReactNode {
       <div className="w-full max-w-[18rem]">
         <HolderCard holder={holder} />
       </div>
+    </div>
+  );
+}
+
+/** The holder's profile as a phone shows it, built from the profile's own parts
+ *  (app/[username]/user_profile, `Identity`): the card, what they say of
+ *  themselves, and the button that serves their .vcf, which the story presses
+ *  (`data-pressing` on the page round it lights it as a finger does). */
+function PhoneProfile({ holder }: { holder: Holder }) {
+  return (
+    <div className="flex min-h-full flex-col gap-6 px-5 pt-6 pb-10">
+      <HolderCard holder={holder} />
+      {holder.bio && (
+        <p className="px-1 text-[17px] leading-relaxed font-light text-pretty text-foreground/80">
+          {holder.bio}
+        </p>
+      )}
+      <SaveContact
+        username={holder.username}
+        className="self-start transition-[scale,filter] duration-150 in-data-pressing:scale-95 in-data-pressing:brightness-150"
+      />
     </div>
   );
 }

@@ -30,6 +30,7 @@ import {
   Plus,
   RotateCw,
   Share,
+  TextAlignJustify,
   X,
 } from "lucide-react"
 import * as React from "react"
@@ -60,8 +61,10 @@ import {
 } from "@/components/ui/scroll-thumb"
 import { WebPreview } from "@/components/ui/web-preview"
 
-/** The browser depicted. Each is a chrome in `CHROMES`. */
-export type BrowserLook = "safari"
+/** The browser depicted. Each is a chrome in `CHROMES`: `safari` a Mac's window,
+ *  `safari-ios` Safari on an iPhone (iOS 26), filling the screen of the box it is
+ *  put in (an `IphoneFrame`'s), its controls at the foot. */
+export type BrowserLook = "safari" | "safari-ios"
 
 /** A tab in the tab bar. The bar shows when there are two or more, as Safari's
  *  does. */
@@ -134,10 +137,19 @@ interface ChromeProps {
 }
 
 interface Chrome {
-  /** The toolbar's height, and the tab bar's under it when it shows, px: in glass,
-   *  the page pads its top by their sum. */
-  toolbar: number
-  tabs: number
+  /** Where the controls stand: across the window's top (a Mac's), or at the
+   *  screen's foot (a phone's). */
+  place: "top" | "bottom"
+  /** The window the page is in: a Mac window's shape and shadow, or the whole of
+   *  a phone's screen. */
+  window: string
+  /** What the page is padded by, CSS lengths: its top (the chrome's band in glass,
+   *  where the page runs up under it, and a phone's status bar always) and its
+   *  foot (a phone's controls in glass). */
+  insets: (o: { glass: boolean; tabbed: boolean }) => {
+    top: string
+    bottom: string
+  }
   Toolbar: React.ComponentType<ChromeProps>
 }
 
@@ -171,7 +183,8 @@ export function Browser({
     throw new Error(`browser: tab ${tab} is not one of ${tabs.length} tabs`)
   const glass = material === "glass"
   const tabbed = (tabs?.length ?? 0) > 1
-  const top = chrome.toolbar + (tabbed ? chrome.tabs : 0)
+  const insets = chrome.insets({ glass, tabbed })
+  const bottom = chrome.place === "bottom"
   const toolbar = (
     <chrome.Toolbar
       address={address ?? url}
@@ -198,18 +211,16 @@ export function Browser({
       data-look={look}
       data-material={material}
       className={cn(
-        "relative isolate flex aspect-[16/10] w-full flex-col overflow-hidden rounded-[16px] bg-background text-foreground",
-        // Dark, the hairline alone: a wide soft shadow on a near-black ground
-        // falls through too few greys and bands; the window's depth there is
-        // the light round it, the page's to give.
-        "shadow-[0_0_0_0.5px_rgb(0_0_0/0.22),0_24px_60px_-16px_rgb(0_0_0/0.45)] scheme-dark:shadow-[0_0_0_0.5px_rgb(255_255_255/0.16)]",
+        "relative isolate flex flex-col overflow-hidden bg-background text-foreground",
+        chrome.window,
         schemeOf(worn),
         className,
       )}
       style={
         {
           fontFamily: SYSTEM,
-          "--ag-browser-top": `${glass ? top : 0}px`,
+          "--ag-browser-top": insets.top,
+          "--ag-browser-bottom": insets.bottom,
           ...style,
         } as React.CSSProperties
       }
@@ -220,29 +231,48 @@ export function Browser({
           <BrowserPage scroll={scroll} className="absolute inset-0">
             {children}
           </BrowserPage>
-          {/* Safari 26's band behind its controls: the page passing under them
-              blurred away and tinted with its own ground, never sharp behind the
-              window buttons. A sibling of the toolbar, so the capsules' own glass
-              still reads what lies under them. */}
+          {/* Safari 26's band behind its controls (a Mac's) or the status bar (a
+              phone's): the page passing under blurred away and tinted with its own
+              ground, never sharp behind the window buttons or the clock. A sibling
+              of the toolbar, so the capsules' own glass still reads what lies
+              under them. */}
           <div
             aria-hidden
             className="pointer-events-none absolute inset-x-0 top-0 z-10 h-(--ag-browser-top) bg-background/75 backdrop-blur-2xl backdrop-saturate-150"
           />
+          {bottom && (
+            // A phone's foot: the page dimming into its ground under the
+            // floating controls, so they stand on it whatever scrolls by.
+            <div
+              aria-hidden
+              className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-(--ag-browser-bottom) bg-linear-to-b from-transparent to-background/80"
+            />
+          )}
           <div
             aria-hidden={depicted || undefined}
-            className="pointer-events-none absolute inset-x-0 top-0 z-10"
+            className={cn(
+              "pointer-events-none absolute inset-x-0 z-10",
+              bottom ? "bottom-0" : "top-0",
+            )}
           >
             {toolbar}
           </div>
         </>
       ) : (
         <>
-          <div aria-hidden={depicted || undefined} className="shrink-0">
-            {toolbar}
-          </div>
+          {!bottom && (
+            <div aria-hidden={depicted || undefined} className="shrink-0">
+              {toolbar}
+            </div>
+          )}
           <BrowserPage scroll={scroll} className="relative min-h-0 flex-1">
             {children}
           </BrowserPage>
+          {bottom && (
+            <div aria-hidden={depicted || undefined} className="shrink-0">
+              {toolbar}
+            </div>
+          )}
         </>
       )}
     </div>
@@ -273,7 +303,7 @@ function BrowserPage({
       ref={ref}
       data-slot="browser-page"
       className={cn(
-        "pt-(--ag-browser-top) [scroll-padding-top:var(--ag-browser-top)]",
+        "pt-(--ag-browser-top) pb-(--ag-browser-bottom) [scroll-padding-top:var(--ag-browser-top)]",
         // edge: a browser's page meets its toolbar and the window's foot with a
         // hard edge, as the depicted browser draws it; a fade would be ours, not its.
         scroll === undefined
@@ -610,12 +640,190 @@ function SafariTabs({
   )
 }
 
+// ── safari on an iPhone ──
+
+/** The iPhone 16 Pro's screen width in points: every length of the phone's chrome
+ *  is a share of it (cqw of the browser, which fills the screen), as contacts-app
+ *  draws, so it is the same screen at any frame size. */
+const SCREEN_PT = 402
+const pt = (n: number) => `${((n * 100) / SCREEN_PT).toFixed(3)}cqw`
+
+/** iOS 26 Safari's metrics, in points: the status bar's band; the controls (a
+ *  glass circle each side of the address capsule, all one height), how far they
+ *  stand off the foot and the sides; their glyphs; the plain bar's height. */
+const IOS = {
+  status: 54,
+  bar: 48,
+  barBottom: 26,
+  barX: 16,
+  gap: 10,
+  glyph: 21,
+  type: 17,
+  plain: 92,
+}
+
+/** A glass control on the phone: one piece of glass, round at its height. */
+const IOS_GLASS = cn(
+  glassVariants({ shape: "surface" }),
+  "flex items-center justify-center [--glass-radius:calc(var(--ag-ios-bar)/2)]",
+)
+
+/** iOS 26 Safari's controls at the foot: back in a glass circle, the address in a
+ *  glass capsule (the page menu's glyph, the host or the whole address, reload),
+ *  the tabs in a glass circle. Plain is the bar iOS drew before: opaque, the
+ *  address field above the five buttons. */
+function SafariIosToolbar({
+  address,
+  editing,
+  selected,
+  load,
+  back,
+  glass,
+  full,
+  link,
+}: ChromeProps) {
+  const glyph = "size-(--ag-ios-glyph) shrink-0"
+  const field = (
+    <div
+      data-slot="browser-address"
+      data-editing={editing || undefined}
+      className={cn(
+        "relative flex h-full min-w-0 flex-1 items-center gap-(--ag-ios-gap) px-(--ag-ios-gap) text-(length:--ag-ios-type)",
+        glass
+          ? IOS_GLASS
+          : "rounded-[calc(var(--ag-ios-bar)/2)] bg-black/[0.06] scheme-dark:bg-white/[0.1]",
+        editing && "shadow-[0_0_0_2px_rgb(10_132_255/0.6)]",
+      )}
+    >
+      <TextAlignJustify className={glyph} strokeWidth={2} />
+      <span
+        className={cn(
+          "min-w-0 flex-1 truncate",
+          editing ? "text-left" : "text-center",
+        )}
+      >
+        <span
+          className={cn(selected && "rounded-[3px]")}
+          style={
+            selected ? { background: "rgb(10 132 255 / 0.32)" } : undefined
+          }
+        >
+          {editing ? address : shownAt(address, full)}
+        </span>
+        {editing && !selected && (
+          <span
+            data-slot="browser-caret"
+            className="ml-px inline-block h-[1.1em] w-[1.5px] align-middle"
+            style={{ background: BLUE }}
+          />
+        )}
+      </span>
+      {load ? (
+        <X className={glyph} strokeWidth={2} />
+      ) : (
+        <RotateCw className={glyph} strokeWidth={2} />
+      )}
+      {link !== undefined && (
+        // The field is the link: a press opens the page's address.
+        <a
+          href={link}
+          target="_blank"
+          rel="noreferrer"
+          className="pointer-events-auto absolute inset-0 rounded-[inherit] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0a84ff]"
+        >
+          <span className="sr-only">open {shownAt(address, true)}</span>
+        </a>
+      )}
+      {load && (
+        <span
+          data-slot="browser-load"
+          className="absolute inset-x-[calc(var(--ag-ios-bar)/2)] bottom-[3px] h-[1.5px] overflow-hidden rounded-full"
+          style={{ opacity: load.opacity }}
+        >
+          <span
+            className="block h-full rounded-full"
+            style={{ width: `${load.progress * 100}%`, background: LOAD_BLUE }}
+          />
+        </span>
+      )}
+    </div>
+  )
+  const vars = {
+    "--ag-ios-bar": pt(IOS.bar),
+    "--ag-ios-gap": pt(IOS.gap),
+    "--ag-ios-glyph": pt(IOS.glyph),
+    "--ag-ios-type": pt(IOS.type),
+  } as React.CSSProperties
+  return (
+    <div
+      data-slot="browser-chrome"
+      className={cn(
+        "select-none",
+        glass
+          ? "text-foreground"
+          : "border-black/10 border-t bg-[#f6f6f6] text-black/80 scheme-dark:border-white/10 scheme-dark:bg-[#1c1c1e] scheme-dark:text-white/85",
+      )}
+      style={{
+        ...vars,
+        paddingInline: pt(IOS.barX),
+        paddingBottom: pt(IOS.barBottom),
+        paddingTop: glass ? 0 : pt(IOS.gap),
+      }}
+    >
+      <div
+        data-slot="browser-toolbar"
+        className="flex h-(--ag-ios-bar) items-center gap-(--ag-ios-gap)"
+      >
+        <span
+          className={cn(
+            "h-full shrink-0 aspect-square",
+            glass ? IOS_GLASS : "flex items-center justify-center",
+            !back && "[&>svg]:opacity-35",
+          )}
+        >
+          <ChevronLeft className={glyph} strokeWidth={2.2} />
+        </span>
+        {field}
+        <span
+          className={cn(
+            "h-full shrink-0 aspect-square",
+            glass ? IOS_GLASS : "flex items-center justify-center",
+          )}
+        >
+          <Copy className={glyph} strokeWidth={2} />
+        </span>
+      </div>
+    </div>
+  )
+}
+
 /** One chrome per look. TODO (browser.notes.md): Chrome, Arc. */
 const CHROMES: Record<BrowserLook, Chrome> = {
   safari: {
-    toolbar: SAFARI_TOOLBAR,
-    tabs: SAFARI_TABS,
+    place: "top",
+    window: cn(
+      "aspect-[16/10] w-full rounded-[16px]",
+      // Dark, the hairline alone: a wide soft shadow on a near-black ground
+      // falls through too few greys and bands; the window's depth there is the
+      // light round it, the page's to give.
+      "shadow-[0_0_0_0.5px_rgb(0_0_0/0.22),0_24px_60px_-16px_rgb(0_0_0/0.45)] scheme-dark:shadow-[0_0_0_0.5px_rgb(255_255_255/0.16)]",
+    ),
+    insets: ({ glass, tabbed }) => ({
+      top: `${glass ? SAFARI_TOOLBAR + (tabbed ? SAFARI_TABS : 0) : 0}px`,
+      bottom: "0px",
+    }),
     Toolbar: SafariToolbar,
+  },
+  "safari-ios": {
+    place: "bottom",
+    // The phone's screen, whole: its corners and its edge are the frame's. Its
+    // own width is the unit every length is a share of.
+    window: "@container absolute inset-0",
+    insets: ({ glass }) => ({
+      top: pt(IOS.status),
+      bottom: glass ? pt(IOS.bar + IOS.barBottom + IOS.gap) : "0px",
+    }),
+    Toolbar: SafariIosToolbar,
   },
 }
 

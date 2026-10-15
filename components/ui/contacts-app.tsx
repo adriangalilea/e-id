@@ -1,4 +1,5 @@
 import {
+  Check,
   ChevronLeft,
   CircleUser,
   Clock,
@@ -8,6 +9,7 @@ import {
   MessageCircle,
   Phone,
   Search,
+  Share,
   Video,
   X,
 } from "lucide-react"
@@ -25,12 +27,16 @@ import "./contacts-app.css"
 // APPLE'S CONTACTS APP ON AN IPHONE (iOS 26), drawn from a vCard (lib/vcard-core):
 // a picture of the app, never the app. iOS 26 sets a contact on a poster in the
 // colour of its photo: the screen that colour, everything on it white, the
-// controls liquid glass. Two screens: `import`, the sheet iOS raises when a .vcf
-// is opened (the card, then Create New Contact and Add to Existing Contact;
-// `pressed` lights the first, the instant before it saves), and `contact`, the
-// saved card in Contacts (the back chevron and Edit in glass, the face, the name,
-// the four glass actions dimmed where the card has no channel for them, each kind
-// of field its own group with its glyph at the end, the tab bar at the foot).
+// controls liquid glass. Three screens: `preview`, the sheet iOS 26 raises when a
+// .vcf is opened from Safari (done, a blue ✓, and share in glass, the face large,
+// its name and nickname, the fields; ✓ saves it); `import`, the sheet as iOS drew it
+// before (the card, then Create New Contact and Add to Existing Contact; `pressed`
+// lights the first, the instant before it saves); and `contact`, the saved card in
+// Contacts (the back chevron and Edit in glass, the face, the name, the four glass
+// actions dimmed where the card has no channel for them, each kind of field its
+// own group with its glyph at the end, the tab bar at the foot). `preview` and
+// `contact` scroll (`scroll`, 0 the top to 1 the foot), for a story's scroll to
+// drive.
 //
 // The poster's colour comes from the photo's `average` (prepare-media measures it:
 // a prepared picture's `average`, or `averageOf` on bytes fetched at request
@@ -48,7 +54,10 @@ import "./contacts-app.css"
 //     <ContactsApp vcard={vcfText} view="contact" average={average} />
 //   </IphoneFrame>
 
-export type ContactsAppView = "import" | "contact"
+export type ContactsAppView = "preview" | "import" | "contact"
+
+/** A screen that is a sheet raised over another app: black round it. */
+const sheet = (view: ContactsAppView) => view !== "contact"
 
 /** The poster's colour where none is given: iOS's own for a contact with no
  *  photo, a cool grey. */
@@ -153,7 +162,7 @@ export function contactsAppScreen(
 ): React.CSSProperties {
   return {
     "--device-status-ink": "#fff",
-    "--device-screen-background": view === "import" ? "#000" : topOf(average),
+    "--device-screen-background": sheet(view) ? "#000" : topOf(average),
   } as React.CSSProperties
 }
 
@@ -310,9 +319,11 @@ function Header({ card }: { card: VCard }) {
       <div className="mt-(--ag-contacts-photo-gap) px-(--ag-contacts-margin) text-center font-bold text-(length:--ag-contacts-title) leading-(--ag-contacts-title-leading) tracking-[-0.01em] text-white [text-shadow:0_1px_8px_rgb(0_0_0/0.18)]">
         {card.name}
       </div>
-      {card.org && (
+      {/* The line under the name: the company, else the nickname, as iOS 26's
+          poster sets it. */}
+      {(card.org ?? card.nickname) && (
         <div className="px-(--ag-contacts-margin) text-center font-semibold text-(length:--ag-contacts-sub) leading-(--ag-contacts-sub-leading) text-white">
-          {card.org}
+          {card.org ?? card.nickname}
         </div>
       )}
       <div
@@ -493,6 +504,81 @@ function ImportSheet({ card, pressed }: { card: VCard; pressed: boolean }) {
   )
 }
 
+/** A card's column scrolled `scroll` of the way through its box, with no
+ *  measuring: placed that share down the box and lifted that share of its own
+ *  height, its top meets the box's at 0 and its foot the box's at 1. A column no
+ *  taller than the box fills it and never moves. */
+function Scrolled({
+  scroll,
+  head,
+  foot,
+  children,
+}: {
+  scroll: number
+  /** The room above it and after it, iOS points. */
+  head: number
+  foot: number
+  children: React.ReactNode
+}) {
+  return (
+    <div
+      data-slot="contacts-app-card"
+      className="absolute inset-x-0 flex min-h-full flex-col gap-(--ag-contacts-gap)"
+      style={{
+        top: `${scroll * 100}%`,
+        transform: `translateY(${-scroll * 100}%)`,
+        paddingTop: cqw(head),
+        paddingBottom: cqw(foot),
+      }}
+    >
+      {children}
+    </div>
+  )
+}
+
+/** The face in iOS 26's preview sheet: larger than in Contacts, the sheet's
+ *  width nearly. */
+const PREVIEW_PHOTO = 236
+
+/** iOS 26's sheet over Safari when a .vcf is opened: the card on its poster,
+ *  done (a blue ✓, which saves it) and share in glass at its top, no commands
+ *  under the card. Scrolled with `scroll`. */
+function PreviewSheet({ card, scroll }: { card: VCard; scroll: number }) {
+  return (
+    <div
+      data-slot="contacts-app-sheet"
+      // Its top corners cut by a path, never `overflow-hidden` (ImportSheet).
+      className="absolute inset-x-0 top-(--ag-contacts-sheet-top) bottom-0 rounded-t-(--ag-contacts-sheet-radius) bg-(image:--ag-contacts-poster) [clip-path:inset(0_round_var(--ag-contacts-sheet-radius)_var(--ag-contacts-sheet-radius)_0_0)]"
+      style={
+        { "--ag-contacts-photo": cqw(PREVIEW_PHOTO) } as React.CSSProperties
+      }
+    >
+      <Scrolled scroll={scroll} head={HEAD.sheet} foot={FOOT.sheet}>
+        <Header card={card} />
+        <Fields card={card} />
+      </Scrolled>
+      <ScrollEdge head="h-[var(--ag-contacts-head-sheet)]" />
+      <div
+        data-slot="contacts-app-nav"
+        className="absolute inset-x-(--ag-contacts-margin) top-(--ag-contacts-sheet-bar-top) flex h-(--ag-contacts-bar) items-center justify-between"
+      >
+        <div
+          className={cn(
+            GLASS,
+            BAR_CIRCLE,
+            "[--glass-tint:rgb(10_132_255/0.92)]",
+          )}
+        >
+          <Check className="size-(--ag-contacts-chevron)" strokeWidth={3} />
+        </div>
+        <div className={cn(GLASS, BAR_CIRCLE)}>
+          <Share className="size-(--ag-contacts-close)" strokeWidth={2.4} />
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function ContactPage({ card, scroll }: { card: VCard; scroll: number }) {
   const commands = [
     ...(card.phones.length > 0 ? ["Send Message"] : []),
@@ -501,24 +587,11 @@ function ContactPage({ card, scroll }: { card: VCard; scroll: number }) {
   ]
   return (
     <>
-      {/* Scrolled `scroll` of the way through, with no measuring: placed that
-          share down the screen and lifted that share of its own height, the
-          card's top meets the screen's at 0 and its foot the screen's at 1. A
-          card no taller than the screen fills it and never moves. */}
-      <div
-        data-slot="contacts-app-card"
-        className="absolute inset-x-0 flex min-h-full flex-col gap-(--ag-contacts-gap)"
-        style={{
-          top: `${scroll * 100}%`,
-          transform: `translateY(${-scroll * 100}%)`,
-          paddingTop: cqw(HEAD.page),
-          paddingBottom: cqw(FOOT.page),
-        }}
-      >
+      <Scrolled scroll={scroll} head={HEAD.page} foot={FOOT.page}>
         <Header card={card} />
         <Fields card={card} />
         <Commands rows={commands} />
-      </div>
+      </Scrolled>
       <ScrollEdge head="h-[var(--ag-contacts-head-page)]" />
       <div
         data-slot="contacts-app-nav"
@@ -557,9 +630,14 @@ function describe(card: VCard, view: ContactsAppView, pressed: boolean) {
     card.note && "a note",
   ].filter(Boolean)
   const holding = has.length > 0 ? `, with ${has.join(", ")}` : ""
-  return view === "import"
-    ? `iPhone, a contact file opened: ${card.name}${holding}, offering Create New Contact${pressed ? ", pressed" : ""} or Add to Existing Contact`
-    : `iPhone Contacts: the card of ${card.name}${holding}`
+  switch (view) {
+    case "preview":
+      return `iPhone, a contact file opened from Safari: ${card.name}${holding}, to save with done`
+    case "import":
+      return `iPhone, a contact file opened: ${card.name}${holding}, offering Create New Contact${pressed ? ", pressed" : ""} or Add to Existing Contact`
+    case "contact":
+      return `iPhone Contacts: the card of ${card.name}${holding}`
+  }
 }
 
 export function ContactsApp({
@@ -572,13 +650,14 @@ export function ContactsApp({
 }: {
   /** The .vcf's text (lib/vcard-core reads it). */
   vcard: string
-  /** `import`: the sheet iOS raises over a just-opened .vcf. `contact`: the saved
-   *  card in the Contacts app. */
+  /** `preview`: the sheet iOS 26 raises over Safari for a just-opened .vcf.
+   *  `import`: that sheet as iOS drew it before. `contact`: the saved card in the
+   *  Contacts app. */
   view: ContactsAppView
   /** `import` only: Create New Contact lit under a finger. */
   pressed?: boolean
-  /** `contact` only: how far the card is scrolled, 0 its top to 1 its foot (a
-   *  story's scroll driving it). */
+  /** `preview` and `contact`: how far the card is scrolled, 0 its top to 1 its
+   *  foot (a story's scroll driving it). */
   scroll?: number
   /** The photo's mean colour (prepare-media's `average`, or `averageOf` on its
    *  bytes), the poster's colour; iOS's grey for a card with no photo. */
@@ -589,9 +668,9 @@ export function ContactsApp({
     throw new Error(
       "contacts-app: `pressed` is the import sheet's, not the card's",
     )
-  if (scroll !== 0 && view !== "contact")
+  if (scroll !== 0 && view === "import")
     throw new Error(
-      "contacts-app: `scroll` is the card's; the import sheet rests at its foot",
+      "contacts-app: the import sheet rests at its foot; `scroll` is the preview's and the card's",
     )
   if (scroll < 0 || scroll > 1)
     throw new Error(`contacts-app: \`scroll\` is 0..1, got ${scroll}`)
@@ -615,13 +694,15 @@ export function ContactsApp({
       data-view={view}
       className={cn(
         "@container absolute inset-0 overflow-hidden font-[family-name:-apple-system,BlinkMacSystemFont,system-ui,sans-serif] antialiased select-none",
-        view === "import" ? "bg-black" : "bg-(image:--ag-contacts-poster)",
+        sheet(view) ? "bg-black" : "bg-(image:--ag-contacts-poster)",
         className,
       )}
       style={vars}
     >
       <div aria-hidden className="absolute inset-0">
-        {view === "import" ? (
+        {view === "preview" ? (
+          <PreviewSheet card={card} scroll={scroll} />
+        ) : view === "import" ? (
           <ImportSheet card={card} pressed={pressed} />
         ) : (
           <ContactPage card={card} scroll={scroll} />
