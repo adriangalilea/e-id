@@ -167,6 +167,8 @@ uniform float uEnergy;
 // long ago (s). The newest last; an empty one has an age past its life.
 uniform vec4 uWake[${WAKE}];
 uniform float uWakeAge[${WAKE}];
+// Whether any mark is alive: with none, the surface is where it lies.
+uniform int uWakeLive;
 uniform float uFlow;
 uniform float uSway;
 uniform vec4 uPart;
@@ -181,6 +183,7 @@ uniform float uFoot;
 // has mass, it is no liquid), gone by the end of the mark's life, so what the
 // hand moves follows late and comes home late, and nothing snaps.
 vec2 flowed(vec2 at) {
+  if (uWakeLive == 0) return at;
   vec2 moved = vec2(0.0);
   float reach = uHeight * 0.22;
   for (int i = 0; i < ${WAKE}; i++) {
@@ -297,6 +300,16 @@ float facet(vec2 cell, out vec2 centre, out float flash, out float sheen, out ve
   return 1.0;
 }
 void main() {
+  // Its edges, faded here rather than by a mask on the canvas: an ellipse, inside
+  // it whole, to nothing at its rim, and toward the foot from uFoot down. Shares
+  // of the box, from its top left. Asked first: where it is faded to nothing,
+  // nothing else is worked out.
+  vec2 inBox = vec2(gl_FragCoord.x / uSize.x, 1.0 - gl_FragCoord.y / uSize.y);
+  float fade = 1.0;
+  if (uFade.z > 0.0)
+    fade *= 1.0 - smoothstep(uFadeInner, 1.0, length((inBox - uFade.xy) / uFade.zw));
+  if (uFoot < 1.0) fade *= 1.0 - smoothstep(uFoot, 1.0, inBox.y);
+  if (fade <= 0.0) { gl_FragColor = vec4(0.0); return; }
   vec2 sway = uSway * vec2(0.35 * sin(uTime * 0.22 + 1.7), sin(uTime * 0.35));
   vec3 nudged = parted(flowed(vec2(gl_FragCoord.x, uSize.y - gl_FragCoord.y + uScroll) + sway));
   vec2 at = nudged.xy;
@@ -335,14 +348,6 @@ void main() {
     }
   }
   if (light <= 0.0) { gl_FragColor = vec4(0.0); return; }
-  // Its edges, faded here rather than by a mask on the canvas: an ellipse, inside
-  // it whole, to nothing at its rim, and toward the foot from uFoot down. Shares
-  // of the box, from its top left.
-  vec2 inBox = vec2(gl_FragCoord.x / uSize.x, 1.0 - gl_FragCoord.y / uSize.y);
-  float fade = 1.0;
-  if (uFade.z > 0.0)
-    fade *= 1.0 - smoothstep(uFadeInner, 1.0, length((inBox - uFade.xy) / uFade.zw));
-  if (uFoot < 1.0) fade *= 1.0 - smoothstep(uFoot, 1.0, inBox.y);
   float a = clamp(light * uStrength * nudged.z * fade, 0.0, 1.0);
   gl_FragColor = vec4(tone / light * a, a);
 }`
@@ -591,6 +596,7 @@ export function Shimmer({
       gl.uniform2f(uLight, light.x * k, light.y * k + top)
       for (let i = 0; i < WAKE; i++)
         ages[i] = (now - (wakeAt[i] as number)) / 1000
+      gl.uniform1i(u("uWakeLive"), now - lastMark < WAKE_LIFE * 1000 ? 1 : 0)
       gl.uniform4fv(u("uWake[0]"), wake)
       gl.uniform1fv(u("uWakeAge[0]"), ages)
       gl.clearColor(0, 0, 0, 0)

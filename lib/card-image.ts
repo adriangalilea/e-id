@@ -570,7 +570,15 @@ export function drawingAnswer(svg: string | null, username: string): Response {
       headers,
     })
   return new Response(svg, {
-    headers: { ...headers, "content-type": "image/svg+xml; charset=utf-8" },
+    headers: {
+      ...headers,
+      "content-type": "image/svg+xml; charset=utf-8",
+      // A browser keeps it five minutes, then shows what it has while it asks
+      // again: a page that embeds a card shows it at once on a second visit,
+      // and a card changed is seen within minutes. The CDN keeps the
+      // prerendered drawing until the card changes (lib/tags).
+      "cache-control": "public, max-age=300, stale-while-revalidate=604800",
+    },
   })
 }
 

@@ -742,23 +742,91 @@ export function GlassSpill({
   if (!(width > 0))
     throw new Error(`GlassSpill: width is px, more than 0 (got ${width})`)
   // The outline stroked twice the band's width (half of it lies outside the box
-  // and is cut there), its inner edge blurred so the blur eases in.
+  // and is cut there), its inner edge blurred so the blur eases in: it reaches
+  // `reach` in, the stroke's inner half and the blur's tail (three of its
+  // deviations).
   const mask = edgeOutline(radius, width * 2, width / 3)
+  const reach = width * 2
+  // A backdrop is blurred over its element's whole box before any mask cuts it,
+  // so one layer the size of the container blurred all of it every frame (a
+  // 632×475 panel: 300,000 pixels for a band of 10). The band is four strips
+  // instead, each blurring only the edge it lies along: the top and the foot as
+  // deep as the corner and the band (`side`), the sides between them. Each wears
+  // the one mask, sized to the whole container (its `cq` units: the wrapper is
+  // the container) and placed where the strip lies in it, so the four draw the
+  // band the single layer drew.
+  // In the container's own units, never a percentage: a mask's position reads a
+  // percentage against the strip, not the container.
+  const side = `min(calc(${radius} + ${reach}px), 50cqh)`
+  const strip = (
+    at: React.CSSProperties,
+    position: string,
+  ): React.CSSProperties => ({
+    ...at,
+    maskImage: mask,
+    WebkitMaskImage: mask,
+    maskSize: "100cqw 100cqh",
+    WebkitMaskSize: "100cqw 100cqh",
+    maskPosition: position,
+    WebkitMaskPosition: position,
+    maskRepeat: "no-repeat",
+    WebkitMaskRepeat: "no-repeat",
+  })
+  const blur =
+    "absolute [backdrop-filter:blur(var(--glass-spill-blur,4px))_saturate(1.2)] [-webkit-backdrop-filter:blur(var(--glass-spill-blur,4px))_saturate(1.2)]"
   return (
     <div
       aria-hidden
       data-slot="glass-spill"
       className={cn(
-        "pointer-events-none absolute inset-0 rounded-[inherit]",
-        "[backdrop-filter:blur(var(--glass-spill-blur,4px))_saturate(1.2)] [-webkit-backdrop-filter:blur(var(--glass-spill-blur,4px))_saturate(1.2)]",
+        "pointer-events-none absolute inset-0 rounded-[inherit] [container-type:size]",
         className,
       )}
-      style={{
-        maskImage: mask,
-        WebkitMaskImage: mask,
-        maskSize: "100% 100%",
-        WebkitMaskSize: "100% 100%",
-      }}
-    />
+    >
+      {/* Rounded as the container is, so no blur shows past its corners: a
+          backdrop is clipped by its own element's radius. */}
+      <div
+        className={blur}
+        style={strip(
+          {
+            top: 0,
+            left: 0,
+            right: 0,
+            height: side,
+            borderTopLeftRadius: radius,
+            borderTopRightRadius: radius,
+          },
+          "0 0",
+        )}
+      />
+      <div
+        className={blur}
+        style={strip(
+          {
+            bottom: 0,
+            left: 0,
+            right: 0,
+            height: side,
+            borderBottomLeftRadius: radius,
+            borderBottomRightRadius: radius,
+          },
+          "0 100%",
+        )}
+      />
+      <div
+        className={blur}
+        style={strip(
+          { top: side, bottom: side, left: 0, width: reach },
+          `0 calc(-1 * ${side})`,
+        )}
+      />
+      <div
+        className={blur}
+        style={strip(
+          { top: side, bottom: side, right: 0, width: reach },
+          `100% calc(-1 * ${side})`,
+        )}
+      />
+    </div>
   )
 }
