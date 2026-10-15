@@ -32,7 +32,7 @@ Built with Next.js, better-auth, and Drizzle on Turso. The interface comes from 
 ### Premium
 
 - [ ] analytics: your page's visits and what your links opened, each `/you/<name>` counted (visits, when, from where); the whole site's for the admin
-- [ ] more usernames, each a permanent redirect to your page, so a new main name keeps every old link working (`adriangalilea` → `adrian`)
+- [ ] more usernames, sold: each a permanent redirect to your page, so a new main name keeps every old link working. The redirect is built (`username_alias`, `adriangalilea` → `adrian`); buying one, and renaming yourself with the old name kept, are not.
 - [ ] claimable usernames: stops squatting
 - [ ] short usernames (3 and 4 characters) sold, 1 and 2 kept for e-ID; decide the price, and whether a bought name can be resold
 - [ ] an email address, `you@eid.to`
