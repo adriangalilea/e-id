@@ -30,7 +30,7 @@ Built with Next.js, better-auth, and Drizzle on Turso. The interface comes from 
 - [ ] an optional status line on the profile and its share image
 - [ ] a write API for the card (`card.json` is the read one), on the same API keys
 - [ ] passkeys (better-auth has them)
-- [ ] download your data: a button with everything e-ID holds about you (your account, the vouches you wrote, your numbers). Until then a request by email is answered within a month, as the privacy page says; `card.json` already carries the public card.
+- [ ] download your data, all of it: `/you/json` is the card; what it lacks (the account's email, the vouches you wrote, your numbers) is asked for by email today, as the privacy page says, answered within a month. A button would hand over both.
 - [ ] Vercel's and Turso's data processing agreements, accepted in their dashboards
 - [ ] live activity: a feed (RSS or Atom), a YouTube channel (each has a feed), Bluesky, GitHub, mixed into the latest of what you made, on your page
 

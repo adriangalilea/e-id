@@ -107,12 +107,16 @@ export default function Page() {
       <h2>Your rights</h2>
       <p>
         You can see, correct, take away or delete your data, restrict its use or
-        object to it. Most of it you can do yourself: edit your card, take it
-        whole as data (<code>/you/card.json</code>), delete your account from
-        the account menu. For anything else, including a copy of everything e-ID
-        holds about you, write to <a href={`mailto:${CONTACT}`}>{CONTACT}</a>.
-        You get an answer within a month. You can also complain to the Spanish
-        data protection authority, the <a href="https://www.aepd.es">AEPD</a>.
+        object to it. Most of it you can do yourself: edit your card, delete
+        your account from the account menu, and take your data with you:
+        everything on your card is at <code>/you/json</code> (your name,
+        address, country, the line about you, your links and their notes). What
+        is not in it (your account&apos;s email, the vouches you wrote, the
+        numbers of your page) is yours too: write to{" "}
+        <a href={`mailto:${CONTACT}`}>{CONTACT}</a> for it, or for anything else
+        on this page, and you get an answer within a month. You can also
+        complain to the Spanish data protection authority, the{" "}
+        <a href="https://www.aepd.es">AEPD</a>.
       </p>
 
       <h2>Age</h2>
