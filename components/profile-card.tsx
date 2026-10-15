@@ -16,7 +16,7 @@ import {
 import { prefixOf, valueOf } from "@/lib/link-names";
 import { CORNER } from "@/components/card-shape";
 import { type Holder, IdCard } from "@/components/id-card";
-import { SubjectLight } from "@/components/light";
+import { ProfileShimmer, SubjectLight } from "@/components/light";
 import { useChip } from "@/components/session/use-chip";
 import { Button } from "@/components/ui/button";
 import {
@@ -134,6 +134,7 @@ export function ProfileCard({
           kept and it is not drawn: the card is in the middle. */}
       <HoloLight className={cn("relative", editing ? "invisible" : LIFTED)}>
         <SubjectLight />
+        <ProfileShimmer />
         <HoloLean pose="flat" className="max-lg:[transform:none]">
           <IdCard
             holder={holder}

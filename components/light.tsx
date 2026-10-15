@@ -1,4 +1,5 @@
 import { AmbientLight } from "@/components/ui/ambient-light";
+import { Grain } from "@/components/ui/grain";
 import { PartedGrain } from "@/components/landing/shimmer-part";
 
 /** THE PAGE'S GROUND: never flat black, a composed dark gradient of a few broad,
@@ -68,6 +69,38 @@ export function SubjectLight() {
           { color: "#fff", x: 0.5, y: 0.5, rx: 0.5, ry: 0.5, strength: 0.03 },
           { color: "#fff", x: 0.5, y: 0.45, rx: 0.3, ry: 0.28, strength: 0.02 },
         ]}
+      />
+    </div>
+  );
+}
+
+/** How strong a profile's shimmer is, against the hero's (0.75): the home's
+ *  surface carried onto the profile, faint enough to stay behind the card. */
+export const PROFILE_SHIMMER = 0.45;
+
+/** THE PROFILE'S SHIMMER: the hero's surface of facets (@ag/grain) behind the
+ *  profile's card, so a profile stands in the same light as the home it came
+ *  from. Placed inside the subject's box (positioned) like `SubjectLight`,
+ *  spreading well past it and fading to nothing in an ellipse, so it has no
+ *  edge; fainter than the hero's (`strength`, `PROFILE_SHIMMER` unless a sweep
+ *  says otherwise). It takes no pointer. */
+export function ProfileShimmer({
+  strength = PROFILE_SHIMMER,
+}: {
+  strength?: number;
+}) {
+  return (
+    <div
+      data-slot="profile-shimmer"
+      aria-hidden
+      className="pointer-events-none absolute top-1/2 left-1/2 -z-10 h-[180%] w-[200%] -translate-x-1/2 -translate-y-1/2 blur-[0.4px] [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,black_25%,transparent_100%)]"
+    >
+      <Grain
+        look="shimmer"
+        strength={strength}
+        density={0.45}
+        frost={0.01}
+        sway={6}
       />
     </div>
   );
