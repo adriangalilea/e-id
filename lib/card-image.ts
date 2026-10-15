@@ -244,19 +244,9 @@ export async function cardSvg(card: Card, frame: CardFrame = "share"): Promise<s
   const lineStep = 1.02 * nameSize;
 
   // The words beside the photo, as tall as it (components/id-card): the name
-  // from its top edge, the links' glyphs ending at its foot; on a card set on
-  // a page, its save between them and the three spaced round each (CSS's
-  // `justify-content: space-around`). The name's box is its capitals to its
-  // last baseline (the site trims it so).
-  const saveH = 6.6 * u;
-  const nameH = 0.7 * nameSize + (nameLines.length - 1) * lineStep;
-  const iconH = L.icon * u;
-  const colTop = cy + bodyTop * u;
-  const colH = (bodyFoot - bodyTop) * u;
-  const around = share ? 0 : (colH - nameH - saveH - iconH) / 3;
-  const nameTop = colTop + around / 2;
-  const saveTop = nameTop + nameH + around;
-  const iconTop = share ? colTop + colH - iconH : saveTop + saveH + around;
+  // from its top edge, the links' glyphs ending at its foot.
+  const nameTop = cy + bodyTop * u;
+  const iconTop = cy + (bodyFoot - L.icon) * u;
 
   // A card this site wrote: every platform on it is one it draws.
   const links = card.links.map((l, at) => ({ ...l, at, platform: knownPlatform(l.platform) }));
@@ -318,24 +308,21 @@ export async function cardSvg(card: Card, frame: CardFrame = "share"): Promise<s
   const portrait = photo
     ? `<image href="${photo}" x="${f(px)}" y="${f(py)}" width="${f(ps)}" height="${f(ps)}" preserveAspectRatio="xMidYMid slice" clip-path="url(#photo)"/>`
     : `<g opacity="0.15">${mark(px + ps / 2 - (ps / 2) * (MARK_BOX.w / MARK_BOX.h) / 2, py + ps * 0.75, ps / 2, "#fff")}</g>`;
-  // The card's own save, between the name and the links: a quiet pill, a faint
-  // fill and a hairline (components/save-contact `CardSave`, in the same
+  // The card's own save, in its foot's corner on the inner margin: the contact
+  // glyph in a quiet circle (components/save-contact `CardSave`, in the same
   // shares); on the card set on a page, where it can be pressed, not on the
   // share image.
-  const saveText = 3 * u;
-  const saveIcon = 3.2 * u;
-  const saveWords = "save contact";
-  const saveW =
-    2 * 2.6 * u + saveIcon + 1.2 * u + measure(saveWords, SANS, 400, saveText);
-  const saveX = cx + textX * u;
-  const saveY = saveTop;
+  const saveD = 7 * u;
+  const saveIcon = 3.4 * u;
+  const saveX = cx + cw - pad - saveD;
+  const saveY = cy + ch - pad - saveD;
   const save = share
     ? ""
-    : `<a href="${esc(card.formats.vcard)}" download="${esc(card.handle)}.vcf">` +
-      `<rect x="${f(saveX)}" y="${f(saveY)}" width="${f(saveW)}" height="${f(saveH)}" rx="${f(saveH / 2)}" fill="#fff" fill-opacity="0.07"/>` +
-      `<rect x="${f(saveX + 0.5)}" y="${f(saveY + 0.5)}" width="${f(saveW - 1)}" height="${f(saveH - 1)}" rx="${f(saveH / 2 - 0.5)}" fill="none" stroke="#fff" stroke-opacity="0.08"/>` +
-      icon(contactRound, saveX + 2.6 * u, saveY + (saveH - saveIcon) / 2, saveIcon, `stroke="${INK}" stroke-opacity="0.75" stroke-width="1.5"`) +
-      `<text x="${f(saveX + 2.6 * u + saveIcon + 1.2 * u)}" y="${f(saveY + saveH / 2 + 0.36 * saveText)}" font-family="${SANS}" font-size="${f(saveText)}" fill="${INK}" fill-opacity="0.75">${saveWords}</text></a>`;
+    : `<a href="${esc(card.formats.vcard)}" download="${esc(card.handle)}.vcf" aria-label="save contact"><title>save contact</title>` +
+      `<circle cx="${f(saveX + saveD / 2)}" cy="${f(saveY + saveD / 2)}" r="${f(saveD / 2)}" fill="#fff" fill-opacity="0.07"/>` +
+      `<circle cx="${f(saveX + saveD / 2)}" cy="${f(saveY + saveD / 2)}" r="${f(saveD / 2 - 0.5)}" fill="none" stroke="#fff" stroke-opacity="0.08"/>` +
+      icon(contactRound, saveX + (saveD - saveIcon) / 2, saveY + (saveD - saveIcon) / 2, saveIcon, `stroke="${INK}" stroke-opacity="0.75" stroke-width="1.5"`) +
+      "</a>";
   const [gx, gy] = at(100 - 2 - 34, 6);
   const gs = 34 * u;
   const ghost = photo

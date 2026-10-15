@@ -253,12 +253,10 @@ export function IdCard({
         <div
           // The rest of the card's width beside the photo, so a field written in
           // its stead has the room the written line would; as tall as the
-          // photo. The name and the links alone run from its top edge to its
-          // foot, one block with no stray air; with the save between them the
-          // three share its height, spaced round each.
+          // photo, the name from its top edge and the links to its foot, so
+          // the words and the photo make one block with no stray air.
           className={cn(
-            "flex min-w-0 flex-1 flex-col gap-[1.5cqw]",
-            save ? "justify-around" : "justify-between",
+            "flex min-w-0 flex-1 flex-col justify-between gap-[1.5cqw]",
             KNOCKOUT,
           )}
         >
@@ -267,9 +265,6 @@ export function IdCard({
               {name}
             </Name>
           )}
-          {/* The card's own action, the save, between the person and their
-              links. */}
-          {save && <div className="relative z-20 flex">{save}</div>}
           {slots?.flair ?? <Flair links={links} />}
         </div>
       </div>
@@ -320,6 +315,14 @@ export function IdCard({
           />
         )}
         {body}
+        {/* The card's own action, the save, in its foot's corner: on the
+            padding, its edges on the card's inner margin, as the flag's are at
+            its head. */}
+        {save && (
+          <div className="absolute right-(--card-pad) bottom-(--card-pad) z-20">
+            {save}
+          </div>
+        )}
         <FoilEdge />
       </Glass>
     </div>

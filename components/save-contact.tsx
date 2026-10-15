@@ -2,20 +2,21 @@
 
 import { ContactRound } from "lucide-react";
 import { Button, type ButtonSize } from "@/components/ui/button";
-/** The card's own save (`IdCard`'s `save`), between the name and the links: a
- *  quiet pill, a faint fill and a hairline, its words a step under the name's.
- *  Distinct by being the one filled thing on a card of outlined glyphs, never
- *  by colour. Every length a share of the card's width (its container), so it
- *  is the same on every card. */
+/** The card's own save (`IdCard`'s `save`), in its foot's corner: the contact
+ *  glyph alone in a quiet circle, a faint fill and a hairline. Distinct by
+ *  being the one filled thing on a card of outlined glyphs, never by colour.
+ *  Every length a share of the card's width (its container), so it is the same
+ *  on every card. */
 export function CardSave({ username }: { username: string }) {
   return (
     <a
       href={`/${username}.vcf`}
       download={`${username}.vcf`}
-      className="flex h-[6.6cqw] items-center gap-[1.2cqw] self-start whitespace-nowrap rounded-full bg-white/[0.07] px-[2.6cqw] text-[3cqw] text-foreground/75 shadow-[inset_0_0_0_1px_rgb(255_255_255/0.08)] transition-[scale,background-color,color] duration-150 hover:bg-white/[0.12] hover:text-foreground active:scale-95 in-data-pressing:scale-95 in-data-pressing:bg-white/[0.12] [&_svg]:size-[3.2cqw] [&_svg]:stroke-[1.5]"
+      aria-label="save contact"
+      title="save contact"
+      className="grid size-[7cqw] place-items-center rounded-full bg-white/[0.07] text-foreground/75 shadow-[inset_0_0_0_1px_rgb(255_255_255/0.08)] transition-[scale,background-color,color] duration-150 hover:bg-white/[0.12] hover:text-foreground active:scale-95 in-data-pressing:scale-95 in-data-pressing:bg-white/[0.12] [&_svg]:size-[3.4cqw] [&_svg]:stroke-[1.5]"
     >
       <ContactRound />
-      save contact
     </a>
   );
 }
