@@ -69,7 +69,7 @@ const MENU_BAR = 30;
 const OUT = "2.5rem";
 
 /** A window's page a step lighter than the site's ground (globals.css: 0.12; a
- *  card's surface 0.19), as the theme's own `--background` round it, so its page
+ *  card's surface 0.21), as the theme's own `--background` round it, so its page
  *  and the band behind its controls (@ag/browser) both take it. */
 const GROUND = "[--background:oklch(0.17_0_0)]";
 

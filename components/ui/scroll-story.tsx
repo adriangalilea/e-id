@@ -24,7 +24,7 @@
 // THE CARD (`StoryCard`) is the words beside the scene: the headline (`StoryTitle`,
 // its lead bright, its rest dimmer), a line, a press, and whatever else the chapter
 // says, in a column of reading width; the scene filling the rest, on either side
-// (`side`) out to the card's edge. A device may stand taller than the card: the
+// (`side`), inside the card's padding. A device may stand taller than the card: the
 // story keeps room round its cards (`overflow` on `ScrollStory`, a length) and a
 // card's scene reaches into it (`overflow` on `StoryCard`), so it pops out of the
 // card, as a phone held up does, and nothing cuts it. Below lg the words stand
@@ -107,15 +107,20 @@ export interface ScrollStoryProps {
 
 /** A card's surface and its height, the deck's own (card-gallery) for the stack:
  *  the two layouts draw the same card. */
-const CARD = "rounded-[2rem] bg-(--card-bg) shadow-(--card-edge)"
+const CARD = "rounded-[2rem] bg-(--card-bg)"
 
 /** The story's defaults, as custom properties a consumer overrides by class: the
- *  card's ground a step off the page and its edge (a hairline all round and a lit
- *  top), so a card stands on the page as a layer even where the page's light is
- *  at its darkest and its corner would otherwise vanish; its height what the
- *  window leaves under a bar and above the picker. */
+ *  card's ground the theme's own floating surface (`--card`, the layer above the
+ *  page's `--background`), never a mix of its own; its height what the window
+ *  leaves under a bar and above the picker. */
 const STORY_VARS =
-  "[--card-bg:color-mix(in_oklab,var(--foreground)_7%,var(--background))] [--card-edge:inset_0_0_0_1px_color-mix(in_oklab,var(--foreground)_9%,transparent),inset_0_1px_0_color-mix(in_oklab,var(--foreground)_10%,transparent)] [--card-h:clamp(28rem,calc(100svh-13rem),46rem)]"
+  "[--card-bg:var(--color-card)] [--card-h:clamp(28rem,calc(100svh-13rem),46rem)]"
+
+/** The same ground handed to the deck, whose own default is nearer the cards
+ *  than the story's root; a consumer's deck class still overrides it. Read as
+ *  `--color-card`, never `--card`: inside the deck `--card` is the cards' width
+ *  (card-gallery), and a colour read from it there came out transparent. */
+const DECK_GROUND = "[--card-bg:var(--color-card)]"
 
 /** The deck's room above and below its cards: a rem of its own, and as far as a
  *  scene stands out of its card (`--story-overflow`), so nothing standing out is
@@ -161,6 +166,7 @@ export function ScrollStory({
     : undefined
   const roomy = {
     ...deck,
+    className: cn(DECK_GROUND, deck?.className),
     classNames: {
       ...deck?.classNames,
       viewport: cn(overflow && DECK_ROOM, deck?.classNames?.viewport),
@@ -392,7 +398,8 @@ export interface StoryCardProps {
 }
 
 /** A chapter's card: its words in a column of reading width, its scene filling
- *  the rest out to the card's edge on its side, as tall as the story's cards
+ *  the rest on its side, inside the card's padding (a device's foot never meets
+ *  the card's rounded corner), as tall as the story's cards
  *  (`--card-h`). */
 export function StoryCard({
   title,
@@ -440,11 +447,7 @@ export function StoryCard({
         data-slot="story-card-scene"
         className={cn(
           "relative min-h-0 min-w-0",
-          // Out to the card's edge on its side: the scene's room is the card's,
-          // not the card's padding's.
-          side === "end"
-            ? "lg:-mr-10"
-            : "lg:col-start-1 lg:row-start-1 lg:-ml-10",
+          side === "start" && "lg:col-start-1 lg:row-start-1",
           // Past the card's padding and out of it: the card has no clip, so the
           // scene stands over its edge.
           overflow && "lg:-my-[calc(2.5rem+var(--story-overflow,0px))]",

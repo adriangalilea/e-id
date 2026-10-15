@@ -237,10 +237,7 @@ export function CardGallery({
                 aria-hidden={i !== index || undefined}
                 inert={i !== index}
                 className={cn(
-                  // `--card-edge`: the card's edge as a box-shadow, a consumer's
-                  // (a hairline and a lit top, so a card reads on a dark ground);
-                  // unset, none.
-                  "w-(--card) shrink-0 rounded-[2rem] bg-(--card-bg) shadow-(--card-edge)",
+                  "w-(--card) shrink-0 rounded-[2rem] bg-(--card-bg)",
                   i === index && "group-focus-visible/gallery:focus-ring",
                   classNames?.card,
                 )}
