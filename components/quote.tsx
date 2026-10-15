@@ -1,13 +1,13 @@
-import { Quote as AgQuote } from "./ui/quote";
+import { Quote as AgQuote } from "./ui/quote"
 
 /** A link's note, inside its tab: the person's own words about that link, so
  *  set as their words on their page, not as a quotation. */
 export function Quote({ text }: { text: string }) {
   return (
-    <p className="px-1 text-[15px] leading-relaxed font-light text-pretty text-foreground/75">
+    <p className="text-pretty px-1 font-light text-[15px] text-foreground/75 leading-relaxed">
       {text}
     </p>
-  );
+  )
 }
 
 /** A day as a testimonial dates it: fixed, in UTC, so the static page and the
@@ -18,7 +18,7 @@ const DAY = new Intl.DateTimeFormat("en-US", {
   day: "numeric",
   year: "numeric",
   timeZone: "UTC",
-});
+})
 
 /** A comment the profile's owner pinned, as @ag/quote: somebody else's words, their
  *  face and name (to their own page), the day. `prose`, on the surface the page's
@@ -30,11 +30,11 @@ export function Testimonial({
   image,
   date,
 }: {
-  text: string;
-  name: string;
-  username: string;
-  image: string;
-  date: Date;
+  text: string
+  name: string
+  username: string
+  image: string
+  date: Date
 }) {
   return (
     <AgQuote
@@ -50,5 +50,5 @@ export function Testimonial({
       // engraves it there), not on a step above it.
       className="w-full bg-transparent px-0 [&_[data-slot=quote-mark]]:left-0"
     />
-  );
+  )
 }

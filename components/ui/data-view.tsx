@@ -2,12 +2,12 @@
 
 import { Braces, Check, Copy, Link2, Table2, TextQuote } from "lucide-react"
 import * as React from "react"
-import { cn } from "@/lib/utils"
-import { fuzzy } from "@/lib/fuzzy"
 import { RelativeTime } from "@/components/ui/relative-time"
 import { Highlight, Search } from "@/components/ui/search"
 import { Stepper } from "@/components/ui/stepper"
 import { Tree, TreeAction, type TreeHandle } from "@/components/ui/tree"
+import { fuzzy } from "@/lib/fuzzy"
+import { cn } from "@/lib/utils"
 import "./edge-fade"
 
 // DATA VIEW: any nested data as a tree you can read. Feed it a value (an object, an
@@ -423,7 +423,7 @@ function Table({ node, query }: { node: DataNode; query: string }) {
     // fading where there is more, below the pinned header row (scrims'
     // `ag-edge-fade-xy`, the head its cover).
     <div className="flex min-h-0 flex-1 rounded-md ring-1 ring-foreground/10">
-      <div className="ag-edge-fade-xy min-h-0 flex-1 [--edge-cover:var(--ag-data-view-head)] [--ag-data-view-head:1.5rem]">
+      <div className="ag-edge-fade-xy min-h-0 flex-1 [--ag-data-view-head:1.5rem] [--edge-cover:var(--ag-data-view-head)]">
         <table className="w-max min-w-full border-collapse font-mono text-[11px]">
           <thead className="sticky top-0 h-(--ag-data-view-head) bg-[oklch(0.2_0.005_270)]">
             <tr>

@@ -10,8 +10,8 @@
 // in quote-card is the contract), again on every resize.
 
 import { useEffect, useRef } from "react"
-import { cn } from "@/lib/utils"
 import { assert, GRAIN_FIT } from "@/lib/quote-card"
+import { cn } from "@/lib/utils"
 
 /** One device pixel per tile pixel, the tile's origin on a device pixel. Setting an
  *  attribute on two patterns per resize: the browser re-rasterizes one tile per scale,

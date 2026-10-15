@@ -1,9 +1,9 @@
 // The card format (lib/card-schema) proved on an example: a card shaped as
 // lib/card builds it, parsed by the published schema, printed. A shape the schema
 // refuses throws here. `bun scripts/examples/card-format.ts`
-import { cardSchema, formatsOf } from "@/lib/card-schema";
+import { cardSchema, formatsOf } from "@/lib/card-schema"
 
-const handle = "adriangalilea";
+const handle = "adriangalilea"
 const card = cardSchema.parse({
   $schema: "https://e-id.to/card.schema.json",
   version: 1,
@@ -48,6 +48,6 @@ const card = cardSchema.parse({
   ],
   formats: formatsOf(handle),
   agent: null,
-});
+})
 
-console.log(JSON.stringify(card.links, null, 2));
+console.log(JSON.stringify(card.links, null, 2))

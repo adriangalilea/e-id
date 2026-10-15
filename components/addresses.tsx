@@ -1,6 +1,6 @@
-import { EmojiDomain } from "@/components/brand";
-import { Copy } from "@/components/ui/copy";
-import { EMOJI_DOMAIN, EMOJI_DOMAIN_PUNYCODE, PROD_URL } from "@/lib/const";
+import { EmojiDomain } from "@/components/brand"
+import { Copy } from "@/components/ui/copy"
+import { EMOJI_DOMAIN, EMOJI_DOMAIN_PUNYCODE, PROD_URL } from "@/lib/const"
 
 /** A person's e-ID addresses, every form that opens their page, each where it
  *  works best: 👤.to everywhere (next.config sends every browser but Safari on
@@ -24,7 +24,7 @@ export function addressesOf(username: string) {
       shown: `${EMOJI_DOMAIN_PUNYCODE}/${username}`,
       url: `https://${EMOJI_DOMAIN_PUNYCODE}/${username}`,
     },
-  ];
+  ]
 }
 
 /** The addresses as a list: each one a link, what it is for under it, and its
@@ -33,32 +33,32 @@ export function Addresses({
   username,
   size = "sm",
 }: {
-  username: string;
-  size?: "sm" | "lg";
+  username: string
+  size?: "sm" | "lg"
 }) {
   return (
     <ul className="flex flex-col">
       {addressesOf(username).map((address) => (
         <li
           key={address.url}
-          className="flex items-center gap-3 border-b border-border py-3 last:border-b-0"
+          className="flex items-center gap-3 border-border border-b py-3 last:border-b-0"
         >
           <div className="flex min-w-0 grow flex-col gap-1">
             <a
               href={address.url}
               className={
                 size === "lg"
-                  ? "w-fit truncate font-mono text-xl text-foreground/90 underline decoration-foreground/25 underline-offset-[0.3em] transition-colors hover:decoration-foreground/70"
-                  : "w-fit truncate font-mono text-sm text-foreground/90 underline decoration-foreground/25 underline-offset-[0.3em] transition-colors hover:decoration-foreground/70"
+                  ? "w-fit truncate font-mono text-foreground/90 text-xl underline decoration-foreground/25 underline-offset-[0.3em] transition-colors hover:decoration-foreground/70"
+                  : "w-fit truncate font-mono text-foreground/90 text-sm underline decoration-foreground/25 underline-offset-[0.3em] transition-colors hover:decoration-foreground/70"
               }
             >
               {address.shown}
             </a>
-            <span className="text-xs text-foreground/45">{address.what}</span>
+            <span className="text-foreground/45 text-xs">{address.what}</span>
           </div>
           <Copy value={address.url} label className="rounded-full" />
         </li>
       ))}
     </ul>
-  );
+  )
 }

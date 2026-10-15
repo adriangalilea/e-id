@@ -31,7 +31,6 @@
 // over the scene.
 
 import * as React from "react"
-import { cn } from "@/lib/utils"
 import {
   CardGallery,
   type CardGalleryProps,
@@ -42,6 +41,7 @@ import {
   type ScrollBeat,
   useScrollStageTimeline,
 } from "@/components/ui/scroll-stage-timeline"
+import { cn } from "@/lib/utils"
 
 /** Where a chapter is when it is drawn. */
 export interface StoryMoment {

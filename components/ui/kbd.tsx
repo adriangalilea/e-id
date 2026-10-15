@@ -11,16 +11,10 @@
 // materials (`material`): plain, a key with a deeper foot; glass, a small key of the
 // material's glass (inside a glass tooltip or menu they are glass on their own).
 
-import { cn } from "@/lib/utils"
-import {
-  capLabel,
-  keyName,
-  keys,
-  type Platform,
-  withKeys,
-} from "@/lib/keys"
 import { type Material, useMaterial } from "@/components/ui/material"
 import { glassVariants } from "@/components/ui/material-glass"
+import { capLabel, keyName, keys, type Platform, withKeys } from "@/lib/keys"
+import { cn } from "@/lib/utils"
 
 /** One key. Every measure is in em, so a cap is the same shape at any size: inline
  *  in a sentence or large over a stage. The Mac's own face draws ⌃⌥⌘ as macOS does. */

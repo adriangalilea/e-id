@@ -1,28 +1,27 @@
-"use client";
-import { useActionState, useEffect } from "react";
+"use client"
+import { SendHorizontal } from "lucide-react"
+import { useActionState, useEffect } from "react"
+import { Button } from "@/components/ui/button"
+import { Textarea } from "@/components/ui/textarea"
+import { type CommentFormState, createComment } from "@/db/actions"
 
-import { Button } from "@/components/ui/button";
-import { SendHorizontal } from "lucide-react";
-import { Textarea } from "@/components/ui/textarea";
-import { createComment, type CommentFormState } from "@/db/actions";
-
-const initialState: CommentFormState = { error: null, resetKey: "" };
+const initialState: CommentFormState = { error: null, resetKey: "" }
 
 export default function CommentForm({
   profileUserId,
   onPosted,
 }: {
-  profileUserId: string;
-  onPosted: () => void;
+  profileUserId: string
+  onPosted: () => void
 }) {
   const [state, formAction] = useActionState(
     createComment.bind(null, profileUserId),
     initialState,
-  );
+  )
 
   useEffect(() => {
-    if (state.resetKey) onPosted();
-  }, [state.resetKey, onPosted]);
+    if (state.resetKey) onPosted()
+  }, [state.resetKey, onPosted])
 
   return (
     <form
@@ -49,5 +48,5 @@ export default function CommentForm({
       </div>
       {state.error && <p className="text-red-500">{state.error}</p>}
     </form>
-  );
+  )
 }

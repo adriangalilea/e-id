@@ -27,7 +27,6 @@
 
 import { ChevronDown, CircleUserRound, LogOut, UserRound } from "lucide-react"
 import * as React from "react"
-import { cn } from "@/lib/utils"
 import { Avatar } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import {
@@ -44,6 +43,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/menu"
+import { cn } from "@/lib/utils"
 
 /** Who is signed in, as the control draws them. */
 export type AccountUser = {
@@ -282,7 +282,7 @@ function SignedIn({
               <span
                 data-slot="account-menu-initial"
                 aria-hidden
-                className="text-[11px] leading-none lowercase"
+                className="text-[11px] lowercase leading-none"
               >
                 {user.name.charAt(0)}
               </span>

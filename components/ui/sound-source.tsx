@@ -17,8 +17,8 @@
 // quiet, so it plays untapped and has no spectrum. Same-origin works as is.
 
 import * as React from "react"
-import { SOUND_SCALE } from "@/lib/sound-scale"
 import { useTimebaseState } from "@/components/ui/playback"
+import { SOUND_SCALE } from "@/lib/sound-scale"
 
 /** An analyser set the way every drawing here reads it (lib/sound-scale): its window,
  *  its light smoothing, its decibel scale. */

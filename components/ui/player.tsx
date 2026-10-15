@@ -16,32 +16,6 @@
 
 import { Slider } from "@base-ui/react/slider"
 import * as React from "react"
-import { cn } from "@/lib/utils"
-import {
-  type Clip,
-  type Division,
-  divisionSpans,
-  type Level,
-  outlineOf,
-} from "@/lib/clip"
-import {
-  type PinchRung,
-  pinchRung,
-  rungTaken,
-  visibleRect,
-} from "@/lib/picture-zoom"
-import {
-  createSwipe,
-  type PlayerAction,
-  resolveKey,
-  type SwipeEffect,
-} from "@/lib/player-input"
-import {
-  clockTime,
-  type TimeForm,
-  timeLabel,
-  widest,
-} from "@/lib/timebase"
 import { Button } from "@/components/ui/button"
 import { Image } from "@/components/ui/image"
 import { Kbd, KeysText } from "@/components/ui/kbd"
@@ -60,10 +34,7 @@ import {
   glassVariants,
   schemeOf,
 } from "@/components/ui/material-glass"
-import {
-  type MediaCaptions,
-  useCaptions,
-} from "@/components/ui/media-captions"
+import { type MediaCaptions, useCaptions } from "@/components/ui/media-captions"
 import { lineShare, MediaLine } from "@/components/ui/media-line"
 import {
   DropdownMenu,
@@ -99,6 +70,27 @@ import {
 } from "@/components/ui/popover"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Tip } from "@/components/ui/tooltip"
+import {
+  type Clip,
+  type Division,
+  divisionSpans,
+  type Level,
+  outlineOf,
+} from "@/lib/clip"
+import {
+  type PinchRung,
+  pinchRung,
+  rungTaken,
+  visibleRect,
+} from "@/lib/picture-zoom"
+import {
+  createSwipe,
+  type PlayerAction,
+  resolveKey,
+  type SwipeEffect,
+} from "@/lib/player-input"
+import { clockTime, type TimeForm, timeLabel, widest } from "@/lib/timebase"
+import { cn } from "@/lib/utils"
 
 /** What a click on the elapsed side will show next. */
 const FORM_NEXT: Record<TimeForm, string> = {
@@ -305,7 +297,7 @@ export function PlayerBar({
         } as React.CSSProperties
       }
     >
-      <div className="flex select-none flex-wrap items-center gap-x-3 gap-y-1 @max-[30rem]/player-bar:gap-x-2">
+      <div className="flex select-none flex-wrap items-center @max-[30rem]/player-bar:gap-x-2 gap-x-3 gap-y-1">
         {/* Pulled out by the space its circle leaves around the icon,
             (2rem - 0.875rem) / 2, so the icon's ink, not its hit area, starts
             on the stage's edge, where the caption below starts too. */}
@@ -342,7 +334,7 @@ export function PlayerBar({
             aria-label={FORM_NEXT[nextForm]}
             disabled={forms.length < 2}
             onClick={() => setForm(nextForm)}
-            className="shrink-0 cursor-pointer rounded-sm font-mono text-[11px] text-muted-foreground transition-colors enabled:hover:text-foreground disabled:cursor-default @max-[30rem]/player-bar:order-1"
+            className="@max-[30rem]/player-bar:order-1 shrink-0 cursor-pointer rounded-sm font-mono text-[11px] text-muted-foreground transition-colors enabled:hover:text-foreground disabled:cursor-default"
           >
             <PlayerReadout
               value={timeLabel(shown, form, fps)}
@@ -500,7 +492,7 @@ export function PlayerBar({
             data-slot="player-duration"
             aria-label={remaining ? "show the length" : "show the time left"}
             onClick={() => setRemaining((r) => !r)}
-            className="shrink-0 cursor-pointer rounded-sm font-mono text-[11px] text-muted-foreground transition-colors hover:text-foreground @max-[30rem]/player-bar:order-3"
+            className="@max-[30rem]/player-bar:order-3 shrink-0 cursor-pointer rounded-sm font-mono text-[11px] text-muted-foreground transition-colors hover:text-foreground"
           >
             <PlayerReadout
               value={
@@ -517,7 +509,7 @@ export function PlayerBar({
         {children && (
           <div
             data-slot="player-controls"
-            className="flex shrink-0 items-center gap-1.5 @max-[30rem]/player-bar:order-2 @max-[30rem]/player-bar:mx-auto"
+            className="@max-[30rem]/player-bar:order-2 @max-[30rem]/player-bar:mx-auto flex shrink-0 items-center gap-1.5"
           >
             {children}
           </div>
@@ -1214,7 +1206,7 @@ export function PlayerSpeed({ material, scheme, className }: PlayerPartProps) {
               corners="soft"
               // In a narrow bar (a vertical video) it keeps to its digits.
               className={cn(
-                "font-mono text-xs tabular-nums @max-[30rem]/player-bar:px-2",
+                "@max-[30rem]/player-bar:px-2 font-mono text-xs tabular-nums",
                 className,
               )}
             />
@@ -1579,7 +1571,7 @@ export function PlayerChrome({
         onMouseDown={keepFocus}
         data-shown={!playing || preview !== null ? "" : undefined}
         className={cn(
-          "pointer-events-none absolute inset-0 z-10 text-foreground opacity-0 transition-opacity duration-200 ease-out focus-within:opacity-100 group-data-[awake]/picture:opacity-100 data-shown:opacity-100 motion-reduce:transition-none",
+          "pointer-events-none absolute inset-0 z-10 text-foreground opacity-0 transition-opacity duration-200 ease-out focus-within:opacity-100 data-shown:opacity-100 group-data-[awake]/picture:opacity-100 motion-reduce:transition-none",
           schemeOf(s),
           className,
         )}

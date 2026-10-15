@@ -1,7 +1,7 @@
-import "server-only";
+import "server-only"
 
-import { createClient } from "@libsql/client";
-import { libsqlDriver } from "@adriangalilea/utils/metrics/libsql";
+import { libsqlDriver } from "@adriangalilea/utils/metrics/libsql"
+import { createClient } from "@libsql/client"
 
 // e-id's visits, kept by the ui registry's visits (lib/visits) in the Turso database at
 // VISITS_DATABASE_URL, apart from the site's own (the `visits_*` tables,
@@ -10,16 +10,18 @@ import { libsqlDriver } from "@adriangalilea/utils/metrics/libsql";
 // mounts no sensor and nothing posts to /api/events. On, every page a person
 // sees ends in one POST there, a function invocation.
 
-export const SITE = "e-id.to";
+export const SITE = "e-id.to"
 
-export const visitsEnabled = Boolean(process.env.VISITS_DATABASE_URL);
+export const visitsEnabled = Boolean(process.env.VISITS_DATABASE_URL)
 
-let driver: ReturnType<typeof libsqlDriver> | undefined;
+let driver: ReturnType<typeof libsqlDriver> | undefined
 export function visitDriver() {
-  const url = process.env.VISITS_DATABASE_URL;
-  const authToken = process.env.VISITS_AUTH_TOKEN;
+  const url = process.env.VISITS_DATABASE_URL
+  const authToken = process.env.VISITS_AUTH_TOKEN
   if (!url || !authToken)
-    throw new Error("visits: VISITS_DATABASE_URL and VISITS_AUTH_TOKEN are not set");
-  driver ??= libsqlDriver(createClient({ url, authToken }));
-  return driver;
+    throw new Error(
+      "visits: VISITS_DATABASE_URL and VISITS_AUTH_TOKEN are not set",
+    )
+  driver ??= libsqlDriver(createClient({ url, authToken }))
+  return driver
 }

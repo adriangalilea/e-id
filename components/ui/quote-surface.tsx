@@ -1,7 +1,6 @@
 "use client"
 
 import type * as React from "react"
-import { cn } from "@/lib/utils"
 import {
   type Material,
   type Scheme,
@@ -10,6 +9,7 @@ import {
 } from "@/components/ui/material"
 import { schemeOf } from "@/components/ui/material-glass"
 import { Panel } from "@/components/ui/panel"
+import { cn } from "@/lib/utils"
 
 // The surface a quote stands on in `prose` and `feature`, and nothing else: the one
 // part of `Quote` that asks the page a question (which material, which scheme), so

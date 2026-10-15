@@ -2,7 +2,6 @@
 
 import { Switch as BaseSwitch } from "@base-ui/react/switch"
 import type * as React from "react"
-import { cn } from "@/lib/utils"
 import { fieldProps, useField } from "@/components/ui/field-context"
 import {
   type Material,
@@ -17,6 +16,7 @@ import {
   settingProps,
   useSetting,
 } from "@/components/ui/setting-context"
+import { cn } from "@/lib/utils"
 
 // On or off, at once (Base UI's switch: a hidden input a form submits, Space and Enter
 // flip it). A setting that takes effect the moment it changes is a switch; a choice
@@ -161,7 +161,7 @@ export function Switch({
     <label
       data-slot="switch-label"
       className={cn(
-        "inline-flex cursor-pointer items-center select-none has-[[data-disabled]]:cursor-not-allowed has-[[data-disabled]]:opacity-50",
+        "inline-flex cursor-pointer select-none items-center has-[[data-disabled]]:cursor-not-allowed has-[[data-disabled]]:opacity-50",
         schemeOf(s),
         WORDS[size],
         m === "glass" ? "text-current/90" : "text-foreground/85",

@@ -1,11 +1,11 @@
-import { sql } from "drizzle-orm";
+import { sql } from "drizzle-orm"
 import {
-  text,
+  index,
   integer,
   sqliteTable,
-  index,
+  text,
   uniqueIndex,
-} from "drizzle-orm/sqlite-core";
+} from "drizzle-orm/sqlite-core"
 
 // USER TABLE - better-auth core + custom fields
 export const users = sqliteTable(
@@ -41,9 +41,9 @@ export const users = sqliteTable(
     return {
       usernameIdx: index("username_idx").on(table.username),
       createdAtIdx: index("created_at_idx").on(table.createdAt),
-    };
+    }
   },
-);
+)
 
 // SESSION TABLE - better-auth exact schema, indexed by its user (better-auth
 // lists and revokes a user's sessions by it).
@@ -66,7 +66,7 @@ export const sessions = sqliteTable(
       .notNull(),
   },
   (table) => ({ userIdx: index("session_user_idx").on(table.userId) }),
-);
+)
 
 // ACCOUNT TABLE - better-auth exact schema. A provider's account belongs to one
 // user (unique on provider and its id): signing in finds it by those two.
@@ -104,7 +104,7 @@ export const accounts = sqliteTable(
     ),
     userIdx: index("account_user_idx").on(table.userId),
   }),
-);
+)
 
 // VERIFICATION TABLE - better-auth exact schema, looked up by identifier (an
 // OAuth sign-in's state).
@@ -125,7 +125,7 @@ export const verification = sqliteTable(
   (table) => ({
     identifierIdx: index("verification_identifier_idx").on(table.identifier),
   }),
-);
+)
 
 // CUSTOM TABLES (not part of better-auth)
 
@@ -152,9 +152,9 @@ export const comments = sqliteTable(
     return {
       profileUserIdIdx: index("profile_user_id_idx").on(table.profile_user_id),
       commentatorIdIdx: index("commentator_id_idx").on(table.commentator_id),
-    };
+    }
   },
-);
+)
 
 /** Where a link can go: a platform e-ID knows, or `link`, anywhere at all (its
  *  `label` names it). */
@@ -168,9 +168,9 @@ export const linkPlatforms = [
   "instagram",
   "telegram",
   "link",
-] as const;
+] as const
 
-export type LinkPlatform = (typeof linkPlatforms)[number];
+export type LinkPlatform = (typeof linkPlatforms)[number]
 
 /** A person's links, one row each, in their order (`order`). `value` is the
  *  username there, or the whole address where the platform takes none; `label`
@@ -192,25 +192,25 @@ export const links = sqliteTable(
     note: text("note"),
     public: integer("public", { mode: "boolean" }).notNull().default(false),
     custom_data: text("custom_data", { mode: "json" }).$type<{
-      highlight?: string;
-      platform_user_id?: string;
-      channel_id?: string;
-      followers?: number;
+      highlight?: string
+      platform_user_id?: string
+      channel_id?: string
+      followers?: number
     }>(),
   },
   (table) => {
     return {
       userIdIdx: index("user_id_idx").on(table.user_id),
-    };
+    }
   },
-);
+)
 
 // Type exports
-export type InsertUser = typeof users.$inferInsert;
-export type SelectUser = typeof users.$inferSelect;
+export type InsertUser = typeof users.$inferInsert
+export type SelectUser = typeof users.$inferSelect
 
-export type InsertComment = typeof comments.$inferSelect;
-export type SelectComment = typeof comments.$inferSelect;
+export type InsertComment = typeof comments.$inferSelect
+export type SelectComment = typeof comments.$inferSelect
 
-export type InsertLink = typeof links.$inferInsert;
-export type SelectLink = typeof links.$inferSelect;
+export type InsertLink = typeof links.$inferInsert
+export type SelectLink = typeof links.$inferSelect

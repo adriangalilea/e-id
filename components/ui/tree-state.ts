@@ -10,6 +10,7 @@
 // another shape can draw on it too.
 
 import * as React from "react"
+import { recall, remember } from "@/components/ui/remembered"
 import { fuzzy } from "@/lib/fuzzy"
 import type { Setting } from "@/lib/remembered-core"
 import {
@@ -32,7 +33,6 @@ import {
   type Row,
   typeahead,
 } from "@/lib/tree-core"
-import { recall, remember } from "@/components/ui/remembered"
 
 export type TreeSelection = "single" | "multi" | "none"
 

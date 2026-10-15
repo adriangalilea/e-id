@@ -1,8 +1,8 @@
-import Link from "next/link";
-import { EmojiDomain } from "@/components/brand";
-import { Glass } from "@/components/ui/material-glass";
+import Link from "next/link"
+import { EmojiDomain } from "@/components/brand"
+import { Glass } from "@/components/ui/material-glass"
 
-import FooterUser from "./footer_user";
+import FooterUser from "./footer_user"
 
 /** The site's one bar, a pill of glass floating over the page: the wordmark home on
  *  its left, the account on its right. At the top, on every screen: a phone's
@@ -23,7 +23,7 @@ export default function Footer() {
           href="/"
           aria-label="home"
           // The wordmark's size is the bar's one (`--wordmark`, globals.css).
-          className="flex items-center text-(length:--wordmark) font-light tracking-[-0.02em] transition-opacity [--logo-size:calc(var(--wordmark-logo)*1cap)] hover:opacity-80"
+          className="text-(length:--wordmark) flex items-center font-light tracking-[-0.02em] transition-opacity [--logo-size:calc(var(--wordmark-logo)*1cap)] hover:opacity-80"
         >
           <EmojiDomain logo />
         </Link>
@@ -32,5 +32,5 @@ export default function Footer() {
         <FooterUser />
       </Glass>
     </nav>
-  );
+  )
 }

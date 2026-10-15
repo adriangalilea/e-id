@@ -1,7 +1,6 @@
 "use client"
 
 import type * as React from "react"
-import { cn } from "@/lib/utils"
 import {
   type Material,
   MaterialProvider,
@@ -16,6 +15,7 @@ import {
   GLASS_GHOST,
   useSetting,
 } from "@/components/ui/setting-context"
+import { cn } from "@/lib/utils"
 
 // A text field that looks like one: a sunken well (a faint fill and a hairline ring
 // inset), the ring brightening under the hand and clear on focus, red when the value

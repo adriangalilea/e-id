@@ -13,12 +13,9 @@
 
 import { Play } from "lucide-react"
 import * as React from "react"
-import { cn } from "@/lib/utils"
-import {
-  type YouTubeRef,
-  youtubeOf,
-} from "@/lib/youtube-data"
 import { Image } from "@/components/ui/image"
+import { cn } from "@/lib/utils"
+import { type YouTubeRef, youtubeOf } from "@/lib/youtube-data"
 
 export interface YouTubeProps {
   /** the video: a link YouTube hands out, or its facts */
@@ -50,7 +47,7 @@ export function YouTube({ video, className }: YouTubeProps) {
       data-slot="youtube"
       data-short={facts.short || undefined}
       className={cn(
-        "relative w-full overflow-hidden rounded-xl bg-black aspect-video data-short:mx-auto data-short:aspect-[9/16] data-short:max-w-[22rem]",
+        "relative aspect-video w-full overflow-hidden rounded-xl bg-black data-short:mx-auto data-short:aspect-[9/16] data-short:max-w-[22rem]",
         className,
       )}
     >
@@ -84,7 +81,7 @@ export function YouTube({ video, className }: YouTubeProps) {
           {(title || channel) && (
             <span className="absolute inset-x-0 top-0 flex flex-col items-start gap-0.5 bg-linear-to-b from-black/70 to-transparent px-4 pt-3 pb-8 text-left">
               {title && (
-                <span className="line-clamp-2 text-[0.95em] font-medium text-white/95">
+                <span className="line-clamp-2 font-medium text-[0.95em] text-white/95">
                   {title}
                 </span>
               )}

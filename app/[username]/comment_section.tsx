@@ -1,10 +1,10 @@
-"use client";
+"use client"
 
-import { useCallback, useEffect, useState } from "react";
-import Comment from "@/components/comment";
-import { useChip, writeChip } from "@/components/session/use-chip";
-import { type CommentThread, loadComments } from "@/db/actions";
-import CommentForm from "./comment_form";
+import { useCallback, useEffect, useState } from "react"
+import Comment from "@/components/comment"
+import { useChip, writeChip } from "@/components/session/use-chip"
+import { type CommentThread, loadComments } from "@/db/actions"
+import CommentForm from "./comment_form"
 
 /** The signed-in part of a profile's comments, on a page that is otherwise
  *  static: nothing for a visitor the display cookie says is signed out (no
@@ -13,30 +13,31 @@ import CommentForm from "./comment_form";
 export function CommentInteraction({
   profileUserId,
 }: {
-  profileUserId: string;
+  profileUserId: string
 }) {
-  const chip = useChip();
-  const [thread, setThread] = useState<CommentThread | null>(null);
-  const [version, setVersion] = useState(0);
-  const reload = useCallback(() => setVersion((v) => v + 1), []);
+  const chip = useChip()
+  const [thread, setThread] = useState<CommentThread | null>(null)
+  const [version, setVersion] = useState(0)
+  const reload = useCallback(() => setVersion((v) => v + 1), [])
 
-  const signedIn = Boolean(chip);
+  const signedIn = Boolean(chip)
+  // biome-ignore lint/correctness/useExhaustiveDependencies: `version` is the reload's trigger (`reload` bumps it), read by no line of the effect on purpose
   useEffect(() => {
-    if (!signedIn) return;
-    let current = true;
+    if (!signedIn) return
+    let current = true
     loadComments(profileUserId).then((loaded) => {
-      if (!current) return;
-      writeChip(loaded?.viewer ?? null);
-      setThread(loaded);
-    });
+      if (!current) return
+      writeChip(loaded?.viewer ?? null)
+      setThread(loaded)
+    })
     return () => {
-      current = false;
-    };
-  }, [signedIn, profileUserId, version]);
+      current = false
+    }
+  }, [signedIn, profileUserId, version])
 
-  if (!chip || !thread) return null;
+  if (!chip || !thread) return null
 
-  if (thread.isOwner && thread.comments.length === 0) return null;
+  if (thread.isOwner && thread.comments.length === 0) return null
 
   return (
     <div className="relative animate-fade-in">
@@ -54,7 +55,7 @@ export function CommentInteraction({
         ))}
       </div>
     </div>
-  );
+  )
 }
 
 /** The pinned testimonials are part of the static page; the profile's owner sees
@@ -63,10 +64,10 @@ export function HiddenFromOwner({
   username,
   children,
 }: {
-  username: string;
-  children: React.ReactNode;
+  username: string
+  children: React.ReactNode
 }) {
-  const chip = useChip();
-  if (chip?.u?.toLowerCase() === username.toLowerCase()) return null;
-  return children;
+  const chip = useChip()
+  if (chip?.u?.toLowerCase() === username.toLowerCase()) return null
+  return children
 }

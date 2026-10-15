@@ -5,6 +5,7 @@
 // that sound one at a time, under the hand.
 
 import * as React from "react"
+import { recall, remember } from "@/components/ui/remembered"
 import {
   claim,
   holding,
@@ -13,7 +14,6 @@ import {
   type VoiceKey,
 } from "@/lib/audible"
 import type { Setting } from "@/lib/remembered-core"
-import { recall, remember } from "@/components/ui/remembered"
 
 // ── THE HAND'S VOICE: many videos playing muted (a gallery's cells, a wall's tiles), of
 // which at most ONE is ever audible: the one under the hand, and only while the group's

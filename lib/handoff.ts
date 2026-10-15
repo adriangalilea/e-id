@@ -1,4 +1,4 @@
-import { EMOJI_ORIGIN, PROD_URL } from "@/lib/const";
+import { EMOJI_ORIGIN, PROD_URL } from "@/lib/const"
 
 // SIGNING IN ON THE EMOJI DOMAIN. Safari is served on 👤.to (xn--mq8h.to), a
 // different site from e-id.to, so it holds its own cookies. OAuth stays on
@@ -17,37 +17,36 @@ import { EMOJI_ORIGIN, PROD_URL } from "@/lib/const";
 // block. The routes live under /api, which next.config's host redirects never
 // touch.
 
-export const HANDOFF_PROVIDERS = ["github", "google"] as const;
-export type HandoffProvider = (typeof HANDOFF_PROVIDERS)[number];
+export const HANDOFF_PROVIDERS = ["github", "google"] as const
+export type HandoffProvider = (typeof HANDOFF_PROVIDERS)[number]
 
 /** A path on this site to come back to: "/", "/name", never another origin. */
 export function isLocalPath(path: string | null): path is string {
   return (
-    path !== null &&
-    path.startsWith("/") &&
+    path?.startsWith("/") === true &&
     !path.startsWith("//") &&
     !path.includes("\\")
-  );
+  )
 }
 
 /** Where a 👤.to page sends the browser to sign in. */
 export function handoffStartUrl(provider: HandoffProvider, to: string) {
-  const url = new URL("/api/handoff/start", PROD_URL);
-  url.searchParams.set("provider", provider);
-  url.searchParams.set("to", to);
-  return url.toString();
+  const url = new URL("/api/handoff/start", PROD_URL)
+  url.searchParams.set("provider", provider)
+  url.searchParams.set("to", to)
+  return url.toString()
 }
 
 /** Where OAuth returns, on e-id.to: relative, better-auth resolves it on its
  *  baseURL. */
 export function handoffIssuePath(to: string) {
-  return `/api/handoff/issue?to=${encodeURIComponent(to)}`;
+  return `/api/handoff/issue?to=${encodeURIComponent(to)}`
 }
 
 /** Where e-id.to hands the session to 👤.to. */
 export function handoffClaimUrl(token: string, to: string) {
-  const url = new URL("/api/handoff/claim", EMOJI_ORIGIN);
-  url.searchParams.set("token", token);
-  url.searchParams.set("to", to);
-  return url.toString();
+  const url = new URL("/api/handoff/claim", EMOJI_ORIGIN)
+  url.searchParams.set("token", token)
+  url.searchParams.set("to", to)
+  return url.toString()
 }

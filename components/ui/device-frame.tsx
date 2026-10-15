@@ -1,13 +1,13 @@
 import type * as React from "react"
 import type { ComponentProps, ReactNode } from "react"
-import { cn } from "@/lib/utils"
+import { DeviceAirflow } from "@/components/ui/device-airflow"
 import {
   fanTurnRate,
   type ThermalDepth,
   type ThermalPart,
   type ThermalReading,
 } from "@/lib/thermal"
-import { DeviceAirflow } from "@/components/ui/device-airflow"
+import { cn } from "@/lib/utils"
 import "./device-frame.css"
 
 type DesktopFrameProps = ComponentProps<"div"> & { screenClassName?: string }

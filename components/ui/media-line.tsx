@@ -1,6 +1,6 @@
 import type * as React from "react"
-import { cn } from "@/lib/utils"
 import type { Span } from "@/lib/clip"
+import { cn } from "@/lib/utils"
 
 // A MEDIUM'S LINE, the one drawing of how far a video or a clip has played: a track,
 // what of it has loaded lighter on it, and the played part solid from the start to

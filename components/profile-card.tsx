@@ -1,29 +1,24 @@
-"use client";
+"use client"
 
-import { ArrowLeft, ArrowRight, Pen, Plus, Star, X } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { createContext, use, useRef, useState } from "react";
-import { flushSync } from "react-dom";
+import { ArrowLeft, ArrowRight, Pen, Plus, Star, X } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { createContext, use, useRef, useState } from "react"
+import { flushSync } from "react-dom"
 import {
   CountryOnCard,
   HandleOnCard,
-  NameOnCard,
   LINK_MARK,
   LINKS_ON_CARD,
+  NameOnCard,
   PlatformChoice,
   WRITTEN_HERE,
-} from "@/components/card-fields";
-import { prefixOf, valueOf } from "@/lib/link-names";
-import { CORNER } from "@/components/card-shape";
-import { type Holder, IdCard } from "@/components/id-card";
-import { SubjectLight } from "@/components/light";
-import { useChip } from "@/components/session/use-chip";
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogTitle,
-} from "@/components/ui/dialog";
+} from "@/components/card-fields"
+import { CORNER } from "@/components/card-shape"
+import { type Holder, IdCard } from "@/components/id-card"
+import { SubjectLight } from "@/components/light"
+import { useChip } from "@/components/session/use-chip"
+import { Button } from "@/components/ui/button"
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
 import {
   Form,
   type FormHandle,
@@ -32,28 +27,29 @@ import {
   useForm,
   useFormField,
   useFormState,
-} from "@/components/ui/form";
-import { HoloLean, HoloLight } from "@/components/ui/holo";
-import { InputGroup } from "@/components/ui/input";
+} from "@/components/ui/form"
+import { HoloLean, HoloLight } from "@/components/ui/holo"
+import { InputGroup } from "@/components/ui/input"
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover";
-import { Switch } from "@/components/ui/switch";
-import { Textarea } from "@/components/ui/textarea";
-import { cardToEdit, handleState, saveCard } from "@/db/actions";
-import type { LinkPlatform } from "@/db/schema";
+} from "@/components/ui/popover"
+import { Switch } from "@/components/ui/switch"
+import { Textarea } from "@/components/ui/textarea"
+import { cardToEdit, handleState, saveCard } from "@/db/actions"
+import type { LinkPlatform } from "@/db/schema"
 import {
   type CardEdit,
   cardEditSchema,
   type EditLink,
   HIGHLIGHTED,
   OFFERED,
-} from "@/lib/card-edit";
-import { errorAt, isDirty } from "@/lib/form-core";
-import { getLinkIcon, getLinkPlaceholder } from "@/lib/links";
-import { cn } from "@/lib/utils";
+} from "@/lib/card-edit"
+import { errorAt, isDirty } from "@/lib/form-core"
+import { prefixOf, usernameIn } from "@/lib/link-names"
+import { getLinkIcon, getLinkPlaceholder } from "@/lib/links"
+import { cn } from "@/lib/utils"
 
 // A PROFILE'S CARD, and for its owner the way to change it: the card itself. Pressed
 // (or "edit"), it lifts off the page to the upper middle, the page dimmed behind it,
@@ -68,14 +64,14 @@ import { cn } from "@/lib/utils";
 
 /** The card's name across the lift: worn by whichever copy is shown, so a view
  *  transition carries it from the page to the middle and back. */
-const LIFTED = "[view-transition-name:own-card]";
+const LIFTED = "[view-transition-name:own-card]"
 
 /** The way to edit one's own card, for what stands round it (the owner's
  *  actions); null for anyone else. */
-const Own = createContext<{ open: () => void; opening: boolean } | null>(null);
+const Own = createContext<{ open: () => void; opening: boolean } | null>(null)
 
 export function useOwnCard() {
-  return use(Own);
+  return use(Own)
 }
 
 /** A change of the page's state carried by a view transition (none under reduced
@@ -85,48 +81,48 @@ function carried(change: () => void) {
     !document.startViewTransition ||
     matchMedia("(prefers-reduced-motion: reduce)").matches
   )
-    return change();
-  document.startViewTransition(() => flushSync(change));
+    return change()
+  document.startViewTransition(() => flushSync(change))
 }
 
 export function ProfileCard({
   holder,
   children,
 }: {
-  holder: Holder;
+  holder: Holder
   /** What stands under the card (the bio, the owner's actions). */
-  children: React.ReactNode;
+  children: React.ReactNode
 }) {
-  const chip = useChip();
-  const owner = chip?.u?.toLowerCase() === holder.username.toLowerCase();
-  const [initial, setInitial] = useState<CardEdit | null>(null);
-  const [opening, setOpening] = useState(false);
+  const chip = useChip()
+  const owner = chip?.u?.toLowerCase() === holder.username.toLowerCase()
+  const [initial, setInitial] = useState<CardEdit | null>(null)
+  const [opening, setOpening] = useState(false)
   // Read once the hand comes near, so the press finds it there.
-  const read = useRef<Promise<CardEdit> | null>(null);
+  const read = useRef<Promise<CardEdit> | null>(null)
   const load = () => {
-    read.current ??= cardToEdit();
-    return read.current;
-  };
+    read.current ??= cardToEdit()
+    return read.current
+  }
   const open = () => {
-    if (opening || initial) return;
-    setOpening(true);
+    if (opening || initial) return
+    setOpening(true)
     load().then(
       (card) => {
-        setOpening(false);
-        carried(() => setInitial(card));
+        setOpening(false)
+        carried(() => setInitial(card))
       },
       (error) => {
-        setOpening(false);
-        read.current = null;
-        throw error;
+        setOpening(false)
+        read.current = null
+        throw error
       },
-    );
-  };
+    )
+  }
   const close = () => {
-    read.current = null;
-    carried(() => setInitial(null));
-  };
-  const editing = initial !== null;
+    read.current = null
+    carried(() => setInitial(null))
+  }
+  const editing = initial !== null
   return (
     <Own value={owner ? { open, opening } : null}>
       {/* The same card as the home's: the laminate, a solid body, leaning to the
@@ -158,7 +154,7 @@ export function ProfileCard({
           >
             <span
               aria-hidden
-              className="absolute right-3 bottom-3 flex items-center gap-1.5 rounded-full bg-background/70 px-3 py-1.5 text-sm text-foreground/85 opacity-0 backdrop-blur-md transition-opacity group-hover/edit:opacity-100 group-focus-visible/edit:opacity-100 [&_svg]:size-3.5"
+              className="absolute right-3 bottom-3 flex items-center gap-1.5 rounded-full bg-background/70 px-3 py-1.5 text-foreground/85 text-sm opacity-0 backdrop-blur-md transition-opacity group-hover/edit:opacity-100 group-focus-visible/edit:opacity-100 [&_svg]:size-3.5"
             >
               <Pen strokeWidth={1.5} />
               {opening ? "opening" : "edit"}
@@ -171,23 +167,23 @@ export function ProfileCard({
         <CardEditor initial={initial} image={holder.image} onClose={close} />
       )}
     </Own>
-  );
+  )
 }
 
 // ── the card lifted to be written on ─────────────────────────────────────────
 
-type CardForm = FormHandle<CardEdit>;
+type CardForm = FormHandle<CardEdit>
 
 function CardEditor({
   initial,
   image,
   onClose,
 }: {
-  initial: CardEdit;
-  image: string | null;
-  onClose: () => void;
+  initial: CardEdit
+  image: string | null
+  onClose: () => void
 }) {
-  const router = useRouter();
+  const router = useRouter()
   const form = useForm<CardEdit>({
     initial,
     schema: cardEditSchema,
@@ -197,32 +193,32 @@ function CardEditor({
       handle: {
         debounce: 300,
         run: async (value) => {
-          if (value === initial.handle) return undefined;
-          const { state, why } = await handleState(String(value));
-          if (state === "taken") return "That username is taken.";
-          return state === "invalid" ? (why ?? "Not a username.") : undefined;
+          if (value === initial.handle) return undefined
+          const { state, why } = await handleState(String(value))
+          if (state === "taken") return "That username is taken."
+          return state === "invalid" ? (why ?? "Not a username.") : undefined
         },
       },
     },
     onSubmit: async (values) => {
-      const saved = await saveCard(values);
-      if (!saved.ok) return { errors: saved.errors };
+      const saved = await saveCard(values)
+      if (!saved.ok) return { errors: saved.errors }
       // The page under it re-rendered with the write in the same response; a
       // new handle is a new address.
       if (saved.username !== initial.handle)
-        router.replace(`/${saved.username}`);
-      onClose();
+        router.replace(`/${saved.username}`)
+      onClose()
     },
-  });
+  })
   // Written on, it is put down only by saving or by "cancel": Esc or a press
   // outside never throws away what was written.
-  const dirty = useFormState(form, (s) => isDirty(s) || s.submitting);
+  const dirty = useFormState(form, (s) => isDirty(s) || s.submitting)
   return (
     <Dialog
       open
       disablePointerDismissal={dirty}
       onOpenChange={(open) => {
-        if (!open && !dirty) onClose();
+        if (!open && !dirty) onClose()
       }}
     >
       <DialogContent
@@ -254,7 +250,11 @@ function CardEditor({
             </HoloLight>
           </div>
           <CardSays form={form} />
-          <form.Field name="bio" label="about you" aside="on your page, under the card">
+          <form.Field
+            name="bio"
+            label="about you"
+            aside="on your page, under the card"
+          >
             {(c) => (
               <Textarea
                 material="glass"
@@ -284,7 +284,7 @@ function CardEditor({
         </Form>
       </DialogContent>
     </Dialog>
-  );
+  )
 }
 
 /** What is wrong with what is written on the card itself, under it, once due:
@@ -295,7 +295,7 @@ function CardSays({ form }: { form: CardForm }) {
       .map((path) => errorAt(s, path))
       .filter(Boolean)
       .join(" "),
-  );
+  )
   return (
     <p
       aria-live="polite"
@@ -306,7 +306,7 @@ function CardSays({ form }: { form: CardForm }) {
     >
       {said}
     </p>
-  );
+  )
 }
 
 // Each on-card field bound headless (@ag/form, `useFormField`), its `anchor` taken
@@ -318,7 +318,7 @@ function NameField({ form }: { form: CardForm }) {
     form,
     "name",
     "name",
-  );
+  )
   return (
     <NameOnCard
       ref={anchor}
@@ -328,12 +328,12 @@ function NameField({ form }: { form: CardForm }) {
       onBlur={onBlur}
       invalid={invalid}
     />
-  );
+  )
 }
 
 function HandleField({ form }: { form: CardForm }) {
   const { anchor, value, onValueChange, onBlur, invalid, checking } =
-    useFormField(form, "handle", "username");
+    useFormField(form, "handle", "username")
   return (
     <span
       ref={anchor}
@@ -348,7 +348,7 @@ function HandleField({ form }: { form: CardForm }) {
       />
       {checking && <span className="text-foreground/45">…</span>}
     </span>
-  );
+  )
 }
 
 function CountryField({ form }: { form: CardForm }) {
@@ -356,7 +356,7 @@ function CountryField({ form }: { form: CardForm }) {
     form,
     "country",
     "country",
-  );
+  )
   return (
     <span ref={anchor} className="contents">
       <CountryOnCard
@@ -365,7 +365,7 @@ function CountryField({ form }: { form: CardForm }) {
         onChange={onValueChange}
       />
     </span>
-  );
+  )
 }
 
 // ── links ────────────────────────────────────────────────────────────────────
@@ -378,17 +378,17 @@ const BLANK_LINK = (platform: LinkPlatform): EditLink => ({
   note: "",
   highlight: "",
   public: true,
-});
+})
 
 /** The card's links as marks, each opening to what it holds, and "+" to add
  *  one: the platform first, then its own popover opens on it. */
 function LinksField({ form }: { form: CardForm }) {
   // The row just added, its popover open from the start.
-  const [fresh, setFresh] = useState<number | null>(null);
+  const [fresh, setFresh] = useState<number | null>(null)
   return (
     <form.FieldArray name="links">
       {(rows, ops) => (
-        <div role="group" aria-label="links" className={LINKS_ON_CARD}>
+        <fieldset aria-label="links" className={LINKS_ON_CARD}>
           {rows.map((row) => (
             <LinkMark
               key={row.key}
@@ -398,22 +398,22 @@ function LinksField({ form }: { form: CardForm }) {
               startOpen={row.index === fresh}
               onMove={(to) => ops.move(row.index, to)}
               onRemove={() => {
-                setFresh(null);
-                ops.remove(row.index);
+                setFresh(null)
+                ops.remove(row.index)
               }}
             />
           ))}
           <AddLink
             form={form}
             onPick={(platform) => {
-              setFresh(rows.length);
-              ops.append(BLANK_LINK(platform));
+              setFresh(rows.length)
+              ops.append(BLANK_LINK(platform))
             }}
           />
-        </div>
+        </fieldset>
       )}
     </form.FieldArray>
-  );
+  )
 }
 
 /** "+": the platforms on offer not on the card yet, one link each (lib/card-edit,
@@ -422,15 +422,15 @@ function AddLink({
   form,
   onPick,
 }: {
-  form: CardForm;
-  onPick: (platform: LinkPlatform) => void;
+  form: CardForm
+  onPick: (platform: LinkPlatform) => void
 }) {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(false)
   const taken = useFormState(form, (s) =>
     s.values.links.map((l) => l.platform).join(" "),
-  );
-  const rest = OFFERED.filter((p) => !taken.split(" ").includes(p));
-  if (rest.length === 0) return null;
+  )
+  const rest = OFFERED.filter((p) => !taken.split(" ").includes(p))
+  if (rest.length === 0) return null
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger
@@ -449,13 +449,13 @@ function AddLink({
         <PlatformChoice
           platforms={rest}
           onPick={(platform) => {
-            setOpen(false);
-            onPick(platform);
+            setOpen(false)
+            onPick(platform)
           }}
         />
       </PopoverContent>
     </Popover>
-  );
+  )
 }
 
 /** One link: its mark on the card (dim while hidden, red while something on it
@@ -470,31 +470,32 @@ function LinkMark({
   onMove,
   onRemove,
 }: {
-  form: CardForm;
-  index: number;
-  count: number;
-  startOpen: boolean;
-  onMove: (to: number) => void;
-  onRemove: () => void;
+  form: CardForm
+  index: number
+  count: number
+  startOpen: boolean
+  onMove: (to: number) => void
+  onRemove: () => void
 }) {
-  const path = `links.${index}` as const;
-  const link = useFormState(form, (s) => s.values.links[index]);
-  const wrong = useFormState(
-    form,
-    (s) =>
-      (["value", "note", "highlight"] as const).some(
-        (field) => errorAt(s, `${path}.${field}`) !== undefined,
-      ),
-  );
-  const [open, setOpen] = useState(startOpen);
-  if (!link) return null;
-  const { platform } = link;
+  const path = `links.${index}` as const
+  const link = useFormState(form, (s) => s.values.links[index])
+  const wrong = useFormState(form, (s) =>
+    (["value", "note", "highlight"] as const).some(
+      (field) => errorAt(s, `${path}.${field}`) !== undefined,
+    ),
+  )
+  const [open, setOpen] = useState(startOpen)
+  if (!link) return null
+  const { platform } = link
   const close = () => {
-    setOpen(false);
-    if (!form.get().values.links[index]?.value.trim()) onRemove();
-  };
+    setOpen(false)
+    if (!form.get().values.links[index]?.value.trim()) onRemove()
+  }
   return (
-    <Popover open={open} onOpenChange={(next) => (next ? setOpen(true) : close())}>
+    <Popover
+      open={open}
+      onOpenChange={(next) => (next ? setOpen(true) : close())}
+    >
       <PopoverTrigger
         render={
           <button
@@ -511,17 +512,18 @@ function LinkMark({
         {getLinkIcon(platform)}
       </PopoverTrigger>
       <PopoverContent align="start" className="w-80 gap-3 p-3">
+        {/* biome-ignore lint/a11y/noStaticElementInteractions: Enter delegated from the inputs inside (a form inside the card's form is not allowed) */}
         <div
           className="flex flex-col gap-3"
           onKeyDown={(e) => {
             // Enter in a line keeps it: the popover closes, the card stays open.
             if (e.key === "Enter" && e.target instanceof HTMLInputElement) {
-              e.preventDefault();
-              close();
+              e.preventDefault()
+              close()
             }
           }}
         >
-          <div className="flex h-7 items-center gap-2 pl-1 text-sm text-foreground/85 [&_svg]:stroke-[1.5]">
+          <div className="flex h-7 items-center gap-2 pl-1 text-foreground/85 text-sm [&_svg]:stroke-[1.5]">
             <span className="[&_svg]:size-4">{getLinkIcon(platform)}</span>
             {platform}
             <span className="ml-auto flex items-center">
@@ -553,8 +555,8 @@ function LinkMark({
                 size="icon-sm"
                 aria-label={`remove ${platform}`}
                 onClick={() => {
-                  setOpen(false);
-                  onRemove();
+                  setOpen(false)
+                  onRemove()
                 }}
                 className="text-foreground/50"
               >
@@ -573,7 +575,9 @@ function LinkMark({
                 placeholder={getLinkPlaceholder(platform)}
                 {...c.input}
                 // A pasted address is read as the username it ends in.
-                onChange={(e) => c.onValueChange(valueOf(platform, e.target.value))}
+                onChange={(e) =>
+                  c.onValueChange(usernameIn(platform, e.target.value))
+                }
                 // The platform's address the username continues, in the same
                 // type: "github.com/adriangalilea", one address.
                 prefix={prefixOf(platform) || undefined}
@@ -598,7 +602,11 @@ function LinkMark({
           {HIGHLIGHTED.includes(platform) && (
             <form.Field
               name={`${path}.highlight`}
-              label={platform === "youtube" ? "video to show first" : "post to show first"}
+              label={
+                platform === "youtube"
+                  ? "video to show first"
+                  : "post to show first"
+              }
               aside="optional, its id"
             >
               {(c) => (
@@ -628,5 +636,5 @@ function LinkMark({
         </div>
       </PopoverContent>
     </Popover>
-  );
+  )
 }

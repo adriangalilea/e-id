@@ -1,7 +1,7 @@
-"use client";
+"use client"
 
-import { ArrowLeft, CornerDownLeft, Plus, RotateCcw, X } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { ArrowLeft, CornerDownLeft, Plus, RotateCcw, X } from "lucide-react"
+import { useRouter } from "next/navigation"
 import {
   createContext,
   Suspense,
@@ -9,44 +9,39 @@ import {
   useEffect,
   useRef,
   useState,
-} from "react";
-import { flushSync } from "react-dom";
-import { BrandLogo } from "@/components/brand";
+} from "react"
+import { flushSync } from "react-dom"
+import { BrandLogo } from "@/components/brand"
 import {
   CountryOnCard,
   HandleOnCard,
-  NameOnCard,
   LINK_MARK,
   LINKS_ON_CARD,
+  NameOnCard,
   PlatformChoice,
   useHandleState,
   WRITTEN_HERE,
-} from "@/components/card-fields";
-import { prefixOf, valueOf } from "@/lib/link-names";
-import { type Holder, IdCard } from "@/components/id-card";
-import { CORNER, ON_CARD } from "@/components/card-shape";
-import { partShimmer } from "@/components/landing/shimmer-part";
-import { SubjectLight } from "@/components/light";
-import { PROFILE } from "@/components/profile-layout";
-import { SIGN_IN_PROVIDERS } from "@/components/session/sign-in-providers";
-import { useChip } from "@/components/session/use-chip";
-import { SignInMenu } from "@/components/ui/account-menu";
-import type { HandoffProvider } from "@/lib/handoff";
-import { ProfileLinks } from "@/components/profile-links";
-import { Button } from "@/components/ui/button";
-import { HoloLean, HoloLight } from "@/components/ui/holo";
-import { InputGroup } from "@/components/ui/input";
+} from "@/components/card-fields"
+import { CORNER, ON_CARD } from "@/components/card-shape"
+import { type Holder, IdCard } from "@/components/id-card"
+import { partShimmer } from "@/components/landing/shimmer-part"
+import { SubjectLight } from "@/components/light"
+import { PROFILE } from "@/components/profile-layout"
+import { ProfileLinks } from "@/components/profile-links"
+import { SIGN_IN_PROVIDERS } from "@/components/session/sign-in-providers"
+import { useChip } from "@/components/session/use-chip"
+import { SignInMenu } from "@/components/ui/account-menu"
+import { Button } from "@/components/ui/button"
+import { HoloLean, HoloLight } from "@/components/ui/holo"
+import { InputGroup } from "@/components/ui/input"
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover";
-import { toast } from "@/components/ui/toast";
-import { claimDraft, githubCard, previewPresence } from "@/db/actions";
-import type { LinkPlatform } from "@/db/schema";
-import { OFFERED } from "@/lib/card-edit";
-import { type Card, knownPlatform } from "@/lib/card-schema";
-import { EMOJI_DOMAIN } from "@/lib/const";
+} from "@/components/ui/popover"
+import { toast } from "@/components/ui/toast"
+import { claimDraft, githubCard, previewPresence } from "@/db/actions"
+import type { LinkPlatform } from "@/db/schema"
 import {
   asLinks,
   type Draft,
@@ -55,12 +50,17 @@ import {
   filledLinks,
   isBlank,
   toHandle,
-} from "@/lib/card-draft";
-import { clearDraft, readDraft, useDraft, writeDraft } from "@/lib/draft";
-import type { Presence } from "@/lib/presence";
-import { startSignIn } from "@/lib/sign-in";
-import { getLinkIcon, getLinkPlaceholder } from "@/lib/links";
-import { cn } from "@/lib/utils";
+} from "@/lib/card-draft"
+import { OFFERED } from "@/lib/card-edit"
+import { type Card, knownPlatform } from "@/lib/card-schema"
+import { EMOJI_DOMAIN } from "@/lib/const"
+import { clearDraft, readDraft, useDraft, writeDraft } from "@/lib/draft"
+import type { HandoffProvider } from "@/lib/handoff"
+import { prefixOf, usernameIn } from "@/lib/link-names"
+import { getLinkIcon, getLinkPlaceholder } from "@/lib/links"
+import type { Presence } from "@/lib/presence"
+import { startSignIn } from "@/lib/sign-in"
+import { cn } from "@/lib/utils"
 
 /** The heading's letters as steel, by how they take light, two layers, top
  *  first:
@@ -74,13 +74,13 @@ import { cn } from "@/lib/utils";
  *  outside, the line unmoved): set tight, a g's tail hung under it unpainted,
  *  invisible. */
 const STEEL = cn(
-  "-mb-[0.25em] pb-[0.25em] bg-clip-text text-transparent [-webkit-background-clip:text]",
+  "-mb-[0.25em] bg-clip-text pb-[0.25em] text-transparent [-webkit-background-clip:text]",
   "bg-[linear-gradient(108deg,transparent_18%,rgb(255_255_255/0.75)_26%,transparent_34%,transparent_58%,rgb(255_255_255/0.45)_64%,transparent_71%),linear-gradient(180deg,#fdfdfe_0%,#cfd2d6_45%,#8a8e93_80%,#6e7277_100%)]",
-);
+)
 
 /** Solid: a card hides what is behind it, as a real one does, so its glass
  *  blurs nothing behind it (id-card, `--id-card-backdrop`). */
-const SOLID = "[--id-card-thickness:1] [--id-card-backdrop:none]";
+const SOLID = "[--id-card-thickness:1] [--id-card-backdrop:none]"
 
 /** A front card lies above every other: close under it a contact shadow, and a
  *  wider, softer one it casts on what lies under it, both the card's own (its
@@ -89,7 +89,7 @@ const FRONT = cn(
   SOLID,
   CORNER,
   "shadow-[0_0.75rem_1.5rem_-0.5rem_rgb(0_0_0/0.6),0_2.5rem_4rem_-1.5rem_rgb(0_0_0/0.5)]",
-);
+)
 
 /** The light drifting across the visitor's card while no hand is on it: the
  *  spot it falls on (`--px`, which the card's hologram and foil rim read) swept
@@ -97,14 +97,14 @@ const FRONT = cn(
  *  light moves and the card does not. The hand takes it over the moment it
  *  comes (HoloLight's own `--px`); under reduced motion it rests. */
 const IDLE =
-  "animate-[holo-idle_6s_ease-in-out_infinite_alternate] group-data-[hover]/holo:animate-none motion-reduce:animate-none";
+  "animate-[holo-idle_6s_ease-in-out_infinite_alternate] group-data-[hover]/holo:animate-none motion-reduce:animate-none"
 
 /** Whether the visitor's card has started becoming a profile: a link on it says
  *  where, so there is a profile to show. The stage gives way to it then. */
 function useForming(): boolean {
-  const chip = useChip();
-  const draft = useDraft();
-  return !chip?.u && filledLinks(draft).length > 0;
+  const chip = useChip()
+  const draft = useDraft()
+  return !chip?.u && filledLinks(draft).length > 0
 }
 
 // ── the visitor's card ──────────────────────────────────────────────────────
@@ -121,15 +121,15 @@ function useForming(): boolean {
  *  not move. The page is the same for everyone, so whose it is is known only in
  *  the browser (`useChip`), blank until then. */
 export function YourCard() {
-  const chip = useChip();
-  const draft = useDraft();
-  const { writing, open, close } = useWriting();
+  const chip = useChip()
+  const draft = useDraft()
+  const { writing, open, close } = useWriting()
   // Signed in with no address yet (their provider's handle was taken): the card
   // is taken up for them, to pick one.
-  const unnamed = !!chip && !chip.u;
+  const unnamed = !!chip && !chip.u
   useEffect(() => {
-    if (unnamed) open();
-  }, [unnamed, open]);
+    if (unnamed) open()
+  }, [unnamed, open])
   return (
     // At rest its foil rim shows a band, not a faint whole ring, and the light
     // drifting across it (`IDLE`) moves that band: what draws the eye to the
@@ -142,9 +142,7 @@ export function YourCard() {
     // full strength: the one card on the stage asking for the hand.
     <HoloLight
       className={cn(
-        `relative w-full [--holo-floor:0.15]
-        [&:not([data-hover])]:[--holo-floor:0.6]
-        [&:not([data-hover])_[data-slot=foil-edge]]:[--edge-floor:0.12]`,
+        `relative w-full [--holo-floor:0.15] [&:not([data-hover])]:[--holo-floor:0.6] [&:not([data-hover])_[data-slot=foil-edge]]:[--edge-floor:0.12]`,
         writing
           ? "[&:not([data-hover])_[data-slot=foil-edge]]:opacity-25"
           : "[&:not([data-hover])_[data-slot=foil-edge]]:opacity-80",
@@ -181,9 +179,7 @@ export function YourCard() {
               with no hand on it. */}
           <HoloLean
             pose="flat"
-            className="[transform:none]
-              group-data-[hover]/holo:[transform:var(--holo-lean)]
-              max-lg:group-data-[hover]/holo:[transform:none]"
+            className="[transform:none] group-data-[hover]/holo:[transform:var(--holo-lean)] max-lg:group-data-[hover]/holo:[transform:none]"
           >
             <div inert={!writing} className={IDLE}>
               <FillCard />
@@ -203,13 +199,12 @@ export function YourCard() {
               middle, never moved by what shows under it. */}
           <div
             className={cn(
-              `absolute inset-x-0 top-full mt-4 flex items-center justify-end
-                gap-4 transition-opacity`,
+              `absolute inset-x-0 top-full mt-4 flex items-center justify-end gap-4 transition-opacity`,
               !writing && "opacity-0",
             )}
           >
             {unnamed && (
-              <p className="mr-auto text-sm text-foreground/60">
+              <p className="mr-auto text-foreground/60 text-sm">
                 {"you're signed in. pick your address to finish."}
               </p>
             )}
@@ -221,8 +216,8 @@ export function YourCard() {
                 size="sm"
                 onClick={() =>
                   shape(false, () => {
-                    clearDraft();
-                    close();
+                    clearDraft()
+                    close()
                   })
                 }
                 icon={<RotateCcw />}
@@ -235,36 +230,36 @@ export function YourCard() {
         </>
       )}
     </HoloLight>
-  );
+  )
 }
 
 function FillCard() {
-  const draft = useDraft();
-  const handle = useHandleState(draft.handle);
+  const draft = useDraft()
+  const handle = useHandleState(draft.handle)
   // A blank card taken up comes with the caret on its name, blinking, so the
   // first thing it does is ask to be written on. Where there is a fine pointer
   // only: on a phone it would raise the keyboard over the page unasked.
-  const { writing } = useWriting();
-  const name = useRef<HTMLInputElement>(null);
+  const { writing } = useWriting()
+  const name = useRef<HTMLInputElement>(null)
   useEffect(() => {
     if (
       writing &&
       isBlank(readDraft()) &&
       matchMedia("(pointer: fine)").matches
     )
-      name.current?.focus({ preventScroll: true });
-  }, [writing]);
+      name.current?.focus({ preventScroll: true })
+  }, [writing])
   useGithubFill(
     draft.links.find((l) => l.platform === "github")?.value.trim() || null,
-  );
+  )
   // Signed out, claiming asks which way in, signs in, and `Claim` finishes on
   // the way back; signed in with no address yet, `Claim` finishes now.
-  const chip = useChip();
-  const claim = () => writeDraft({ claiming: true });
+  const chip = useChip()
+  const claim = () => writeDraft({ claiming: true })
   const signInToClaim = (provider: HandoffProvider) => {
-    claim();
-    return startSignIn(provider);
-  };
+    claim()
+    return startSignIn(provider)
+  }
   return (
     <IdCard
       heading="p"
@@ -309,7 +304,7 @@ function FillCard() {
         flair: <Links links={draft.links} />,
       }}
     />
-  );
+  )
 }
 
 /** The card fills itself from the visitor's GitHub once they give it (their
@@ -318,16 +313,16 @@ function FillCard() {
  *  one GitHub does not know, takes it back off. */
 function useGithubFill(login: string | null) {
   useEffect(() => {
-    const now = readDraft();
+    const now = readDraft()
     if (!login) {
-      if (now.auto) writeDraft(fill(now, null));
-      return;
+      if (now.auto) writeDraft(fill(now, null))
+      return
     }
-    if (now.auto?.login.toLowerCase() === login.toLowerCase()) return;
-    let live = true;
+    if (now.auto?.login.toLowerCase() === login.toLowerCase()) return
+    let live = true
     const wait = setTimeout(() => {
       void githubCard(login).then((found) => {
-        if (!live) return;
+        if (!live) return
         writeDraft(
           fill(
             readDraft(),
@@ -342,14 +337,14 @@ function useGithubFill(login: string | null) {
                 : [],
             },
           ),
-        );
-      });
-    }, 300);
+        )
+      })
+    }, 300)
     return () => {
-      live = false;
-      clearTimeout(wait);
-    };
-  }, [login]);
+      live = false
+      clearTimeout(wait)
+    }
+  }, [login])
 }
 
 /** The address as the card writes it, the handle typed after its slash, as wide
@@ -363,31 +358,29 @@ function Address({
   handle,
   claim,
 }: {
-  draft: Draft;
-  handle: ReturnType<typeof useHandleState>;
+  draft: Draft
+  handle: ReturnType<typeof useHandleState>
   claim:
     | { signedIn: true; onClaim: () => void }
     | {
-        signedIn: false;
-        onSignIn: (provider: HandoffProvider) => Promise<void>;
-      };
+        signedIn: false
+        onSignIn: (provider: HandoffProvider) => Promise<void>
+      }
 }) {
-  const free = handle?.state === "free";
-  const claimButton = useRef<HTMLButtonElement>(null);
+  const free = handle?.state === "free"
+  const claimButton = useRef<HTMLButtonElement>(null)
   const enter = claim.signedIn
     ? claim.onClaim
-    : () => claimButton.current?.click();
+    : () => claimButton.current?.click()
   // Wrong while it cannot be theirs: taken, or no username at all yet (too
   // short, forbidden); the field's rim says so (@ag/input, `aria-invalid`).
   const wrong =
     draft.handle !== "" &&
-    (handle?.state === "taken" || handle?.state === "invalid");
+    (handle?.state === "taken" || handle?.state === "invalid")
   return (
     // The field holds the address alone; what the address is (taken, or free and
     // the way to claim it) stands after it, on the same line, at its height.
-    <div
-      className="flex min-w-0 items-center gap-[0.5em] font-mono text-[3.2cqw]"
-    >
+    <div className="flex min-w-0 items-center gap-[0.5em] font-mono text-[3.2cqw]">
       <HandleOnCard
         label="your username"
         describedBy="handle-state"
@@ -415,7 +408,7 @@ function Address({
         ) : null}
       </span>
     </div>
-  );
+  )
 }
 
 /** The press that claims the address, in the card's line, at its type size. */
@@ -430,25 +423,25 @@ function ClaimButton(props: React.ComponentProps<typeof Button>) {
     >
       claim ↵
     </Button>
-  );
+  )
 }
 
 /** The card's links (id-card, `Flair`): each a press that opens it to change or
  *  take off, and "+" to add one, in a popover (@ag/popover): the platforms on
  *  offer by name (lib/card-edit, `OFFERED`), then the username there. */
 function Links({ links }: { links: DraftLink[] }) {
-  const rest = OFFERED.filter((p) => !links.some((l) => l.platform === p));
-  const mark = LINK_MARK;
+  const rest = OFFERED.filter((p) => !links.some((l) => l.platform === p))
+  const mark = LINK_MARK
   const save = (platform: LinkPlatform, value: string) => {
-    const others = readDraft().links.filter((l) => l.platform !== platform);
-    const next = value ? [...others, { platform, value }] : others;
+    const others = readDraft().links.filter((l) => l.platform !== platform)
+    const next = value ? [...others, { platform, value }] : others
     shape(
       next.some((l) => l.value.trim() !== ""),
       () => writeDraft({ links: next }),
-    );
-  };
+    )
+  }
   return (
-    <div role="group" aria-label="links" className={LINKS_ON_CARD}>
+    <fieldset aria-label="links" className={LINKS_ON_CARD}>
       {links.map((link) => (
         <LinkPopover
           key={link.platform}
@@ -482,8 +475,8 @@ function Links({ links }: { links: DraftLink[] }) {
           onSave={save}
         />
       )}
-    </div>
-  );
+    </fieldset>
+  )
 }
 
 /** One link's popover: with several platforms to choose from, the list first
@@ -496,27 +489,27 @@ function LinkPopover({
   link,
   onSave,
 }: {
-  trigger: React.ReactElement;
-  platforms: readonly LinkPlatform[];
-  link?: DraftLink;
-  onSave: (platform: LinkPlatform, value: string) => void;
+  trigger: React.ReactElement
+  platforms: readonly LinkPlatform[]
+  link?: DraftLink
+  onSave: (platform: LinkPlatform, value: string) => void
 }) {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(false)
   const [chosen, setChosen] = useState<LinkPlatform | null>(
     link?.platform ?? (platforms.length === 1 ? (platforms[0] ?? null) : null),
-  );
-  const [typed, setTyped] = useState(link?.value ?? "");
+  )
+  const [typed, setTyped] = useState(link?.value ?? "")
   return (
     <Popover
       open={open}
       onOpenChange={(next) => {
-        setOpen(next);
+        setOpen(next)
         if (next) {
           setChosen(
             link?.platform ??
               (platforms.length === 1 ? (platforms[0] ?? null) : null),
-          );
-          setTyped(link?.value ?? "");
+          )
+          setTyped(link?.value ?? "")
         }
       }}
     >
@@ -528,18 +521,15 @@ function LinkPopover({
           <form
             className="flex flex-col gap-3"
             onSubmit={(e) => {
-              e.preventDefault();
-              onSave(chosen, valueOf(chosen, typed));
-              setOpen(false);
+              e.preventDefault()
+              onSave(chosen, usernameIn(chosen, typed))
+              setOpen(false)
             }}
           >
             {/* The link named, and at its other end the one thing to do with
                 it besides writing: back to the list while adding, × to take it
                 off the card once it is on it. */}
-            <div
-              className="flex h-7 items-center gap-2 pl-1 text-sm
-                text-foreground/85 [&_svg]:stroke-[1.5]"
-            >
+            <div className="flex h-7 items-center gap-2 pl-1 text-foreground/85 text-sm [&_svg]:stroke-[1.5]">
               {!link && platforms.length > 1 && (
                 <Button
                   type="button"
@@ -561,8 +551,8 @@ function LinkPopover({
                   size="icon-sm"
                   aria-label={`remove ${chosen}`}
                   onClick={() => {
-                    onSave(link.platform, "");
-                    setOpen(false);
+                    onSave(link.platform, "")
+                    setOpen(false)
                   }}
                   className="ml-auto text-foreground/50"
                 >
@@ -589,7 +579,7 @@ function LinkPopover({
         )}
       </PopoverContent>
     </Popover>
-  );
+  )
 }
 
 /** The card becomes the account's: when the sign-in the address started comes
@@ -599,50 +589,50 @@ function LinkPopover({
  *  claims twice. A drafted handle refused (taken, invalid) is said; with no
  *  address to open, the card stays up to pick another. */
 function Claim() {
-  const chip = useChip();
-  const draft = useDraft();
-  const router = useRouter();
-  const sent = useRef(false);
+  const chip = useChip()
+  const draft = useDraft()
+  const router = useRouter()
+  const sent = useRef(false)
   useEffect(() => {
-    if (!chip || !draft.claiming || sent.current) return;
-    sent.current = true;
-    const { name, handle, country, links } = draft;
-    const written = { name, handle, country, links };
+    if (!chip || !draft.claiming || sent.current) return
+    sent.current = true
+    const { name, handle, country, links } = draft
+    const written = { name, handle, country, links }
     claimDraft(written).then(
       ({ username, stale, refused }) => {
         if (refused)
           toast.error(`${EMOJI_DOMAIN}/${written.handle}`, {
             description: refused,
-          });
+          })
         if (!username) {
-          sent.current = false;
-          return writeDraft({ claiming: false });
+          sent.current = false
+          return writeDraft({ claiming: false })
         }
-        clearDraft();
-        if (!stale) router.push(`/${username}`);
+        clearDraft()
+        if (!stale) router.push(`/${username}`)
       },
       // Still claiming: the next load tries again.
       (error) => {
-        sent.current = false;
-        throw error;
+        sent.current = false
+        throw error
       },
-    );
-  }, [chip, draft, router]);
-  return null;
+    )
+  }, [chip, draft, router])
+  return null
 }
 
 /** Each person's card read once per page (`/<username>/card.json`), kept so a
  *  render suspends on the same promise. */
-const cards = new Map<string, Promise<Holder>>();
+const cards = new Map<string, Promise<Holder>>()
 
 function cardHolder(username: string): Promise<Holder> {
-  let holder = cards.get(username);
+  let holder = cards.get(username)
   if (!holder) {
     holder = fetch(`/${username}/card.json`)
       .then((response) => {
         if (!response.ok)
-          throw new Error(`card of ${username}: HTTP ${response.status}`);
-        return response.json() as Promise<Card>;
+          throw new Error(`card of ${username}: HTTP ${response.status}`)
+        return response.json() as Promise<Card>
       })
       .then((card) => ({
         name: card.name,
@@ -657,10 +647,10 @@ function cardHolder(username: string): Promise<Holder> {
           name: link.name,
           url: link.url,
         })),
-      }));
-    cards.set(username, holder);
+      }))
+    cards.set(username, holder)
   }
-  return holder;
+  return holder
 }
 
 function OwnCard({ username }: { username: string }) {
@@ -671,7 +661,7 @@ function OwnCard({ username }: { username: string }) {
       className={FRONT}
       holder={use(cardHolder(username))}
     />
-  );
+  )
 }
 
 // ── the profile it becomes ──────────────────────────────────────────────────
@@ -682,26 +672,26 @@ function OwnCard({ username }: { username: string }) {
  *  are written (`previewPresence`), each answer faded in as it comes. Before an
  *  account exists, built in the browser and nowhere else. */
 export function Preview() {
-  const forming = useForming();
-  const draft = useDraft();
-  const key = JSON.stringify(filledLinks(draft));
+  const forming = useForming()
+  const draft = useDraft()
+  const key = JSON.stringify(filledLinks(draft))
   const [read, setRead] = useState<{ key: string; presence: Presence } | null>(
     null,
-  );
+  )
   useEffect(() => {
-    if (!forming) return;
-    let live = true;
+    if (!forming) return
+    let live = true
     const wait = setTimeout(() => {
       void previewPresence(JSON.parse(key)).then((presence) => {
-        if (live) setRead({ key, presence });
-      });
-    }, 400);
+        if (live) setRead({ key, presence })
+      })
+    }, 400)
     return () => {
-      live = false;
-      clearTimeout(wait);
-    };
-  }, [forming, key]);
-  if (!forming || !read) return null;
+      live = false
+      clearTimeout(wait)
+    }
+  }, [forming, key])
+  if (!forming || !read) return null
   return (
     <div
       key={read.key}
@@ -712,7 +702,7 @@ export function Preview() {
         presence={read.presence}
       />
     </div>
-  );
+  )
 }
 
 // ── the stage ───────────────────────────────────────────────────────────────
@@ -721,26 +711,26 @@ export function Preview() {
  *  ways it changes: taken up from where it waits by the stack, put back on
  *  starting over. Held by the stage, which lays the cards out by it. */
 const Writing = createContext<{
-  writing: boolean;
-  open: () => void;
-  close: () => void;
-} | null>(null);
+  writing: boolean
+  open: () => void
+  close: () => void
+} | null>(null)
 
 function useWriting() {
-  const writing = use(Writing);
-  if (!writing) throw new Error("the visitor's card is drawn outside Stage");
-  return writing;
+  const writing = use(Writing)
+  if (!writing) throw new Error("the visitor's card is drawn outside Stage")
+  return writing
 }
 
 /** How many cards lie under the pile's top one, each with how long its slow
  *  drift takes (globals.css, `card-float`), no two in step. */
-const UNDER = [9, 11, 10, 12, 9.5, 10.5, 11.5, 8.5] as const;
+const UNDER = [9, 11, 10, 12, 9.5, 10.5, 11.5, 8.5] as const
 
 /** Where the pile's far end lies, in the top card's widths across and heights
  *  up or down from its middle: the layout Adrian chose, fixed. The pile is
  *  composed on its own and never follows the visitor's card or the heading:
  *  moving either once reshuffled every card behind them. */
-const PILE_END = { x: -1.388, y: -0.606 };
+const PILE_END = { x: -1.388, y: -0.606 }
 
 /** The funnel the cards are carried along, lying on its side as a tornado
  *  blown over: its axis from the top card's middle to its far end
@@ -749,16 +739,16 @@ const PILE_END = { x: -1.388, y: -0.606 };
  *  of the axis) and narrowing to nothing at the tip, each card a step further
  *  along it, the steps lengthening a little as it goes (`ALONG`). */
 function end() {
-  return PILE_END;
+  return PILE_END
 }
-const MOUTH = 1;
-const TURN = 130;
-const ALONG = 0.85;
+const MOUTH = 1
+const TURN = 130
+const ALONG = 0.85
 
 /** Where the funnel's mouth is, as a share of the way from the top card to the
  *  tip: below nothing, so past the top card's right side, the mouth behind it
  *  and the spread round it on both sides. */
-const BEHIND = -0.3;
+const BEHIND = -0.3
 
 /** What keeps the funnel from being drawn with a ruler: each card a little off
  *  its spot on it, along (the top card's widths), across (its heights), and
@@ -772,46 +762,46 @@ const WOBBLE = [
   { along: -0.04, across: -0.03, turn: 3 },
   { along: 0.03, across: 0.02, turn: -3 },
   { along: 0, across: 0, turn: 1 },
-] as const;
+] as const
 
 /** One card's width under the top, a share of the top card's: smaller with
  *  depth, as it is further away. */
 function widthAt(depth: number) {
-  return 0.78 - 0.05 * depth;
+  return 0.78 - 0.05 * depth
 }
 
 /** A card under the top, in the funnel: its middle from the top card's, as
  *  shares of the top card's width and height, and its turn, in degrees, leaning
  *  as it swings, less as the funnel narrows. */
 function funneled(depth: number) {
-  const wobble = WOBBLE[depth - 1] as (typeof WOBBLE)[number];
-  const tip = end();
-  const t = (depth / UNDER.length) ** ALONG + wobble.along;
+  const wobble = WOBBLE[depth - 1] as (typeof WOBBLE)[number]
+  const tip = end()
+  const t = (depth / UNDER.length) ** ALONG + wobble.along
   // Its axis starts past the top card's right side (`BEHIND`), so the wide
   // mouth lies behind the top card, and runs left to the tip.
-  const along = BEHIND + (1 - BEHIND) * t;
+  const along = BEHIND + (1 - BEHIND) * t
   // The nearest swings up first, the next down, and so on round.
-  const swing = (TURN * depth - 220) * (Math.PI / 180);
-  const wide = MOUTH * (1 - t);
+  const swing = (TURN * depth - 220) * (Math.PI / 180)
+  const wide = MOUTH * (1 - t)
   return {
     dx: tip.x * along * 100,
     dy: (tip.y * along + wide * Math.sin(swing) + wobble.across) * 100,
     r: -9 * Math.cos(swing) * (1 - t) + wobble.turn,
-  };
+  }
 }
 
 /** The pile's room, in the top card's widths from its middle (both ways): from
  *  the visitor's card's middle to just past the top card's right side, from
  *  under the bar to a little under the top card's foot. */
-const ROOM = { left: -0.05, right: 0.45, top: -0.85, bottom: 0.3 };
+const ROOM = { left: -0.05, right: 0.45, top: -0.85, bottom: 0.3 }
 
 /** How much more room what holds still claims than one card under the top: the
  *  top card the most, the visitor's card's room less. */
-const CLAIM = { top: 0.2, visitor: 0.08 };
+const CLAIM = { top: 0.2, visitor: 0.08 }
 
 /** How much further up the cards above the top card lie than where they
  *  settle: the pile reaching toward the window's top. */
-const UPWARD = 1.25;
+const UPWARD = 1.25
 
 /** The cards' spots: the room shared out evenly among them, each card at the
  *  middle of its own share (a centroidal Voronoi tessellation, by Lloyd's
@@ -822,66 +812,66 @@ const UPWARD = 1.25;
  *  bunched on another, no part of the room left bare. Then the nearest to the
  *  top card is the nearest in depth, and so on out. Once, on first use (the
  *  slots it reads are defined below it). */
-let settledSpots: { dx: number; dy: number; r: number }[] | null = null;
+let settledSpots: { dx: number; dy: number; r: number }[] | null = null
 
 function settled() {
-  if (settledSpots) return settledSpots;
-  const ratio = 85.6 / 53.98;
-  const tip = end();
+  if (settledSpots) return settledSpots
+  const ratio = 85.6 / 53.98
+  const tip = end()
   // Card shapes: across in the top card's widths, down in its heights.
   const still = [
     { u: 0, v: 0, claim: CLAIM.top },
     { u: tip.x, v: tip.y, claim: CLAIM.visitor },
-  ];
-  const left = tip.x + ROOM.left;
-  const right = ROOM.right;
-  const top = ROOM.top * ratio;
-  const bottom = ROOM.bottom * ratio;
+  ]
+  const left = tip.x + ROOM.left
+  const right = ROOM.right
+  const top = ROOM.top * ratio
+  const bottom = ROOM.bottom * ratio
   const free = UNDER.map((_, i) => {
-    const { dx, dy } = funneled(i + 1);
+    const { dx, dy } = funneled(i + 1)
     return {
       u: Math.min(right, Math.max(left, dx / 100)),
       v: Math.min(bottom, Math.max(top, dy / 100)),
-    };
-  });
-  const samples: { u: number; v: number }[] = [];
+    }
+  })
+  const samples: { u: number; v: number }[] = []
   for (let i = 0; i < 90; i++)
     for (let j = 0; j < 60; j++)
       samples.push({
         u: left + ((right - left) * (i + 0.5)) / 90,
         v: top + ((bottom - top) * (j + 0.5)) / 60,
-      });
+      })
   for (let round = 0; round < 80; round++) {
-    const sums = free.map(() => ({ u: 0, v: 0, n: 0 }));
+    const sums = free.map(() => ({ u: 0, v: 0, n: 0 }))
     for (const sample of samples) {
-      let nearest = -1;
-      let best = Number.POSITIVE_INFINITY;
+      let nearest = -1
+      let best = Number.POSITIVE_INFINITY
       for (const [i, card] of still.entries()) {
         const d =
-          (sample.u - card.u) ** 2 + (sample.v - card.v) ** 2 - card.claim;
+          (sample.u - card.u) ** 2 + (sample.v - card.v) ** 2 - card.claim
         if (d < best) {
-          best = d;
-          nearest = -1 - i;
+          best = d
+          nearest = -1 - i
         }
       }
       for (const [i, card] of free.entries()) {
-        const d = (sample.u - card.u) ** 2 + (sample.v - card.v) ** 2;
+        const d = (sample.u - card.u) ** 2 + (sample.v - card.v) ** 2
         if (d < best) {
-          best = d;
-          nearest = i;
+          best = d
+          nearest = i
         }
       }
-      if (nearest < 0) continue;
-      const sum = sums[nearest] as (typeof sums)[number];
-      sum.u += sample.u;
-      sum.v += sample.v;
-      sum.n += 1;
+      if (nearest < 0) continue
+      const sum = sums[nearest] as (typeof sums)[number]
+      sum.u += sample.u
+      sum.v += sample.v
+      sum.n += 1
     }
     for (const [i, card] of free.entries()) {
-      const sum = sums[i] as (typeof sums)[number];
-      if (sum.n === 0) continue;
-      card.u = sum.u / sum.n;
-      card.v = sum.v / sum.n;
+      const sum = sums[i] as (typeof sums)[number]
+      if (sum.n === 0) continue
+      card.u = sum.u / sum.n
+      card.v = sum.v / sum.n
     }
   }
   settledSpots = free
@@ -892,8 +882,8 @@ function settled() {
       // cards above the top card a quarter further up), never further down.
       dy: card.v * (card.v < 0 ? UPWARD : 1) * 100,
       r: (WOBBLE[i] as (typeof WOBBLE)[number]).turn * 1.5,
-    }));
-  return settledSpots;
+    }))
+  return settledSpots
 }
 
 /** One card under the top: as deep as it lies in the pile (`depth`, 1 the
@@ -910,7 +900,7 @@ function settled() {
 function under(depth: number, float: number) {
   const { dx, dy, r } = settled()[depth - 1] as ReturnType<
     typeof settled
-  >[number];
+  >[number]
   return {
     "--lw": `${(widthAt(depth) * 100).toFixed(1)}%`,
     "--dx": `${dx.toFixed(2)}%`,
@@ -920,7 +910,7 @@ function under(depth: number, float: number) {
     "--bl": `${(4 + 1 * (depth - 1)).toFixed(2)}px`,
     animationDuration: `${float}s`,
     animationDelay: `-${(float * depth) / UNDER.length}s`,
-  } as React.CSSProperties;
+  } as React.CSSProperties
 }
 
 /** What a card of the pile wears to part the shimmer under the hand
@@ -929,7 +919,7 @@ const PARTS = {
   onPointerEnter: (e: React.PointerEvent<HTMLElement>) =>
     partShimmer(e.currentTarget),
   onPointerLeave: () => partShimmer(null),
-};
+}
 
 /** A card of the pile under the hand, every one alike, the top one too: it comes
  *  toward the reader (nearer in depth, never up the page, so it never rises over
@@ -938,7 +928,7 @@ const PARTS = {
  *  it comes off the table. Eased both ways, so it follows with a little weight
  *  and settles back flat. */
 const PICKED =
-  "relative transition-[transform,box-shadow] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/card:shadow-[0_2rem_3.5rem_-0.75rem_rgb(0_0_0/0.7)] group-hover/card:[transform:perspective(1200px)_translateZ(2rem)_rotateY(calc((var(--px,0.5)-0.5)*18deg))_rotateX(calc((var(--py,0.5)-0.5)*-14deg))] motion-reduce:transition-none motion-reduce:group-hover/card:[transform:none]";
+  "relative transition-[transform,box-shadow] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/card:shadow-[0_2rem_3.5rem_-0.75rem_rgb(0_0_0/0.7)] group-hover/card:[transform:perspective(1200px)_translateZ(2rem)_rotateY(calc((var(--px,0.5)-0.5)*18deg))_rotateX(calc((var(--py,0.5)-0.5)*-14deg))] motion-reduce:transition-none motion-reduce:group-hover/card:[transform:none]"
 
 /** Real e-id cards in one pile, the maker's on top and then the newest whole ones
  *  (a photo, a name, a country): the top one flat on the table as the rest are,
@@ -948,8 +938,8 @@ const PICKED =
  *  shimmer round it (landing/shimmer-part). `away`, the pile set back while
  *  the visitor writes. What a card is, shown whole. */
 function Pile({ people, away }: { people: Holder[]; away: boolean }) {
-  const [top, ...rest] = people;
-  if (!top) throw new Error("the home's pile has nobody to show");
+  const [top, ...rest] = people
+  if (!top) throw new Error("the home's pile has nobody to show")
   return (
     <div className="relative w-full">
       {rest
@@ -964,12 +954,7 @@ function Pile({ people, away }: { people: Holder[]; away: boolean }) {
             // focus, but keeps its depth in the pile: never over a card that
             // lies above it. On one column the top card stands alone: there is
             // no room round it to spread into.
-            className="group/card max-lg:hidden absolute
-              top-[calc(50%+var(--dy))] left-[calc(50%+var(--dx))] z-0 w-(--lw)
-              animate-[card-float_ease-in-out_infinite_alternate] blur-(--bl)
-              [transform:translate(-50%,-50%)_rotate(var(--r))]
-              [transition:filter_1s_cubic-bezier(0.22,1,0.36,1)] hover:blur-none
-              motion-reduce:animate-none motion-reduce:transition-none"
+            className="group/card absolute top-[calc(50%+var(--dy))] left-[calc(50%+var(--dx))] z-0 w-(--lw) animate-[card-float_ease-in-out_infinite_alternate] blur-(--bl) [transform:translate(-50%,-50%)_rotate(var(--r))] [transition:filter_1s_cubic-bezier(0.22,1,0.36,1)] hover:blur-none motion-reduce:animate-none motion-reduce:transition-none max-lg:hidden"
             style={under(depth, UNDER[depth - 1] as number)}
           >
             {/* Its own light, so it alone tilts toward the hand on it, its
@@ -987,9 +972,7 @@ function Pile({ people, away }: { people: Holder[]; away: boolean }) {
                   aria-hidden
                   className={cn(
                     CORNER,
-                    `pointer-events-none absolute inset-0 bg-background
-                    opacity-(--fade) transition-opacity duration-1000
-                    group-hover/card:opacity-0`,
+                    `pointer-events-none absolute inset-0 bg-background opacity-(--fade) transition-opacity duration-1000 group-hover/card:opacity-0`,
                   )}
                 />
               </div>
@@ -1000,11 +983,7 @@ function Pile({ people, away }: { people: Holder[]; away: boolean }) {
           own time, so the pile moves as one loose thing. Under the shimmer
           with the rest of the pile (z-0 below its z-[5]): only the visitor's
           card stands over it. */}
-      <div
-        className="relative z-0
-          animate-[card-float_10s_ease-in-out_infinite_alternate]
-          [animation-delay:-3s] motion-reduce:animate-none"
-      >
+      <div className="relative z-0 animate-[card-float_10s_ease-in-out_infinite_alternate] [animation-delay:-3s] motion-reduce:animate-none">
         {/* Its light, carried with it. */}
         {!away && <SubjectLight />}
         {/* Dropped on the table a little askew, as the rest lie, never square
@@ -1015,9 +994,7 @@ function Pile({ people, away }: { people: Holder[]; away: boolean }) {
           <HoloLight>
             <div
               {...PARTS}
-              className="group/card blur-[3.2px] transition-[filter]
-                duration-1000 ease-[cubic-bezier(0.22,1,0.36,1)] hover:blur-none
-                motion-reduce:transition-none"
+              className="group/card blur-[3.2px] transition-[filter] duration-1000 ease-[cubic-bezier(0.22,1,0.36,1)] hover:blur-none motion-reduce:transition-none"
             >
               <div className={cn(CORNER, PICKED)}>
                 <IdCard
@@ -1032,9 +1009,7 @@ function Pile({ people, away }: { people: Holder[]; away: boolean }) {
                   aria-hidden
                   className={cn(
                     CORNER,
-                    `pointer-events-none absolute inset-0 bg-background
-                    opacity-30 transition-opacity duration-1000
-                    group-hover/card:opacity-0`,
+                    `pointer-events-none absolute inset-0 bg-background opacity-30 transition-opacity duration-1000 group-hover/card:opacity-0`,
                   )}
                 />
               </div>
@@ -1043,29 +1018,29 @@ function Pile({ people, away }: { people: Holder[]; away: boolean }) {
         </div>
       </div>
     </div>
-  );
+  )
 }
 
 /** A spot on the stage: its centre across in % of the stage's width and up or
  *  down in rem from the stage's centre, its width in rem, its turn on the table
  *  in degrees. */
-type Slot = { x: number; y: number; w: number; rz: number };
+type Slot = { x: number; y: number; w: number; rz: number }
 
 /** The middle: the pile's top card at rest, right of centre, the pile spread
  *  from it leftward toward the visitor's card (`UNDER`), so the two stand
  *  centred as one group; the visitor's card once taken up. */
-const MIDDLE = { x: 34, y: 9, w: 34, rz: 0 } as const;
+const MIDDLE = { x: 34, y: 9, w: 34, rz: 0 } as const
 
 /** Where the visitor's blank card waits: on the left where the eye starts, a
  *  little above the pile's middle, lying over the pile's deepest cards (they are
  *  under the shimmer, it over), so it reads as the nearest card on the table.
  *  Taken up, the pile goes to lie where it lay: the two trade spots. */
-const WAITING = { x: -32, y: 2, w: 33, rz: 0 } as const;
+const WAITING = { x: -32, y: 2, w: 33, rz: 0 } as const
 
 /** Where the pile goes once the visitor's card is taken up: pushed back from
  *  the middle the visitor's card grows into, further right and a little down,
  *  smaller as further away. */
-const PUSHED = { x: MIDDLE.x + 12, y: MIDDLE.y + 3, w: 26, rz: 0 } as const;
+const PUSHED = { x: MIDDLE.x + 12, y: MIDDLE.y + 3, w: 26, rz: 0 } as const
 
 /** A slot as the variables a card is laid out by (`PLACED`, `PILED`). */
 function at({ x, y, w, rz }: Slot): React.CSSProperties {
@@ -1074,13 +1049,13 @@ function at({ x, y, w, rz }: Slot): React.CSSProperties {
     "--l": `calc(50% + ${x}%)`,
     "--t": `calc(50% + ${y}rem)`,
     "--rz": `${rz}deg`,
-  } as React.CSSProperties;
+  } as React.CSSProperties
 }
 
 /** One easing for every card changing spot on the stage: slow, settling at the
  *  end, as a card slid across a table. */
 const SLIDE =
-  "duration-[900ms] ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none";
+  "duration-[900ms] ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none"
 
 /** The visitor's card, laid out by its slot on a wide screen: placed by left and
  *  top in the stage, by its centre, turned on the table. On one column, in the
@@ -1089,7 +1064,7 @@ const PLACED = cn(
   "lg:absolute lg:top-(--t) lg:left-(--l) lg:w-(--w) lg:[transform:translate(-50%,-50%)_rotate(var(--rz))]",
   "transition-[left,top,width,transform]",
   SLIDE,
-);
+)
 
 /** The pile, laid out by its slot without a transform (its left and top taken
  *  back by half its size, a card being 1.586 times as wide as tall): a transform
@@ -1099,7 +1074,7 @@ const PILED = cn(
   "lg:absolute lg:top-[calc(var(--t)-var(--w)/3.172)] lg:left-[calc(var(--l)-var(--w)/2)] lg:w-(--w)",
   "transition-[left,top,width,filter]",
   SLIDE,
-);
+)
 
 /** THE HERO'S STAGE: real cards in one pile in the middle (`Pile`), the top one
  *  whole and in the light, the rest spread down under the shimmer; apart from
@@ -1118,45 +1093,45 @@ export function Stage({
   preview,
   children,
 }: {
-  people: Holder[];
+  people: Holder[]
   /** the profile the card makes, beside it once it forms */
-  preview: React.ReactNode;
+  preview: React.ReactNode
   /** what the visitor holds: their card */
-  children: React.ReactNode;
+  children: React.ReactNode
 }) {
-  const own = useChip()?.u;
-  const draft = useDraft();
-  const forming = useForming();
-  const [asked, setAsked] = useState(false);
-  const writing = Boolean(own) || asked || !isBlank(draft);
+  const own = useChip()?.u
+  const draft = useDraft()
+  const forming = useForming()
+  const [asked, setAsked] = useState(false)
+  const writing = Boolean(own) || asked || !isBlank(draft)
   // Taken up and still blank, it goes back where it waited on Esc or a press
   // anywhere off it: nothing written is ever put down. A popup open on it (the
   // country picker, a link) takes its own Esc and presses first.
-  const yours = useRef<HTMLDivElement>(null);
-  const putBack = asked && !own && isBlank(draft);
+  const yours = useRef<HTMLDivElement>(null)
+  const putBack = asked && !own && isBlank(draft)
   useEffect(() => {
-    if (!putBack) return;
-    const popupOpen = () => document.querySelector("[data-popup-open]");
+    if (!putBack) return
+    const popupOpen = () => document.querySelector("[data-popup-open]")
     const key = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && !popupOpen()) setAsked(false);
-    };
+      if (e.key === "Escape" && !popupOpen()) setAsked(false)
+    }
     const press = (e: PointerEvent) => {
-      const target = e.target as Element;
-      if (popupOpen() || target.closest("[data-side]")) return;
-      if (!yours.current?.contains(target)) setAsked(false);
-    };
+      const target = e.target as Element
+      if (popupOpen() || target.closest("[data-side]")) return
+      if (!yours.current?.contains(target)) setAsked(false)
+    }
     // Captured, so a popup is still open when it is asked about: its own Esc
     // closes it after.
-    document.addEventListener("keydown", key, true);
-    document.addEventListener("pointerdown", press, true);
+    document.addEventListener("keydown", key, true)
+    document.addEventListener("pointerdown", press, true)
     return () => {
-      document.removeEventListener("keydown", key, true);
-      document.removeEventListener("pointerdown", press, true);
-    };
-  }, [putBack]);
+      document.removeEventListener("keydown", key, true)
+      document.removeEventListener("pointerdown", press, true)
+    }
+  }, [putBack])
   const pile = people
     .filter((holder) => holder.username !== own)
-    .slice(0, UNDER.length + 1);
+    .slice(0, UNDER.length + 1)
   return (
     <Writing
       value={{
@@ -1173,8 +1148,7 @@ export function Stage({
           "relative w-full",
           forming
             ? cn(PROFILE.grid, PROFILE.frame)
-            : `flex flex-col items-center gap-12 py-16 sm:py-20 lg:block
-              lg:h-[50rem] lg:py-0`,
+            : `flex flex-col items-center gap-12 py-16 sm:py-20 lg:block lg:h-[50rem] lg:py-0`,
         )}
       >
         {/* The page's heading over the card waiting under it, flush with its
@@ -1182,28 +1156,18 @@ export function Stage({
             visitor writes, and is only read aloud once the card is a profile. */}
         <div
           className={cn(
-            `pointer-events-none flex flex-col gap-[0.9rem] transition-opacity
-            duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] max-lg:items-center
-            lg:absolute lg:bottom-[calc(100%-var(--t)+var(--w)/3.172+3.5rem)]
-            lg:left-[calc(var(--l)-var(--w)/2)] lg:z-20 lg:w-max`,
+            `pointer-events-none flex flex-col gap-[0.9rem] transition-opacity duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] max-lg:items-center lg:absolute lg:bottom-[calc(100%-var(--t)+var(--w)/3.172+3.5rem)] lg:left-[calc(var(--l)-var(--w)/2)] lg:z-20 lg:w-max`,
             forming ? "sr-only" : writing && "opacity-0",
           )}
           style={at(WAITING)}
         >
-          <h1
-            className="flex items-center gap-[0.3em]
-              text-[clamp(2.75rem,5vw,4.75rem)] leading-none font-normal
-              tracking-[-0.035em]"
-          >
+          <h1 className="flex items-center gap-[0.3em] font-normal text-[clamp(2.75rem,5vw,4.75rem)] leading-none tracking-[-0.035em]">
             {/* The logo before the name, as the bar draws it. A little taller
                 than its capitals. */}
             <BrandLogo className="size-[0.95em]" />
             <span className={STEEL}>e-ID</span>
           </h1>
-          <p
-            className="text-[clamp(1.125rem,1.6vw,1.5rem)] leading-snug
-              font-light tracking-[-0.01em] text-foreground/60"
-          >
+          <p className="font-light text-[clamp(1.125rem,1.6vw,1.5rem)] text-foreground/60 leading-snug tracking-[-0.01em]">
             your digital identity
           </p>
         </div>
@@ -1217,7 +1181,7 @@ export function Stage({
             className={cn(
               PILED,
               "relative w-full max-w-[34rem] lg:max-w-none",
-              writing && "lg:blur-[3px] max-lg:hidden",
+              writing && "max-lg:hidden lg:blur-[3px]",
             )}
             style={at(writing ? PUSHED : MIDDLE)}
           >
@@ -1252,8 +1216,7 @@ export function Stage({
             className={cn(
               !forming &&
                 !writing &&
-                `animate-[card-float_10s_ease-in-out_infinite_alternate]
-                motion-reduce:animate-none`,
+                `animate-[card-float_10s_ease-in-out_infinite_alternate] motion-reduce:animate-none`,
             )}
           >
             {children}
@@ -1265,14 +1228,14 @@ export function Stage({
         )}
       </div>
     </Writing>
-  );
+  )
 }
 
 /** What the home shows under its hero (the sign-ups), only while the visitor's
  *  card is a card: once it is becoming their profile, the page is that profile
  *  and nothing else, as a profile's page is. */
 export function UnlessForming({ children }: { children: React.ReactNode }) {
-  return useForming() ? null : children;
+  return useForming() ? null : children
 }
 
 /** A change to the card that may turn it into a profile or back (`forming`
@@ -1281,12 +1244,12 @@ export function UnlessForming({ children }: { children: React.ReactNode }) {
  *  across; React draws the change inside it (`flushSync`). Otherwise, and under
  *  reduced motion or where there are no view transitions, just made. */
 function shape(forming: boolean, change: () => void) {
-  const was = filledLinks(readDraft()).length > 0;
+  const was = filledLinks(readDraft()).length > 0
   if (
     was === forming ||
     !document.startViewTransition ||
     matchMedia("(prefers-reduced-motion: reduce)").matches
   )
-    return change();
-  document.startViewTransition(() => flushSync(change));
+    return change()
+  document.startViewTransition(() => flushSync(change))
 }

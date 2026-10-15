@@ -2,7 +2,6 @@
 
 import { useRender } from "@base-ui/react/use-render"
 import * as React from "react"
-import { cn } from "@/lib/utils"
 import {
   type Material,
   MaterialProvider,
@@ -21,6 +20,7 @@ import {
   schemeOf,
 } from "@/components/ui/material-glass"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { cn } from "@/lib/utils"
 
 // THE CONTAINER: a surface that holds one thing. shadcn's Card, by another name (in
 // this registry a name is a family, and `card-gallery`, `card-link` are their own
@@ -186,7 +186,7 @@ const BODY = "flex flex-col gap-4 p-5"
  *  front of the card's own colour read as one flat box with a line in it, and one
  *  lighter than the card made the chosen tab a dark hole in it (Adrian, 2026-10-12). */
 const PLAIN_FRONT = cn(
-  "border-border bg-background bg-[linear-gradient(rgb(0_0_0/0.04),rgb(0_0_0/0.04)),linear-gradient(var(--color-card),var(--color-card))]",
+  "border-border bg-[linear-gradient(rgb(0_0_0/0.04),rgb(0_0_0/0.04)),linear-gradient(var(--color-card),var(--color-card))] bg-background",
   "scheme-dark:bg-[linear-gradient(rgb(0_0_0/0.25),rgb(0_0_0/0.25)),linear-gradient(var(--color-card),var(--color-card))]",
 )
 
@@ -549,7 +549,7 @@ export function Panel({
               // the words a glass's body gives what it holds, and its own
               // movement (a card lifting under the pointer), which its light
               // follows on the same ease (PANEL_LIGHT).
-              "isolate text-foreground scheme-light:text-zinc-950 [transition:translate_500ms_cubic-bezier(0.22,1,0.36,1),scale_500ms_cubic-bezier(0.22,1,0.36,1)] motion-reduce:[transition:none]"
+              "isolate scheme-light:text-zinc-950 text-foreground [transition:translate_500ms_cubic-bezier(0.22,1,0.36,1),scale_500ms_cubic-bezier(0.22,1,0.36,1)] motion-reduce:[transition:none]"
             : partsFrame
               ? "shadow-sm"
               : "border border-border bg-card text-card-foreground shadow-sm",

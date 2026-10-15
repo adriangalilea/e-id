@@ -1,16 +1,16 @@
 import { Heart, MessageCircle } from "lucide-react"
 import type * as React from "react"
-import { cn } from "@/lib/utils"
+import { CardLink } from "@/components/ui/card-link"
+import { Image } from "@/components/ui/image"
+import { Video } from "@/components/ui/video"
+import { WebPreview } from "@/components/ui/web-preview"
 import type {
   TweetAuthor,
   Tweet as TweetFacts,
   TweetMedia,
   TweetRun,
 } from "@/lib/tweet-data"
-import { CardLink } from "@/components/ui/card-link"
-import { Image } from "@/components/ui/image"
-import { Video } from "@/components/ui/video"
-import { WebPreview } from "@/components/ui/web-preview"
+import { cn } from "@/lib/utils"
 
 export interface TweetProps {
   tweet: TweetFacts
@@ -107,7 +107,7 @@ function Media({ media, url }: { media: TweetMedia[]; url: string }) {
     <div
       data-slot="tweet-media"
       className={cn(
-        "grid aspect-(--ag-tweet-aspect) gap-0.5 clip-rounded rounded-2xl border border-border",
+        "clip-rounded grid aspect-(--ag-tweet-aspect) gap-0.5 rounded-2xl border border-border",
         GRID[media.length],
       )}
       style={{ "--ag-tweet-aspect": String(aspect) } as React.CSSProperties}

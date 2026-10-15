@@ -1,33 +1,33 @@
-import Link from "next/link";
-import { ArrowUpRight } from "lucide-react";
-import { RelativeTime } from "@/components/ui/relative-time";
-import { CountryFlag } from "@/components/country";
-import { GUTTER } from "@/components/frame";
-import { SURFACE } from "@/components/surface";
-import { getLatestUsers } from "@/lib/data";
-import { cn } from "@/lib/utils";
+import { ArrowUpRight } from "lucide-react"
+import Link from "next/link"
+import { CountryFlag } from "@/components/country"
+import { GUTTER } from "@/components/frame"
+import { SURFACE } from "@/components/surface"
+import { RelativeTime } from "@/components/ui/relative-time"
+import { getLatestUsers } from "@/lib/data"
+import { cn } from "@/lib/utils"
 
 /** The home's latest sign-ups as a ledger on its own panel: a row per person, their
  *  number, flag, name and handle, and when they came. Two columns on a wide screen,
  *  read down the first and then the second; one on a phone. No inner scroller: the
  *  list is the page. */
 export async function LatestUsers() {
-  const users = await getLatestUsers();
-  const rows = Math.ceil(users.length / 2);
+  const users = await getLatestUsers()
+  const rows = Math.ceil(users.length / 2)
   return (
     <section
       aria-labelledby="latest-sign-ups"
       className={cn("mx-auto w-full max-w-6xl py-16 sm:py-20", GUTTER)}
     >
       <div className={cn(SURFACE, "overflow-hidden")}>
-        <header className="flex h-12 items-center justify-between border-b border-white/10 bg-black/20 px-4 sm:px-5">
+        <header className="flex h-12 items-center justify-between border-white/10 border-b bg-black/20 px-4 sm:px-5">
           <h2
             id="latest-sign-ups"
-            className="font-mono text-xs text-foreground/60"
+            className="font-mono text-foreground/60 text-xs"
           >
             latest sign-ups
           </h2>
-          <span className="font-mono text-xs text-foreground/40 tabular-nums">
+          <span className="font-mono text-foreground/40 text-xs tabular-nums">
             {String(users.length).padStart(2, "0")}
           </span>
         </header>
@@ -43,7 +43,7 @@ export async function LatestUsers() {
             <li
               key={user.id}
               className={cn(
-                "border-b border-white/[0.07]",
+                "border-white/[0.07] border-b",
                 // The second column's rows carry the rule between the columns.
                 index >= rows && "lg:border-l lg:border-l-white/10",
               )}
@@ -63,7 +63,7 @@ export async function LatestUsers() {
                   <span className="truncate text-base leading-tight">
                     {user.name || `@${user.username}`}
                   </span>
-                  <span className="truncate font-mono text-[11px] leading-tight text-foreground/45">
+                  <span className="truncate font-mono text-[11px] text-foreground/45 leading-tight">
                     @{user.username}
                   </span>
                 </span>
@@ -84,5 +84,5 @@ export async function LatestUsers() {
         </ol>
       </div>
     </section>
-  );
+  )
 }

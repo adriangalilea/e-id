@@ -22,7 +22,6 @@
 // row out from under them; the vertical thumb's track runs between them.
 
 import * as React from "react"
-import { cn } from "@/lib/utils"
 import {
   type Material,
   type Scheme,
@@ -30,6 +29,7 @@ import {
   useSurfaceScheme,
 } from "@/components/ui/material"
 import { glassVariants, schemeOf } from "@/components/ui/material-glass"
+import { cn } from "@/lib/utils"
 
 /** What a scroller wearing thumbs adds to hide the browser's own bar. */
 export const NO_SCROLLBAR =
@@ -404,7 +404,7 @@ function Thumb({
                 // A pill as thick as the thumb: its radius half of 6 px, of 8 under
                 // the hand.
                 "[--glass-radius:3px] group-hover/thumb:[--glass-radius:4px] group-data-held/thumb:[--glass-radius:4px]",
-                "[--glass-moves:width_150ms,height_150ms] [--glass-change-duration:150ms] [--glass-tint:rgb(255_255_255/0.4)] scheme-dark:[--glass-tint:rgb(255_255_255/0.3)] group-hover/thumb:[--glass-rim:1.8]! group-data-held/thumb:[--glass-rim:1.8]!",
+                "[--glass-change-duration:150ms] [--glass-moves:width_150ms,height_150ms] [--glass-tint:rgb(255_255_255/0.4)] scheme-dark:[--glass-tint:rgb(255_255_255/0.3)] group-hover/thumb:[--glass-rim:1.8]! group-data-held/thumb:[--glass-rim:1.8]!",
               ]
             : "rounded-full bg-foreground/35 transition-[width,height,background-color] duration-150 group-hover/thumb:bg-foreground/55 group-data-held/thumb:bg-foreground/55 motion-reduce:transition-none",
           y

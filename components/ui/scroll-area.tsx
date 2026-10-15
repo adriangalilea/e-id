@@ -2,11 +2,8 @@
 
 import { useRender } from "@base-ui/react/use-render"
 import * as React from "react"
+import { NO_SCROLLBAR, ScrollThumbs } from "@/components/ui/scroll-thumb"
 import { cn } from "@/lib/utils"
-import {
-  NO_SCROLLBAR,
-  ScrollThumbs,
-} from "@/components/ui/scroll-thumb"
 import "./edge-fade"
 
 // THE CAPPED SCROLLER, the one everything that scrolls inside the page scrolls with

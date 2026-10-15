@@ -7,9 +7,9 @@ import {
   transformerNotationWordHighlight,
 } from "@shikijs/transformers"
 import { type BundledLanguage, codeToHtml } from "shiki"
-import { CODE_THEMES, linesOf } from "@/lib/code-tokens"
 import { Copy } from "@/components/ui/copy"
 import { Glass } from "@/components/ui/material-glass"
+import { CODE_THEMES, linesOf } from "@/lib/code-tokens"
 import "./code.css"
 import "./edge-fade"
 

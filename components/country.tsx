@@ -1,9 +1,9 @@
-import { countryName as nameOf, Flag } from "@/components/ui/flag";
-import { cn } from "@/lib/utils";
+import { Flag, countryName as nameOf } from "@/components/ui/flag"
+import { cn } from "@/lib/utils"
 
 /** "XX" is the country of a user who never set one, the only code with no flag:
  *  every other comes from the country picker's list, all of which @ag/flag draws. */
-const UNKNOWN = "XX";
+const UNKNOWN = "XX"
 
 /** A person's country as its flag (@ag/flag), beside their name. One never set
  *  keeps the flag's room as a blank printed field, solid like the flag it stands
@@ -13,10 +13,10 @@ export function CountryFlag({
   label,
   className,
 }: {
-  country: string;
+  country: string
   /** "" when the country's name is written beside it. */
-  label?: string;
-  className?: string;
+  label?: string
+  className?: string
 }) {
   if (country === UNKNOWN)
     return (
@@ -27,11 +27,11 @@ export function CountryFlag({
           className,
         )}
       />
-    );
-  return <Flag code={country} label={label} className={className} />;
+    )
+  return <Flag code={country} label={label} className={className} />
 }
 
 /** The country's name as a profile states it, or nothing for one never set. */
 export function countryName(country: string): string | undefined {
-  return country === UNKNOWN ? undefined : nameOf(country);
+  return country === UNKNOWN ? undefined : nameOf(country)
 }

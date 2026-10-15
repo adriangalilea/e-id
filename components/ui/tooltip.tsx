@@ -30,7 +30,6 @@
 
 import { Tooltip as Base } from "@base-ui/react/tooltip"
 import type * as React from "react"
-import { cn } from "@/lib/utils"
 import { Kbd } from "@/components/ui/kbd"
 import {
   type Material,
@@ -41,6 +40,7 @@ import {
 } from "@/components/ui/material"
 import { glassVariants, schemeOf } from "@/components/ui/material-glass"
 import { usePortalTarget } from "@/components/ui/portal"
+import { cn } from "@/lib/utils"
 
 /** Shares the waiting between the tooltips inside it: after one opens, the next opens
  *  at once, so a row of controls reads as you move along it. */
@@ -154,7 +154,7 @@ export function TooltipContent({
               ? "block p-3"
               : // A name stays on one line; an explanation wraps at a reading width.
                 "flex max-w-72 items-center gap-2 px-2 py-1",
-            "origin-(--transform-origin) data-[ending-style]:scale-95 data-[ending-style]:opacity-0 data-[starting-style]:scale-95 data-[starting-style]:opacity-0",
+            "origin-(--transform-origin) data-[ending-style]:scale-95 data-[starting-style]:scale-95 data-[ending-style]:opacity-0 data-[starting-style]:opacity-0",
             schemeOf(s),
             m === "glass"
               ? [

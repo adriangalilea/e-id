@@ -2,7 +2,6 @@
 
 import { SmilePlus } from "lucide-react"
 import * as React from "react"
-import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import {
   type Material,
@@ -17,6 +16,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
+import { cn } from "@/lib/utils"
 
 // REACTIONS UNDER A POST (GitHub, Slack, Telegram): each emoji given, how many gave
 // it, and whether you did. A pill is a toggle (`Button` with `aria-pressed`): press

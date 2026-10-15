@@ -1,11 +1,11 @@
-"use client";
+"use client"
 
-import { Check, CircleAlert, Clipboard } from "lucide-react";
-import { EmojiDomain } from "@/components/brand";
-import { ON_CARD } from "@/components/card-shape";
-import { useCopy } from "@/components/ui/copy";
-import { EMOJI_DOMAIN } from "@/lib/const";
-import { cn } from "@/lib/utils";
+import { Check, CircleAlert, Clipboard } from "lucide-react"
+import { EmojiDomain } from "@/components/brand"
+import { ON_CARD } from "@/components/card-shape"
+import { useCopy } from "@/components/ui/copy"
+import { EMOJI_DOMAIN } from "@/lib/const"
+import { cn } from "@/lib/utils"
 
 /** A card's address IS its copy: the line of text is the button, and the copy
  *  glyph shows only while a hand is on it, focus is on it, or it has just copied.
@@ -13,10 +13,8 @@ import { cn } from "@/lib/utils";
  *  part. The state is spoken in the accessible name (`useCopy`, @ag/copy). Sized
  *  in cqw, as everything on the card is. */
 export function CopyAddress({ username }: { username: string }) {
-  const { copied, copy, error } = useCopy(
-    `https://${EMOJI_DOMAIN}/${username}`,
-  );
-  const glyph = error ? <CircleAlert /> : copied ? <Check /> : <Clipboard />;
+  const { copied, copy, error } = useCopy(`https://${EMOJI_DOMAIN}/${username}`)
+  const glyph = error ? <CircleAlert /> : copied ? <Check /> : <Clipboard />
   return (
     <button
       type="button"
@@ -34,7 +32,7 @@ export function CopyAddress({ username }: { username: string }) {
         ON_CARD,
         // Dimmed as one shape (`opacity` over an opaque ink), so the copy
         // glyph's crossing strokes never paint twice.
-        "group/copy -mx-[1.2cqw] flex min-w-0 cursor-pointer items-center gap-[1.2cqw] self-start px-[1.2cqw] py-[0.6cqw] font-mono text-(length:--card-head) text-foreground opacity-50 transition-[opacity,background-color] hover:bg-white/[0.06] hover:opacity-85 data-copied:opacity-85",
+        "group/copy text-(length:--card-head) -mx-[1.2cqw] flex min-w-0 cursor-pointer items-center gap-[1.2cqw] self-start px-[1.2cqw] py-[0.6cqw] font-mono text-foreground opacity-50 transition-[opacity,background-color] hover:bg-white/[0.06] hover:opacity-85 data-copied:opacity-85",
       )}
     >
       <EmojiDomain path={`/${username}`} className="truncate" />
@@ -45,5 +43,5 @@ export function CopyAddress({ username }: { username: string }) {
         {glyph}
       </span>
     </button>
-  );
+  )
 }

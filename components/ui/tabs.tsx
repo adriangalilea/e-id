@@ -2,7 +2,6 @@
 
 import { Tabs as BaseTabs } from "@base-ui/react/tabs"
 import * as React from "react"
-import { cn } from "@/lib/utils"
 import {
   type Material,
   MaterialProvider,
@@ -16,6 +15,7 @@ import {
   schemeOf,
 } from "@/components/ui/material-glass"
 import { usePanelBody, usePanelHead } from "@/components/ui/panel"
+import { cn } from "@/lib/utils"
 
 // Views of one thing, one shown at a time (Base UI's tabs: the arrow keys move
 // between tabs, Home and End to the ends, one Tab stop for the list; each panel is
@@ -114,7 +114,7 @@ const SEGMENT_IN_HEAD: Record<TabsSize, string> = {
  *  the rule), its tabs as tall as the strip; pulled left by its first tab's padding
  *  so that label starts where the body does. */
 const LINE_IN_HEAD = cn(
-  "self-stretch items-stretch after:hidden [&>[data-slot=tabs-tab]]:h-auto",
+  "items-stretch self-stretch after:hidden [&>[data-slot=tabs-tab]]:h-auto",
 )
 const LINE_PULL: Record<TabsSize, string> = {
   sm: "-ml-2",
@@ -144,7 +144,7 @@ const FOLDER = "pt-2 [&>[data-slot=tabs-indicator]]:hidden"
 const FOLDER_TAB = cn(
   "in-data-folder:rounded-t-lg in-data-folder:border in-data-folder:border-transparent in-data-folder:border-b-0",
   "in-data-folder:data-active:relative in-data-folder:data-active:top-px in-data-folder:data-active:border-border",
-  "in-data-folder:data-active:bg-background in-data-folder:data-active:bg-[linear-gradient(var(--color-card),var(--color-card))]",
+  "in-data-folder:data-active:bg-[linear-gradient(var(--color-card),var(--color-card))] in-data-folder:data-active:bg-background",
 )
 
 /** The tabs' size and variant, for the list inside (material and scheme ride the
@@ -347,7 +347,7 @@ export function TabsList({
           "top-0 left-0 h-(--active-tab-height) w-(--active-tab-width) translate-x-(--active-tab-left) translate-y-(--active-tab-top)",
           glass
             ? [glassLift, GLASS_LIFT[size]]
-            : "rounded-md bg-background shadow-[0_1px_2px_rgb(0_0_0/0.15)] ring-1 ring-foreground/8 scheme-dark:bg-foreground/12",
+            : "rounded-md bg-background scheme-dark:bg-foreground/12 shadow-[0_1px_2px_rgb(0_0_0/0.15)] ring-1 ring-foreground/8",
         ]
       : [
           "bottom-0 left-0 h-0.5 w-(--active-tab-width) translate-x-(--active-tab-left) rounded-full",
@@ -433,7 +433,7 @@ export type TabsTabProps = Omit<
  *  back the tab's gap so an icon alone sits centred. Still in the tab's text while
  *  closed, so the tab keeps its accessible name. */
 const FOLDED_WORDS = cn(
-  "grid grid-cols-[0fr] -ml-1.5 opacity-0 transition-[grid-template-columns,margin,opacity]",
+  "-ml-1.5 grid grid-cols-[0fr] opacity-0 transition-[grid-template-columns,margin,opacity]",
   GLIDE,
   "group-data-active/tab:ml-0 group-data-active/tab:grid-cols-[1fr] group-data-active/tab:opacity-100",
 )
@@ -450,7 +450,7 @@ export function TabsTab({ icon, className, children, ...props }: TabsTabProps) {
     <BaseTabs.Tab
       data-slot="tabs-tab"
       className={cn(
-        "group/tab inline-flex shrink-0 cursor-pointer items-center justify-center gap-1.5 font-medium whitespace-nowrap transition-[color,opacity] duration-200 select-none data-disabled:cursor-not-allowed data-disabled:opacity-40 [&_svg]:size-3.5 [&_svg]:shrink-0",
+        "group/tab inline-flex shrink-0 cursor-pointer select-none items-center justify-center gap-1.5 whitespace-nowrap font-medium transition-[color,opacity] duration-200 data-disabled:cursor-not-allowed data-disabled:opacity-40 [&_svg]:size-3.5 [&_svg]:shrink-0",
         variant === "segment"
           ? [SEGMENT_TAB[size], glass ? "rounded-full" : "rounded-md"]
           : [LINE_TAB[size], FOLDER_TAB],

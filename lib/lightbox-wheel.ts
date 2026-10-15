@@ -24,11 +24,7 @@ import {
   wheelPx,
   zoomAt,
 } from "@/lib/lightbox-motion"
-import {
-  type Phase,
-  phaseFeed,
-  phaseStart,
-} from "@/lib/lightbox-wheel-phase"
+import { type Phase, phaseFeed, phaseStart } from "@/lib/lightbox-wheel-phase"
 
 /** `pass`: the guard rejected this stream (it opened on a coast), so it is ignored
  *  whole. `dead`: the lightbox is leaving, nothing that follows can mean anything. */

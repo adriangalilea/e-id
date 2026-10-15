@@ -14,14 +14,10 @@ import {
   X,
 } from "lucide-react"
 import type * as React from "react"
-import { cn } from "@/lib/utils"
-import {
-  parseVcard,
-  type VCard,
-  type VCardField,
-} from "@/lib/vcard-core"
 import { Image } from "@/components/ui/image"
 import { glassVariants } from "@/components/ui/material-glass"
+import { cn } from "@/lib/utils"
+import { parseVcard, type VCard, type VCardField } from "@/lib/vcard-core"
 import "./contacts-app.css"
 
 // APPLE'S CONTACTS APP ON AN IPHONE (iOS 26), drawn from a vCard (lib/vcard-core):
@@ -321,7 +317,7 @@ function Header({ card }: { card: VCard }) {
     <div className="flex flex-col items-center">
       <div
         data-slot="contacts-app-photo"
-        className="grid size-(--ag-contacts-photo) shrink-0 place-items-center overflow-hidden rounded-full bg-white/20 font-semibold text-(length:--ag-contacts-monogram) text-white"
+        className="text-(length:--ag-contacts-monogram) grid size-(--ag-contacts-photo) shrink-0 place-items-center overflow-hidden rounded-full bg-white/20 font-semibold text-white"
       >
         {card.photo ? (
           <Image src={card.photo} alt="" className="size-full object-cover" />
@@ -329,13 +325,13 @@ function Header({ card }: { card: VCard }) {
           initials(card.name)
         )}
       </div>
-      <div className="mt-(--ag-contacts-photo-gap) px-(--ag-contacts-margin) text-center font-bold text-(length:--ag-contacts-title) leading-(--ag-contacts-title-leading) tracking-[-0.01em] text-white [text-shadow:0_1px_8px_rgb(0_0_0/0.18)]">
+      <div className="text-(length:--ag-contacts-title) mt-(--ag-contacts-photo-gap) px-(--ag-contacts-margin) text-center font-bold text-white leading-(--ag-contacts-title-leading) tracking-[-0.01em] [text-shadow:0_1px_8px_rgb(0_0_0/0.18)]">
         {card.name}
       </div>
       {/* The line under the name: the company, else the nickname, as iOS 26's
           poster sets it. */}
       {(card.org ?? card.nickname) && (
-        <div className="px-(--ag-contacts-margin) text-center font-semibold text-(length:--ag-contacts-sub) leading-(--ag-contacts-sub-leading) text-white">
+        <div className="text-(length:--ag-contacts-sub) px-(--ag-contacts-margin) text-center font-semibold text-white leading-(--ag-contacts-sub-leading)">
           {card.org ?? card.nickname}
         </div>
       )}
@@ -432,7 +428,7 @@ function TabBar() {
             )}
           >
             <Icon className="size-(--ag-contacts-tab-icon)" strokeWidth={2.2} />
-            <span className="font-semibold text-(length:--ag-contacts-tab-word) leading-none">
+            <span className="text-(length:--ag-contacts-tab-word) font-semibold leading-none">
               {word}
             </span>
           </div>
@@ -471,7 +467,7 @@ function ImportSheet({ card, pressed }: { card: VCard; pressed: boolean }) {
         // Its top corners cut by a path, never `overflow-hidden`: a clip with
         // uneven corners makes Chrome drop the masks of the glass inside it
         // (device-frame.css, the display).
-        className="absolute inset-x-0 top-(--ag-contacts-sheet-top) bottom-0 rounded-t-(--ag-contacts-sheet-radius) bg-(image:--ag-contacts-poster) [clip-path:inset(0_round_var(--ag-contacts-sheet-radius)_var(--ag-contacts-sheet-radius)_0_0)]"
+        className="bg-(image:--ag-contacts-poster) absolute inset-x-0 top-(--ag-contacts-sheet-top) bottom-0 rounded-t-(--ag-contacts-sheet-radius) [clip-path:inset(0_round_var(--ag-contacts-sheet-radius)_var(--ag-contacts-sheet-radius)_0_0)]"
       >
         <div
           data-slot="contacts-app-scroller"
@@ -561,7 +557,7 @@ function PreviewSheet({ card, scroll }: { card: VCard; scroll: number }) {
     <div
       data-slot="contacts-app-sheet"
       // Its top corners cut by a path, never `overflow-hidden` (ImportSheet).
-      className="absolute inset-x-0 top-(--ag-contacts-sheet-top) bottom-0 rounded-t-(--ag-contacts-sheet-radius) bg-(image:--ag-contacts-poster) [clip-path:inset(0_round_var(--ag-contacts-sheet-radius)_var(--ag-contacts-sheet-radius)_0_0)]"
+      className="bg-(image:--ag-contacts-poster) absolute inset-x-0 top-(--ag-contacts-sheet-top) bottom-0 rounded-t-(--ag-contacts-sheet-radius) [clip-path:inset(0_round_var(--ag-contacts-sheet-radius)_var(--ag-contacts-sheet-radius)_0_0)]"
       style={
         { "--ag-contacts-photo": cqw(PREVIEW_PHOTO) } as React.CSSProperties
       }
@@ -709,7 +705,7 @@ export function ContactsApp({
       data-slot="contacts-app"
       data-view={view}
       className={cn(
-        "@container absolute inset-0 overflow-hidden font-[family-name:-apple-system,BlinkMacSystemFont,system-ui,sans-serif] antialiased select-none",
+        "@container absolute inset-0 select-none overflow-hidden font-[family-name:-apple-system,BlinkMacSystemFont,system-ui,sans-serif] antialiased",
         sheet(view) ? "bg-black" : "bg-(image:--ag-contacts-poster)",
         className,
       )}

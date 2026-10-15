@@ -17,7 +17,9 @@ import {
   Users,
 } from "lucide-react"
 import type * as React from "react"
-import { cn } from "@/lib/utils"
+import { CardLink } from "@/components/ui/card-link"
+import { Image } from "@/components/ui/image"
+import { Reactions } from "@/components/ui/reactions"
 import type {
   GithubComment,
   GithubCommit,
@@ -32,9 +34,7 @@ import type {
   GithubThreadHeader,
   GithubUser,
 } from "@/lib/github-data"
-import { CardLink } from "@/components/ui/card-link"
-import { Image } from "@/components/ui/image"
-import { Reactions } from "@/components/ui/reactions"
+import { cn } from "@/lib/utils"
 
 const ANCHOR = { target: "_blank", rel: "noopener noreferrer" } as const
 const CARD =
@@ -233,15 +233,15 @@ function Label({ label }: { label: GithubLabel }) {
  *  itself; a long line scrolls in it as on GitHub. */
 const MARKDOWN = cn(
   "break-words leading-relaxed [&>:first-child]:mt-0 [&>:last-child]:mb-0",
-  "[&_p]:my-2 [&_ul]:my-2 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:my-2 [&_ol]:list-decimal [&_ol]:pl-5 [&_li]:my-0.5",
+  "[&_li]:my-0.5 [&_ol]:my-2 [&_ol]:list-decimal [&_ol]:pl-5 [&_p]:my-2 [&_ul]:my-2 [&_ul]:list-disc [&_ul]:pl-5",
   "[&_h1]:mt-4 [&_h1]:mb-2 [&_h1]:font-semibold [&_h1]:text-lg [&_h2]:mt-4 [&_h2]:mb-2 [&_h2]:font-semibold [&_h3]:mt-3 [&_h3]:mb-1 [&_h3]:font-semibold",
-  "[&_a]:text-[#0969da] [&_a:hover]:underline dark:[&_a]:text-[#4493f8]",
+  "[&_a:hover]:underline [&_a]:text-[#0969da] dark:[&_a]:text-[#4493f8]",
   "[&_code]:rounded-md [&_code]:bg-foreground/8 [&_code]:px-1 [&_code]:py-0.5 [&_code]:font-mono [&_code]:text-[0.85em]",
   "[&_pre]:my-3 [&_pre]:overflow-x-auto [&_pre]:rounded-lg [&_pre]:bg-foreground/5 [&_pre]:p-3 [&_pre]:font-mono [&_pre]:text-[13px] [&_pre]:leading-normal [&_pre_code]:bg-transparent [&_pre_code]:p-0 [&_pre_code]:text-inherit",
   "[&_blockquote]:my-2 [&_blockquote]:border-foreground/20 [&_blockquote]:border-l-4 [&_blockquote]:pl-3 [&_blockquote]:text-foreground/60",
-  "[&_img]:max-w-full [&_hr]:my-4 [&_hr]:border-border",
-  "[&_.pl-k]:text-[#cf222e] [&_.pl-s]:text-[#0a3069] [&_.pl-c1]:text-[#0550ae] [&_.pl-en]:text-[#6639ba] [&_.pl-c]:text-[#59636e] [&_.pl-smi]:text-inherit",
-  "dark:[&_.pl-k]:text-[#ff7b72] dark:[&_.pl-s]:text-[#a5d6ff] dark:[&_.pl-c1]:text-[#79c0ff] dark:[&_.pl-en]:text-[#d2a8ff] dark:[&_.pl-c]:text-[#9198a1]",
+  "[&_hr]:my-4 [&_hr]:border-border [&_img]:max-w-full",
+  "[&_.pl-c1]:text-[#0550ae] [&_.pl-c]:text-[#59636e] [&_.pl-en]:text-[#6639ba] [&_.pl-k]:text-[#cf222e] [&_.pl-s]:text-[#0a3069] [&_.pl-smi]:text-inherit",
+  "dark:[&_.pl-c1]:text-[#79c0ff] dark:[&_.pl-c]:text-[#9198a1] dark:[&_.pl-en]:text-[#d2a8ff] dark:[&_.pl-k]:text-[#ff7b72] dark:[&_.pl-s]:text-[#a5d6ff]",
 )
 
 function Markdown({ html }: { html: string }) {
@@ -676,7 +676,10 @@ const GAP = 3
 const STEP = CELL + GAP
 const LEFT = 28
 const TOP = 16
-const MONTH = new Intl.DateTimeFormat("en", { month: "short", timeZone: "UTC" })
+const MONTH = new Intl.DateTimeFormat("en", {
+  month: "short",
+  timeZone: "UTC",
+})
 
 function dayTitle(d: GithubDay): string {
   const when = date(`${d.date}T00:00:00Z`)

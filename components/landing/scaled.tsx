@@ -1,7 +1,7 @@
-"use client";
+"use client"
 
-import { useLayoutEffect, useRef, useState } from "react";
-import { cn } from "@/lib/utils";
+import { useLayoutEffect, useRef, useState } from "react"
+import { cn } from "@/lib/utils"
 
 /** A scene drawn at one design size (`width` × `height` CSS px) and scaled as a
  *  whole to the width it is given: a browser's chrome, a phone's type, the gaps
@@ -15,23 +15,23 @@ export function Scaled({
   style,
   children,
 }: {
-  width: number;
-  height: number;
-  className?: string;
-  style?: React.CSSProperties;
-  children: React.ReactNode;
+  width: number
+  height: number
+  className?: string
+  style?: React.CSSProperties
+  children: React.ReactNode
 }) {
-  const box = useRef<HTMLDivElement>(null);
-  const [scale, setScale] = useState(0);
+  const box = useRef<HTMLDivElement>(null)
+  const [scale, setScale] = useState(0)
   useLayoutEffect(() => {
-    const el = box.current;
-    if (!el) return;
+    const el = box.current
+    if (!el) return
     const resize = new ResizeObserver(([entry]) => {
-      if (entry) setScale(entry.contentRect.width / width);
-    });
-    resize.observe(el);
-    return () => resize.disconnect();
-  }, [width]);
+      if (entry) setScale(entry.contentRect.width / width)
+    })
+    resize.observe(el)
+    return () => resize.disconnect()
+  }, [width])
   return (
     <div
       ref={box}
@@ -50,5 +50,5 @@ export function Scaled({
         {children}
       </div>
     </div>
-  );
+  )
 }

@@ -7,8 +7,8 @@ import {
   useRef,
   useState,
 } from "react"
-import { cn } from "@/lib/utils"
 import { PreviewPicker } from "@/components/ui/preview-picker"
+import { cn } from "@/lib/utils"
 
 export interface CardGalleryProps
   extends Omit<
@@ -156,7 +156,7 @@ export function CardGallery({
         seek(next)
       }}
       className={cn(
-        "group/gallery w-full min-w-0 @container/gallery [--card:min(88cqw,72rem)] [--card-bg:color-mix(in_oklab,var(--foreground)_8%,var(--background))] [--gap:2rem] outline-none",
+        "group/gallery @container/gallery w-full min-w-0 outline-none [--card-bg:color-mix(in_oklab,var(--foreground)_8%,var(--background))] [--card:min(88cqw,72rem)] [--gap:2rem]",
         className,
       )}
     >
@@ -164,7 +164,7 @@ export function CardGallery({
         <div
           data-slot="card-gallery-viewport"
           className={cn(
-            "relative overflow-x-clip py-8 touch-pan-y touch-pinch-zoom",
+            "relative touch-pan-y touch-pinch-zoom overflow-x-clip py-8",
             classNames?.viewport,
           )}
           style={

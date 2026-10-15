@@ -25,7 +25,8 @@
 
 import { HandGrab, MousePointer2 } from "lucide-react"
 import { useSyncExternalStore } from "react"
-import { cn } from "@/lib/utils"
+import { KbdCap } from "@/components/ui/kbd"
+import { type Material, useMaterial } from "@/components/ui/material"
 import {
   combo,
   keyName,
@@ -33,8 +34,7 @@ import {
   type Platform,
   platformOf,
 } from "@/lib/keys"
-import { KbdCap } from "@/components/ui/kbd"
-import { type Material, useMaterial } from "@/components/ui/material"
+import { cn } from "@/lib/utils"
 
 /** What a pointer can do, as people write it. */
 export const POINTERS = [

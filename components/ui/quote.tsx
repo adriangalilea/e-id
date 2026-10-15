@@ -1,4 +1,8 @@
-import { cn } from "@/lib/utils"
+import { Avatar } from "@/components/ui/avatar"
+import { AvatarPortrait } from "@/components/ui/avatar-portrait"
+import { Image } from "@/components/ui/image"
+import type { Material, Scheme } from "@/components/ui/material"
+import { QuoteSurface } from "@/components/ui/quote-surface"
 import {
   ATTRIB_GAP,
   assert,
@@ -35,11 +39,7 @@ import {
   quoteSet,
   SIZE_MAX,
 } from "@/lib/quote-card"
-import { Avatar } from "@/components/ui/avatar"
-import { AvatarPortrait } from "@/components/ui/avatar-portrait"
-import { Image } from "@/components/ui/image"
-import type { Material, Scheme } from "@/components/ui/material"
-import { QuoteSurface } from "@/components/ui/quote-surface"
+import { cn } from "@/lib/utils"
 
 export type QuoteVariant = "card" | "feature" | "prose"
 
@@ -177,7 +177,7 @@ export function Quote({
         )}
         style={{ "--ag-quote-ink": ink } as React.CSSProperties}
       >
-        <Mark className="left-[0.8em] top-[1.089em] h-[0.95em] opacity-30" />
+        <Mark className="top-[1.089em] left-[0.8em] h-[0.95em] opacity-30" />
         <blockquote
           data-slot="quote-body"
           className={cn(WORDS, "ms-[1.2em] text-foreground/92")}
@@ -218,7 +218,7 @@ export function Quote({
         variant="feature"
         material={material}
         scheme={scheme}
-        className={cn("relative m-0 @container px-8 py-6", className)}
+        className={cn("@container relative m-0 px-8 py-6", className)}
         style={
           {
             "--ag-quote-ink": ink,
@@ -234,13 +234,13 @@ export function Quote({
           } as React.CSSProperties
         }
       >
-        <Mark className="left-8 top-6 h-(--ag-quote-mark) opacity-(--ag-quote-mark-fill) blur-(--ag-quote-soften)" />
+        <Mark className="top-6 left-8 h-(--ag-quote-mark) opacity-(--ag-quote-mark-fill) blur-(--ag-quote-soften)" />
         <blockquote
           data-slot="quote-body"
           className={cn(
             WORDS,
             MEASURED,
-            "ms-(--ag-quote-indent) pt-(--ag-quote-climb) text-(length:--ag-quote-size) leading-(--ag-quote-line) text-foreground/92",
+            "text-(length:--ag-quote-size) ms-(--ag-quote-indent) pt-(--ag-quote-climb) text-foreground/92 leading-(--ag-quote-line)",
           )}
         >
           {body}
@@ -316,7 +316,7 @@ export function Quote({
       data-slot="quote"
       data-variant="card"
       className={cn(
-        "relative m-0 @container aspect-(--ag-quote-aspect) overflow-hidden rounded-lg bg-(image:--ag-quote-ground) text-foreground",
+        "@container bg-(image:--ag-quote-ground) relative m-0 aspect-(--ag-quote-aspect) overflow-hidden rounded-lg text-foreground",
         className,
       )}
       style={
@@ -357,14 +357,14 @@ export function Quote({
         // Decorative: the name below it is the accessible attribution.
         <Image
           data-slot="quote-portrait"
-          className="absolute top-0 left-(--ag-quote-slot) size-(--ag-quote-square) max-w-none object-cover mask-(--ag-quote-dissolve)"
+          className="mask-(--ag-quote-dissolve) absolute top-0 left-(--ag-quote-slot) size-(--ag-quote-square) max-w-none object-cover"
           src={author.avatar}
           alt=""
         />
       )}
       {/* The ghost, in the picture's own colour so it belongs to the photograph rather
           than to the type. It takes no space: the words are composed over it. */}
-      <Mark className="left-(--ag-quote-margin) top-(--ag-quote-edge) h-(--ag-quote-mark) opacity-(--ag-quote-mark-fill) blur-(--ag-quote-soften)" />
+      <Mark className="top-(--ag-quote-edge) left-(--ag-quote-margin) h-(--ag-quote-mark) opacity-(--ag-quote-mark-fill) blur-(--ag-quote-soften)" />
       {/* The words are CENTRED in the band the mark and the attribution leave, so the air
           around them never depends on how long the quote is. The band's floor is the
           attribution's CAP, not its baseline: the still reserves (CAP+DESC)·nameSize
@@ -376,7 +376,7 @@ export function Quote({
         className={cn(
           WORDS,
           MEASURED,
-          "absolute left-(--ag-quote-indent) top-(--ag-quote-edge) bottom-(--ag-quote-floor) flex w-(--ag-quote-column) flex-col justify-center text-(length:--ag-quote-size) leading-(--ag-quote-line) text-foreground",
+          "text-(length:--ag-quote-size) absolute top-(--ag-quote-edge) bottom-(--ag-quote-floor) left-(--ag-quote-indent) flex w-(--ag-quote-column) flex-col justify-center text-foreground leading-(--ag-quote-line)",
         )}
       >
         {body}
@@ -387,7 +387,7 @@ export function Quote({
       <By
         className={cn(
           BY,
-          "absolute left-(--ag-quote-margin) bottom-(--ag-quote-edge) m-0 gap-(--ag-quote-by-gap) text-(length:--ag-quote-name)",
+          "text-(length:--ag-quote-name) absolute bottom-(--ag-quote-edge) left-(--ag-quote-margin) m-0 gap-(--ag-quote-by-gap)",
         )}
         nameClassName="text-[length:inherit]"
         dateClassName="text-(length:--ag-quote-date)"

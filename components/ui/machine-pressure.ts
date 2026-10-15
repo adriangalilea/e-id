@@ -1,7 +1,4 @@
-import type {
-  AmbientBudget,
-  AmbientPressure,
-} from "@/lib/ambient-budget"
+import type { AmbientBudget, AmbientPressure } from "@/lib/ambient-budget"
 
 /** The Compute Pressure API, as much of it as the budgets read (not in TypeScript's DOM
  *  types yet). */

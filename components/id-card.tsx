@@ -1,43 +1,43 @@
-import { BrandMark } from "@/components/brand";
-import { ON_CARD } from "@/components/card-shape";
-import { CopyAddress } from "@/components/copy-address";
-import { CardSave } from "@/components/save-contact";
-import { CountryFlag } from "@/components/country";
-import { FoilEdge, Holo } from "@/components/ui/holo";
+import { BrandMark } from "@/components/brand"
+import { ON_CARD } from "@/components/card-shape"
+import { CopyAddress } from "@/components/copy-address"
+import { CountryFlag } from "@/components/country"
+import { CardSave } from "@/components/save-contact"
+import { FoilEdge, Holo } from "@/components/ui/holo"
 import {
   HoverCard,
   HoverCardContent,
   HoverCardTrigger,
-} from "@/components/ui/hover-card";
-import { Image } from "@/components/ui/image";
-import { Glass } from "@/components/ui/material-glass";
-import { SocialProfile } from "@/components/ui/social-profile";
-import type { ProfileFacts } from "@/lib/social-profile-core";
-import { CARD_LAYOUT, cqw } from "@/lib/card-layout";
-import { nameFit } from "@/lib/name-fit";
-import { type HoloPrint, MARK_EMBLEM } from "@/lib/holo";
-import type { LinkPlatform } from "@/db/schema";
-import { type CardLink, handleOf, valueOf } from "@/lib/link-names";
-import { getLinkIcon } from "@/lib/links";
-import { cn } from "@/lib/utils";
+} from "@/components/ui/hover-card"
+import { Image } from "@/components/ui/image"
+import { Glass } from "@/components/ui/material-glass"
+import { SocialProfile } from "@/components/ui/social-profile"
+import type { LinkPlatform } from "@/db/schema"
+import { CARD_LAYOUT, cqw } from "@/lib/card-layout"
+import { type HoloPrint, MARK_EMBLEM } from "@/lib/holo"
+import { type CardLink, handleOf, usernameIn } from "@/lib/link-names"
+import { getLinkIcon } from "@/lib/links"
+import { nameFit } from "@/lib/name-fit"
+import type { ProfileFacts } from "@/lib/social-profile-core"
+import { cn } from "@/lib/utils"
 
-export type { HoloPrint };
+export type { HoloPrint }
 
 /** Who a card is for. A profile's own fields, or the home's sample for "you". */
 export type Holder = {
-  name: string | null;
-  username: string;
-  image: string | null;
-  country: string;
-  bio: string | null;
+  name: string | null
+  username: string
+  image: string | null
+  country: string
+  bio: string | null
   /** Their public links, the card's flair. */
-  links?: HolderLink[];
-};
+  links?: HolderLink[]
+}
 
 /** A link as the card draws it (lib/link-names, `CardLink`), and who they are
  *  behind it where it was read as a profile (lib/presence `profiles`), shown
  *  behind its mark. */
-export type HolderLink = CardLink & { profile?: ProfileFacts };
+export type HolderLink = CardLink & { profile?: ProfileFacts }
 
 /** THE KNOCKOUT: what is written on the card stays readable over its print, as a
  *  real ID clears its security print around the holder's data. Every glyph and
@@ -45,19 +45,19 @@ export type HolderLink = CardLink & { profile?: ProfileFacts };
  *  right where the writing is and nowhere else. Text shadows reach the words; the
  *  icons, being SVG, take the same halo as a drop shadow. */
 const KNOCKOUT =
-  "[text-shadow:0_0_0.5cqw_rgb(14_14_16),0_0_1.2cqw_rgb(14_14_16)] [&_svg]:drop-shadow-[0_0_0.6cqw_rgb(14_14_16)]";
+  "[text-shadow:0_0_0.5cqw_rgb(14_14_16),0_0_1.2cqw_rgb(14_14_16)] [&_svg]:drop-shadow-[0_0_0.6cqw_rgb(14_14_16)]"
 
 /** An ID-1 card, the size of every ID and bank card (ISO/IEC 7810): 85.6 by 53.98
  *  mm, its corners 3.18 mm round. Everything on the card is a share of its width
  *  (cqw), so it is the same card at any size. */
-const ID1_RATIO = "85.6/53.98";
-const ID1_RADIUS = `${(3.18 / 85.6) * 100}cqw`;
+const ID1_RATIO = "85.6/53.98"
+const ID1_RADIUS = `${(3.18 / 85.6) * 100}cqw`
 
 /** The hologram's print in the card's own unit (@ag/holo, `--holo-print-unit`):
  *  its tiles keep the share of the card they have on a 34rem (544px) card, the
  *  size they were drawn at, so the print grows and shrinks with the photo, the
  *  name and every word on the card, one physical thing at any size. */
-const PRINT_UNIT = `${100 / 544}cqw`;
+const PRINT_UNIT = `${100 / 544}cqw`
 
 /** The face, square: the avatar GitHub gave, or with none the mark itself, the
  *  empty photo slot it draws. */
@@ -66,11 +66,11 @@ function Portrait({
   stand,
   className,
 }: {
-  holder: Holder;
+  holder: Holder
   /** Drawn where there is no photo, instead of the mark (`CardSlots.photo`). */
-  stand?: React.ReactNode;
+  stand?: React.ReactNode
   /** Its size and shape where a layout wants another than 30 cqw square. */
-  className?: string;
+  className?: string
 }) {
   return (
     <div
@@ -86,7 +86,7 @@ function Portrait({
         (stand ?? <BrandMark className="h-1/2 text-white/30" />)
       )}
     </div>
-  );
+  )
 }
 
 /** The ghost image an ID prints beside its portrait: the same face again, as a
@@ -96,10 +96,10 @@ function Portrait({
  *  horizontal lines (one pixel of line, two of gap), dissolving to nothing at its
  *  edges, the two masks intersected. */
 const GHOST_MASK =
-  "[mask-image:radial-gradient(closest-side,black_35%,transparent),repeating-linear-gradient(to_bottom,black_0_1px,transparent_1px_3px)] [mask-composite:intersect]";
+  "[mask-image:radial-gradient(closest-side,black_35%,transparent),repeating-linear-gradient(to_bottom,black_0_1px,transparent_1px_3px)] [mask-composite:intersect]"
 
 function Ghost({ holder }: { holder: Holder }) {
-  if (!holder.image) return null;
+  if (!holder.image) return null
   return (
     <Image
       src={holder.image}
@@ -110,16 +110,19 @@ function Ghost({ holder }: { holder: Holder }) {
         GHOST_MASK,
       )}
     />
-  );
+  )
 }
 
 /** A link's profile from what the link itself says, where it was never read (a
  *  site that refuses to be read, X): the handle its address ends in, named by it,
  *  as a profile with no name set is. None for what has no handle (a website). */
-function knownOf(platform: LinkPlatform, url: string): ProfileFacts | undefined {
-  const handle = handleOf(platform, valueOf(platform, url));
-  if (!handle) return undefined;
-  return { platform, url, handle, name: handle, kind: "person", counts: [] };
+function knownOf(
+  platform: LinkPlatform,
+  url: string,
+): ProfileFacts | undefined {
+  const handle = handleOf(platform, usernameIn(platform, url))
+  if (!handle) return undefined
+  return { platform, url, handle, name: handle, kind: "person", counts: [] }
 }
 
 /** Where the person is, on the card itself: their links' marks in a row, as an ID
@@ -127,7 +130,7 @@ function knownOf(platform: LinkPlatform, url: string): ProfileFacts | undefined 
  *  the card's only touchable parts are what it shows. `rel="me"`: the same person
  *  on both ends, which IndieWeb readers check. */
 function Flair({ links }: { links: HolderLink[] }) {
-  if (links.length === 0) return null;
+  if (links.length === 0) return null
   return (
     <nav
       aria-label="links"
@@ -144,7 +147,7 @@ function Flair({ links }: { links: HolderLink[] }) {
       }}
     >
       {links.map(({ platform, name, url, profile: read }) => {
-        const profile = read ?? knownOf(platform, url);
+        const profile = read ?? knownOf(platform, url)
         const mark = {
           href: url,
           rel: "me noopener",
@@ -155,7 +158,7 @@ function Flair({ links }: { links: HolderLink[] }) {
             "p-[1.1cqw] transition-colors hover:bg-white/[0.08]",
           ),
           children: getLinkIcon(platform),
-        };
+        }
         // Who they are there, behind the mark while the hand rests on it.
         return profile ? (
           <HoverCard key={url}>
@@ -166,10 +169,10 @@ function Flair({ links }: { links: HolderLink[] }) {
           </HoverCard>
         ) : (
           <a key={url} {...mark} />
-        );
+        )
       })}
     </nav>
-  );
+  )
 }
 
 /** A person's e-id as the card it is named for, in glass: the mark and the country
@@ -182,28 +185,28 @@ function Flair({ links }: { links: HolderLink[] }) {
  *  tall, 51 inside its padding; under the 4.5 of the head the body (the 30 square
  *  photo) is centred in the 46.5 left, so its foot is 8.25 above the padding's
  *  and its top 44.25 from the card's foot; its right edge 36 from the left. */
-const SEAL = "bottom-[37cqw] left-[29cqw] size-[14cqw]";
+const SEAL = "bottom-[37cqw] left-[29cqw] size-[14cqw]"
 
 /** The name's column, beside the photo, in the card's width's shares. */
 const NAME_COLUMN =
-  100 - 2 * CARD_LAYOUT.pad - CARD_LAYOUT.photo - CARD_LAYOUT.gap;
+  100 - 2 * CARD_LAYOUT.pad - CARD_LAYOUT.photo - CARD_LAYOUT.gap
 
 /** The name as the card sets it. */
 const NAME =
-  "line-clamp-2 text-(length:--card-name) leading-[1.02] font-medium tracking-[-0.03em] text-balance [text-box:trim-start_cap_alphabetic]";
+  "line-clamp-2 text-(length:--card-name) leading-[1.02] font-medium tracking-[-0.03em] text-balance [text-box:trim-start_cap_alphabetic]"
 
 /** What a card can be written on with: each field's own control, where and at
  *  the size the written field takes (the home's blank card, filled in).
  *  `head` stands where the address does, across the head's left. */
 export type CardSlots = {
-  head?: React.ReactNode;
-  name?: React.ReactNode;
-  country?: React.ReactNode;
-  flair?: React.ReactNode;
+  head?: React.ReactNode
+  name?: React.ReactNode
+  country?: React.ReactNode
+  flair?: React.ReactNode
   /** What stands in the photo's frame when there is no photo: a glyph saying what
    *  the card is (a notice's), else the e-ID mark. */
-  photo?: React.ReactNode;
-};
+  photo?: React.ReactNode
+}
 
 export function IdCard({
   holder,
@@ -212,27 +215,27 @@ export function IdCard({
   slots,
   className,
 }: {
-  holder: Holder;
+  holder: Holder
   /** The name's element: the profile's h1, a sample's p. */
-  heading?: "h1" | "p";
+  heading?: "h1" | "p"
   /** The security print (`Hologram`), for a card someone can turn. */
-  holo?: HoloPrint;
+  holo?: HoloPrint
   /** Fields to write in, instead of the holder's written ones. */
-  slots?: CardSlots;
-  className?: string;
+  slots?: CardSlots
+  className?: string
 }) {
-  const Name = heading;
+  const Name = heading
   // Every card that is someone's carries its save (`CardSave`): one with a
   // handle, not being written (`slots`, the blank card filled in).
-  const saves = Boolean(holder.username) && !slots;
-  const name = holder.name || `@${holder.username}`;
+  const saves = Boolean(holder.username) && !slots
+  const name = holder.name || `@${holder.username}`
   // On one line whenever it can be (lib/name-fit): the column beside the photo.
-  const fit = nameFit(name, NAME_COLUMN, CARD_LAYOUT.name);
-  const links = holder.links ?? [];
+  const fit = nameFit(name, NAME_COLUMN, CARD_LAYOUT.name)
+  const links = holder.links ?? []
   const head = (
     <header
       className={cn(
-        "relative flex items-center justify-between text-(length:--card-head) text-foreground/60",
+        "text-(length:--card-head) relative flex items-center justify-between text-foreground/60",
         KNOCKOUT,
       )}
     >
@@ -249,7 +252,7 @@ export function IdCard({
         </span>
       )}
     </header>
-  );
+  )
   // The head alone above, and the body (the photo; the name, the address and the
   // links beside it) centred in the room under it, the air shared above and
   // below rather than left as one empty band.
@@ -277,14 +280,14 @@ export function IdCard({
         </div>
       </div>
     </>
-  );
+  )
   return (
     <div className={cn("@container w-full", className)}>
       <Glass
         as="article"
         shape="surface"
         data-slot="id-card"
-        className="flex aspect-(--id1-ratio) w-full flex-col justify-between overflow-hidden p-(--card-pad) [--glass-radius:var(--id1-radius)] [--glass-thickness:var(--id-card-thickness,0.3)] [--glass-blur:var(--id-card-blur,9px)]"
+        className="flex aspect-(--id1-ratio) w-full flex-col justify-between overflow-hidden p-(--card-pad) [--glass-blur:var(--id-card-blur,9px)] [--glass-radius:var(--id1-radius)] [--glass-thickness:var(--id-card-thickness,0.3)]"
         style={
           {
             "--id1-ratio": ID1_RATIO,
@@ -315,13 +318,7 @@ export function IdCard({
             invisible face on, a band of foil running through its print as the
             card turns. The seal bites the photo's corner, where a real one sits
             so the photo cannot be swapped (`SEAL`). */}
-        {holo && (
-          <Holo
-            print={holo}
-            seal={SEAL}
-            emblem={MARK_EMBLEM}
-          />
-        )}
+        {holo && <Holo print={holo} seal={SEAL} emblem={MARK_EMBLEM} />}
         {body}
         {/* The card's own action, the save, in its foot's corner: on the
             padding, its edges on the card's inner margin, as the flag's are at
@@ -334,5 +331,5 @@ export function IdCard({
         <FoilEdge />
       </Glass>
     </div>
-  );
+  )
 }

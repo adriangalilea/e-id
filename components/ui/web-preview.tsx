@@ -24,11 +24,6 @@
 // telegram and x styles are a platform's own look (a bubble's card, X's card), drawn
 // as that platform draws them, in no material of ours.
 
-import { cn } from "@/lib/utils"
-import {
-  hostOf,
-  type Unfurl,
-} from "@/lib/web-preview-unfurl"
 import { Image } from "@/components/ui/image"
 import {
   type Material,
@@ -36,6 +31,8 @@ import {
   useMaterial,
 } from "@/components/ui/material"
 import { Panel, useInFrame } from "@/components/ui/panel"
+import { cn } from "@/lib/utils"
+import { hostOf, type Unfurl } from "@/lib/web-preview-unfurl"
 
 export type WebPreviewStyle = "card" | "telegram" | "x"
 
@@ -88,7 +85,7 @@ export function WebPreview({
         {...shared}
         className={cn(
           ANCHOR,
-          "mt-[0.45em] overflow-hidden rounded-[0.35em] border-l-[3px] border-[var(--wp-ink,currentColor)] bg-[var(--wp-wash,color-mix(in_srgb,currentColor_10%,transparent))] px-[0.65em] py-[0.45em] text-[var(--wp-text,inherit)] hover:bg-[var(--wp-wash-hover,color-mix(in_srgb,currentColor_18%,transparent))]",
+          "mt-[0.45em] overflow-hidden rounded-[0.35em] border-[var(--wp-ink,currentColor)] border-l-[3px] bg-[var(--wp-wash,color-mix(in_srgb,currentColor_10%,transparent))] px-[0.65em] py-[0.45em] text-[var(--wp-text,inherit)] hover:bg-[var(--wp-wash-hover,color-mix(in_srgb,currentColor_18%,transparent))]",
           className,
         )}
       >
@@ -106,7 +103,7 @@ export function WebPreview({
           {facts.title}
         </div>
         {facts.description && (
-          <div className="mt-[0.15em] line-clamp-3 text-[0.9em] leading-tight text-[var(--wp-muted,inherit)] opacity-90">
+          <div className="mt-[0.15em] line-clamp-3 text-[0.9em] text-[var(--wp-muted,inherit)] leading-tight opacity-90">
             {facts.description}
           </div>
         )}

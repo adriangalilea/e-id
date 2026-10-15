@@ -26,14 +26,7 @@
 import { Autocomplete } from "@base-ui/react/autocomplete"
 import { Search as SearchIcon } from "lucide-react"
 import * as React from "react"
-import { cn } from "@/lib/utils"
-import { fuzzyFilter, type Range } from "@/lib/fuzzy"
-import { pressed } from "@/lib/keys"
-import {
-  Dialog,
-  DialogContent,
-  DialogTitle,
-} from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
 import { InputGroup } from "@/components/ui/input"
 import { ownedHere } from "@/components/ui/key-router"
 import {
@@ -45,6 +38,9 @@ import { Hints } from "@/components/ui/menu"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Highlight } from "@/components/ui/search"
 import { usePlatform } from "@/components/ui/shortcut"
+import { fuzzyFilter, type Range } from "@/lib/fuzzy"
+import { pressed } from "@/lib/keys"
+import { cn } from "@/lib/utils"
 
 /** One thing the palette does. */
 export interface CommandAction {

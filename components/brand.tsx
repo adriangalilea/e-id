@@ -1,9 +1,9 @@
-import { EMOJI_DOMAIN } from "@/lib/const";
-import { MARK_BOX, MARK_PATH } from "@/lib/mark";
-import { cn } from "@/lib/utils";
+import { EMOJI_DOMAIN } from "@/lib/const"
+import { MARK_BOX, MARK_PATH } from "@/lib/mark"
+import { cn } from "@/lib/utils"
 
-const [EMOJI, ...REST] = Array.from(EMOJI_DOMAIN);
-const TLD = REST.join("");
+const [EMOJI, ...REST] = Array.from(EMOJI_DOMAIN)
+const TLD = REST.join("")
 
 /** The mark, in the text's colour. Its box is the glyph's bounds, so a height set
  *  on it is the silhouette's height; its width follows (`w-auto` keeps the ratio). */
@@ -16,7 +16,7 @@ export function BrandMark({ className }: { className?: string }) {
     >
       <path d={MARK_PATH} />
     </svg>
-  );
+  )
 }
 
 /** THE LOGO: the mark on a disc, the seal's own shape, as the favicon draws it
@@ -30,8 +30,8 @@ export function BrandLogo({
   children,
   className,
 }: {
-  children?: React.ReactNode;
-  className?: string;
+  children?: React.ReactNode
+  className?: string
 }) {
   return (
     <span
@@ -46,11 +46,15 @@ export function BrandLogo({
       )}
     >
       {children}
-      <svg viewBox="0 0 24 24" className="relative size-[62%] fill-current">
+      <svg
+        aria-hidden
+        viewBox="0 0 24 24"
+        className="relative size-[62%] fill-current"
+      >
         <path d={MARK_PATH} />
       </svg>
     </span>
-  );
+  )
 }
 
 /** 👤.to as e-id writes it: the mark where the emoji stands, the emoji still in the
@@ -66,10 +70,10 @@ export function EmojiDomain({
   className,
 }: {
   /** What follows the domain, "/you" or "/adriangalilea". */
-  path?: string;
+  path?: string
   /** The logo where the mark stands: for the brand as the subject, not in text. */
-  logo?: boolean;
-  className?: string;
+  logo?: boolean
+  className?: string
 }) {
   // In the text for copying and reading, never in the hand's way: the pointer
   // reaches the mark or the logo under it. Unseen by opacity, not a transparent
@@ -79,7 +83,7 @@ export function EmojiDomain({
     <span className="pointer-events-none absolute inset-0 overflow-hidden leading-none opacity-0">
       {EMOJI}
     </span>
-  );
+  )
   // The logo is centred on the words' capitals: the words
   // trimmed to them (`text-box`), so the disc and the caps share one centre line
   // and the whole stands centred in whatever centres it (the bar), which a line
@@ -101,7 +105,7 @@ export function EmojiDomain({
           {path}
         </span>
       </span>
-    );
+    )
   return (
     <span className={cn("whitespace-nowrap", className)}>
       <span className="relative mr-[0.08em]">
@@ -111,5 +115,5 @@ export function EmojiDomain({
       {TLD}
       {path}
     </span>
-  );
+  )
 }

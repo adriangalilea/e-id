@@ -1,9 +1,10 @@
-import { drizzle } from "drizzle-orm/libsql";
-import { createClient } from "@libsql/client";
+import { createClient } from "@libsql/client"
+import { drizzle } from "drizzle-orm/libsql"
+import { required } from "@/lib/env"
 
 const client = createClient({
-  url: process.env.DB_URL!,
-  authToken: process.env.DB_AUTH_TOKEN,
-});
+  url: required("DB_URL"),
+  authToken: required("DB_AUTH_TOKEN"),
+})
 
-export const db = drizzle(client);
+export const db = drizzle(client)

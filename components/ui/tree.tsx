@@ -32,16 +32,6 @@
 
 import { ChevronRight, Ellipsis, LoaderCircle } from "lucide-react"
 import * as React from "react"
-import { cn } from "@/lib/utils"
-import { actsOn } from "@/lib/selection"
-import {
-  ancestors,
-  canMove,
-  type Drop,
-  type Entry,
-  type Nodelike,
-  type Row,
-} from "@/lib/tree-core"
 import { ownedHere } from "@/components/ui/key-router"
 import {
   type Material,
@@ -58,6 +48,16 @@ import {
   type TreeSelection,
   useTree,
 } from "@/components/ui/tree-state"
+import { actsOn } from "@/lib/selection"
+import {
+  ancestors,
+  canMove,
+  type Drop,
+  type Entry,
+  type Nodelike,
+  type Row,
+} from "@/lib/tree-core"
+import { cn } from "@/lib/utils"
 import "./edge-fade"
 
 export type { TreeHandle, TreeSelection }
@@ -682,7 +682,7 @@ export function Tree<N extends Nodelike<N>>({
               {actions && (
                 <span
                   data-slot="tree-actions"
-                  className="ml-1 flex shrink-0 items-center gap-0.5 group-hover/row:[&>*]:opacity-100 group-focus-visible/row:[&>*]:opacity-100 [&>*]:opacity-0 [&>[data-pinned]]:opacity-100"
+                  className="ml-1 flex shrink-0 items-center gap-0.5 [&>*]:opacity-0 group-hover/row:[&>*]:opacity-100 group-focus-visible/row:[&>*]:opacity-100 [&>[data-pinned]]:opacity-100"
                 >
                   {actions(n, state)}
                 </span>

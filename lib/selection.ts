@@ -57,7 +57,11 @@ export function area(
   const ids = new Set(keep ? base.ids : [])
   for (const id of touched) ids.add(id)
   const last = touched[touched.length - 1]
-  return { ids, anchor: touched[0] ?? base.anchor, cursor: last ?? base.cursor }
+  return {
+    ids,
+    anchor: touched[0] ?? base.anchor,
+    cursor: last ?? base.cursor,
+  }
 }
 
 /** The keyboard cursor counts only while it points inside the selection: a

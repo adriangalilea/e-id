@@ -1,7 +1,7 @@
-"use client";
+"use client"
 
-import { Trash2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Trash2 } from "lucide-react"
+import { Button } from "@/components/ui/button"
 import {
   Dialog,
   DialogClose,
@@ -11,8 +11,8 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
-import { Tip } from "@/components/ui/tooltip";
+} from "@/components/ui/dialog"
+import { Tip } from "@/components/ui/tooltip"
 
 /** A remove that asks first: a bin named "remove" by its tooltip, opening a
  *  dialog (@ag/dialog) that says it cannot be undone, the removal its main
@@ -21,9 +21,9 @@ export default function ConfirmRemove({
   onRemove,
   side,
 }: {
-  onRemove: () => Promise<void>;
+  onRemove: () => Promise<void>
   /** where the tooltip shows, beside the bin */
-  side?: React.ComponentProps<typeof Tip>["side"];
+  side?: React.ComponentProps<typeof Tip>["side"]
 }) {
   return (
     <Dialog>
@@ -47,7 +47,9 @@ export default function ConfirmRemove({
           <DialogDescription>This action cannot be undone.</DialogDescription>
         </DialogHeader>
         <DialogFooter>
-          <DialogClose render={<Button variant="outline" />}>Cancel</DialogClose>
+          <DialogClose render={<Button variant="outline" />}>
+            Cancel
+          </DialogClose>
           <DialogClose
             render={<Button variant="destructive" />}
             onClick={onRemove}
@@ -57,5 +59,5 @@ export default function ConfirmRemove({
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  );
+  )
 }

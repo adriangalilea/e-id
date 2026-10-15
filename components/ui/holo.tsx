@@ -26,7 +26,6 @@
 
 import type * as React from "react"
 import { useEffect, useRef } from "react"
-import { cn } from "@/lib/utils"
 import { foilGradient } from "@/lib/foil"
 import {
   type Emblem,
@@ -37,6 +36,7 @@ import {
   seal as sealArt,
   web,
 } from "@/lib/holo-prints"
+import { cn } from "@/lib/utils"
 
 /** Where the light rests with no hand on it: a little above the middle, where a
  *  page's light comes from. */
@@ -110,7 +110,7 @@ export function HoloLean({
     <div
       data-slot="holo-lean"
       className={cn(
-        "[transform:var(--holo-lean)] transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-data-[hover]/holo:duration-240 motion-reduce:[transform:none]",
+        "transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] [transform:var(--holo-lean)] group-data-[hover]/holo:duration-240 motion-reduce:[transform:none]",
         className,
       )}
       style={{ "--holo-lean": POSES[pose] } as React.CSSProperties}

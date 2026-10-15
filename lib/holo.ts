@@ -9,14 +9,14 @@ import {
   type HoloArt,
   seal,
   web,
-} from "@/lib/holo-prints";
-import { MARK_BOX, MARK_PATH } from "@/lib/mark";
+} from "@/lib/holo-prints"
+import { MARK_BOX, MARK_PATH } from "@/lib/mark"
 
-export type { HoloArt };
-export type { HoloPrint } from "@/components/ui/holo";
+export type { HoloPrint } from "@/components/ui/holo"
+export type { HoloArt }
 
 /** The mark, as the glyph the prints repeat and the seal holds. */
-export const MARK_EMBLEM: Emblem = { path: MARK_PATH, box: MARK_BOX };
+export const MARK_EMBLEM: Emblem = { path: MARK_PATH, box: MARK_BOX }
 
 /** The prints, drawn once. */
 export const HOLO_ART = {
@@ -24,4 +24,4 @@ export const HOLO_ART = {
   emblems: emblems(MARK_EMBLEM),
   web: web(MARK_EMBLEM),
   seal: seal(MARK_EMBLEM),
-};
+}

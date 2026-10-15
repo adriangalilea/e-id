@@ -22,12 +22,6 @@ import { Autocomplete } from "@base-ui/react/autocomplete"
 import { countries as FLAGGED } from "country-flag-icons"
 import { Check, Search as SearchIcon } from "lucide-react"
 import * as React from "react"
-import { cn } from "@/lib/utils"
-import {
-  fuzzyFilter,
-  queryWords,
-  type Range,
-} from "@/lib/fuzzy"
 import { countryName, Flag } from "@/components/ui/flag"
 import { InputGroup } from "@/components/ui/input"
 import { type Material, useMaterial } from "@/components/ui/material"
@@ -38,6 +32,8 @@ import {
 } from "@/components/ui/popover"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Highlight } from "@/components/ui/search"
+import { fuzzyFilter, queryWords, type Range } from "@/lib/fuzzy"
+import { cn } from "@/lib/utils"
 
 export interface Country {
   /** ISO 3166-1 alpha-2, upper case */

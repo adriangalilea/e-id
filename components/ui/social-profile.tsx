@@ -24,18 +24,7 @@
 import { BadgeCheck } from "lucide-react"
 import type * as React from "react"
 import { type SimpleIcon, siGithub, siTelegram, siYoutube } from "simple-icons"
-import { cn } from "@/lib/utils"
-import {
-  countText,
-  type ProfileFacts,
-  platformOf,
-  type SocialPlatform,
-} from "@/lib/social-profile-core"
-import {
-  Avatar,
-  type AvatarSize,
-  avatarLook,
-} from "@/components/ui/avatar"
+import { Avatar, type AvatarSize, avatarLook } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { CardLink } from "@/components/ui/card-link"
 import {
@@ -44,6 +33,13 @@ import {
   useMaterial,
 } from "@/components/ui/material"
 import { Panel, useInFrame } from "@/components/ui/panel"
+import {
+  countText,
+  type ProfileFacts,
+  platformOf,
+  type SocialPlatform,
+} from "@/lib/social-profile-core"
+import { cn } from "@/lib/utils"
 
 export type SocialProfileForm = "card" | "compact"
 

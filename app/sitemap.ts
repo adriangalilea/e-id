@@ -1,9 +1,9 @@
-import type { MetadataRoute } from "next";
-import { getUsernames } from "@/lib/data";
-import { PROD_URL } from "@/lib/const";
+import type { MetadataRoute } from "next"
+import { PROD_URL } from "@/lib/const"
+import { getUsernames } from "@/lib/data"
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const usernames = await getUsernames();
+  const usernames = await getUsernames()
   return [
     { url: PROD_URL, changeFrequency: "weekly", priority: 1 },
     ...usernames.map((username) => ({
@@ -11,5 +11,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "weekly" as const,
       priority: 1,
     })),
-  ];
+  ]
 }

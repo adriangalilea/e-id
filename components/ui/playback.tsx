@@ -16,12 +16,9 @@
 // page decides the moment (a range input, a fixed still).
 
 import * as React from "react"
-import {
-  type Clip,
-  type Outline,
-  outlineOf,
-  type Span,
-} from "@/lib/clip"
+import { openLayer } from "@/components/ui/key-router"
+import { PortalTarget, usePortalTarget } from "@/components/ui/portal"
+import { type Clip, type Outline, outlineOf, type Span } from "@/lib/clip"
 import {
   clampRate,
   frameAt,
@@ -32,8 +29,6 @@ import {
   type TimebaseState,
   TimebaseStore,
 } from "@/lib/timebase"
-import { openLayer } from "@/components/ui/key-router"
-import { PortalTarget, usePortalTarget } from "@/components/ui/portal"
 
 const TimebaseContext = React.createContext<Timebase | null>(null)
 

@@ -25,6 +25,19 @@
 import { Dialog } from "@base-ui/react/dialog"
 import { useRender } from "@base-ui/react/use-render"
 import * as React from "react"
+import { Copy } from "@/components/ui/copy"
+import { EdgeArrow } from "@/components/ui/edge-arrows"
+import { ownedHere, registerKeys } from "@/components/ui/key-router"
+import {
+  INSET_Y,
+  measureBand,
+  RAIL_H,
+  RAIL_W,
+  rectOf,
+  sameBand,
+} from "@/components/ui/lightbox-viewport"
+import { ThumbStrip, type ThumbStripItem } from "@/components/ui/thumb-strip"
+import { Video } from "@/components/ui/video"
 import {
   type Action,
   type ActionId,
@@ -55,11 +68,7 @@ import {
   type PointerInput,
   tapIntent,
 } from "@/lib/lightbox-gesture"
-import {
-  applyHold,
-  type HoldVerb,
-  holdDelta,
-} from "@/lib/lightbox-hold"
+import { applyHold, type HoldVerb, holdDelta } from "@/lib/lightbox-hold"
 import {
   assert,
   assertSize,
@@ -110,26 +119,7 @@ import {
   wheelRelease,
   wheelTick,
 } from "@/lib/lightbox-wheel"
-import {
-  phaseFeed,
-  phaseStart,
-} from "@/lib/lightbox-wheel-phase"
-import { Copy } from "@/components/ui/copy"
-import { EdgeArrow } from "@/components/ui/edge-arrows"
-import { ownedHere, registerKeys } from "@/components/ui/key-router"
-import {
-  INSET_Y,
-  measureBand,
-  RAIL_H,
-  RAIL_W,
-  rectOf,
-  sameBand,
-} from "@/components/ui/lightbox-viewport"
-import {
-  ThumbStrip,
-  type ThumbStripItem,
-} from "@/components/ui/thumb-strip"
-import { Video } from "@/components/ui/video"
+import { phaseFeed, phaseStart } from "@/lib/lightbox-wheel-phase"
 import "./lightbox.css"
 
 export type Source = {

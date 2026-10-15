@@ -1,8 +1,8 @@
-import "server-only";
+import "server-only"
 
-import { cacheLife, cacheTag } from "next/cache";
-import { fetchGithub, type GithubProfile } from "@/lib/github-data";
-import { githubTag } from "@/lib/tags";
+import { cacheLife, cacheTag } from "next/cache"
+import { fetchGithub, type GithubProfile } from "@/lib/github-data"
+import { githubTag } from "@/lib/tags"
 
 /** A GitHub login's profile and contribution calendar, as the registry's `github`
  *  item draws it. GitHub owns it and it changes daily whatever e-id does, so it is
@@ -15,26 +15,26 @@ import { githubTag } from "@/lib/tags";
 export async function getGithubProfile(
   login: string,
 ): Promise<GithubProfile | null> {
-  "use cache";
-  cacheTag(githubTag(login));
+  "use cache"
+  cacheTag(githubTag(login))
 
-  const token = process.env.API_GITHUB_TOKEN;
+  const token = process.env.API_GITHUB_TOKEN
   if (!token) {
-    console.error(`GitHub calendar for ${login}: API_GITHUB_TOKEN is not set`);
-    cacheLife("minutes");
-    return null;
+    console.error(`GitHub calendar for ${login}: API_GITHUB_TOKEN is not set`)
+    cacheLife("minutes")
+    return null
   }
   try {
-    const facts = await fetchGithub(`https://github.com/${login.trim()}`, token);
+    const facts = await fetchGithub(`https://github.com/${login.trim()}`, token)
     if (facts.kind !== "profile")
-      throw new Error(`github.com/${login} is a ${facts.kind}, not a profile`);
-    cacheLife("days");
-    return facts;
+      throw new Error(`github.com/${login} is a ${facts.kind}, not a profile`)
+    cacheLife("days")
+    return facts
   } catch (error) {
     // HTTP 401 here is API_GITHUB_TOKEN revoked or expired: a new classic token
     // with read:user, in the environment the build and the server read.
-    console.error(`GitHub calendar for ${login}:`, error);
-    cacheLife("minutes");
-    return null;
+    console.error(`GitHub calendar for ${login}:`, error)
+    cacheLife("minutes")
+    return null
   }
 }

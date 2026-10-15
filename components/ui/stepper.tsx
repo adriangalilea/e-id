@@ -19,7 +19,6 @@
 // plain, a well of the text's colour; glass, the material's glass, a pill.
 
 import * as React from "react"
-import { cn } from "@/lib/utils"
 import {
   type Material,
   type Scheme,
@@ -27,6 +26,7 @@ import {
   useSurfaceScheme,
 } from "@/components/ui/material"
 import { glassVariants, schemeOf } from "@/components/ui/material-glass"
+import { cn } from "@/lib/utils"
 
 /** A held chevron starts repeating after this, then moves every `every` ms. */
 const HOLD_MS = 400
@@ -267,7 +267,7 @@ export function Stepper<T>({
             // biome-ignore lint/suspicious/noArrayIndexKey: the options' order is their identity
             key={i}
             aria-hidden={i !== at}
-            className={cn("[grid-area:1/1] px-1", i !== at && "invisible")}
+            className={cn("px-1 [grid-area:1/1]", i !== at && "invisible")}
           >
             {w}
           </span>

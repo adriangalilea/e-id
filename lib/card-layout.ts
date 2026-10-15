@@ -28,7 +28,7 @@ export const CARD_LAYOUT = {
    *  row spreads across the column, its first mark at the left and its last at
    *  the right, only when its links fill it, so a few never stand at its ends. */
   iconSlot: 10,
-} as const;
+} as const
 
 /** A layout share as the site writes it, in the card's width (`cqw`). */
-export const cqw = (share: number) => `${share}cqw`;
+export const cqw = (share: number) => `${share}cqw`

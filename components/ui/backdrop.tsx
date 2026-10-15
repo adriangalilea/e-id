@@ -21,22 +21,6 @@
 // first sample.
 
 import * as React from "react"
-import { cn } from "@/lib/utils"
-import {
-  BACKDROP,
-  type Cell,
-  cellsUnder,
-  contentBox,
-  type Grid,
-  gridOf,
-  judge,
-  oklchGrain,
-  reading,
-  sheenOf,
-  tintFor,
-  underRim,
-  type Verdict,
-} from "@/lib/backdrop-core"
 import {
   BackdropScope,
   type BackdropSource,
@@ -52,6 +36,22 @@ import {
   glassStyle,
   glassVariants,
 } from "@/components/ui/material-glass"
+import {
+  BACKDROP,
+  type Cell,
+  cellsUnder,
+  contentBox,
+  type Grid,
+  gridOf,
+  judge,
+  oklchGrain,
+  reading,
+  sheenOf,
+  tintFor,
+  underRim,
+  type Verdict,
+} from "@/lib/backdrop-core"
+import { cn } from "@/lib/utils"
 
 /** What can be read: a video, a picture, or a canvas something draws into (a
  *  comparison stage, a chart). A canvas says nothing when it redraws, so its owner

@@ -27,7 +27,6 @@
 
 import { Dialog as Base } from "@base-ui/react/dialog"
 import * as React from "react"
-import { cn } from "@/lib/utils"
 import {
   type Material,
   MaterialProvider,
@@ -38,6 +37,7 @@ import {
 import { glassVariants, schemeOf } from "@/components/ui/material-glass"
 import { usePortalTarget } from "@/components/ui/portal"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { cn } from "@/lib/utils"
 
 export type DialogPlace = "center" | "side"
 

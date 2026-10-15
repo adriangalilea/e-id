@@ -1,18 +1,7 @@
-import { ReactElement } from "react";
-import {
-  Twitter,
-  Instagram,
-  Github,
-  Link,
-  Link2,
-  Youtube,
-  Mail,
-  Send,
-  CircleDotDashed,
-  LinkIcon,
-  AtSign,
-} from "lucide-react";
-import type { LinkPlatform } from "@/db/schema";
+import { AtSign, CircleDotDashed, Link, Link2, Mail, Send } from "lucide-react"
+import type { ReactElement } from "react"
+import type { LinkPlatform } from "@/db/schema"
+import { Github, Instagram, Twitter, Youtube } from "@/lib/brand-icons"
 
 // A LINK BY ITS PLATFORM: where its value leads, the glyph it is drawn with, and
 // what its field asks for. A platform's value is a username there, except where
@@ -29,21 +18,24 @@ export function getLinkUrl(platform: LinkPlatform, value: string): string {
     telegram: `https://t.me/${value}`,
     self: `https://${value}.self.fm`,
     instagram: `https://instagram.com/${value}`,
-  };
-  return urls[platform];
+  }
+  return urls[platform]
 }
 
 /** A link's value as it is read on a profile: an address without its scheme. */
-export function getLinkDisplayText(platform: LinkPlatform, value: string): string {
+export function getLinkDisplayText(
+  platform: LinkPlatform,
+  value: string,
+): string {
   if ((platform === "website" || platform === "link") && value)
-    return value.replace(/^https?:\/\//, "");
-  return value;
+    return value.replace(/^https?:\/\//, "")
+  return value
 }
 
-const iconProps = { strokeWidth: 1 };
+const iconProps = { strokeWidth: 1 }
 
-export function getLinkIcon(platform: LinkPlatform): ReactElement<any> {
-  const icons: { [key in LinkPlatform]: ReactElement<any> } = {
+export function getLinkIcon(platform: LinkPlatform): ReactElement {
+  const icons: { [key in LinkPlatform]: ReactElement } = {
     website: <Link {...iconProps} />,
     link: <Link2 {...iconProps} />,
     email: <Mail {...iconProps} />,
@@ -53,19 +45,19 @@ export function getLinkIcon(platform: LinkPlatform): ReactElement<any> {
     instagram: <Instagram {...iconProps} />,
     self: <CircleDotDashed {...iconProps} />,
     telegram: <Send {...iconProps} />,
-  };
-  return icons[platform];
+  }
+  return icons[platform]
 }
 
 export function getLinkPlaceholder(platform: LinkPlatform): string {
-  if (platform === "email") return "email";
-  if (platform === "website" || platform === "link") return "url";
-  return "username";
+  if (platform === "email") return "email"
+  if (platform === "website" || platform === "link") return "url"
+  return "username"
 }
 
-export function getLinkPretextIcon(platform: LinkPlatform): ReactElement<any> {
-  if (platform === "email") return <Mail {...iconProps} size="20" />;
+export function getLinkPretextIcon(platform: LinkPlatform): ReactElement {
+  if (platform === "email") return <Mail {...iconProps} size="20" />
   if (platform === "website" || platform === "link")
-    return <LinkIcon {...iconProps} size="20" />;
-  return <AtSign {...iconProps} size="20" />;
+    return <Link {...iconProps} size="20" />
+  return <AtSign {...iconProps} size="20" />
 }

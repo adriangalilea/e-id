@@ -20,13 +20,10 @@
 // for every medium: a person's volume is theirs, not a video's or a sound's.
 
 import * as React from "react"
+import { toggleFullscreen, useTimebase } from "@/components/ui/playback"
+import { recall, remember } from "@/components/ui/remembered"
 import type { Span } from "@/lib/clip"
-import {
-  between,
-  fields,
-  isBoolean,
-  setting,
-} from "@/lib/remembered-core"
+import { between, fields, isBoolean, setting } from "@/lib/remembered-core"
 import {
   clampRate,
   frameAt,
@@ -39,8 +36,6 @@ import {
   type Timebase,
   TimebaseStore,
 } from "@/lib/timebase"
-import { toggleFullscreen, useTimebase } from "@/components/ui/playback"
-import { recall, remember } from "@/components/ui/remembered"
 
 /** Volume, mute and speed, kept across visits for every player (ui/remembered). */
 export const PLAYBACK = setting("media:playback", {

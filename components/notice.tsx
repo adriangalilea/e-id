@@ -1,18 +1,18 @@
-"use client";
+"use client"
 
-import { House, RotateCcw, SearchX, Unplug } from "lucide-react";
-import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { EmojiDomain } from "@/components/brand";
-import { CORNER } from "@/components/card-shape";
-import { IdCard } from "@/components/id-card";
-import { SubjectLight } from "@/components/light";
-import { useChip } from "@/components/session/use-chip";
-import { Button } from "@/components/ui/button";
-import { HoloLean, HoloLight } from "@/components/ui/holo";
-import { writeDraft } from "@/lib/draft";
-import { usernameSchema } from "@/lib/username-rules";
-import { cn } from "@/lib/utils";
+import { House, RotateCcw, SearchX, Unplug } from "lucide-react"
+import Link from "next/link"
+import { usePathname, useRouter } from "next/navigation"
+import { EmojiDomain } from "@/components/brand"
+import { CORNER } from "@/components/card-shape"
+import { IdCard } from "@/components/id-card"
+import { SubjectLight } from "@/components/light"
+import { useChip } from "@/components/session/use-chip"
+import { Button } from "@/components/ui/button"
+import { HoloLean, HoloLight } from "@/components/ui/holo"
+import { writeDraft } from "@/lib/draft"
+import { usernameSchema } from "@/lib/username-rules"
+import { cn } from "@/lib/utils"
 
 // The pages that stand in for one that cannot be shown: an address no one holds,
 // one that leads nowhere, a page that broke. Each is a card that was never issued,
@@ -29,11 +29,11 @@ function BlankCard({
   glyph,
   foot,
 }: {
-  address: string;
-  name: string;
+  address: string
+  name: string
   /** In the photo's frame, what happened as a picture; the e-ID mark when none. */
-  glyph?: React.ReactNode;
-  foot?: React.ReactNode;
+  glyph?: React.ReactNode
+  foot?: React.ReactNode
 }) {
   return (
     // At rest a light drifts across its foil, as the home's blank card does;
@@ -77,12 +77,12 @@ function BlankCard({
                 </span>
               ),
               name: (
-                <h1 className="text-(length:--card-name) leading-[1.02] font-medium tracking-[-0.03em] text-foreground/40 [text-box:trim-start_cap_alphabetic]">
+                <h1 className="text-(length:--card-name) font-medium text-foreground/40 leading-[1.02] tracking-[-0.03em] [text-box:trim-start_cap_alphabetic]">
                   {name}
                 </h1>
               ),
               flair: foot && (
-                <span className="font-mono text-(length:--card-head) text-foreground/40">
+                <span className="text-(length:--card-head) font-mono text-foreground/40">
                   {foot}
                 </span>
               ),
@@ -91,7 +91,7 @@ function BlankCard({
         </div>
       </HoloLean>
     </HoloLight>
-  );
+  )
 }
 
 /** The page: the card (which says what happened), one line of what to do, and the
@@ -101,20 +101,20 @@ function Notice({
   children,
   actions,
 }: {
-  card: React.ReactNode;
-  children: React.ReactNode;
-  actions: React.ReactNode;
+  card: React.ReactNode
+  children: React.ReactNode
+  actions: React.ReactNode
 }) {
   return (
     // The card at a profile card's size, everything under it on its centre line.
-    <main className="mx-auto flex w-full max-w-xl flex-1 animate-fade-in flex-col items-center justify-center gap-10 px-5 py-12 sm:px-8 motion-reduce:animate-none">
+    <main className="mx-auto flex w-full max-w-xl flex-1 animate-fade-in flex-col items-center justify-center gap-10 px-5 py-12 motion-reduce:animate-none sm:px-8">
       <div className="w-full">{card}</div>
-      <p className="text-center text-lg leading-relaxed font-light text-balance text-foreground/60">
+      <p className="text-balance text-center font-light text-foreground/60 text-lg leading-relaxed">
         {children}
       </p>
       <div className="flex flex-wrap justify-center gap-3">{actions}</div>
     </main>
-  );
+  )
 }
 
 function Home({ primary }: { primary?: boolean }) {
@@ -127,17 +127,17 @@ function Home({ primary }: { primary?: boolean }) {
     >
       home
     </Button>
-  );
+  )
 }
 
 /** The handle an address names, when it could be one: a single segment that is a
  *  valid username (lib/username-rules). `/favicon.ico`, `/a/b` and `/ab` are no
  *  one's address. */
 function handleOf(pathname: string): string | null {
-  const segments = pathname.split("/").filter(Boolean);
-  if (segments.length !== 1) return null;
-  const handle = decodeURIComponent(segments[0]).toLowerCase();
-  return usernameSchema.safeParse(handle).success ? handle : null;
+  const segments = pathname.split("/").filter(Boolean)
+  if (segments.length !== 1) return null
+  const handle = decodeURIComponent(segments[0]).toLowerCase()
+  return usernameSchema.safeParse(handle).success ? handle : null
 }
 
 /** THE 404. At an address that could be someone's, the card for it, unissued, and
@@ -145,32 +145,34 @@ function handleOf(pathname: string): string | null {
  *  ready to claim (components/landing/hero-cards). A visitor who already holds a
  *  card is not offered a second. Anywhere else, the same card with nothing on it. */
 export function Missing() {
-  const pathname = usePathname();
-  const handle = handleOf(pathname);
+  const pathname = usePathname()
+  const handle = handleOf(pathname)
   // Nowhere a person could be: the card reads the address the site keeps for
   // it (lib/const, `forbiddenUsernames`), never a path half typed.
   if (!handle)
     return (
       <Notice
-        card={<BlankCard address="/404" name="nothing here" glyph={<SearchX />} />}
+        card={
+          <BlankCard address="/404" name="nothing here" glyph={<SearchX />} />
+        }
         actions={<Home primary />}
       >
         check the link, or start from home.
       </Notice>
-    );
-  return <Unissued handle={handle} />;
+    )
+  return <Unissued handle={handle} />
 }
 
 function Unissued({ handle }: { handle: string }) {
-  const router = useRouter();
-  const chip = useChip();
+  const router = useRouter()
+  const chip = useChip()
   const claim = () => {
-    writeDraft({ handle });
-    router.push("/");
-  };
+    writeDraft({ handle })
+    router.push("/")
+  }
   // Unknown until the browser reads its cookie: the offer waits for it, so a
   // signed-in visitor never sees it flash.
-  const canClaim = chip === null || (chip !== undefined && !chip.u);
+  const canClaim = chip === null || (chip !== undefined && !chip.u)
   return (
     <Notice
       card={<BlankCard address={`/${handle}`} name="unissued" />}
@@ -187,9 +189,11 @@ function Unissued({ handle }: { handle: string }) {
         )
       }
     >
-      {canClaim ? "nobody holds this address. it can be yours." : "nobody holds this address."}
+      {canClaim
+        ? "nobody holds this address. it can be yours."
+        : "nobody holds this address."}
     </Notice>
-  );
+  )
 }
 
 /** THE ERROR PAGE, inside the site's frame (app/error) or in a document of its own
@@ -200,8 +204,8 @@ export function Broken({
   digest,
   retry,
 }: {
-  digest?: string;
-  retry: () => void;
+  digest?: string
+  retry: () => void
 }) {
   return (
     <Notice
@@ -226,5 +230,5 @@ export function Broken({
     >
       it may be temporary. try again in a minute.
     </Notice>
-  );
+  )
 }

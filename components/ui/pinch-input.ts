@@ -1,8 +1,5 @@
 import { wheelPx, wheelTick } from "@/lib/lightbox-motion"
-import {
-  PINCH_PER_WHEEL,
-  PINCH_SLOP,
-} from "@/lib/picture-zoom"
+import { PINCH_PER_WHEEL, PINCH_SLOP } from "@/lib/picture-zoom"
 
 /** A point on the screen, client px. */
 export interface Client {

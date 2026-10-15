@@ -1,25 +1,25 @@
-import { SaveContact } from "@/components/save-contact";
-import type { Landing } from "@/components/landing/link-map";
-import { BrowserCapturePage } from "@/components/ui/browser";
-import { atFound, foundOn, middleOf } from "@/lib/browser-capture";
-import { Story } from "@/components/landing/story";
-import { shortName } from "@/lib/link-names";
-import { cacheLife } from "next/cache";
-import { getShowcase } from "@/lib/data";
-import { Panel } from "@/components/ui/panel";
-import { EMOJI_DOMAIN } from "@/lib/const";
-import { getLinkIcon } from "@/lib/links";
-import { SHOTS } from "@/lib/link-shots";
-import { IdCard, type Holder } from "@/components/id-card";
-import { HoloLight } from "@/components/ui/holo";
-import { CardData } from "@/components/landing/card-data";
-import { LiveEmbed } from "@/components/landing/live-embed";
-import { Code } from "@/components/ui/code";
-import { cardOf } from "@/lib/card";
-import { type Card, embedOf } from "@/lib/card-schema";
-import { vcardOf } from "@/lib/vcard";
-import { fetchPhoto } from "@/lib/photo";
-import { averageOf } from "@/lib/prepare-media";
+import { cacheLife } from "next/cache"
+import { type Holder, IdCard } from "@/components/id-card"
+import { CardData } from "@/components/landing/card-data"
+import type { Landing } from "@/components/landing/link-map"
+import { LiveEmbed } from "@/components/landing/live-embed"
+import { Story } from "@/components/landing/story"
+import { SaveContact } from "@/components/save-contact"
+import { BrowserCapturePage } from "@/components/ui/browser"
+import { Code } from "@/components/ui/code"
+import { HoloLight } from "@/components/ui/holo"
+import { Panel } from "@/components/ui/panel"
+import { atFound, foundOn, middleOf } from "@/lib/browser-capture"
+import { cardOf } from "@/lib/card"
+import { type Card, embedOf } from "@/lib/card-schema"
+import { EMOJI_DOMAIN } from "@/lib/const"
+import { getShowcase } from "@/lib/data"
+import { shortName } from "@/lib/link-names"
+import { SHOTS } from "@/lib/link-shots"
+import { getLinkIcon } from "@/lib/links"
+import { fetchPhoto } from "@/lib/photo"
+import { averageOf } from "@/lib/prepare-media"
+import { vcardOf } from "@/lib/vcard"
 
 /** WHAT A CARD DOES, under the hero: the scenes the page scrolls through
  *  (`Story`), each thing the card does shown as it really is (never a picture of
@@ -27,8 +27,8 @@ import { averageOf } from "@/lib/prepare-media";
  *  and its embed on a laptop. The card shown is a real one, the hero's lead
  *  (lib/data, `getShowcase`). */
 export async function Features() {
-  const [first] = await getShowcase();
-  if (!first) throw new Error("the home has no card to show");
+  const [first] = await getShowcase()
+  if (!first) throw new Error("the home has no card to show")
   const holder: Holder = {
     name: first.name,
     username: first.username,
@@ -36,11 +36,11 @@ export async function Features() {
     country: first.country_code,
     bio: first.bio,
     links: first.links,
-  };
+  }
   // The same card as data, as a program gets it.
-  const card = await cardOf(holder.username);
-  if (!card) throw new Error(`the home's lead ${holder.username} has no card`);
-  const at = `${EMOJI_DOMAIN}/${holder.username}`;
+  const card = await cardOf(holder.username)
+  if (!card) throw new Error(`the home's lead ${holder.username} has no card`)
+  const at = `${EMOJI_DOMAIN}/${holder.username}`
   return (
     <Story
       username={holder.username}
@@ -79,7 +79,7 @@ export async function Features() {
         code: <EmbedCode username={holder.username} />,
       }}
     />
-  );
+  )
 }
 
 /** Where each of the holder's routes lands (link-map): the first link of each
@@ -89,23 +89,23 @@ export async function Features() {
  *  that refuses a headless browser, X) is left out rather than drawn as something
  *  it is not. */
 function landingsOf(holder: Holder): Landing[] {
-  const links = holder.links ?? [];
+  const links = holder.links ?? []
   const first = links.filter(
     (l, i) => links.findIndex((m) => m.platform === l.platform) === i,
-  );
+  )
   // Captured for one handle, the home's lead (captures.ts); another lead has
   // none until the plan names them and `pnpm captures` runs.
-  const captured = SHOTS.handle === holder.username ? SHOTS.shots : {};
+  const captured = SHOTS.handle === holder.username ? SHOTS.shots : {}
   return first.flatMap((link): Landing[] => {
-    const end = shortName(link.platform);
-    if (!end) return [];
-    const icon = getLinkIcon(link.platform);
+    const end = shortName(link.platform)
+    if (!end) return []
+    const icon = getLinkIcon(link.platform)
     if (link.platform === "email")
-      return [{ end, icon, url: link.url, page: <Compose to={link.url} /> }];
-    const shot = captured[link.platform];
-    if (!shot) return [];
-    return [{ end, icon, url: shot.url, shot }];
-  });
+      return [{ end, icon, url: link.url, page: <Compose to={link.url} /> }]
+    const shot = captured[link.platform]
+    if (!shot) return []
+    return [{ end, icon, url: shot.url, shot }]
+  })
 }
 
 /** What an email address opens: the mail app's new message, to it, as large as a
@@ -113,7 +113,7 @@ function landingsOf(holder: Holder): Landing[] {
  *  Plain whatever the browser round it wears: it is a window, not a pane of the
  *  browser's glass. */
 function Compose({ to }: { to: string }) {
-  const address = to.replace(/^mailto:/, "");
+  const address = to.replace(/^mailto:/, "")
   return (
     <div className="grid min-h-full place-items-center p-10">
       <Panel
@@ -121,16 +121,11 @@ function Compose({ to }: { to: string }) {
         radius="1rem"
         className="w-full max-w-3xl"
         bodyClassName="block p-0 text-xl"
-        head={<span className="text-xl font-semibold">new message</span>}
+        head={<span className="font-semibold text-xl">new message</span>}
       >
-        <div
-          className="flex items-center gap-3 border-current/10 border-b px-7
-            py-4"
-        >
+        <div className="flex items-center gap-3 border-current/10 border-b px-7 py-4">
           <span className="text-foreground/45">to:</span>
-          <span
-            className="rounded-full bg-[#0a84ff]/20 px-3 py-0.5 text-[#0a84ff]"
-          >
+          <span className="rounded-full bg-[#0a84ff]/20 px-3 py-0.5 text-[#0a84ff]">
             {address}
           </span>
         </div>
@@ -143,7 +138,7 @@ function Compose({ to }: { to: string }) {
         </div>
       </Panel>
     </div>
-  );
+  )
 }
 
 /** The visit's first page, what the address with no end opens: the holder's
@@ -152,21 +147,21 @@ function Compose({ to }: { to: string }) {
  *  alone until the plan names them, rather than someone else's page. */
 function profileOf(holder: Holder): React.ReactNode {
   if (SHOTS.handle === holder.username)
-    return <BrowserCapturePage capture={SHOTS.profile} />;
+    return <BrowserCapturePage capture={SHOTS.profile} />
   return (
     <div className="grid min-h-full place-items-center p-6">
       <div className="w-full max-w-[18rem]">
         <HolderCard holder={holder} />
       </div>
     </div>
-  );
+  )
 }
 
 /** Where a finger saves the contact on the phone's page: the middle of its save
  *  button, as the capture found it. None for a lead not captured yet. */
 function pressOf(holder: Holder): { x: number; y: number } | undefined {
-  if (SHOTS.handle !== holder.username) return undefined;
-  return middleOf(foundOn(SHOTS.phone, "save"));
+  if (SHOTS.handle !== holder.username) return undefined
+  return middleOf(foundOn(SHOTS.phone, "save"))
 }
 
 /** The holder's profile as a phone shows it: the page itself on a phone, its
@@ -180,16 +175,16 @@ function phoneOf(holder: Holder): React.ReactNode {
       <div key="phone" className="px-5 pt-6">
         <HolderCard holder={holder} />
       </div>
-    );
+    )
   return (
     <BrowserCapturePage key="phone" capture={SHOTS.phone}>
       <div
         aria-hidden
-        className="rounded-full bg-white/0 transition-colors duration-150 in-data-pressing:bg-white/20"
+        className="rounded-full bg-white/0 in-data-pressing:bg-white/20 transition-colors duration-150"
         style={atFound(SHOTS.phone, "save")}
       />
     </BrowserCapturePage>
-  );
+  )
 }
 
 /** The holder's card, the profile's stand-in. */
@@ -203,7 +198,7 @@ function HolderCard({ holder }: { holder: Holder }) {
         className="[--id-card-thickness:1]"
       />
     </HoloLight>
-  );
+  )
 }
 
 /** The contact the card saves as: the very .vcf the save button downloads
@@ -214,26 +209,25 @@ function HolderCard({ holder }: { holder: Holder }) {
 async function contactOf(
   card: Card,
 ): Promise<{ vcard: string; average: string | undefined }> {
-  "use cache";
-  cacheLife("days");
-  const photo = await fetchPhoto(card.photo, "the home's contact");
+  "use cache"
+  cacheLife("days")
+  const photo = await fetchPhoto(card.photo, "the home's contact")
   return {
     vcard: await vcardOf(card),
     average: photo ? await averageOf(photo.bytes) : undefined,
-  };
+  }
 }
-
 
 /** The embed's two lines (`embedOf`) as the code a site pastes in (@ag/code,
  *  glass, its copy in its bar). Cached: the highlighter reads the clock as it
  *  works, which a page being prerendered may not, and the snippet only changes
  *  with the handle. */
 async function EmbedCode({ username }: { username: string }) {
-  "use cache";
-  cacheLife("max");
+  "use cache"
+  cacheLife("max")
   return (
     <Code lang="html" filename="index.html" material="glass">
       {embedOf(username, "compact")}
     </Code>
-  );
+  )
 }

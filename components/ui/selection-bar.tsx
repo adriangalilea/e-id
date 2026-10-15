@@ -17,10 +17,10 @@
 
 import { Ellipsis, X } from "lucide-react"
 import * as React from "react"
-import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Hints, Menu, type MenuEntry } from "@/components/ui/menu"
 import { Tip } from "@/components/ui/tooltip"
+import { cn } from "@/lib/utils"
 
 /** A rule between a bar's groups. */
 export const BAR_RULE = "mx-1 h-4 w-px shrink-0 bg-foreground/12"
@@ -121,7 +121,7 @@ export function SelectionBar({
   const countLabel = (
     <span
       data-slot="selection-bar-count"
-      className="shrink-0 whitespace-nowrap px-2 text-[13px] font-medium tabular-nums"
+      className="shrink-0 whitespace-nowrap px-2 font-medium text-[13px] tabular-nums"
     >
       {count} {noun}
       {count === 1 ? "" : "s"} selected
@@ -218,7 +218,7 @@ export function BarVerb({
       onClick={entry.onSelect}
       data-part={part}
       className={cn(
-        "shrink-0 whitespace-nowrap px-2 text-[13px] font-normal [&_svg]:size-3.5",
+        "shrink-0 whitespace-nowrap px-2 font-normal text-[13px] [&_svg]:size-3.5",
         entry.destructive
           ? "text-tone-bad hover:text-tone-bad"
           : "text-foreground/80 hover:text-foreground",

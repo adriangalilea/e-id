@@ -1,7 +1,6 @@
 "use client"
 
 import * as React from "react"
-import { cn } from "@/lib/utils"
 import {
   type Material,
   type Scheme,
@@ -9,6 +8,7 @@ import {
   useSurfaceScheme,
 } from "@/components/ui/material"
 import { glassVariants, schemeOf } from "@/components/ui/material-glass"
+import { cn } from "@/lib/utils"
 
 // Text of more than a line, in the input's well: the same sunken fill and inset ring,
 // brightening under the hand and clear on focus, red when the value is wrong
@@ -111,7 +111,7 @@ export function Textarea({
         "block w-full resize-none outline-none disabled:cursor-not-allowed disabled:opacity-50",
         TYPE[size],
         autosize &&
-          "min-h-(--ag-textarea-min) max-h-(--ag-textarea-max) [field-sizing:content]",
+          "max-h-(--ag-textarea-max) min-h-(--ag-textarea-min) [field-sizing:content]",
         schemeOf(s),
         m === "glass"
           ? [glassVariants({ shape: "surface" }), GLASS_WELL]

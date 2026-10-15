@@ -21,7 +21,6 @@
 
 import { PreviewCard as Base } from "@base-ui/react/preview-card"
 import type * as React from "react"
-import { cn } from "@/lib/utils"
 import {
   type Material,
   MaterialProvider,
@@ -32,6 +31,7 @@ import {
 import { glassVariants, schemeOf } from "@/components/ui/material-glass"
 import { InFrame } from "@/components/ui/panel"
 import { usePortalTarget } from "@/components/ui/portal"
+import { cn } from "@/lib/utils"
 
 /** The card's state: uncontrolled, or `open` and `onOpenChange`. */
 export const HoverCard = Base.Root
@@ -60,7 +60,7 @@ const PLAIN_FACE =
 /** Its motion through the material, which owns the glass's transition. */
 const GLASS_FACE = cn(
   glassVariants({ shape: "surface" }),
-  "[--glass-radius:--theme(--radius-2xl)] [--glass-blur:16px] [--glass-moves:opacity_150ms_var(--ease-out),scale_150ms_var(--ease-out)]",
+  "[--glass-blur:16px] [--glass-moves:opacity_150ms_var(--ease-out),scale_150ms_var(--ease-out)] [--glass-radius:--theme(--radius-2xl)]",
 )
 
 export interface HoverCardContentProps
@@ -105,7 +105,7 @@ export function HoverCardContent({
             schemeOf(s),
             m === "glass" ? GLASS_FACE : PLAIN_FACE,
             "flex w-72 max-w-full origin-(--transform-origin) flex-col gap-2 p-4 text-sm outline-none",
-            "data-[ending-style]:scale-98 data-[ending-style]:opacity-0 data-[starting-style]:scale-98 data-[starting-style]:opacity-0",
+            "data-[ending-style]:scale-98 data-[starting-style]:scale-98 data-[ending-style]:opacity-0 data-[starting-style]:opacity-0",
             className,
           )}
           {...props}

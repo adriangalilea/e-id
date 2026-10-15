@@ -1,10 +1,10 @@
-import type { Metadata } from "next";
-import { Features } from "@/components/landing/features";
-import { Hero } from "@/components/landing/hero";
-import { UnlessForming } from "@/components/landing/hero-cards";
-import { LatestUsers } from "@/components/latest_users/latest_users";
+import type { Metadata } from "next"
+import { Features } from "@/components/landing/features"
+import { Hero } from "@/components/landing/hero"
+import { UnlessForming } from "@/components/landing/hero-cards"
+import { LatestUsers } from "@/components/latest_users/latest_users"
 
-export const metadata: Metadata = { alternates: { canonical: "/" } };
+export const metadata: Metadata = { alternates: { canonical: "/" } }
 
 export default function Page() {
   return (
@@ -17,5 +17,5 @@ export default function Page() {
         <LatestUsers />
       </UnlessForming>
     </div>
-  );
+  )
 }

@@ -1,10 +1,6 @@
-import { cn } from "@/lib/utils"
-import {
-  parseVcard,
-  type VCard,
-  type VCardField,
-} from "@/lib/vcard-core"
 import { Image } from "@/components/ui/image"
+import { cn } from "@/lib/utils"
+import { parseVcard, type VCard, type VCardField } from "@/lib/vcard-core"
 
 // A CONTACT AS A PHONE SHOWS ONE, drawn from a vCard (lib/vcard-core): the face
 // round at the top, the name under it and who they are (nickname, organisation),

@@ -17,4 +17,4 @@ export const PROFILE = {
   side: "max-lg:contents lg:sticky lg:top-20 lg:flex lg:h-[calc(100dvh-8rem)] lg:min-h-0 lg:flex-col lg:gap-10 lg:self-start lg:[grid-area:side]",
   identity: "flex flex-col gap-5 max-lg:[grid-area:id]",
   links: "flex min-w-0 flex-col gap-16 [grid-area:links]",
-} as const;
+} as const

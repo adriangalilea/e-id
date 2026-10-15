@@ -40,11 +40,7 @@
 // behind it hears a key.
 
 import * as React from "react"
-import {
-  type KeyPress,
-  type KeyTarget,
-  ownsKeys,
-} from "@/lib/keys"
+import { type KeyPress, type KeyTarget, ownsKeys } from "@/lib/keys"
 
 /** Input types a person types text into. */
 const TEXT_INPUTS = new Set([

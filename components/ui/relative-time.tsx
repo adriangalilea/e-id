@@ -1,14 +1,14 @@
 "use client"
 
 import * as React from "react"
-import { cn } from "@/lib/utils"
+import { useOnScreen } from "@/components/ui/use-on-screen"
 import {
   fullText,
   nextChange,
   type RelativeOptions,
   relativeText,
 } from "@/lib/relative-time-core"
-import { useOnScreen } from "@/components/ui/use-on-screen"
+import { cn } from "@/lib/utils"
 
 // AN INSTANT SAID FROM NOW, in a native <time>: "4m ago", "in 3d", "just now", past a
 // week its date. The machine-readable instant is `dateTime` (ISO), the whole date with

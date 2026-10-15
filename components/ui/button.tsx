@@ -3,7 +3,6 @@
 import { Button as BaseButton } from "@base-ui/react/button"
 import { useRender } from "@base-ui/react/use-render"
 import * as React from "react"
-import { cn } from "@/lib/utils"
 import {
   type Material,
   type Scheme,
@@ -16,6 +15,7 @@ import {
   schemeOf,
 } from "@/components/ui/material-glass"
 import { Spinner, type SpinnerSize } from "@/components/ui/spinner"
+import { cn } from "@/lib/utils"
 
 // THE BUTTON, one behaviour in two materials. Base UI's button underneath, so it is a
 // real <button> (or, with `render`, a link that behaves as one), keeps its focus when

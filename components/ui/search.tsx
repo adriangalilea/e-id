@@ -2,12 +2,12 @@
 
 import { Search as SearchIcon, X } from "lucide-react"
 import * as React from "react"
-import { cn } from "@/lib/utils"
-import { fuzzy, type Range, segments } from "@/lib/fuzzy"
-import { pressed } from "@/lib/keys"
 import { InputGroup, type InputSize } from "@/components/ui/input"
 import { Kbd } from "@/components/ui/kbd"
 import { useKeys } from "@/components/ui/key-router"
+import { fuzzy, type Range, segments } from "@/lib/fuzzy"
+import { pressed } from "@/lib/keys"
+import { cn } from "@/lib/utils"
 
 // SEARCH, drawn once: the field (`Search`: the input's well with a magnifier, a clear
 // button once something is typed, Esc empties it, an optional key that focuses it from

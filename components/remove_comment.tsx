@@ -1,23 +1,23 @@
-"use client";
+"use client"
 
-import { SelectComment } from "@/db/schema";
-import { deleteComment } from "@/db/actions";
-import ConfirmRemove from "@/components/confirm-remove";
+import ConfirmRemove from "@/components/confirm-remove"
+import { deleteComment } from "@/db/actions"
+import type { SelectComment } from "@/db/schema"
 
 export default function RemoveComment({
   commentId,
   onChange,
 }: {
-  commentId: SelectComment["id"];
-  onChange: () => void;
+  commentId: SelectComment["id"]
+  onChange: () => void
 }) {
   return (
     <ConfirmRemove
       side="left"
       onRemove={async () => {
-        await deleteComment(commentId);
-        onChange();
+        await deleteComment(commentId)
+        onChange()
       }}
     />
-  );
+  )
 }

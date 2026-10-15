@@ -34,7 +34,6 @@
 import { Toast as Base } from "@base-ui/react/toast"
 import { CircleAlert, CircleCheck, TriangleAlert, X } from "lucide-react"
 import * as React from "react"
-import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import {
   type Material,
@@ -48,6 +47,7 @@ import {
   schemeOf,
 } from "@/components/ui/material-glass"
 import { Spinner } from "@/components/ui/spinner"
+import { cn } from "@/lib/utils"
 
 export type ToastKind = "default" | "success" | "warning" | "error" | "loading"
 
@@ -211,7 +211,7 @@ const PLAIN_FACE =
   "rounded-xl border border-border bg-popover text-popover-foreground shadow-lg"
 const GLASS_FACE = cn(
   glassVariants({ shape: "surface" }),
-  "[--glass-radius:--theme(--radius-2xl)] [--glass-blur:18px]",
+  "[--glass-blur:18px] [--glass-radius:--theme(--radius-2xl)]",
 )
 
 /** The stack, drawn: once per page, anywhere in the app. */

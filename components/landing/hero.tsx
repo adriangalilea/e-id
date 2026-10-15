@@ -1,9 +1,9 @@
-import { GUTTER } from "@/components/frame";
-import type { Holder } from "@/components/id-card";
-import { HeroShimmer } from "@/components/light";
-import { getShowcase } from "@/lib/data";
-import { cn } from "@/lib/utils";
-import { Preview, Stage, YourCard } from "./hero-cards";
+import { GUTTER } from "@/components/frame"
+import type { Holder } from "@/components/id-card"
+import { HeroShimmer } from "@/components/light"
+import { getShowcase } from "@/lib/data"
+import { cn } from "@/lib/utils"
+import { Preview, Stage, YourCard } from "./hero-cards"
 
 /** The landing's first screen, and nothing on it but cards: in the middle real
  *  ones, stacked, which is how one looks; by them the visitor's own, blank, to
@@ -19,7 +19,7 @@ export async function Hero() {
       bio: p.bio,
       links: p.links,
     }),
-  );
+  )
   return (
     // No line under it: the shimmer and the light fade out into the page's ground,
     // so the hero ends the way a light does (components/light). On a wide screen
@@ -41,5 +41,5 @@ export async function Hero() {
         </Stage>
       </div>
     </section>
-  );
+  )
 }

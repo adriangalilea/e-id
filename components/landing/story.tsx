@@ -1,34 +1,28 @@
-"use client";
+"use client"
 
-import {
-  Braces,
-  Code,
-  Contact,
-  IdCard,
-  Route as RouteIcon,
-} from "lucide-react";
-import { useMemo } from "react";
-import { Browser, BrowserSession } from "@/components/ui/browser";
+import { Braces, Code, Contact, IdCard, Route as RouteIcon } from "lucide-react"
+import { useMemo } from "react"
+import { type Landing, routePages } from "@/components/landing/link-map"
+import { Scaled } from "@/components/landing/scaled"
+import { AmbientLight } from "@/components/ui/ambient-light"
+import { Browser, BrowserSession } from "@/components/ui/browser"
 import {
   CONTACTS_APP_CONTROLS,
   ContactsApp,
   contactsAppScreen,
-} from "@/components/ui/contacts-app";
-import { Touch, touchPressed } from "@/components/ui/touch";
-import { IphoneFrame, MacbookFrame } from "@/components/ui/device-frame";
+} from "@/components/ui/contacts-app"
+import { IphoneFrame, MacbookFrame } from "@/components/ui/device-frame"
+import { Ide } from "@/components/ui/ide"
 import {
   ScrollStory,
-  type StoryChapter,
   StoryCard,
+  type StoryChapter,
   StoryTitle,
-} from "@/components/ui/scroll-story";
-import { type Landing, routePages } from "@/components/landing/link-map";
-import { Scaled } from "@/components/landing/scaled";
-import { EMOJI_DOMAIN } from "@/lib/const";
-import { Ide } from "@/components/ui/ide";
-import { type BrowserStep, browserTimeline } from "@/lib/browser-session";
-import { AmbientLight } from "@/components/ui/ambient-light";
-import { cn } from "@/lib/utils";
+} from "@/components/ui/scroll-story"
+import { Touch, touchPressed } from "@/components/ui/touch"
+import { type BrowserStep, browserTimeline } from "@/lib/browser-session"
+import { EMOJI_DOMAIN } from "@/lib/const"
+import { cn } from "@/lib/utils"
 
 // WHAT A CARD DOES, told on the scroll (@ag/scroll-story), a card per chapter
 // sliding in from the side as untitled.garden tells xtldr: a laptop, each of the
@@ -39,73 +33,73 @@ import { cn } from "@/lib/utils";
 // card. A screen is drawn at a real screen's size and scaled whole (`Scaled`), so
 // a browser's chrome keeps a real one's proportions at any size.
 
-type Page = { address: string; page: React.ReactNode };
+type Page = { address: string; page: React.ReactNode }
 
 type StoryProps = {
-  username: string;
+  username: string
   /** The holder's profile, the one link's own page. */
-  profile: React.ReactNode;
-  landings: Landing[];
+  profile: React.ReactNode
+  landings: Landing[]
   /** The card as a contact: the very .vcf the save button downloads, its photo's
    *  mean colour (the phone's poster), the press that saves it, and the profile
    *  as the phone's Safari shows it, where that press is made. */
   contact: {
-    vcard: string;
-    average: string | undefined;
-    save: React.ReactNode;
-    page: React.ReactNode;
+    vcard: string
+    average: string | undefined
+    save: React.ReactNode
+    page: React.ReactNode
     /** Where the page's save button is, CSS px from the page's top-left, the
      *  finger's place; absent where the page has none to press. */
-    press?: { x: number; y: number };
-  };
-  data: Page;
+    press?: { x: number; y: number }
+  }
+  data: Page
   embed: {
     /** The site the card is embedded on. */
-    address: string;
+    address: string
     /** The two lines a site pastes in (lib/card-schema `embedOf`), typed into
      *  the site's page. */
-    snippet: string;
+    snippet: string
     /** The card as the embed draws it on the site. */
-    card: React.ReactNode;
+    card: React.ReactNode
     /** The same two lines, to copy. */
-    code: React.ReactNode;
-  };
-};
+    code: React.ReactNode
+  }
+}
 
 /** The laptop's screen, CSS px, before it is scaled to where it is shown: a small
  *  laptop's, so what is on it reads at the size a laptop is drawn here (a 1440
  *  screen shrunk to a card's half came out as fine print). */
-const SCREEN = { width: 1024, height: 640 };
+const SCREEN = { width: 1024, height: 640 }
 
 /** The devices' shapes, width over height (device-frame.css): an iPhone's frame,
  *  a MacBook's display with its lid and base. */
-const IPHONE = 356 / 730;
-const MACBOOK = 1.48;
+const IPHONE = 356 / 730
+const MACBOOK = 1.48
 
 /** The laptop's menu bar under its notch, as tall as macOS draws it beside one. */
-const MENU_BAR = 30;
+const MENU_BAR = 30
 
 /** How far a device stands out of its card, past its top and its foot: by the
  *  window (`--story-out`, on the story), well out on a wide one, barely on a
  *  phone, where the card takes the window's height. */
-const OUT = "var(--story-out)";
+const OUT = "var(--story-out)"
 
 /** A window's page a step lighter than the site's ground (globals.css: 0.12; a
  *  card's surface 0.21), as the theme's own `--background` round it, so its page
  *  and the band behind its controls (@ag/browser) both take it. */
-const GROUND = "[--background:oklch(0.17_0_0)]";
+const GROUND = "[--background:oklch(0.17_0_0)]"
 
 /** A visit a browser plays, and its length. */
 type Visit = {
-  start: string;
-  steps: BrowserStep[];
-  pages: Record<string, React.ReactNode>;
-  total: number;
-};
+  start: string
+  steps: BrowserStep[]
+  pages: Record<string, React.ReactNode>
+  total: number
+}
 
 export function Story(props: StoryProps) {
-  const story = useStory(props);
-  const { routes, laptop, contact, site } = story;
+  const story = useStory(props)
+  const { routes, laptop, contact, site } = story
   const chapters = useMemo(
     (): StoryChapter[] => [
       {
@@ -207,7 +201,7 @@ export function Story(props: StoryProps) {
       },
     ],
     [story, routes, laptop, contact, site],
-  );
+  )
   return (
     <ScrollStory
       label="what an e-ID does"
@@ -228,10 +222,10 @@ export function Story(props: StoryProps) {
       // stands out of nothing, so the room kept for that is a step only.
       className="[--card-h:clamp(28rem,calc(100svh-19rem),44rem)] [--story-out:2.5rem] max-lg:[--card-h:calc(100svh-14.5rem)] max-lg:[--story-out:0.5rem]"
     />
-  );
+  )
 }
 
-type Story = ReturnType<typeof useStory>;
+type Story = ReturnType<typeof useStory>
 
 /** The story's parts: the routes' visit, the laptop's visit (the data, scrolled,
  *  then the site), every route's address and icon. */
@@ -244,30 +238,30 @@ function useStory({
   embed,
 }: StoryProps) {
   return useMemo(() => {
-    const home = `${EMOJI_DOMAIN}/${username}`;
+    const home = `${EMOJI_DOMAIN}/${username}`
     // The routes: the address opens on the profile; each route typed onto it, one
     // load landing on the place's own page (a capture), or on what is drawn for
     // an end with no page (an email's compose window).
-    const [own, ...ends] = routePages(home, profile, landings);
-    if (!own) throw new Error("story: the one link has no page");
-    const routeSteps: BrowserStep[] = [];
+    const [own, ...ends] = routePages(home, profile, landings)
+    if (!own) throw new Error("story: the one link has no page")
+    const routeSteps: BrowserStep[] = []
     const routePagesByUrl: Record<string, React.ReactNode> = {
       [home]: own.page,
-    };
+    }
     // The one link pasted whole each time, only its route (`/gh`) typed onto it.
     landings.forEach((l, i) => {
-      const end = ends[i];
-      if (!end) throw new Error(`story: ${l.end} has no page`);
-      const typed = { kind: "type", pasted: home, text: end.address } as const;
+      const end = ends[i]
+      if (!end) throw new Error(`story: ${l.end} has no page`)
+      const typed = { kind: "type", pasted: home, text: end.address } as const
       if (l.shot) {
-        routePagesByUrl[l.url] = end.page;
-        routeSteps.push({ ...typed, to: l.url, delay: 900 });
+        routePagesByUrl[l.url] = end.page
+        routeSteps.push({ ...typed, to: l.url, delay: 900 })
       } else {
-        routePagesByUrl[end.address] = end.page;
-        routeSteps.push({ ...typed, delay: 900 });
+        routePagesByUrl[end.address] = end.page
+        routeSteps.push({ ...typed, delay: 900 })
       }
-    });
-    const routeTimeline = browserTimeline(home, routeSteps);
+    })
+    const routeTimeline = browserTimeline(home, routeSteps)
     const routes = {
       start: home,
       steps: routeSteps,
@@ -275,10 +269,10 @@ function useStory({
       total: routeTimeline.total,
       // When each end's address starts being typed: the route it is on from then.
       starts: routeTimeline.starts,
-    } satisfies Visit & { starts: number[] };
+    } satisfies Visit & { starts: number[] }
     const laptopSteps: BrowserStep[] = [
       { kind: "scroll", to: 1, ms: 3200, delay: 600 },
-    ];
+    ]
     return {
       // Every route, the one link's own first: its address and its icon.
       stops: [
@@ -298,16 +292,16 @@ function useStory({
         total: browserTimeline(data.address, laptopSteps).total,
       },
       site: siteOf(embed),
-    };
-  }, [username, profile, landings, contact, data, embed]);
+    }
+  }, [username, profile, landings, contact, data, embed])
 }
 
 /** The embed done: a site's page with the two lines in it, the script in its
  *  head and the card in its body, both marked, the caret after the card. */
 function siteOf(embed: StoryProps["embed"]) {
-  const [script, element, ...rest] = embed.snippet.split("\n");
+  const [script, element, ...rest] = embed.snippet.split("\n")
   if (!script || !element || rest.length > 0)
-    throw new Error(`story: the embed is not two lines: ${embed.snippet}`);
+    throw new Error(`story: the embed is not two lines: ${embed.snippet}`)
   const lines = [
     "<!doctype html>",
     '<html lang="en">',
@@ -321,16 +315,16 @@ function siteOf(embed: StoryProps["embed"]) {
     `    ${element}`,
     "  </body>",
     "</html>",
-  ];
-  const at = (line: string) => lines.indexOf(line) + 1;
-  const card = at(`    ${element}`);
+  ]
+  const at = (line: string) => lines.indexOf(line) + 1
+  const card = at(`    ${element}`)
   return {
     address: embed.address,
     file: { path: "index.html", text: `${lines.join("\n")}\n` },
     highlight: `${at(`    ${script}`)},${card}`,
     caret: { line: card, column: `    ${element}`.length + 1 },
     card: embed.card,
-  };
+  }
 }
 
 /** A thing of one shape (`ratio`, width over height) as large as it fits in the
@@ -341,9 +335,9 @@ function Fit({
   className,
   children,
 }: {
-  ratio: number;
-  className?: string;
-  children: React.ReactNode;
+  ratio: number
+  className?: string
+  children: React.ReactNode
 }) {
   return (
     <div
@@ -352,7 +346,7 @@ function Fit({
     >
       <div style={{ width: `min(100cqw, ${ratio} * 100cqh)` }}>{children}</div>
     </div>
-  );
+  )
 }
 
 /** The route the browser is on: the one link, its end (`/gh`, `/web`) lit, and
@@ -363,11 +357,11 @@ function Route({
   stops,
   current,
 }: {
-  home: string;
-  stops: Story["stops"];
-  current: number;
+  home: string
+  stops: Story["stops"]
+  current: number
 }) {
-  const address = stops[current]?.address ?? home;
+  const address = stops[current]?.address ?? home
   return (
     // The address, then its routes right under it: one group (16 between them),
     // the icons' glyphs on the text's left edge (each in a 40 px circle, its
@@ -383,8 +377,7 @@ function Route({
             key={stop.address}
             aria-current={i === current ? "step" : undefined}
             className={cn(
-              `grid size-10 place-items-center rounded-full transition-colors
-              duration-300 [&_svg]:size-5 [&_svg]:stroke-[1.75]`,
+              `grid size-10 place-items-center rounded-full transition-colors duration-300 [&_svg]:size-5 [&_svg]:stroke-[1.75]`,
               i === current
                 ? "bg-foreground text-background"
                 : i < current
@@ -398,13 +391,13 @@ function Route({
         ))}
       </ol>
     </div>
-  );
+  )
 }
 
 /** An iPhone's screen in points (iPhone 16 Pro, inside device-frame's bezel):
  *  what the phone's Safari is laid out at before it is scaled to the frame, so
  *  the page reads as it does on a real one. */
-const PHONE_SCREEN = { width: 402, height: 842 };
+const PHONE_SCREEN = { width: 402, height: 842 }
 
 /** The save, as it happens on a phone, over the chapter (`at`, 0..1): where each
  *  moment starts and how long it lasts. Safari on the profile; "save contact"
@@ -419,16 +412,16 @@ const SAVE = {
   doneFor: 0.12,
   saved: 0.48,
   read: 0.54,
-};
+}
 
 const share = (at: number, from: number, length: number) =>
-  Math.min(1, Math.max(0, (at - from) / length));
+  Math.min(1, Math.max(0, (at - from) / length))
 
 /** Where the ✓ is, as a share of the screen's width: placed by Contacts. */
 const DONE = {
   x: `${(CONTACTS_APP_CONTROLS.done.x / CONTACTS_APP_CONTROLS.width) * 100}cqw`,
   y: `${(CONTACTS_APP_CONTROLS.done.y / CONTACTS_APP_CONTROLS.width) * 100}cqw`,
-};
+}
 
 /** The phone, through the save (`SAVE`, `at` the chapter's moment), each tap a
  *  finger shown on the screen (@ag/touch): the holder's profile in Safari, its
@@ -440,17 +433,17 @@ function Phone({
   address,
   at,
 }: {
-  contact: StoryProps["contact"];
-  address: string;
-  at: number;
+  contact: StoryProps["contact"]
+  address: string
+  at: number
 }) {
   if (PHONE_SCREEN.width !== CONTACTS_APP_CONTROLS.width)
-    throw new Error("story: the phone's screen is not Contacts' width");
-  const saving = share(at, SAVE.tap, SAVE.tapFor);
-  const confirming = share(at, SAVE.done, SAVE.doneFor);
-  const saved = at >= SAVE.saved;
-  const raised = share(at, SAVE.sheet, SAVE.sheetIn);
-  const view = saved ? "contact" : raised > 0 ? "preview" : null;
+    throw new Error("story: the phone's screen is not Contacts' width")
+  const saving = share(at, SAVE.tap, SAVE.tapFor)
+  const confirming = share(at, SAVE.done, SAVE.doneFor)
+  const saved = at >= SAVE.saved
+  const raised = share(at, SAVE.sheet, SAVE.sheetIn)
+  const view = saved ? "contact" : raised > 0 ? "preview" : null
   return (
     // The frame's status bar and screen in the app's colours (the frame draws
     // them outside the app's box).
@@ -517,7 +510,7 @@ function Phone({
         </>
       )}
     </IphoneFrame>
-  );
+  )
 }
 
 /** The laptop, as wide as it is given, its screen a real screen scaled whole (the
@@ -540,7 +533,7 @@ function Laptop({ visit, at, alt }: { visit: Visit; at: number; alt: string }) {
         />
       </div>
     </Screen>
-  );
+  )
 }
 
 /** The laptop's screen, a real screen scaled whole: the desktop's wallpaper, the
@@ -553,8 +546,7 @@ function Screen({ app, children }: { app: string; children: React.ReactNode }) {
         <div className="absolute inset-0 flex flex-col">
           <Wallpaper />
           <div
-            className="relative flex shrink-0 items-center gap-6 px-5 font-medium
-              text-[13px] text-white [text-shadow:0_1px_2px_rgb(0_0_0/0.35)]"
+            className="relative flex shrink-0 items-center gap-6 px-5 font-medium text-[13px] text-white [text-shadow:0_1px_2px_rgb(0_0_0/0.35)]"
             style={{
               height: MENU_BAR,
               fontFamily: "-apple-system, system-ui, sans-serif",
@@ -572,7 +564,7 @@ function Screen({ app, children }: { app: string; children: React.ReactNode }) {
         </div>
       </Scaled>
     </MacbookFrame>
-  );
+  )
 }
 
 /** The desktop under the windows: the site's own light (components/light), no
@@ -603,22 +595,22 @@ function Wallpaper() {
         ]}
       />
     </div>
-  );
+  )
 }
 
 /** Room between the desk's windows, and round them. */
-const DESK_GAP = 8;
+const DESK_GAP = 8
 
 /** The editor's width: room for the script's line, the file's longest, unwrapped
  *  (a wider screen held it with room to spare, and shrank the code past reading
  *  at the size a laptop is drawn here). */
-const EDITOR_WIDTH = 592;
+const EDITOR_WIDTH = 592
 
 /** The embed done, a still (`siteOf`): the editor on the left with the site's page
  *  and the two lines in it marked, the caret blinking after the card; the browser
  *  on the right on the site, the card on it. */
 function Desk({ site }: { site: Story["site"] }) {
-  const window = { top: DESK_GAP, bottom: DESK_GAP };
+  const window = { top: DESK_GAP, bottom: DESK_GAP }
   return (
     <Screen app="Code">
       <Ide
@@ -648,7 +640,7 @@ function Desk({ site }: { site: Story["site"] }) {
         <Site card={site.card} />
       </Browser>
     </Screen>
-  );
+  )
 }
 
 /** A bar standing in for a line of a site's text, as wide as `w` of its column. */
@@ -658,7 +650,7 @@ function Bone({ w, className }: { w: string; className?: string }) {
       className={cn("h-2.5 rounded-full bg-foreground/10", className)}
       style={{ width: w }}
     />
-  );
+  )
 }
 
 /** Something someone made, a post on their own site, its words still to be
@@ -698,5 +690,5 @@ function Site({ card }: { card: React.ReactNode }) {
         </div>
       </footer>
     </div>
-  );
+  )
 }

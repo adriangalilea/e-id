@@ -20,40 +20,8 @@
 // picture's stage; and its zoom.
 
 import * as React from "react"
-import { cn } from "@/lib/utils"
-import { type Captions, linesAt } from "@/lib/captions"
-import {
-  type Chapter,
-  type Outline,
-  outlineOf,
-  type Span,
-} from "@/lib/clip"
-import { zoomAt } from "@/lib/lightbox-motion"
-import {
-  centreOn,
-  clampView,
-  FIT_VIEW,
-  fitted,
-  frameView,
-  type PinchRung,
-  pinchRaw,
-  pinchRung,
-  pinchScale,
-  rungTaken,
-  type Size,
-  settle,
-  stepIn,
-  stepOut,
-  stopsOf,
-  type View,
-  zoomLabel,
-} from "@/lib/picture-zoom"
-import { msOf, shownAt } from "@/lib/timebase"
 import { useBackdropSource } from "@/components/ui/backdrop"
-import {
-  BackdropScope,
-  MaterialProvider,
-} from "@/components/ui/material"
+import { BackdropScope, MaterialProvider } from "@/components/ui/material"
 import {
   Caption,
   CaptionLines,
@@ -88,6 +56,30 @@ import {
   useSoundTap,
 } from "@/components/ui/sound-source"
 import { Video, type VideoProps } from "@/components/ui/video"
+import { type Captions, linesAt } from "@/lib/captions"
+import { type Chapter, type Outline, outlineOf, type Span } from "@/lib/clip"
+import { zoomAt } from "@/lib/lightbox-motion"
+import {
+  centreOn,
+  clampView,
+  FIT_VIEW,
+  fitted,
+  frameView,
+  type PinchRung,
+  pinchRaw,
+  pinchRung,
+  pinchScale,
+  rungTaken,
+  type Size,
+  settle,
+  stepIn,
+  stepOut,
+  stopsOf,
+  type View,
+  zoomLabel,
+} from "@/lib/picture-zoom"
+import { msOf, shownAt } from "@/lib/timebase"
+import { cn } from "@/lib/utils"
 
 type PictureProps = Pick<
   VideoProps,

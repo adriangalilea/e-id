@@ -1,25 +1,25 @@
-"use client";
+"use client"
 
-import { Tip } from "@/components/ui/tooltip";
-import { Button } from "./ui/button";
-import { Pin, PinOff } from "lucide-react";
-import { pinCommentToggle } from "@/db/actions";
-import { SelectComment } from "@/db/schema";
+import { Pin, PinOff } from "lucide-react"
+import { Tip } from "@/components/ui/tooltip"
+import { pinCommentToggle } from "@/db/actions"
+import type { SelectComment } from "@/db/schema"
+import { Button } from "./ui/button"
 
 export default function PinComment({
   commentId,
   pinned,
   onChange,
 }: {
-  commentId: SelectComment["id"];
-  pinned: boolean;
-  onChange: () => void;
+  commentId: SelectComment["id"]
+  pinned: boolean
+  onChange: () => void
 }) {
   return (
     <form
       action={async () => {
-        await pinCommentToggle(commentId);
-        onChange();
+        await pinCommentToggle(commentId)
+        onChange()
       }}
     >
       <Tip content={pinned ? "unpin" : "pin"} side="left">
@@ -28,5 +28,5 @@ export default function PinComment({
         </Button>
       </Tip>
     </form>
-  );
+  )
 }

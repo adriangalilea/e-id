@@ -1,7 +1,4 @@
-import {
-  type Unfurl,
-  unfurl,
-} from "@/lib/web-preview-unfurl"
+import { type Unfurl, unfurl } from "@/lib/web-preview-unfurl"
 
 /** A page for the browser to show live: framed, or, refused, drawn from its facts. */
 export type LivePage =

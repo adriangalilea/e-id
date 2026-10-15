@@ -42,7 +42,6 @@
 
   --ring: oklch(0.85 0 0);
 
-
   /* The bar's wordmark (components/footer): large enough that its logo reads as
      a logo. */
   --wordmark: 1.25rem;
@@ -56,7 +55,6 @@
      near the ID card's own corner at the size it stands. */
   --radius: 0.625rem;
 }
-
 
 @theme inline {
   --color-background: var(--background);

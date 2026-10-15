@@ -14,13 +14,6 @@
 import { Menu as Base } from "@base-ui/react/menu"
 import { Check } from "lucide-react"
 import * as React from "react"
-import { cn } from "@/lib/utils"
-import {
-  combo,
-  type Platform,
-  type Press,
-  pressed,
-} from "@/lib/keys"
 import {
   type Material,
   MaterialProvider,
@@ -30,11 +23,9 @@ import {
 } from "@/components/ui/material"
 import { glassVariants, schemeOf } from "@/components/ui/material-glass"
 import { usePortalTarget } from "@/components/ui/portal"
-import {
-  Shortcut,
-  shortcut,
-  usePlatform,
-} from "@/components/ui/shortcut"
+import { Shortcut, shortcut, usePlatform } from "@/components/ui/shortcut"
+import { combo, type Platform, type Press, pressed } from "@/lib/keys"
+import { cn } from "@/lib/utils"
 
 /** A verb, or a line between groups. `hint` is the input it stands in for, written as
  *  `shortcut` reads it ("mod+click", "shift+f10"), drawn as keys and a pointer glyph;

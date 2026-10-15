@@ -1,33 +1,29 @@
-import { betterAuth } from "better-auth";
-import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { nextCookies } from "better-auth/next-js";
-import { createAuthMiddleware } from "better-auth/api";
-import { oneTimeToken } from "better-auth/plugins";
-import { eq } from "drizzle-orm";
-import { revalidateTag } from "next/cache";
-import { db } from "./db";
-import { users, accounts, sessions, verification, links } from "@/db/schema";
+import { betterAuth } from "better-auth"
+import { drizzleAdapter } from "better-auth/adapters/drizzle"
+import { createAuthMiddleware } from "better-auth/api"
+import { nextCookies } from "better-auth/next-js"
+import { oneTimeToken } from "better-auth/plugins"
+import { eq } from "drizzle-orm"
+import { revalidateTag } from "next/cache"
+import { accounts, links, sessions, users, verification } from "@/db/schema"
+import { CHIP_COOKIE, CHIP_COOKIE_OPTIONS, chipOf, chipValue } from "@/lib/chip"
 import {
   EMOJI_DOMAIN_PUNYCODE,
   PROD_URL,
   SESSION_MAX_AGE,
   SHORT_DOMAIN,
-} from "@/lib/const";
-import {
-  CHIP_COOKIE,
-  CHIP_COOKIE_OPTIONS,
-  chipOf,
-  chipValue,
-} from "@/lib/chip";
-import { USERS_TAG, profileTag, usernameTag } from "@/lib/tags";
-import { providedUsername } from "@/lib/username";
+} from "@/lib/const"
+import { required } from "@/lib/env"
+import { profileTag, USERS_TAG, usernameTag } from "@/lib/tags"
+import { providedUsername } from "@/lib/username"
+import { db } from "./db"
 
 type LinkedAccount = {
-  userId: string;
-  providerId: string;
-  accountId: string;
-  accessToken?: string | null;
-};
+  userId: string
+  providerId: string
+  accountId: string
+  accessToken?: string | null
+}
 
 /** What a newly linked provider brings to its user's profile: the provider's
  *  handle and email as links, and its avatar. Best effort: a provider that does
@@ -36,17 +32,17 @@ async function adoptAccount(account: LinkedAccount) {
   const [user] = await db
     .select({ email: users.email })
     .from(users)
-    .where(eq(users.id, account.userId));
+    .where(eq(users.id, account.userId))
   if (!user)
-    throw new Error(`linked account for missing user ${account.userId}`);
+    throw new Error(`linked account for missing user ${account.userId}`)
 
   const owned = await db
     .select({ platform: links.platform })
     .from(links)
-    .where(eq(links.user_id, account.userId));
-  const has = (platform: string) => owned.some((l) => l.platform === platform);
+    .where(eq(links.user_id, account.userId))
+  const has = (platform: string) => owned.some((l) => l.platform === platform)
 
-  let image: string | null = null;
+  let image: string | null = null
 
   if (account.providerId === "github") {
     const response = await fetch("https://api.github.com/user", {
@@ -54,16 +50,15 @@ async function adoptAccount(account: LinkedAccount) {
         Authorization: `Bearer ${account.accessToken}`,
         Accept: "application/vnd.github.v3+json",
       },
-    });
+    })
     if (!response.ok) {
       console.error(
         `GitHub profile for ${account.userId}: HTTP ${response.status}`,
-      );
-      return;
+      )
+      return
     }
-    const profile: { login: string; avatar_url: string } =
-      await response.json();
-    image = profile.avatar_url;
+    const profile: { login: string; avatar_url: string } = await response.json()
+    image = profile.avatar_url
     if (!has("github"))
       await db.insert(links).values({
         id: crypto.randomUUID(),
@@ -72,9 +67,9 @@ async function adoptAccount(account: LinkedAccount) {
         value: profile.login,
         image,
         custom_data: { platform_user_id: account.accountId },
-      });
+      })
   } else if (account.providerId !== "google") {
-    throw new Error(`unknown provider ${account.providerId}`);
+    throw new Error(`unknown provider ${account.providerId}`)
   }
 
   if (!has("email"))
@@ -84,19 +79,11 @@ async function adoptAccount(account: LinkedAccount) {
       platform: "email",
       value: user.email,
       custom_data: { platform_user_id: account.accountId },
-    });
+    })
   if (image)
-    await db.update(users).set({ image }).where(eq(users.id, account.userId));
+    await db.update(users).set({ image }).where(eq(users.id, account.userId))
 
-  revalidateTag(profileTag(account.userId), { expire: 0 });
-}
-
-/** A setting sign-in cannot work without: missing, the server refuses to start
- *  rather than fail on someone's first sign-in. */
-function required(name: string): string {
-  const value = process.env[name];
-  if (!value) throw new Error(`auth: ${name} is not set`);
-  return value;
+  revalidateTag(profileTag(account.userId), { expire: 0 })
 }
 
 export const auth = betterAuth({
@@ -207,16 +194,16 @@ export const auth = betterAuth({
           const seed =
             typeof user.username === "string"
               ? user.username
-              : user.email.split("@")[0];
-          const username = await providedUsername(seed);
+              : user.email.split("@")[0]
+          const username = await providedUsername(seed)
           return {
             data: { ...user, username, username_normalized: username },
-          };
+          }
         },
         after: async (user) => {
-          if (typeof user.username !== "string") return;
-          revalidateTag(USERS_TAG, { expire: 0 });
-          revalidateTag(usernameTag(user.username), { expire: 0 });
+          if (typeof user.username !== "string") return
+          revalidateTag(USERS_TAG, { expire: 0 })
+          revalidateTag(usernameTag(user.username), { expire: 0 })
         },
       },
     },
@@ -225,7 +212,7 @@ export const auth = betterAuth({
         // A provider linked for the first time: sign-up, or a second provider.
         // Runs after the OAuth callback's transaction commits.
         after: async (account) => {
-          await adoptAccount(account);
+          await adoptAccount(account)
         },
       },
     },
@@ -237,23 +224,23 @@ export const auth = betterAuth({
     // handoff claimed on 👤.to), cleared on sign-out.
     after: createAuthMiddleware(async (ctx) => {
       if (ctx.path === "/sign-out") {
-        ctx.setCookie(CHIP_COOKIE, "", { ...CHIP_COOKIE_OPTIONS, maxAge: 0 });
-        return;
+        ctx.setCookie(CHIP_COOKIE, "", { ...CHIP_COOKIE_OPTIONS, maxAge: 0 })
+        return
       }
       if (
         !ctx.path.startsWith("/callback/") &&
         !ctx.path.startsWith("/sign-in") &&
         ctx.path !== "/one-time-token/verify"
       )
-        return;
-      const session = ctx.context.newSession;
-      if (!session) return;
+        return
+      const session = ctx.context.newSession
+      if (!session) return
       const [user] = await db
         .select({ username: users.username, image: users.image })
         .from(users)
-        .where(eq(users.id, session.user.id));
-      if (!user) throw new Error(`session for missing user ${session.user.id}`);
-      ctx.setCookie(CHIP_COOKIE, chipValue(chipOf(user)), CHIP_COOKIE_OPTIONS);
+        .where(eq(users.id, session.user.id))
+      if (!user) throw new Error(`session for missing user ${session.user.id}`)
+      ctx.setCookie(CHIP_COOKIE, chipValue(chipOf(user)), CHIP_COOKIE_OPTIONS)
     }),
   },
-});
+})

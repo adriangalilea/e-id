@@ -1,22 +1,22 @@
-import type { Metadata } from "next";
-import { notFound } from "next/navigation";
-import { Testimonial } from "@/components/quote";
+import type { Metadata } from "next"
+import { notFound } from "next/navigation"
+import { Wide } from "@/components/frame"
+import { PROFILE } from "@/components/profile-layout"
+import { Testimonial } from "@/components/quote"
+import { CARD_TYPE } from "@/lib/card"
+import { EMOJI_DOMAIN } from "@/lib/const"
 import {
   getProfile,
   getPublicLinks,
   getTestimonials,
   getUsernames,
-} from "@/lib/data";
-import { getPresence } from "@/lib/presence";
-import { CARD_TYPE } from "@/lib/card";
-import { VCARD_TYPE } from "@/lib/vcard";
-import { EMOJI_DOMAIN } from "@/lib/const";
-import { inlineJson, profileJsonLd, profileUrl } from "@/lib/profile-ld";
-import { CommentInteraction, HiddenFromOwner } from "./comment_section";
-import { OwnerActions } from "./owner_actions";
-import UserProfile from "./user_profile";
-import { Wide } from "@/components/frame";
-import { PROFILE } from "@/components/profile-layout";
+} from "@/lib/data"
+import { getPresence } from "@/lib/presence"
+import { inlineJson, profileJsonLd, profileUrl } from "@/lib/profile-ld"
+import { VCARD_TYPE } from "@/lib/vcard"
+import { CommentInteraction, HiddenFromOwner } from "./comment_section"
+import { OwnerActions } from "./owner_actions"
+import UserProfile from "./user_profile"
 
 // A profile is a static page: prerendered for every username at build, rendered
 // once on its first visit for a username that came later, and rendered again
@@ -25,31 +25,31 @@ import { PROFILE } from "@/components/profile-layout";
 // so a visit runs no server function.
 
 export async function generateStaticParams() {
-  const usernames = await getUsernames();
+  const usernames = await getUsernames()
   if (usernames.length === 0)
-    throw new Error("no usernames to prerender: is DB_URL the right database?");
-  return usernames.map((username) => ({ username }));
+    throw new Error("no usernames to prerender: is DB_URL the right database?")
+  return usernames.map((username) => ({ username }))
 }
 
 export async function generateMetadata(props: {
-  params: Promise<{ username: string }>;
+  params: Promise<{ username: string }>
 }): Promise<Metadata> {
-  const { username } = await props.params;
-  const user = await getProfile(username);
-  if (!user) notFound();
+  const { username } = await props.params
+  const user = await getProfile(username)
+  if (!user) notFound()
 
-  const links = await getPublicLinks(user.id);
+  const links = await getPublicLinks(user.id)
   // Each link as the profile's tabs name it: a platform by its id, a link of
   // their own by its label.
-  const named = [...new Set(links.map((link) => link.label ?? link.platform))];
+  const named = [...new Set(links.map((link) => link.label ?? link.platform))]
   const title = user.name
     ? `${user.name} (@${user.username})`
-    : `@${user.username}`;
+    : `@${user.username}`
   const description =
     user.bio ||
     (named.length > 0
       ? `@${user.username} on ${EMOJI_DOMAIN}: ${named.join(", ")}`
-      : `@${user.username} on ${EMOJI_DOMAIN}`);
+      : `@${user.username} on ${EMOJI_DOMAIN}`)
 
   return {
     title: { absolute: title },
@@ -74,27 +74,28 @@ export async function generateMetadata(props: {
     },
     // The image is the card (opengraph-image), shown large.
     twitter: { card: "summary_large_image", title, description },
-  };
+  }
 }
 
 export default async function Page(props: {
-  params: Promise<{ username: string }>;
+  params: Promise<{ username: string }>
 }) {
-  const { username } = await props.params;
-  const user = await getProfile(username);
-  if (!user) notFound();
+  const { username } = await props.params
+  const user = await getProfile(username)
+  if (!user) notFound()
 
   const [links, testimonials] = await Promise.all([
     getPublicLinks(user.id),
     getTestimonials(user.id),
-  ]);
-  const presence = await getPresence(links);
+  ])
+  const presence = await getPresence(links)
 
   return (
     // Framed as every profile is (components/profile-layout).
     <Wide className={PROFILE.frame}>
       <script
         type="application/ld+json"
+        // biome-ignore lint/security/noDangerouslySetInnerHtml: the profile's JSON-LD, escaped for a script by `inlineJson` (lib/profile-ld), as Next's docs set it
         dangerouslySetInnerHTML={{
           __html: inlineJson(profileJsonLd(user, links)),
         }}
@@ -114,7 +115,7 @@ export default async function Page(props: {
                 >
                   <h2
                     id="vouched"
-                    className="px-1 font-mono text-xs text-foreground/50"
+                    className="px-1 font-mono text-foreground/50 text-xs"
                   >
                     vouched by {testimonials.length}
                   </h2>
@@ -136,5 +137,5 @@ export default async function Page(props: {
         }
       />
     </Wide>
-  );
+  )
 }

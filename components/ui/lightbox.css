@@ -153,6 +153,16 @@
     height: 100%;
     border: 0;
   }
+  /* After the rule it shares with the media (its `display` wins) and before the
+   frame layer's (more specific, which it must not follow). */
+  .ag-lb-frame-ghost {
+    display: grid;
+    place-items: center;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    text-transform: lowercase;
+    opacity: var(--alpha-meta);
+  }
   .ag-lb-layer[data-active] .ag-lb-crop,
   .ag-lb-layer[data-active] .ag-lb-media {
     will-change: transform;
@@ -169,14 +179,6 @@
   .ag-lb-layer[data-kind="frame"] iframe,
   .ag-lb-layer[data-kind="frame"] .ag-lb-frame-ghost {
     background: var(--sidebar);
-  }
-  .ag-lb-frame-ghost {
-    display: grid;
-    place-items: center;
-    font-family: var(--font-mono);
-    font-size: 0.75rem;
-    text-transform: lowercase;
-    opacity: var(--alpha-meta);
   }
   /* The frame owns its own pointer, except while a drag crosses it. */
   .ag-lb[data-gesture] iframe {

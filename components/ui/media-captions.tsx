@@ -17,7 +17,7 @@
 // whoever wrote them.
 
 import * as React from "react"
-import { cn } from "@/lib/utils"
+import { useRemembered } from "@/components/ui/remembered"
 import {
   type CaptionLine,
   type Captions,
@@ -28,12 +28,8 @@ import {
   shownOf,
   toggledChoice,
 } from "@/lib/captions"
-import {
-  fields,
-  isBoolean,
-  setting,
-} from "@/lib/remembered-core"
-import { useRemembered } from "@/components/ui/remembered"
+import { fields, isBoolean, setting } from "@/lib/remembered-core"
+import { cn } from "@/lib/utils"
 
 const orNull =
   <T,>(parse: (x: unknown) => T | undefined) =>

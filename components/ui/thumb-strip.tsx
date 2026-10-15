@@ -11,7 +11,6 @@
 // glass, a bar of the material's glass, the active thumb ringed in the rim's light.
 
 import * as React from "react"
-import { cn } from "@/lib/utils"
 import {
   type Material,
   type Scheme,
@@ -19,6 +18,7 @@ import {
   useSurfaceScheme,
 } from "@/components/ui/material"
 import { glassVariants, schemeOf } from "@/components/ui/material-glass"
+import { cn } from "@/lib/utils"
 
 export type ThumbStripItem = {
   id: string

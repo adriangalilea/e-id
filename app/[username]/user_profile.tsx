@@ -1,14 +1,14 @@
-import { ProfileLinks } from "@/components/profile-links";
-import type { HolderLink } from "@/components/id-card";
-import { cardLinkOf } from "@/lib/data";
-import { MaterialProvider } from "@/components/ui/material";
-import { cn } from "@/lib/utils";
-import { ProfileCard } from "@/components/profile-card";
-import { ProfileShimmer } from "@/components/light";
-import type { SelectLink } from "@/db/schema";
-import type { Profile } from "@/lib/data";
-import type { Presence } from "@/lib/presence";
-import { PROFILE } from "@/components/profile-layout";
+import type { HolderLink } from "@/components/id-card"
+import { ProfileShimmer } from "@/components/light"
+import { ProfileCard } from "@/components/profile-card"
+import { PROFILE } from "@/components/profile-layout"
+import { ProfileLinks } from "@/components/profile-links"
+import { MaterialProvider } from "@/components/ui/material"
+import type { SelectLink } from "@/db/schema"
+import type { Profile } from "@/lib/data"
+import { cardLinkOf } from "@/lib/data"
+import type { Presence } from "@/lib/presence"
+import { cn } from "@/lib/utils"
 
 /** Who this is: their e-id card, its flair their links and its hologram answering
  *  the hand, then what they say of themselves. For its owner the card is also
@@ -18,9 +18,9 @@ function Identity({
   links,
   actions,
 }: {
-  user: Profile;
-  links: HolderLink[];
-  actions?: React.ReactNode;
+  user: Profile
+  links: HolderLink[]
+  actions?: React.ReactNode
 }) {
   return (
     <header className={PROFILE.identity}>
@@ -35,14 +35,14 @@ function Identity({
         }}
       >
         {user.bio && (
-          <p className="px-1 text-[17px] leading-relaxed font-light text-pretty text-foreground/80">
+          <p className="text-pretty px-1 font-light text-[17px] text-foreground/80 leading-relaxed">
             {user.bio}
           </p>
         )}
         {actions}
       </ProfileCard>
     </header>
-  );
+  )
 }
 
 /** What others say, set INTO the page rather than on it: no surface, the words dim,
@@ -51,7 +51,7 @@ function Identity({
  *  light from above). Text shadows inherit, so the quote's words, name and date all
  *  take it. */
 const ENGRAVED =
-  "[text-shadow:0_-1px_0_rgb(0_0_0/0.7),0_1px_0_rgb(255_255_255/0.07)] [&_[data-slot=quote-body]]:text-foreground/50 [&_[data-slot=quote-name]]:text-foreground/45";
+  "[text-shadow:0_-1px_0_rgb(0_0_0/0.7),0_1px_0_rgb(255_255_255/0.07)] [&_[data-slot=quote-body]]:text-foreground/50 [&_[data-slot=quote-name]]:text-foreground/45"
 
 /** The person's side of a wide screen, held still under the bar, as tall as the
  *  screen less the page's room for the bar (5rem, layout) and its foot (3rem). No
@@ -67,10 +67,10 @@ function Side({
   actions,
   vouches,
 }: {
-  user: Profile;
-  links: HolderLink[];
-  actions?: React.ReactNode;
-  vouches?: React.ReactNode;
+  user: Profile
+  links: HolderLink[]
+  actions?: React.ReactNode
+  vouches?: React.ReactNode
 }) {
   return (
     <aside className={PROFILE.side}>
@@ -78,7 +78,7 @@ function Side({
       <MaterialProvider material="plain">
         <div
           className={cn(
-            "flex min-h-0 flex-col gap-1 text-sm max-lg:[grid-area:vouch] lg:flex-1 lg:overflow-y-auto lg:pb-8 lg:[mask-image:linear-gradient(to_bottom,black_calc(100%-2rem),transparent)] lg:[scrollbar-width:none]",
+            "flex min-h-0 flex-col gap-1 text-sm lg:flex-1 lg:overflow-y-auto lg:pb-8 max-lg:[grid-area:vouch] lg:[mask-image:linear-gradient(to_bottom,black_calc(100%-2rem),transparent)] lg:[scrollbar-width:none]",
             ENGRAVED,
           )}
         >
@@ -86,18 +86,18 @@ function Side({
         </div>
       </MaterialProvider>
     </aside>
-  );
+  )
 }
 
 type ProfileProps = {
-  user: Profile;
-  links: SelectLink[];
-  presence: Presence;
+  user: Profile
+  links: SelectLink[]
+  presence: Presence
   /** Share and edit, for the owner: under the identity. */
-  actions?: React.ReactNode;
+  actions?: React.ReactNode
   /** What others say of the person: the pinned testimonials and the comments. */
-  vouches?: React.ReactNode;
-};
+  vouches?: React.ReactNode
+}
 
 /** A profile as a split view in the golden ratio, two different things. WHO, the
  *  smaller part (38.2%): one pane held still (`Side`). WHERE, the larger (61.8%):
@@ -127,5 +127,5 @@ export default function UserProfile({
         <ProfileLinks links={links} presence={presence} />
       </main>
     </div>
-  );
+  )
 }

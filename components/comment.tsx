@@ -1,18 +1,18 @@
-"use client";
+"use client"
 
-import type { ThreadComment } from "@/db/actions";
-import { Testimonial } from "./quote";
-import RemoveComment from "./remove_comment";
-import PinComment from "./pin_comment";
+import type { ThreadComment } from "@/db/actions"
+import PinComment from "./pin_comment"
+import { Testimonial } from "./quote"
+import RemoveComment from "./remove_comment"
 
 export default function Comment({
   comment,
   canPin,
   onChange,
 }: {
-  comment: ThreadComment;
-  canPin: boolean;
-  onChange: () => void;
+  comment: ThreadComment
+  canPin: boolean
+  onChange: () => void
 }) {
   return (
     <div className="flex items-start gap-2">
@@ -34,5 +34,5 @@ export default function Comment({
         <RemoveComment commentId={comment.commentId} onChange={onChange} />
       </div>
     </div>
-  );
+  )
 }

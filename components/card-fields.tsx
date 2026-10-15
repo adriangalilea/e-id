@@ -1,17 +1,17 @@
-"use client";
+"use client"
 
-import { ChevronDown } from "lucide-react";
-import { useEffect, useState } from "react";
-import { EmojiDomain } from "@/components/brand";
-import { ON_CARD } from "@/components/card-shape";
-import { CountryFlag } from "@/components/country";
-import { LazyCountryPickerPopover } from "@/components/ui/country-picker-lazy";
-import { Input, InputGroup } from "@/components/ui/input";
-import { type HandleState, handleState } from "@/db/actions";
-import type { LinkPlatform } from "@/db/schema";
-import { toHandle } from "@/lib/card-draft";
-import { getLinkIcon } from "@/lib/links";
-import { cn } from "@/lib/utils";
+import { ChevronDown } from "lucide-react"
+import { useEffect, useState } from "react"
+import { EmojiDomain } from "@/components/brand"
+import { ON_CARD } from "@/components/card-shape"
+import { CountryFlag } from "@/components/country"
+import { LazyCountryPickerPopover } from "@/components/ui/country-picker-lazy"
+import { Input, InputGroup } from "@/components/ui/input"
+import { type HandleState, handleState } from "@/db/actions"
+import type { LinkPlatform } from "@/db/schema"
+import { toHandle } from "@/lib/card-draft"
+import { getLinkIcon } from "@/lib/links"
+import { cn } from "@/lib/utils"
 
 // WRITING ON A CARD: the fields an e-ID card is written on where it lies, worn as
 // the card's own writing, each a value and its change and nothing else, so the
@@ -34,10 +34,10 @@ export const WELL_ON_CARD = cn(
   // data (id-card, `KNOCKOUT`): a patch of the card's own dark, feathered at its
   // edge, faint under the hand and full while typing. Only wrong does it wear
   // a rim, the field's own red.
-  "bg-transparent ring-transparent shadow-none transition-[background-color,box-shadow] hover:ring-transparent has-[input:focus-visible]:ring-transparent",
+  "bg-transparent shadow-none ring-transparent transition-[background-color,box-shadow] hover:ring-transparent has-[input:focus-visible]:ring-transparent",
   "hover:bg-[rgb(14_14_16/0.7)] hover:shadow-[0_0_0.35em_0.2em_rgb(14_14_16/0.7)]",
   "has-[input:focus-visible]:bg-[rgb(14_14_16/0.92)] has-[input:focus-visible]:shadow-[0_0_0.35em_0.2em_rgb(14_14_16/0.92)]",
-);
+)
 
 /** A field on the card is no login: password managers keep their buttons and
  *  suggestions out of it (1Password's sat over the name). Each reads its own
@@ -48,7 +48,7 @@ export const WRITTEN_HERE = {
   "data-lpignore": "true",
   "data-bwignore": true,
   "data-form-type": "other",
-} as const;
+} as const
 
 /** The name on the name's line, at the written name's size (id-card, `NAME`),
  *  across its row: sized to the row, never to what is typed (the page sizes
@@ -61,13 +61,13 @@ export function NameOnCard({
   label,
   ref,
 }: {
-  value: string;
-  onChange: (name: string) => void;
-  onBlur?: () => void;
-  invalid?: boolean;
+  value: string
+  onChange: (name: string) => void
+  onBlur?: () => void
+  invalid?: boolean
   /** What it asks for, read aloud and written in it while empty. */
-  label: string;
-  ref?: React.Ref<HTMLInputElement>;
+  label: string
+  ref?: React.Ref<HTMLInputElement>
 }) {
   return (
     <Input
@@ -83,10 +83,10 @@ export function NameOnCard({
       material="plain"
       className={cn(
         WELL_ON_CARD,
-        "w-full text-(length:--card-name) font-medium tracking-[-0.03em] [&_input]:[field-sizing:fixed]",
+        "text-(length:--card-name) w-full font-medium tracking-[-0.03em] [&_input]:[field-sizing:fixed]",
       )}
     />
-  );
+  )
 }
 
 /** The address as the card writes it, the handle typed after its slash, as wide
@@ -101,14 +101,14 @@ export function HandleOnCard({
   describedBy,
   label,
 }: {
-  value: string;
-  onChange: (handle: string) => void;
-  onBlur?: () => void;
-  onEnter?: () => void;
-  invalid?: boolean;
+  value: string
+  onChange: (handle: string) => void
+  onBlur?: () => void
+  onEnter?: () => void
+  invalid?: boolean
   /** The id of what says how the handle stands. */
-  describedBy?: string;
-  label: string;
+  describedBy?: string
+  label: string
 }) {
   return (
     <InputGroup
@@ -129,8 +129,8 @@ export function HandleOnCard({
       onBlur={onBlur}
       onKeyDown={(e) => {
         if (e.key === "Enter" && onEnter) {
-          e.preventDefault();
-          onEnter();
+          e.preventDefault()
+          onEnter()
         }
       }}
       // At the card's size (cqw), the address's own type: the well fits what
@@ -143,7 +143,7 @@ export function HandleOnCard({
       // The domain the handle continues: one address, one word.
       prefix={<EmojiDomain path="/" />}
     />
-  );
+  )
 }
 
 /** The country on the card's head, its flag the picker's trigger (the picker
@@ -155,9 +155,9 @@ export function CountryOnCard({
   onChange,
   label,
 }: {
-  code: string;
-  onChange: (code: string) => void;
-  label: string;
+  code: string
+  onChange: (code: string) => void
+  label: string
 }) {
   return (
     <LazyCountryPickerPopover
@@ -184,19 +184,19 @@ export function CountryOnCard({
         />
       </button>
     </LazyCountryPickerPopover>
-  );
+  )
 }
 
 /** The row the card's links stand in while it is written on (id-card, `Flair`):
  *  their marks at the card's icon size. */
 export const LINKS_ON_CARD =
-  "-mx-[1.1cqw] flex flex-wrap items-center gap-[0.6cqw] text-foreground/75 [&_svg]:size-[4.6cqw] [&_svg]:stroke-[1.4]";
+  "-mx-[1.1cqw] flex min-w-0 flex-wrap items-center gap-[0.6cqw] text-foreground/75 [&_svg]:size-[4.6cqw] [&_svg]:stroke-[1.4]"
 
 /** One link's mark on a card being written on: a press that opens it. */
 export const LINK_MARK = cn(
   ON_CARD,
   "p-[1.1cqw] transition-colors hover:bg-white/[0.08] hover:text-foreground data-[popup-open]:bg-white/[0.08] data-[popup-open]:text-foreground",
-);
+)
 
 /** The platforms by name, each a press that picks it: what adding a link asks
  *  first. */
@@ -204,8 +204,8 @@ export function PlatformChoice({
   platforms,
   onPick,
 }: {
-  platforms: readonly LinkPlatform[];
-  onPick: (platform: LinkPlatform) => void;
+  platforms: readonly LinkPlatform[]
+  onPick: (platform: LinkPlatform) => void
 }) {
   return (
     <div role="listbox" aria-label="add a link" className="flex flex-col">
@@ -216,36 +216,36 @@ export function PlatformChoice({
           role="option"
           aria-selected={false}
           onClick={() => onPick(platform)}
-          className="flex items-center gap-3 rounded-lg px-2.5 py-2 text-sm text-foreground/85 transition-colors hover:bg-foreground/8 hover:text-foreground [&_svg]:size-4 [&_svg]:stroke-[1.5]"
+          className="flex items-center gap-3 rounded-lg px-2.5 py-2 text-foreground/85 text-sm transition-colors hover:bg-foreground/8 hover:text-foreground [&_svg]:size-4 [&_svg]:stroke-[1.5]"
         >
           {getLinkIcon(platform)}
           {platform}
         </button>
       ))}
     </div>
-  );
+  )
 }
 
 /** What the server says of a handle, for the handle it was asked about: a
  *  moment after the typing stops, and never an answer about an older one. */
 export function useHandleState(handle: string) {
   const [answer, setAnswer] = useState<{
-    handle: string;
-    state: HandleState;
-    why: string | null;
-  } | null>(null);
+    handle: string
+    state: HandleState
+    why: string | null
+  } | null>(null)
   useEffect(() => {
-    if (!handle) return;
-    let live = true;
+    if (!handle) return
+    let live = true
     const wait = setTimeout(() => {
       void handleState(handle).then((a) => {
-        if (live) setAnswer({ handle, ...a });
-      });
-    }, 250);
+        if (live) setAnswer({ handle, ...a })
+      })
+    }, 250)
     return () => {
-      live = false;
-      clearTimeout(wait);
-    };
-  }, [handle]);
-  return answer?.handle === handle ? answer : null;
+      live = false
+      clearTimeout(wait)
+    }
+  }, [handle])
+  return answer?.handle === handle ? answer : null
 }

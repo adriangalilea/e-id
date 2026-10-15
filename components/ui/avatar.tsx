@@ -1,6 +1,6 @@
 import type * as React from "react"
-import { cn } from "@/lib/utils"
 import { Image } from "@/components/ui/image"
+import { cn } from "@/lib/utils"
 
 export type AvatarSize = "sm" | "md" | "lg"
 
@@ -44,7 +44,7 @@ export function avatarLook({
 } {
   return {
     className: cn(
-      "inline-block flex-none size-(--ag-avatar-size) overflow-hidden rounded-full align-middle",
+      "inline-block size-(--ag-avatar-size) flex-none overflow-hidden rounded-full align-middle",
       tone ? RING : RING_PLAIN,
       className,
     ),
