@@ -101,7 +101,7 @@ class EIdCard extends HTMLElement {
   // WHO THEY ARE THERE, on a link's mark: under the hand or the keys, the link's
   // profile (the card's data, links[i].profile, i the mark's data-link) in one
   // row beside it, the site's compact profile drawn without the site. Read once,
-  // on the first mark reached; a link with no profile shows nothing.
+  // on the first mark reached.
   #links = null;
   #shown = null;
 
@@ -121,7 +121,10 @@ class EIdCard extends HTMLElement {
     const link = (await this.#read())[Number(mark.dataset.link)];
     const peek = this.#root.getElementById("peek");
     if (!peek || this.#shown !== mark) return;
-    const p = link && link.profile;
+    // A link never read (a site that refuses to be, X) is still its handle,
+    // named by it as a profile with no name set is; one with no handle shows
+    // nothing.
+    const p = link && (link.profile || (link.handle && { name: link.handle, handle: link.handle }));
     if (!p) return this.#hide();
     const face = document.createElement("img");
     face.alt = "";

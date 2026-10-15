@@ -14,7 +14,8 @@ import { SocialProfile } from "@/components/ui/social-profile";
 import type { ProfileFacts } from "@/lib/social-profile-core";
 import { CARD_LAYOUT, cqw } from "@/lib/card-layout";
 import { type HoloPrint, MARK_EMBLEM } from "@/lib/holo";
-import type { CardLink } from "@/lib/link-names";
+import type { LinkPlatform } from "@/db/schema";
+import { type CardLink, handleOf, valueOf } from "@/lib/link-names";
 import { getLinkIcon } from "@/lib/links";
 import { cn } from "@/lib/utils";
 
@@ -110,6 +111,15 @@ function Ghost({ holder }: { holder: Holder }) {
   );
 }
 
+/** A link's profile from what the link itself says, where it was never read (a
+ *  site that refuses to be read, X): the handle its address ends in, named by it,
+ *  as a profile with no name set is. None for what has no handle (a website). */
+function knownOf(platform: LinkPlatform, url: string): ProfileFacts | undefined {
+  const handle = handleOf(platform, valueOf(platform, url));
+  if (!handle) return undefined;
+  return { platform, url, handle, name: handle, kind: "person", counts: [] };
+}
+
 /** Where the person is, on the card itself: their links' marks in a row, as an ID
  *  carries its holder's entitlements, each one the way there. With the address,
  *  the card's only touchable parts are what it shows. `rel="me"`: the same person
@@ -123,7 +133,8 @@ function Flair({ links }: { links: HolderLink[] }) {
       // glyphs, not their boxes, meet the photo's foot and the words' edge.
       className="-m-[1.1cqw] flex items-center gap-[0.6cqw] text-foreground/70 [&_svg]:size-(--card-icon) [&_svg]:stroke-[1.4]"
     >
-      {links.map(({ platform, name, url, profile }) => {
+      {links.map(({ platform, name, url, profile: read }) => {
+        const profile = read ?? knownOf(platform, url);
         const mark = {
           href: url,
           rel: "me noopener",
