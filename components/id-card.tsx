@@ -320,7 +320,7 @@ export function IdCard({
             // nothing behind it, and a blur of what it hides, done again every
             // frame a card floats, was the home's whole cost.
             "--glass-backdrop":
-              "var(--id-card-backdrop, blur(var(--id-card-blur, 9px)) saturate(1.25))",
+              "var(--id-card-backdrop, blur(var(--id-card-blur, 9px)) saturate(calc(1 + 0.25 * var(--glass-saturation, 1))))",
           } as React.CSSProperties
         }
       >

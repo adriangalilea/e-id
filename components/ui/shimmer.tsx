@@ -39,6 +39,12 @@ export interface ShimmerProps {
   /** A speck's side in CSS pixels. Unset, one device pixel, the finest the
    *  screen draws. */
   size?: number
+  /** How many canvas pixels it draws to a CSS pixel, at most: unset, the
+   *  screen's own (a speck one device pixel); 1 on a 2× screen draws a quarter
+   *  of the pixels, each speck then two device pixels, softened as the canvas is
+   *  stretched to its box. What a page spends the GPU on, against how fine the
+   *  specks are. */
+  resolution?: number
   /** How soft a speck is: the radius it is spread over, in CSS pixels (a
    *  gaussian's spread), 0 a hard pixel (default). Half a pixel takes the edge
    *  off a flash on a dark ground without blurring the layer. */
@@ -397,6 +403,7 @@ type Knobs = Required<
   >
 > & {
   size: number | undefined
+  resolution: number | undefined
   fade: ShimmerProps["fade"]
 }
 
@@ -406,6 +413,7 @@ export function Shimmer({
   strength = 1,
   opacity = 1,
   size,
+  resolution,
   soft = 0,
   cell = 3,
   density = 0.55,
@@ -426,6 +434,7 @@ export function Shimmer({
     hand,
     strength,
     size,
+    resolution,
     soft,
     cell,
     density,
@@ -475,10 +484,16 @@ export function Shimmer({
     gl.enable(gl.BLEND)
     gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA)
 
-    // Canvas pixels per CSS pixel: the screen's, so a speck is a device pixel.
+    // Canvas pixels per CSS pixel: the screen's, so a speck is a device pixel,
+    // or fewer where `resolution` caps it.
+    const scale = () =>
+      Math.min(
+        window.devicePixelRatio,
+        knobs.current.resolution ?? Number.POSITIVE_INFINITY,
+      )
     let k = 1
     const fit = () => {
-      k = window.devicePixelRatio
+      k = scale()
       canvas.width = Math.max(1, Math.round(canvas.clientWidth * k))
       canvas.height = Math.max(1, Math.round(canvas.clientHeight * k))
       gl.viewport(0, 0, canvas.width, canvas.height)
@@ -520,6 +535,8 @@ export function Shimmer({
 
     const draw = (now: number) => {
       const m = knobs.current
+      // A resolution changed since the last frame: the canvas is sized again.
+      if (scale() !== k) fit()
       const cellPx = Math.max(2, Math.round(m.cell * k))
       gl.uniform1f(u("uCell"), cellPx)
       gl.uniform1f(u("uSpeck"), Math.max(1, Math.round((m.size ?? 1 / k) * k)))

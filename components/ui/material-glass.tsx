@@ -190,6 +190,13 @@ export type GlassLook = keyof typeof glassLooks
  *  `--glass-body` marks a body, and only a body: what is inside stands on glass
  *  (`glassLight`'s stack). `data-material` is the face's, worn by every control
  *  whatever it stands on. */
+/* HOW MUCH GLASS DEEPENS THE COLOUR behind it is one knob for every layer of it
+ * (a body, a front, a spill): `--glass-saturation`, inherited, 1 by default (each
+ * layer's own deepening: a body's a quarter more colour on dark), 0 none (the
+ * picture's colour as it is, only blurred). Set on any ancestor, the page's root
+ * included. Each layer writes it out as `saturate(calc(1+<its own>*var(--glass-
+ * saturation,1)))`, in full: Tailwind finds a class only as written. */
+
 const GLASS_BODY = [
   "[--glass-body:1]",
   // The face and the hue its stain takes on it (the light hue on the light face,
@@ -197,9 +204,10 @@ const GLASS_BODY = [
   // behind it, `--glass-backdrop`, a whole filter in its order (a frost of its own,
   // a fluid glass's, replaces it there and nowhere else).
   // A ghost's body is a third as thick (`--glass-ghost`): the picture shows through
-  // what is only inherited.
-  "[--glass-face:var(--glass-tint,rgb(242_244_247/calc(var(--glass-thickness,0.7)*var(--glass-stack)*(1-0.65*var(--glass-ghost)))))] [--glass-body-hue:var(--glass-hue)] [--glass-backdrop:blur(var(--glass-blur,14px))_saturate(1.4)]",
-  "scheme-dark:[--glass-face:var(--glass-tint,rgb(16_16_18/calc(var(--glass-thickness,0.6)*var(--glass-stack)*(1-0.65*var(--glass-ghost)))))] scheme-dark:[--glass-body-hue:var(--glass-hue-deep)] scheme-dark:[--glass-backdrop:blur(var(--glass-blur,6px))_saturate(1.25)]",
+  // what is only inherited. How much it deepens the colour behind it is
+  // `--glass-saturation` (above).
+  "[--glass-face:var(--glass-tint,rgb(242_244_247/calc(var(--glass-thickness,0.7)*var(--glass-stack)*(1-0.65*var(--glass-ghost)))))] [--glass-body-hue:var(--glass-hue)] [--glass-backdrop:blur(var(--glass-blur,14px))_saturate(calc(1+0.4*var(--glass-saturation,1)))]",
+  "scheme-dark:[--glass-face:var(--glass-tint,rgb(16_16_18/calc(var(--glass-thickness,0.6)*var(--glass-stack)*(1-0.65*var(--glass-ghost)))))] scheme-dark:[--glass-body-hue:var(--glass-hue-deep)] scheme-dark:[--glass-backdrop:blur(var(--glass-blur,6px))_saturate(calc(1+0.25*var(--glass-saturation,1)))]",
   "[-webkit-backdrop-filter:var(--glass-backdrop)] [backdrop-filter:var(--glass-backdrop)]",
   "bg-[color-mix(in_oklab,var(--glass-body-hue,var(--glass-face))_var(--glass-amount),var(--glass-face))] supports-[not(backdrop-filter:blur(1px))]:bg-background/95",
   // The body's SHADE, lit across from the light's corner as its edge is: lighter
@@ -552,7 +560,7 @@ export type GlassFrontAt = "top" | "bottom"
  *  what is between the two, so a front inside a blurring body blurs nothing that
  *  passes under it (a glass Panel blurs on a back layer for that reason). */
 const GLASS_FRONT = [
-  "backdrop-blur-[var(--glass-front-blur,12px)] backdrop-saturate-125",
+  "backdrop-blur-[var(--glass-front-blur,12px)] backdrop-saturate-[calc(1+0.25*var(--glass-saturation,1))]",
   glassLight,
   "bg-[color:var(--glass-front-color,color-mix(in_oklab,var(--glass-hue,color-mix(in_oklab,var(--background)_55%,transparent))_var(--glass-amount),color-mix(in_oklab,var(--background)_55%,transparent)))]",
   "after:pointer-events-none after:absolute after:inset-x-0 after:h-(--glass-width) after:content-[''] after:bg-[linear-gradient(90deg,color-mix(in_oklab,var(--glass-catch)_27.5%,transparent),color-mix(in_oklab,var(--glass-catch)_7.5%,transparent))]",
@@ -773,7 +781,7 @@ export function GlassSpill({
     WebkitMaskRepeat: "no-repeat",
   })
   const blur =
-    "absolute [backdrop-filter:blur(var(--glass-spill-blur,4px))_saturate(1.2)] [-webkit-backdrop-filter:blur(var(--glass-spill-blur,4px))_saturate(1.2)]"
+    "absolute [backdrop-filter:blur(var(--glass-spill-blur,4px))_saturate(calc(1+0.2*var(--glass-saturation,1)))] [-webkit-backdrop-filter:blur(var(--glass-spill-blur,4px))_saturate(calc(1+0.2*var(--glass-saturation,1)))]"
   return (
     <div
       aria-hidden
