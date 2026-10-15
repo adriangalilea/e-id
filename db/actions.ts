@@ -15,7 +15,13 @@ import {
 import { type Chip, chipOf } from "@/lib/chip"
 import { writeChip } from "@/lib/chip-server"
 import { countryOf } from "@/lib/country-of"
-import { cardLinkOf, getProfile, getPublicLinks } from "@/lib/data"
+import {
+  cardLinkOf,
+  getProfile,
+  getPublicLinks,
+  type Writer,
+  writerOf,
+} from "@/lib/data"
 import { isAdmin } from "@/lib/env"
 import { getGithubProfile } from "@/lib/github"
 import { OFFERED } from "@/lib/platforms"
@@ -48,7 +54,7 @@ export type ThreadComment = {
   body: string
   createdAt: Date
   pinned: boolean
-  user: { name: string | null; image: string | null; username: string | null }
+  user: Writer
 }
 
 export type CommentThread = {
@@ -74,12 +80,13 @@ export async function loadComments(
       body: comments.body,
       createdAt: comments.created_at,
       pinned: comments.pinned,
+      commentatorId: comments.commentator_id,
       name: users.name,
       image: users.image,
       username: users.username,
     })
     .from(comments)
-    .innerJoin(users, eq(comments.commentator_id, users.id))
+    .leftJoin(users, eq(comments.commentator_id, users.id))
     .where(
       isOwner
         ? eq(comments.profile_user_id, profileUserId)
@@ -98,7 +105,7 @@ export async function loadComments(
       body: row.body,
       createdAt: row.createdAt,
       pinned: row.pinned,
-      user: { name: row.name, image: row.image, username: row.username },
+      user: writerOf(row),
     })),
   }
 }

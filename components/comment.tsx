@@ -18,10 +18,8 @@ export default function Comment({
     <div className="flex items-start gap-2">
       <Testimonial
         text={comment.body}
-        name={comment.user.name ?? ""}
-        username={comment.user.username ?? ""}
+        writer={comment.user}
         date={comment.createdAt}
-        image={comment.user.image ?? ""}
       />
       <div className="flex flex-col gap-2">
         {canPin && (

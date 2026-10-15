@@ -113,7 +113,33 @@ export type Testimonial = {
   commentId: string
   body: string
   createdAt: Date
-  user: { name: string | null; image: string | null; username: string | null }
+  user: Writer
+}
+
+/** Who wrote a vouch, as it is signed: their name, face and page, or, where they
+ *  deleted their account (the vouch stays, its writer gone: db/schema `comments`),
+ *  nobody's. */
+export type Writer = {
+  name: string | null
+  image: string | null
+  username: string | null
+}
+
+export const FORMER_MEMBER: Writer = {
+  name: "a former e-ID member",
+  image: null,
+  username: null,
+}
+
+export function writerOf(row: {
+  commentatorId: string | null
+  name: string | null
+  image: string | null
+  username: string | null
+}): Writer {
+  return row.commentatorId === null
+    ? FORMER_MEMBER
+    : { name: row.name, image: row.image, username: row.username }
 }
 
 /** The comments a profile's owner pinned, shown to everyone. */
@@ -135,7 +161,7 @@ export async function getTestimonials(
       username: users.username,
     })
     .from(comments)
-    .innerJoin(users, eq(comments.commentator_id, users.id))
+    .leftJoin(users, eq(comments.commentator_id, users.id))
     .where(
       and(
         eq(comments.profile_user_id, profileUserId),
@@ -144,12 +170,13 @@ export async function getTestimonials(
     )
     .orderBy(asc(comments.created_at))
 
-  for (const row of rows) cacheTag(profileTag(row.commentatorId))
+  for (const row of rows)
+    if (row.commentatorId) cacheTag(profileTag(row.commentatorId))
   return rows.map((row) => ({
     commentId: row.commentId,
     body: row.body,
     createdAt: row.createdAt,
-    user: { name: row.name, image: row.image, username: row.username },
+    user: writerOf(row),
   }))
 }
 

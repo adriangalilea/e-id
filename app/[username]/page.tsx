@@ -132,10 +132,8 @@ export default async function Page(props: {
                     <Testimonial
                       key={testimonial.commentId}
                       text={testimonial.body}
-                      name={testimonial.user.name ?? ""}
-                      image={testimonial.user.image ?? ""}
+                      writer={testimonial.user}
                       date={testimonial.createdAt}
-                      username={testimonial.user.username ?? ""}
                     />
                   ))}
                 </section>

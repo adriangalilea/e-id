@@ -1,3 +1,4 @@
+import type { Writer } from "@/lib/data"
 import { Quote as AgQuote } from "./ui/quote"
 
 /** A link's note, inside its tab: the person's own words about that link, so
@@ -22,18 +23,15 @@ const DAY = new Intl.DateTimeFormat("en-US", {
 
 /** A comment the profile's owner pinned, as @ag/quote: somebody else's words, their
  *  face and name (to their own page), the day. `prose`, on the surface the page's
- *  MaterialProvider says, glass on e-id. */
+ *  MaterialProvider says, glass on e-id. A writer who left (lib/data `writerOf`)
+ *  signs with no face and no page. */
 export function Testimonial({
   text,
-  name,
-  username,
-  image,
+  writer,
   date,
 }: {
   text: string
-  name: string
-  username: string
-  image: string
+  writer: Writer
   date: Date
 }) {
   return (
@@ -41,9 +39,9 @@ export function Testimonial({
       variant="prose"
       text={text}
       author={{
-        name: name || `@${username}`,
-        href: `/${username}`,
-        avatar: image || undefined,
+        name: writer.name || `@${writer.username}`,
+        href: writer.username ? `/${writer.username}` : undefined,
+        avatar: writer.image || undefined,
       }}
       date={DAY.format(date)}
       // No surface of its own: a vouch lies in the page's ground (the profile

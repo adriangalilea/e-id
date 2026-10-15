@@ -34,9 +34,6 @@ export const users = sqliteTable(
     allow_comments: integer("allow_comments", { mode: "boolean" })
       .notNull()
       .default(false),
-    theme: text("theme"),
-    languages: text("languages", { mode: "json" }),
-    birthDate: integer("birth_date", { mode: "timestamp" }),
   },
   (table) => {
     return {
@@ -137,9 +134,11 @@ export const comments = sqliteTable(
     profile_user_id: text("profile_user_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
-    commentator_id: text("commentator_id")
-      .notNull()
-      .references(() => users.id, { onDelete: "cascade" }),
+    // Who wrote it; null once they deleted their account: the vouch stays on the
+    // page it was written for, signed by nobody (lib/data `writerOf`).
+    commentator_id: text("commentator_id").references(() => users.id, {
+      onDelete: "set null",
+    }),
     created_at: integer("created_at", { mode: "timestamp" })
       .default(sql`(unixepoch())`)
       .notNull(),

@@ -123,8 +123,12 @@ export const auth = betterAuth({
   // Google say whether an email is verified, and every email stored here came
   // from one of them). A provider is never trusted blind: an unverified email
   // links nothing.
+  // A provider's tokens are read once, when it is linked (`adoptAccount`, for its
+  // profile and avatar), and never kept: they are cleared right after, and a later
+  // sign-in does not write them back.
   account: {
     accountLinking: { enabled: true, trustedProviders: [] },
+    updateAccountOnSignIn: false,
   },
 
   plugins: [
@@ -181,18 +185,6 @@ export const auth = betterAuth({
         required: true,
         defaultValue: false,
       },
-      theme: {
-        type: "string",
-        required: false,
-      },
-      languages: {
-        type: "string",
-        required: false,
-      },
-      birthDate: {
-        type: "number",
-        required: false,
-      },
     },
   },
 
@@ -241,12 +233,41 @@ export const auth = betterAuth({
         },
       },
     },
+    // A session is a token and its times: the IP address and browser better-auth
+    // would write beside it are never stored (nothing here reads them; the rate
+    // limit sees the IP on the request, in memory).
+    session: {
+      create: {
+        before: async (session) => ({
+          data: { ...session, ipAddress: null, userAgent: null },
+        }),
+      },
+      update: {
+        before: async (session) => ({
+          data: {
+            ...session,
+            ...("ipAddress" in session && { ipAddress: null }),
+            ...("userAgent" in session && { userAgent: null }),
+          },
+        }),
+      },
+    },
     account: {
       create: {
         // A provider linked for the first time: sign-up, or a second provider.
         // Runs after the OAuth callback's transaction commits.
         after: async (account) => {
           await adoptAccount(account)
+          await db
+            .update(accounts)
+            .set({
+              accessToken: null,
+              refreshToken: null,
+              idToken: null,
+              accessTokenExpiresAt: null,
+              refreshTokenExpiresAt: null,
+            })
+            .where(eq(accounts.id, account.id))
         },
       },
     },
