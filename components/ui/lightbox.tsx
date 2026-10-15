@@ -1563,8 +1563,8 @@ function Stage(props: StageProps) {
             write()
             break
           case "scroll":
-            // A hand on the track, feeding the SAME swipe the wheel feeds: one line,
-            // one lean, one slide per gesture, whatever is pushing. The finger moves
+            // A hand on the track, feeding the SAME swipe the wheel feeds: one tip,
+            // one slide per gesture, whatever is pushing. The finger moves
             // right, the pictures come from the left, so the travel is its negative.
             slides.finger(-f.dx)
             break

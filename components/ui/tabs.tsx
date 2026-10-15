@@ -64,9 +64,9 @@ import { cn } from "@/lib/utils"
 // height each tab's panel fills it and keeps its own place in the scroll.
 //
 // Panels in a track (`TabsPanels`) are swiped between: a finger, or two on a
-// trackpad, sideways over them, and the panel leans with the hand, the next one
-// beside it; past the line it goes to that tab, one tab a gesture, the lightbox's
-// pager rules (`lib/lightbox-motion`). Up and down stays the page's; a press, a
+// trackpad, sideways over them (the tab bar too), and the panel follows the hand,
+// the next one beside it; past its halfway point it tips to that tab, one tab a
+// gesture, the lightbox's pager rules (`lib/lightbox-motion`). Up and down stays the page's; a press, a
 // click and the keys are unchanged. A panel in a track also stays laid out while
 // hidden, so showing it again is paint alone.
 //
@@ -752,7 +752,7 @@ function claimed(target: EventTarget | null, track: HTMLElement): boolean {
 }
 
 /** THE TRACK, BOUND: the panels are the lightbox's slide track (ui/slide-track),
- *  the one engine both swipe on, so a panel leans, is bought one a gesture, holds
+ *  the one engine both swipe on, so a panel follows, tips one a gesture, holds
  *  at the first and the last, and glides from where it stands exactly as a picture
  *  does. This reads the hand into it and keeps it and the tabs one thing:
  *

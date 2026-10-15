@@ -98,8 +98,10 @@ export function createSlideTrack(o: SlideTrackOptions): SlideTrack {
   const debugging = () => o.debug?.() ?? false
 
   // ---- THE INSTRUMENT (debug only). Every decision is one line, `track <what>`,
-  // with the engine's whole state after it: the anchor (a), the hand's travel (t),
-  // the lean it gives (g), where the machine has the track (b), what was last
+  // with the engine's whole state after it: the anchor (a), the hand's travel this
+  // gesture (h, px of trackpad or finger), the slides' offset from the anchor it
+  // makes (o: h by the wheel's gain, or 1:1), where the machine has the track (b),
+  // what was last
   // WRITTEN to the scroller (w), and the flags (step: snapping held off, swipe: a
   // hand on it, done: the gesture spent, glide: a glide running, aim). A decision
   // line never reads the scroller (a read after a write forces a layout, and the
@@ -116,7 +118,7 @@ export function createSlideTrack(o: SlideTrackOptions): SlideTrack {
   const say = (what: string) => {
     if (!debugging()) return
     trace(
-      `track ${what} · a ${swipeAnchor} t ${r(swipeTravel)} g ${r(give())} b ${r(base)} w ${r(written)}${flags()}`,
+      `track ${what} · a ${swipeAnchor} h ${r(swipeHand)} o ${r(give())} b ${r(base)} w ${r(written)}${flags()}`,
     )
   }
   const stepOn = (why: string) => {

@@ -71,12 +71,14 @@ export type AccountMenuSize = "md" | "lg"
 /** The face at the pill's start, concentric with its round end: the pill's height
  *  less the 4 px it is inset by (`pl-1`). */
 const FACE: Record<AccountMenuSize, string> = { md: "size-6", lg: "size-8" }
+const FACE_PX: Record<AccountMenuSize, number> = { md: 24, lg: 32 }
 
-/** The signed-out face's line, in Lucide's 24-unit grid, so that drawn at the
- *  face's size it is the chevron's line on screen: Lucide's 2 at the chevron's
- *  16 px, 1.33 px. At its default it was 2 px at `lg`, heavier than everything
- *  beside it. */
-const FACE_LINE: Record<AccountMenuSize, number> = { md: 4 / 3, lg: 1 }
+/** The signed-out face draws the line every 16 px icon beside it draws (the
+ *  chevron's): Lucide's 2 units of its 24-unit grid at 16 px. A Lucide line is in
+ *  grid units, so it thickens with the icon: the face, larger, sets its own to land
+ *  on the same screen width (Lucide's 2 would draw 2.67 px at `lg`, 1.5 drew 2). */
+const LINE_PX = (2 * 16) / 24
+const faceLine = (size: AccountMenuSize) => (LINE_PX * 24) / FACE_PX[size]
 
 /** The chevron at the pill's end, concentric with its round end as the face is
  *  with the start: the end padding is half the pill's height less half the 16 px
@@ -236,7 +238,7 @@ function SignedOut<P extends string>({
           loading={waiting || busy}
           icon={
             <CircleUserRound
-              strokeWidth={FACE_LINE[size]}
+              strokeWidth={faceLine(size)}
               className={cn(FACE[size], "-my-1")}
             />
           }
