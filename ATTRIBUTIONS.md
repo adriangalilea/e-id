@@ -1,2 +1,16 @@
-<a href="https://www.freepik.com/author/uicons/icons/uicons-brands-solid_5089">Icon by UIcons</a>
-<a href="https://www.freepik.com/free-vector/twitter-new-2023-x-logo-white-background-vector_57642995.htm#fromView=search&page=1&position=0&uuid=e2e74e32-bad0-4158-8415-55b07e485e10">Image by starline</a> on Freepik
+# Attributions
+
+What e-ID uses that others made, and on what terms. The one list: the README points here.
+
+## In the site
+
+- **Space Grotesk and Space Mono**, the type: SIL Open Font License 1.1, © The Space Grotesk Project Authors and © The Space Mono Project Authors. Their licences ship beside the files, in [`public/fonts`](public/fonts).
+- **The brands' marks** (GitHub, X, YouTube, Instagram, and the rest of `lib/brand-icons`): Lucide's drawings as `lucide-react` 0.556.0 shipped them, ISC licence, Lucide Contributors.
+- **The sign-in marks** (GitHub, Google): [Simple Icons](https://simpleicons.org), CC0.
+- **The home's example cards' portraits** ([`public/showcase`](public/showcase)): Wikipedia's page images, free to reuse; where each came from is in `lib/showcase-examples`.
+- **The emoji domain's progressive enhancement** (Safari sent to `👤.to`, every other browser to `e-id.to`): [jonroig's emojiurlifier](https://github.com/jonroig/emojiurlifier), an idea done here in the site's own redirects.
+- **Link checking**: [Google Safe Browsing](https://safebrowsing.google.com). Every warning drawn from it carries "Advisory provided by Google", as its terms ask (`lib/threats`).
+
+## In the CLI
+
+- **`@adriangalilea/utils`** (its terminal output), bundled into `cli/dist/eid.js`: MIT.
