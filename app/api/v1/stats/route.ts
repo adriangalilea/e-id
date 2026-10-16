@@ -1,4 +1,5 @@
-import { fail, withKey } from "@/lib/api"
+import { answer, fail, withKey } from "@/lib/api"
+import { Stats } from "@/lib/api-schemas"
 import { isAdmin } from "@/lib/env"
 import { SITE, visitDriver, visitsEnabled } from "@/lib/visit-store"
 import { readOwner } from "@/lib/visits"
@@ -19,7 +20,7 @@ export const GET = withKey(async (_request, { userId }) => {
     owner: userId,
     days: 30,
   })
-  return Response.json({
+  return answer(Stats, {
     views: report.views,
     hits: report.hits,
     ...(isAdmin(userId) && { detail: report }),

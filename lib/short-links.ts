@@ -49,6 +49,8 @@ export async function shortLinksOf(userId: string): Promise<{
       public: l.public,
       visits: l.visits,
       stopped: l.stopped_why,
+      kind: l.kind,
+      file: l.custom_data?.file ?? null,
     })),
     allowance,
   }
@@ -80,11 +82,12 @@ export async function writeShortLink(
       public: links.public,
       order: links.order,
       stopped: links.stopped_why,
+      kind: links.kind,
     })
     .from(links)
     .where(eq(links.user_id, userId))
   const was = a.id ? owned.find((l) => l.id === a.id) : undefined
-  if (a.id && was?.platform !== "link")
+  if (a.id && (was?.platform !== "link" || was.kind !== "url"))
     throw new Error(
       `writeShortLink: ${a.id} is not a short link of ${userId}'s`,
     )
@@ -159,6 +162,8 @@ export async function writeShortLink(
       slug: fields.slug,
       visits: row?.visits ?? 0,
       stopped: null,
+      kind: "url",
+      file: null,
     },
   }
 }

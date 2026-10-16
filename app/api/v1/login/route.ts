@@ -1,5 +1,6 @@
-import { bodyOf, fail } from "@/lib/api"
+import { answer, bodyAs, fail } from "@/lib/api"
 import { startLogin } from "@/lib/api-keys"
+import { LoginStartBody, LoginStarted } from "@/lib/api-schemas"
 import { allowed, callerOf } from "@/lib/rate-limit"
 
 // `eid login`, its first step (lib/api-keys): a sign-in begun for the machine
@@ -9,13 +10,10 @@ import { allowed, callerOf } from "@/lib/rate-limit"
 export async function POST(request: Request) {
   if (!allowed(`login:${callerOf(request.headers)}`, 10, 10 * 60_000))
     return fail(429, { code: "slow_down", message: "Too many sign-ins begun." })
-  const body = await bodyOf(request)
+  const body = await bodyAs(request, LoginStartBody)
   if (body instanceof Response) return body
-  const host = (body as { host?: unknown }).host
-  if (typeof host !== "string" || !/^[\w.-]{1,64}$/.test(host))
-    return fail(400, {
-      code: "bad_host",
-      message: "Say the machine's name (`host`): letters, digits, . _ -",
-    })
-  return Response.json(await startLogin(host, new URL(request.url).origin))
+  return answer(
+    LoginStarted,
+    await startLogin(body.host, new URL(request.url).origin),
+  )
 }

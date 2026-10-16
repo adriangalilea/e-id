@@ -1,5 +1,6 @@
-import { bodyOf, fail } from "@/lib/api"
+import { answer, bodyAs, fail } from "@/lib/api"
 import { claimLogin } from "@/lib/api-keys"
+import { LoggedIn, LoginTokenBody } from "@/lib/api-schemas"
 
 // `eid login`, asking after its sign-in every few seconds (RFC 8628 §3.4):
 // the key once its person approved it at /cli, else why not yet, in the RFC's
@@ -12,13 +13,10 @@ const WORDS = {
 } as const
 
 export async function POST(request: Request) {
-  const body = await bodyOf(request)
+  const body = await bodyAs(request, LoginTokenBody)
   if (body instanceof Response) return body
-  const device = (body as { device_code?: unknown }).device_code
-  if (typeof device !== "string" || device.length < 20)
-    return fail(400, { code: "bad_device_code", message: "No device code." })
-  const claimed = await claimLogin(device)
+  const claimed = await claimLogin(body.device_code)
   if (claimed.state === "ok")
-    return Response.json({ key: claimed.key, username: claimed.username })
+    return answer(LoggedIn, { key: claimed.key, username: claimed.username })
   return fail(400, { code: claimed.state, message: WORDS[claimed.state] })
 }

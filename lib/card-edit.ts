@@ -27,6 +27,15 @@ export const MOST_SHORT_LINKS = 200
  *  page on the web, never a script or a bare word), a name its owner can have,
  *  and, if it stops opening, never on the card (the card is cached and could not
  *  know the moment it stops). */
+/** What is wrong with a name for a link of one's own (`/you/<name>`), a short
+ *  link's or a send's, or null for nothing. */
+export function slugProblem(slug: string): string | null {
+  const name = slug.toLowerCase()
+  return !LINK_SLUG.test(name)
+    ? "Letters, digits and single hyphens, at most 40."
+    : refusedLinkName(name)
+}
+
 function shortLinkIssues(
   l: {
     value: string
@@ -43,10 +52,7 @@ function shortLinkIssues(
       message: "A whole address: https://…",
       path: ["value"],
     })
-  const slug = l.slug.toLowerCase()
-  const why = !LINK_SLUG.test(slug)
-    ? "Letters, digits and single hyphens, at most 40."
-    : refusedLinkName(slug)
+  const why = slugProblem(l.slug)
   if (why) ctx.addIssue({ code: "custom", message: why, path: ["slug"] })
   if ((l.expires || (l.maxVisits ?? null) !== null) && l.public)
     ctx.addIssue({
@@ -196,6 +202,10 @@ export type KeptShortLink = ShortLink & {
   id: string
   visits: number
   stopped: string | null
+  /** A redirect (`url`), or a file served from its owner's machine (`send`,
+   *  lib/sends), its value the sendme ticket and `file` what it is. */
+  kind: "url" | "send"
+  file: { name: string; size: number } | null
 }
 
 /** The card as it is being written (untrimmed). */
