@@ -12,6 +12,7 @@
     "check": "node --experimental-strip-types scripts/sealed.mts check && tsc --noEmit && biome check",
     "seal": "SEALED_KEY=$(op read 'op://Private/sealed key/credential') node --experimental-strip-types scripts/sealed.mts seal",
     "verify": "next typegen && pnpm run check",
+    "verify:cli": "tsc --noEmit -p cli && biome check cli lib",
     "fix": "biome check --write",
     "captures": "bun $UI/scripts/capture.ts captures.ts",
     "db:push": "drizzle-kit push"
