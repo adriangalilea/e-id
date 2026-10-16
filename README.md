@@ -7,8 +7,11 @@ Your digital identity: one page at [👤.to/you](https://👤.to) for everywhere
 - **One address, three spellings.** `e-id.to/you`, `eid.to/you` and `👤.to/you` are the same page. Safari shows the emoji in its address bar, so Safari is sent to `👤.to` and every other browser to `e-id.to`; signing in on one is signed in on the other.
 - **Links by name, on every card.** Nothing to set up: each link on your card is at its platform's names, `/you/github` or `/you/gh`, `x` (`twitter`, `tw`), `youtube` (`yt`), `instagram` (`ig`), `telegram` (`tg`), `email` (`mail`), `website` (`web`, `site`). The names are one table, `LINK_NAMES` in `lib/link-names`.
 - **The card as data.** `/you/card.json` (or `/you/json`) in an open format ([its schema](https://e-id.to/card.schema.json)), `/you/card.vcf` (or `/you.vcf`) for contacts, `/you/card.svg` and `/you/byline.svg` as images, and `curl eid.to/you` prints it as text (`/you/txt`).
+- **Short links.** `/you/<name>` to anywhere, kept in their own list, each counting its opens and, if you like, stopping on a day or after a number of opens.
+- **Latest.** Your page opens on what you made lately, read from the links you already have: repositories you pushed to, posts on your website's feed, uploads to your channel, newest first.
 - **Embeds.** `<e-id-card handle="you">` on any page with one script (`/embed.js`), and oEmbed, so an address pasted into a site that reads it becomes the card.
-- **Vouches.** Visitors leave a word on your page; you pin the one you want shown.
+- **Vouches.** Visitors leave a word on your page; you pin the one you want shown, or turn vouches off.
+- **Your numbers.** How many visits your page had and how many of your links were opened, under your card, counted without cookies.
 
 Built with Next.js, better-auth, and Drizzle on Turso. The interface comes from [ui.adriangalilea.com](https://ui.adriangalilea.com).
 
@@ -30,7 +33,11 @@ Built with Next.js, better-auth, and Drizzle on Turso. The interface comes from 
 - [ ] passkeys (better-auth has them)
 - [ ] download your data, all of it: `/you/json` is the card; what it lacks (the account's email, the vouches you wrote, your numbers) is asked for by email today, as the privacy page says, answered within a month. A button would hand over both.
 - [ ] the home's live preview (`previewPresence`) fetches a website anyone types, through ui's `public-fetch`, which refuses every address that is not public. Two gaps left, both small while previews are cached for days: no cap on how many different sites one visitor can make it fetch (a per-visitor limit needs a store, the visits database could hold one), and DNS rebinding (a name that resolves public when checked and private when fetched; closing it means connecting to the checked address, an undici dispatcher, in `public-fetch`)
-- [ ] more sources for "latest": Bluesky (its public API) once it is a platform on the card; X stays out (its API is paid)
+- [ ] more sources for "latest", by what each would take:
+  - a Telegram channel's posts: public at `t.me/s/<channel>` with no API key, and ui's `telegram-chat` already draws a post; the card has Telegram links today
+  - a website's releases, a podcast, a newsletter: nothing to build, they come with any RSS or Atom feed the website names
+  - Bluesky (its public API, no key) and Mastodon (every account has an RSS feed) once each is a platform on the card
+  - X stays out: reading anyone's posts needs its paid API
 
 ### Premium
 
