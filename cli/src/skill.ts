@@ -19,7 +19,19 @@ const MARK = (version: string) =>
 const MARKED = /<!-- eid (\S+): written by `eid skill install`/
 
 /** The commands the skill shows by name: each must be one eid has. */
-const SHOWN = ["whoami", "login", "help", "link", "ls", "rm", "card", "stats"]
+const SHOWN = [
+  "whoami",
+  "login",
+  "help",
+  "link",
+  "send",
+  "get",
+  "ls",
+  "rm",
+  "card",
+  "set",
+  "stats",
+]
 
 export function skill(version: string): string {
   for (const name of SHOWN)
@@ -27,7 +39,7 @@ export function skill(version: string): string {
       throw new Error(`the skill names eid ${name}, which eid ${version} lacks`)
   return `---
 name: eid
-description: Use the eid CLI for e-ID (👤.to, eid.to, e-id.to), one page for everywhere a person is online. Make a short link to anything (one that expires or opens once included), list or delete short links, read anyone's e-ID card, see a page's visits. Use when the user wants a short link, mentions eid.to, e-id.to or 👤.to, or asks about their e-ID.
+description: Use the eid CLI for e-ID (👤.to, eid.to, e-id.to), one page for everywhere a person is online. Make a short link to anything (one that expires or opens once included), send a file straight from this machine or get one someone is sending (eid get eid.to/name/file, no account needed), edit the user's card, read anyone's card, see a page's visits. Use when the user wants a short link, to send or receive a file, mentions eid.to, e-id.to or 👤.to, or asks about their e-ID.
 ---
 ${MARK(version)}
 
@@ -43,15 +55,20 @@ e-ID is one page for everywhere a person is online: \`eid.to/<username>\`, the s
 ## Doing things
 
 - A short link: \`eid link <url> [name]\` prints \`https://eid.to/<you>/<name>\` and copies it. Opens once: \`--opens 1\`. Stops on a day: \`--until 7d\`.
-- The user's short links: \`eid ls\`. Delete one: \`eid rm <name>\`.
-- Anyone's card: \`eid card <username>\`. The user's numbers: \`eid stats\`.
-- Add \`--json\` whenever you read the answer yourself.
+- Send a file or folder: \`eid send <path> [name]\` prints \`npx @e-id/eid get eid.to/<you>/<name>\` for whoever gets it, and serves until stopped (run it in the background; stopping it ends the send). Get one: \`eid get <address>\` (\`--dir\` for where).
+- The user's short links and sends: \`eid ls\`. Delete one: \`eid rm <name>\`.
+- The user's card: \`eid set name|bio|country|vouches <value>\`, \`eid set <platform> <handle>\`, \`eid unset <platform>\`. Anyone's card: \`eid card <username>\`. The user's numbers: \`eid stats\`.
+
+## Reading the answers
+
+Add \`--json\` whenever you read the answer yourself: stdout is then JSON alone (progress and notices go to stderr), the API's own shapes (\`eid help <command>\` says which; all of them in e-id.to/api/v1/openapi.json). A failure is \`{ "error": { "code", "message", "fields"? } }\` on stdout with exit 1; act on \`code\` (\`unauthorized\`: sign in; \`refused\`: say \`message\` to the user; \`slow_down\`: wait), never on the words. \`eid help --json\` is every command, its flags and its output, as data.
 
 ## Rules
 
 - A short link is public: anyone with the address opens it, and it carries the user's name. Never shorten a URL that holds a secret (a token, a signed download link) without saying so first.
 - e-ID refuses an address Google Safe Browsing lists, and a new account keeps few links. Tell the user the refusal in eid's own words; never work around it.
 - An address handed to someone is copied whole, \`https://\` included: without it, \`👤.to\` is not a link. For X's website field, \`--on xn--mq8h.to\`: X refuses the emoji there and shows it back as 👤.to.
+- A send goes straight between the two machines: where they connect directly, each sees the other's IP address. Tell the user before sending for them, and never get a file the user did not ask for.
 `
 }
 
