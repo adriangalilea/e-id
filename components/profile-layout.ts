@@ -14,6 +14,17 @@
  *  is none on a wide screen (`frame`): the pane starts right under the bar and
  *  runs to the screen's foot, or the page outgrows the screen and the held pane
  *  slides under the bar. */
+/** A page about one thing of a person's (a link's preview, the CLI's page), laid
+ *  out as their profile is: the same split in the golden ratio, WHO (their card,
+ *  held still beside) and WHAT (the one thing, at the size of the page's subject,
+ *  its top on the card's). On a phone, the card and then the thing. Framed as a
+ *  wide page (components/frame, `Wide`), so its edges are the bar's. */
+export const SUBJECT = {
+  grid: "grid gap-10 lg:grid-cols-[minmax(0,38.2fr)_minmax(0,61.8fr)] lg:gap-16",
+  who: "flex min-w-0 flex-col gap-5 lg:sticky lg:top-20 lg:self-start",
+  what: "flex min-w-0 flex-col gap-10",
+} as const
+
 export const PROFILE = {
   frame: "py-10 sm:py-16 lg:py-0",
   grid: "grid gap-10 [grid-template-areas:'id'_'links'_'vouch'] lg:grid-cols-[minmax(0,38.2fr)_minmax(0,61.8fr)] lg:[grid-template-areas:'side_links']",

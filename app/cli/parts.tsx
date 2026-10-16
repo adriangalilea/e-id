@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation"
 import { useEffect, useState, useTransition } from "react"
 import { SIGN_IN_PROVIDERS } from "@/components/session/sign-in-providers"
 import { Button } from "@/components/ui/button"
+import { InlineCode } from "@/components/ui/code-inline"
 import { InputGroup } from "@/components/ui/input"
 import { answerCliLogin, cliLoginTaken, revokeMyKey } from "@/db/actions"
 import { startSignIn } from "@/lib/sign-in"
@@ -25,15 +26,16 @@ const DAY = new Intl.DateTimeFormat("en", {
 export function CliSignIn({ back }: { back: string }) {
   const [busy, setBusy] = useState<string | null>(null)
   return (
-    <div className="flex flex-col gap-3">
-      <p className="text-foreground/70 text-sm">
-        Sign in to approve the CLI, with the account it should act for.
+    <div className="flex flex-col gap-4">
+      <p className="text-foreground/70 text-lg">
+        Sign in with the account the CLI should act for.
       </p>
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2">
         {SIGN_IN_PROVIDERS.map((p) => (
           <Button
             key={p.id}
             variant="outline"
+            size="lg"
             icon={p.icon}
             loading={busy === p.id}
             onClick={() => {
@@ -101,7 +103,7 @@ export function Approve({
     })
   if (answered)
     return (
-      <p className="text-sm">
+      <p className="text-lg">
         {
           {
             approved: `Approved. Waiting for the terminal on ${host} to take its key…`,
@@ -114,16 +116,19 @@ export function Approve({
     )
   return (
     <>
-      <p className="text-foreground/70 text-sm">
-        Sign in the eid CLI on{" "}
-        <span className="font-mono text-foreground">{host}</span>? It will act
-        for you: make and delete your short links, send files and take what is
-        sent to you, change your card and read your numbers.
+      <p className="text-xl">
+        Sign in the eid CLI on <InlineCode>{host}</InlineCode>?
       </p>
-      <p className="text-foreground/60 text-xs">
-        The terminal shows this code. Approve only if it is the same:
+      <p className="max-w-prose text-foreground/60">
+        It will act for you: make and delete your short links, send files and
+        take what is sent to you, change your card and read your numbers.
       </p>
-      <span className="font-mono text-3xl tracking-widest">{code}</span>
+      <div className="flex flex-col gap-2">
+        <span className="text-foreground/60 text-sm">
+          The terminal shows this code. Approve only if it is the same:
+        </span>
+        <span className="font-mono text-5xl tracking-widest">{code}</span>
+      </div>
       {name !== null && (
         <div className="flex flex-col gap-1.5">
           <span id="cli-address" className="text-foreground/60 text-xs">
@@ -141,11 +146,12 @@ export function Approve({
       )}
       {why && <p className="text-destructive text-sm">{why}</p>}
       <div className="flex gap-2">
-        <Button loading={pending} onClick={() => answer(true)}>
+        <Button size="xl" loading={pending} onClick={() => answer(true)}>
           approve
         </Button>
         <Button
           variant="ghost"
+          size="xl"
           disabled={pending}
           onClick={() => answer(false)}
         >
@@ -170,29 +176,26 @@ export function Keys({ keys }: { keys: KeyRow[] }) {
   const [pending, start] = useTransition()
   if (keys.length === 0)
     return (
-      <p className="text-foreground/50 text-sm">
-        No CLI is signed in to your account.
-      </p>
+      <p className="text-foreground/50">No CLI is signed in to your account.</p>
     )
   return (
-    <section className="flex flex-col gap-2">
-      <h2 className="text-foreground/60 text-sm">signed in</h2>
+    <section className="flex flex-col gap-3">
+      <h2 className="text-foreground/60 text-lg">signed in</h2>
       <ul className="flex flex-col">
         {keys.map((k) => (
           <li
             key={k.id}
-            className="flex items-center gap-3 border-border border-t py-2 first:border-t-0"
+            className="flex items-center gap-3 border-border border-t py-3 first:border-t-0"
           >
-            <div className="flex min-w-0 grow flex-col">
-              <span className="text-sm">{k.name}</span>
-              <span className="font-mono text-foreground/45 text-xs">
+            <div className="flex min-w-0 grow flex-col gap-0.5">
+              <span>{k.name}</span>
+              <span className="font-mono text-foreground/45 text-sm">
                 {k.prefix}… · made {DAY.format(new Date(k.created))} ·{" "}
                 {k.used ? `used ${DAY.format(new Date(k.used))}` : "never used"}
               </span>
             </div>
             <Button
               variant="ghost"
-              size="sm"
               disabled={pending}
               onClick={() =>
                 start(async () => {
