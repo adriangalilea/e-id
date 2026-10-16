@@ -1,8 +1,7 @@
 import { ArrowUpRight, Clock } from "lucide-react"
 import Link from "next/link"
 import { Copy } from "@/components/ui/copy"
-import { GithubProfileCard } from "@/components/ui/github"
-import { Image } from "@/components/ui/image"
+import { GithubProfileCard, GithubRepoCard } from "@/components/ui/github"
 import { Panel } from "@/components/ui/panel"
 import { SocialProfile } from "@/components/ui/social-profile"
 import {
@@ -105,50 +104,38 @@ const DAY = new Intl.DateTimeFormat("en-US", {
   timeZone: "UTC",
 })
 
-/** One thing made, as a row that opens it: its picture (a video's) or where it
- *  lives (the platform's mark), its title, a line of what it is, and when. */
-function MadeRow({ item }: { item: Made }) {
+/** What each kind of thing is, said over its card with its day. */
+const MADE_SAYS: Record<Made["kind"], string> = {
+  code: "pushed",
+  post: "wrote",
+  video: "uploaded",
+}
+
+/** One thing made, whole: drawn by the registry's own card for it (a repository
+ *  with its latest commits, a post's preview, a video's player), under a quiet
+ *  line of what was done and when. */
+function MadeCard({ item }: { item: Made }) {
   return (
-    <a
-      href={item.url}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="group flex items-center gap-3 rounded-lg px-1 py-2 transition-colors hover:bg-foreground/[0.04]"
-    >
-      {item.image ? (
-        <Image
-          src={item.image}
-          alt=""
-          className="aspect-video w-24 shrink-0 rounded-md object-cover"
-        />
+    <article className="flex flex-col gap-2">
+      <p className="px-1 font-mono text-foreground/40 text-xs">
+        {MADE_SAYS[item.kind]} · {DAY.format(new Date(item.at))}
+      </p>
+      {item.kind === "code" ? (
+        <GithubRepoCard repo={item.repo} commits={3} />
+      ) : item.kind === "post" ? (
+        <WebPreview facts={item.page} />
       ) : (
-        <span className="grid size-10 shrink-0 place-items-center rounded-lg bg-foreground/[0.06] text-foreground/60 [&_svg]:size-4">
-          {getLinkIcon(item.platform)}
-        </span>
+        <YouTube video={item.video} />
       )}
-      <span className="flex min-w-0 flex-1 flex-col">
-        <span className="line-clamp-2 text-[15px] text-foreground/85 leading-snug transition-colors group-hover:text-foreground">
-          {item.title}
-        </span>
-        {item.detail && (
-          <span className="truncate text-foreground/50 text-sm">
-            {item.detail}
-          </span>
-        )}
-        <span className="font-mono text-foreground/40 text-xs">
-          {item.platform} · {DAY.format(new Date(item.at))}
-        </span>
-      </span>
-    </a>
+    </article>
   )
 }
 
 /** A profile's links as one box of tabs (@ag/tabs in an @ag/panel): a single
  *  surface whose head is the strip of their icons (the chosen one named,
  *  `labels="active"`) and whose body is the person's presence there, under what
- *  they say of it (its note). The head pins under the site's bar (5rem, the
- *  layout's room for it) while a long panel scrolls under it. `links` arrive
- *  filtered and ordered by the caller (lib/data): the public ones. They are
+ *  they say of it (its note); "latest", first, what they made lately. `links`
+ *  arrive filtered and ordered by the caller (lib/data): the public ones. They are
  *  changed on the card itself (components/profile-card). */
 export function ProfileLinks({
   links,
@@ -169,8 +156,10 @@ export function ProfileLinks({
       labels="active"
       className="w-full"
     >
+      {/* Not pinned: the strip is the top of its box and scrolls away with it.
+          Pinned under the site's bar, a long tab ("latest") slid its rows under
+          the strip, where they showed through. */}
       <Panel
-        pin="5rem"
         glide
         headHeight="3.5rem"
         head={
@@ -195,9 +184,9 @@ export function ProfileLinks({
             gesture, held at the first and the last. */}
         <TabsPanels>
           {made.length > 0 && (
-            <TabsPanel value={LATEST} className="flex flex-col gap-1">
+            <TabsPanel value={LATEST} className="flex flex-col gap-6">
               {made.map((item) => (
-                <MadeRow key={item.url} item={item} />
+                <MadeCard key={`${item.kind}:${item.at}`} item={item} />
               ))}
             </TabsPanel>
           )}
