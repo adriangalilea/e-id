@@ -5,10 +5,11 @@ export const forbiddenUsernames: string[] = [
   "ninja",
   "null",
   "",
-  // The site's own routes beside the profiles (app/api, app/dev, app/flags,
-  // app/embed.js, the old /about).
+  // The site's own routes beside the profiles (app/api, app/dev, app/cli,
+  // app/flags, app/embed.js, the old /about).
   "api",
   "dev",
+  "cli",
   "flags",
   "embed",
   "about",

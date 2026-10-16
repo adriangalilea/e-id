@@ -118,3 +118,10 @@ export async function allowanceOf(
       : null,
   }
 }
+
+/** Words for an allowance reached: why, and when it grows. */
+export function reached(allowance: Allowance): string {
+  return allowance.next
+    ? `${allowance.why} ${allowance.next.most} from ${allowance.next.on}.`
+    : allowance.why
+}

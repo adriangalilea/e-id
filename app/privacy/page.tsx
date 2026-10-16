@@ -41,6 +41,12 @@ export default function Page() {
         token GitHub or Google gives e-ID is used once, when you link them, to
         read your public profile there, and then discarded.
       </p>
+      <p>
+        If you sign in the <code>eid</code> CLI, e-ID keeps a key for it: the
+        name of the machine it said it runs on, when the key was made and last
+        used, and a hash of the key, never the key itself. You see and revoke
+        them at <Link href="/cli">/cli</Link>; they go with your account.
+      </p>
       <h3>Vouches</h3>
       <p>
         A vouch you write is shown with your name and picture on the page you

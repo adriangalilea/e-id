@@ -1,0 +1,25 @@
+{
+  "name": "e-id",
+  "version": "0.1.0",
+  "description": "eid: your e-ID from a terminal. Short links, your numbers, your card.",
+  "homepage": "https://e-id.to/cli",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/adriangalilea/e-id.git",
+    "directory": "cli"
+  },
+  "license": "AGPL-3.0-only",
+  "type": "module",
+  "bin": {
+    "eid": "dist/eid.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "bun build src/eid.ts --target=node --outfile=dist/eid.js --banner='#!/usr/bin/env node'"
+  }
+}

@@ -240,5 +240,44 @@ export const releasedNames = sqliteTable("released_name", {
   until: integer("until", { mode: "timestamp" }).notNull(),
 })
 
+// A KEY TO E-ID'S API (lib/api-keys): what the `eid` CLI holds, a person's for as
+// long as they keep it. Only its hash is kept; the key itself (`eid_…`) is shown
+// once, to whatever asked for it. Gone with its person.
+export const apiKeys = sqliteTable(
+  "api_key",
+  {
+    id: text("id").notNull().primaryKey(),
+    user_id: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    /** What the person reads it as: "eid on mbp-m5". */
+    name: text("name").notNull(),
+    /** The key's first characters, to tell keys apart in a list. */
+    prefix: text("prefix").notNull(),
+    /** SHA-256 of the key, hex: how a request's key is found. */
+    hash: text("hash").notNull().unique(),
+    created_at: integer("created_at", { mode: "timestamp" }).notNull(),
+    last_used_at: integer("last_used_at", { mode: "timestamp" }),
+  },
+  (table) => ({ userIdx: index("api_key_user_idx").on(table.user_id) }),
+)
+
+// A SIGN-IN OF THE CLI UNDER WAY (the OAuth device flow, RFC 8628): `eid login`
+// asked for it, its person approves it at /cli, and the CLI's next question takes
+// a key for it and ends it. Minutes long; one unanswered is let go.
+export const cliLogins = sqliteTable("cli_login", {
+  /** SHA-256 of the code only the CLI holds, hex. */
+  device_hash: text("device_hash").notNull().primaryKey(),
+  /** What the person compares and approves: "WXYZ-1234". */
+  user_code: text("user_code").notNull().unique(),
+  /** The machine it says it runs on, for the key's name and the approval. */
+  host: text("host").notNull(),
+  /** Who approved it; null while it waits. */
+  user_id: text("user_id").references(() => users.id, { onDelete: "cascade" }),
+  /** Refused by its person: the CLI is told so, not left waiting. */
+  denied: integer("denied", { mode: "boolean" }).notNull().default(false),
+  expires_at: integer("expires_at", { mode: "timestamp" }).notNull(),
+})
+
 export type SelectComment = typeof comments.$inferSelect
 export type SelectLink = typeof links.$inferSelect

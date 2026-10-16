@@ -190,7 +190,6 @@ export const shortLinkSchema = z
 
 export type ShortLink = z.input<typeof shortLinkSchema>
 
-/** A short link as the list shows it: as written, and how many times it opened. */
 /** A short link as kept: its opens, and why it was taken down (a Safe Browsing
  *  threat, or "admin"; lib/threats), null while it is up. */
 export type KeptShortLink = ShortLink & {
