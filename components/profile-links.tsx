@@ -2,6 +2,7 @@ import { ArrowUpRight, Clock } from "lucide-react"
 import Link from "next/link"
 import { Copy } from "@/components/ui/copy"
 import { GithubProfileCard, GithubRepoCard } from "@/components/ui/github"
+import { Image } from "@/components/ui/image"
 import { Panel } from "@/components/ui/panel"
 import { SocialProfile } from "@/components/ui/social-profile"
 import {
@@ -111,14 +112,31 @@ const MADE_SAYS: Record<Made["kind"], string> = {
   video: "uploaded",
 }
 
+/** Where each kind of thing lives, its mark the platform's own (the card's and
+ *  the tabs'). */
+const MADE_ON: Record<Made["kind"], "github" | "website" | "youtube"> = {
+  code: "github",
+  post: "website",
+  video: "youtube",
+}
+
 /** One thing made, whole: drawn by the registry's own card for it (a repository
  *  with its latest commits, a post's preview, a video's player), under a quiet
- *  line of what was done and when. */
+ *  line of where it lives (its mark: the platform's, a post's own site's icon
+ *  where it has one), what was done and when. */
 function MadeCard({ item }: { item: Made }) {
+  const favicon = item.kind === "post" ? item.page.favicon : undefined
   return (
     <article className="flex flex-col gap-2">
-      <p className="px-1 font-mono text-foreground/40 text-xs">
-        {MADE_SAYS[item.kind]} · {DAY.format(new Date(item.at))}
+      <p className="flex items-center gap-2 px-1 font-mono text-foreground/45 text-xs [&_svg]:size-4 [&_svg]:text-foreground/80">
+        {favicon ? (
+          <Image src={favicon} alt="" className="size-4 rounded-xs" />
+        ) : (
+          getLinkIcon(MADE_ON[item.kind])
+        )}
+        <span>
+          {MADE_SAYS[item.kind]} · {DAY.format(new Date(item.at))}
+        </span>
       </p>
       {item.kind === "code" ? (
         <GithubRepoCard repo={item.repo} commits={3} />
@@ -156,11 +174,13 @@ export function ProfileLinks({
       labels="active"
       className="w-full"
     >
-      {/* Not pinned: the strip is the top of its box and scrolls away with it.
-          Pinned under the site's bar, a long tab ("latest") slid its rows under
-          the strip, where they showed through. */}
+      {/* Held still beside the card (components/profile-layout, `links`), at
+          most as tall as the card's side (`--links-cap`): a long tab
+          ("latest") scrolls inside the box, under its strip, and hands the
+          scroll to the page at its top and its foot. On a phone, no cap: the
+          page scrolls it. */}
       <Panel
-        glide
+        maxHeight="var(--links-cap)"
         headHeight="3.5rem"
         head={
           <TabsList>
