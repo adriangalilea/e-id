@@ -87,12 +87,15 @@ const FACETS = {
   resolution: 1,
 } as const
 
-/** How strong the hero's shimmer is: present, never harsh over the cards. */
-const HERO_SHIMMER = 0.5
+/** How strong the hero's shimmer is: present, never harsh over the cards. At 1x
+ *  a speck covers four of a 2x screen's pixels, so it reads brighter than the
+ *  same strength did at 2x: a quarter less. */
+const HERO_SHIMMER = 0.38
 
-/** How strong a profile's shimmer is, two thirds of the hero's: the home's
- *  surface carried onto the profile, faint enough to stay behind the card. */
-const PROFILE_SHIMMER = 0.3
+/** How strong a profile's shimmer is, about three fifths of the hero's: the
+ *  home's surface carried onto the profile, faint enough to stay behind the
+ *  card. */
+const PROFILE_SHIMMER = 0.22
 
 /** THE PROFILE'S SHIMMER: the hero's surface of facets (@ag/shimmer) across the
  *  whole profile, its card and its links alike, so a profile stands in the same
