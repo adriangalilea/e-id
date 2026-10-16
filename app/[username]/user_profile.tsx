@@ -5,6 +5,7 @@ import { PROFILE } from "@/components/profile-layout"
 import { ProfileLinks } from "@/components/profile-links"
 import { MaterialProvider } from "@/components/ui/material"
 import type { SelectLink } from "@/db/schema"
+import type { Made } from "@/lib/activity"
 import type { Profile } from "@/lib/data"
 import { cardLinkOf } from "@/lib/data"
 import type { Presence } from "@/lib/presence"
@@ -93,6 +94,8 @@ type ProfileProps = {
   user: Profile
   links: SelectLink[]
   presence: Presence
+  /** What they made lately (lib/activity). */
+  made: Made[]
   /** Share and edit, for the owner: under the identity. */
   actions?: React.ReactNode
   /** What others say of the person: the pinned testimonials and the comments. */
@@ -107,6 +110,7 @@ export default function UserProfile({
   user,
   links,
   presence,
+  made,
   actions,
   vouches,
 }: ProfileProps) {
@@ -124,7 +128,7 @@ export default function UserProfile({
         vouches={vouches}
       />
       <main className={PROFILE.links}>
-        <ProfileLinks links={links} presence={presence} />
+        <ProfileLinks links={links} presence={presence} made={made} />
       </main>
     </div>
   )

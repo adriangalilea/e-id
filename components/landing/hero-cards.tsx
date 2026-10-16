@@ -574,9 +574,12 @@ export function Preview() {
       key={read.key}
       className="w-full animate-fade-in motion-reduce:animate-none"
     >
+      {/* No "latest" before there is an account: its feeds are read for a
+          profile, never for every visitor who types a card on the home. */}
       <ProfileLinks
         links={asLinks(JSON.parse(read.key))}
         presence={read.presence}
+        made={[]}
       />
     </div>
   )

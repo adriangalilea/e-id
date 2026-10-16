@@ -3,6 +3,7 @@ import { notFound, permanentRedirect } from "next/navigation"
 import { Wide } from "@/components/frame"
 import { PROFILE } from "@/components/profile-layout"
 import { Testimonial } from "@/components/quote"
+import { getMade } from "@/lib/activity"
 import { CARD_TYPE } from "@/lib/card"
 import { EMOJI_DOMAIN } from "@/lib/const"
 import {
@@ -97,7 +98,10 @@ export default async function Page(props: {
     getPublicLinks(user.id),
     getTestimonials(user.id),
   ])
-  const presence = await getPresence(links)
+  const [presence, made] = await Promise.all([
+    getPresence(links),
+    getMade(links),
+  ])
 
   return (
     // Framed as every profile is (components/profile-layout).
@@ -113,6 +117,7 @@ export default async function Page(props: {
         user={user}
         links={links}
         presence={presence}
+        made={made}
         actions={<OwnerActions username={user.username} />}
         vouches={
           <>

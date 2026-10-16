@@ -1,7 +1,8 @@
-import { ArrowUpRight } from "lucide-react"
+import { ArrowUpRight, Clock } from "lucide-react"
 import Link from "next/link"
 import { Copy } from "@/components/ui/copy"
 import { GithubProfileCard } from "@/components/ui/github"
+import { Image } from "@/components/ui/image"
 import { Panel } from "@/components/ui/panel"
 import { SocialProfile } from "@/components/ui/social-profile"
 import {
@@ -15,6 +16,7 @@ import { Tweet } from "@/components/ui/tweet"
 import { WebPreview } from "@/components/ui/web-preview"
 import { YouTube } from "@/components/ui/youtube"
 import type { SelectLink } from "@/db/schema"
+import type { Made } from "@/lib/activity"
 import {
   getLinkDisplayText,
   getLinkIcon,
@@ -91,6 +93,56 @@ function LinkLine({ link }: { link: SelectLink }) {
   )
 }
 
+/** The tab of what they made lately: a value no link's id can be (ids are UUIDs). */
+const LATEST = "latest"
+
+/** A day as "latest" dates it: fixed, in UTC, so the cached page and the browser
+ *  print the same words and a page never says "2h ago" a day later. */
+const DAY = new Intl.DateTimeFormat("en-US", {
+  month: "short",
+  day: "numeric",
+  year: "numeric",
+  timeZone: "UTC",
+})
+
+/** One thing made, as a row that opens it: its picture (a video's) or where it
+ *  lives (the platform's mark), its title, a line of what it is, and when. */
+function MadeRow({ item }: { item: Made }) {
+  return (
+    <a
+      href={item.url}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="group flex items-center gap-3 rounded-lg px-1 py-2 transition-colors hover:bg-foreground/[0.04]"
+    >
+      {item.image ? (
+        <Image
+          src={item.image}
+          alt=""
+          className="aspect-video w-24 shrink-0 rounded-md object-cover"
+        />
+      ) : (
+        <span className="grid size-10 shrink-0 place-items-center rounded-lg bg-foreground/[0.06] text-foreground/60 [&_svg]:size-4">
+          {getLinkIcon(item.platform)}
+        </span>
+      )}
+      <span className="flex min-w-0 flex-1 flex-col">
+        <span className="line-clamp-2 text-[15px] text-foreground/85 leading-snug transition-colors group-hover:text-foreground">
+          {item.title}
+        </span>
+        {item.detail && (
+          <span className="truncate text-foreground/50 text-sm">
+            {item.detail}
+          </span>
+        )}
+        <span className="font-mono text-foreground/40 text-xs">
+          {item.platform} · {DAY.format(new Date(item.at))}
+        </span>
+      </span>
+    </a>
+  )
+}
+
 /** A profile's links as one box of tabs (@ag/tabs in an @ag/panel): a single
  *  surface whose head is the strip of their icons (the chosen one named,
  *  `labels="active"`) and whose body is the person's presence there, under what
@@ -101,15 +153,18 @@ function LinkLine({ link }: { link: SelectLink }) {
 export function ProfileLinks({
   links,
   presence,
+  made,
 }: {
   links: SelectLink[]
   presence: Presence
+  /** What they made lately (lib/activity): "latest", first, where there is any. */
+  made: Made[]
 }) {
   if (links.length === 0) return null
 
   return (
     <Tabs
-      defaultValue={links[0]?.id}
+      defaultValue={made.length > 0 ? LATEST : links[0]?.id}
       size="lg"
       labels="active"
       className="w-full"
@@ -120,6 +175,11 @@ export function ProfileLinks({
         headHeight="3.5rem"
         head={
           <TabsList>
+            {made.length > 0 && (
+              <TabsTab value={LATEST} icon={<Clock strokeWidth={1} />}>
+                latest
+              </TabsTab>
+            )}
             {links.map(({ id, platform, label }) => (
               // The site's lowercase voice: a known platform by its id
               // ("github"), a link by its owner's own words.
@@ -134,6 +194,13 @@ export function ProfileLinks({
             finger or a trackpad swipes from one link to the next, one a
             gesture, held at the first and the last. */}
         <TabsPanels>
+          {made.length > 0 && (
+            <TabsPanel value={LATEST} className="flex flex-col gap-1">
+              {made.map((item) => (
+                <MadeRow key={item.url} item={item} />
+              ))}
+            </TabsPanel>
+          )}
           {links.map((link) => (
             <TabsPanel
               key={link.id}
