@@ -5,7 +5,7 @@ import type { SelectLink } from "@/db/schema"
 import { fetchGithub, type GithubRepo } from "@/lib/github-data"
 import { getVideo, getWebsite } from "@/lib/presence"
 import { publicFetch } from "@/lib/public-fetch"
-import { feedOf, readFeed } from "@/lib/web-feed"
+import { feedOf, parseFeed, readFeed } from "@/lib/web-feed"
 import { hostOf, hrefOf, type Unfurl } from "@/lib/web-preview-facts"
 import { type YouTubeFacts, youtubeOf } from "@/lib/youtube-data"
 
@@ -67,9 +67,16 @@ async function videosOf(handle: string): Promise<Found[] | null> {
       await page.text(),
     )?.[1]
     if (!id) throw new Error("the channel's page names no feed")
-    const items = await readFeed(
-      `https://www.youtube.com/feeds/videos.xml?channel_id=${id}`,
-    )
+    // A channel with no public upload has no feed: YouTube answers 404, which
+    // is nothing made yet, not a failure.
+    const feed = `https://www.youtube.com/feeds/videos.xml?channel_id=${id}`
+    const res = await fetch(feed)
+    if (res.status === 404) {
+      cacheLife("hours")
+      return []
+    }
+    if (!res.ok) throw new Error(`${feed}: HTTP ${res.status}`)
+    const items = parseFeed(await res.text(), feed)
     cacheLife("hours")
     return lately(items.flatMap((i) => (i.at ? [{ ...i, at: i.at }] : [])))
   } catch (error) {
