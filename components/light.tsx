@@ -73,9 +73,9 @@ export function SubjectLight() {
   )
 }
 
-/** The site's shimmer, one surface wherever it lies: its facets a little sparse,
- *  barely frosted, each speck's edge softened (`soft`, half a pixel), and white
- *  with only a trace of a diamond's fire (`colour`). The surface itself never
+/** The site's shimmer, one surface wherever it lies: its facets sparse, barely
+ *  frosted, each speck a hard pixel (a `soft` spread made them read bigger), and
+ *  white with only a trace of a diamond's fire (`colour`). The surface itself never
  *  moves: no `sway`, which carried every speck at once and, at one canvas pixel
  *  to a CSS pixel, in visible steps of two screen pixels; the cards it once
  *  swayed with lie still. Drawn at one canvas pixel per CSS pixel
@@ -83,21 +83,20 @@ export function SubjectLight() {
  *  profile, and at a 2x screen's own it was four times the pixels every frame
  *  for a grain the eye reads the same (measured on a real device, 2026-10-16). */
 const FACETS = {
-  density: 0.45,
+  density: 0.3,
   frost: 0.01,
-  soft: 0.5,
   colour: 0.1,
   resolution: 1,
 } as const
 
-/** How strong the hero's shimmer is: a texture under the cards, never their
- *  rival. At 1x a speck covers four of a 2x screen's pixels and reads brighter
- *  than the same strength did at 2x: half what it was there. */
-const HERO_SHIMMER = 0.25
+/** How strong the hero's shimmer is: a texture under the cards, barely there,
+ *  never their rival. At 1x a speck covers four of a 2x screen's pixels and
+ *  reads brighter than the same strength did at 2x. */
+const HERO_SHIMMER = 0.18
 
 /** How strong a profile's shimmer is, three fifths of the hero's: the home's
  *  surface carried onto the profile, faint enough to stay behind the card. */
-const PROFILE_SHIMMER = 0.15
+const PROFILE_SHIMMER = 0.11
 
 /** THE PROFILE'S SHIMMER: the hero's surface of facets (@ag/shimmer) across the
  *  whole profile, its card and its links alike, so a profile stands in the same
