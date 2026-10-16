@@ -634,12 +634,31 @@ export async function ownStats(): Promise<OwnStats | null> {
 }
 
 /** The signed-in user approving or refusing the CLI's sign-in that `code` names
- *  (lib/api-keys): false where none waits under it (gone, or answered). */
+ *  (lib/api-keys). An account with no address yet (one just made, its provider's
+ *  name taken) gives `username` in the same press: the CLI's links live under
+ *  it. `gone` where no sign-in waits under the code (answered, or too old). */
 export async function answerCliLogin(
   code: string,
   approve: boolean,
-): Promise<boolean> {
-  return answerLogin(code, (await requireUser()).id, approve)
+  username?: string,
+): Promise<{ ok: true } | { ok: false; gone: boolean; why: string }> {
+  const user = await requireUser()
+  if (approve && !user.username) {
+    if (!username)
+      return { ok: false, gone: false, why: "Pick your address first." }
+    try {
+      await renameTo(user, username)
+    } catch (error) {
+      return { ok: false, gone: false, why: renameError(error) }
+    }
+  }
+  return (await answerLogin(code, user.id, approve))
+    ? { ok: true }
+    : {
+        ok: false,
+        gone: true,
+        why: "That sign-in is gone: run eid login again.",
+      }
 }
 
 /** The signed-in user's keys, for /cli. */

@@ -11,7 +11,9 @@
   "license": "AGPL-3.0-only",
   "type": "module",
   "bin": {
-    "eid": "dist/eid.js"
+    "e-id": "dist/eid.js",
+    "eid": "dist/eid.js",
+    "👤": "dist/eid.js"
   },
   "files": [
     "dist"

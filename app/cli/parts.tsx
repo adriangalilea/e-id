@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation"
 import { useState, useTransition } from "react"
 import { SIGN_IN_PROVIDERS } from "@/components/session/sign-in-providers"
 import { Button } from "@/components/ui/button"
+import { InputGroup } from "@/components/ui/input"
 import { answerCliLogin, revokeMyKey } from "@/db/actions"
 import { startSignIn } from "@/lib/sign-in"
 
@@ -47,23 +48,38 @@ export function CliSignIn({ back }: { back: string }) {
   )
 }
 
-/** A sign-in waiting: the code to compare with the terminal's, and the answer. */
-export function Approve({ code, host }: { code: string; host: string }) {
-  const [answered, setAnswered] = useState<"yes" | "no" | "gone" | null>(null)
+/** A sign-in waiting: the code to compare with the terminal's, and the answer.
+ *  `name`: the address offered to an account that has none yet (null where it
+ *  has one), picked in the same press as approving. */
+export function Approve({
+  code,
+  host,
+  name,
+}: {
+  code: string
+  host: string
+  name: string | null
+}) {
+  const [answered, setAnswered] = useState<"yes" | "no" | null>(null)
+  const [why, setWhy] = useState<string | null>(null)
+  const [username, setUsername] = useState(name ?? "")
   const [pending, start] = useTransition()
   const answer = (approve: boolean) =>
     start(async () => {
-      const ok = await answerCliLogin(code, approve)
-      setAnswered(ok ? (approve ? "yes" : "no") : "gone")
+      const done = await answerCliLogin(
+        code,
+        approve,
+        name === null ? undefined : username,
+      )
+      if (done.ok) setAnswered(approve ? "yes" : "no")
+      else setWhy(done.why)
     })
   if (answered)
     return (
       <p className="text-sm">
         {answered === "yes"
           ? "Done. Go back to your terminal: it is signed in."
-          : answered === "no"
-            ? "Refused. The terminal is told so."
-            : "That sign-in is gone: run eid login again."}
+          : "Refused. The terminal is told so."}
       </p>
     )
   return (
@@ -77,6 +93,22 @@ export function Approve({ code, host }: { code: string; host: string }) {
         The terminal shows this code. Approve only if it is the same:
       </p>
       <span className="font-mono text-3xl tracking-widest">{code}</span>
+      {name !== null && (
+        <div className="flex flex-col gap-1.5">
+          <span id="cli-address" className="text-foreground/60 text-xs">
+            your address
+          </span>
+          <InputGroup
+            aria-labelledby="cli-address"
+            prefix="eid.to/"
+            value={username}
+            spellCheck={false}
+            autoCapitalize="none"
+            onChange={(e) => setUsername(e.target.value)}
+          />
+        </div>
+      )}
+      {why && <p className="text-destructive text-sm">{why}</p>}
       <div className="flex gap-2">
         <Button loading={pending} onClick={() => answer(true)}>
           approve

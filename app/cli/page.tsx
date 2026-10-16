@@ -51,7 +51,20 @@ async function Body({
       {code && (
         <Panel bodyClassName="gap-4 p-4">
           {waiting ? (
-            <Approve code={code.toUpperCase()} host={waiting.host} />
+            <Approve
+              code={code.toUpperCase()}
+              host={waiting.host}
+              // An account with no address yet picks one in the same press,
+              // offered its email's name to start from.
+              name={
+                session.user.username
+                  ? null
+                  : (session.user.email
+                      .split("@")[0]
+                      ?.toLowerCase()
+                      .replace(/[^a-z0-9_-]/g, "") ?? "")
+              }
+            />
           ) : (
             <p className="text-foreground/70 text-sm">
               No sign-in waits under {code.toUpperCase()}: it was answered, or
