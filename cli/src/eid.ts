@@ -2,12 +2,14 @@
 // e-ID's API (app/api/v1) and nothing else: every limit and check is the
 // server's, so the site and the CLI can never disagree. Its shapes are the
 // server's own types, imported, erased at build (`bun build`, one file, no
-// dependencies at run time).
+// dependencies at run time). Its commands are a table (commands.ts) that the
+// help, the agent skill (skill.ts) and the dispatcher below all read.
 //
 // Signed in with the OAuth device flow (lib/api-keys): `eid login` shows a code,
 // opens the page that approves it, and keeps the key it is given in
-// $XDG_CONFIG_HOME/eid/config.json (0600). EID_URL points it at another e-ID
-// (the dev server: http://localhost:3456).
+// $XDG_CONFIG_HOME/eid/config.json (0600). A command that needs a signed-in
+// machine signs it in first, so `npx e-id link …` works on a machine that never
+// saw eid. EID_URL points it at another e-ID (the dev server).
 
 import { execFileSync, spawn } from "node:child_process"
 import {
@@ -24,29 +26,16 @@ import { kv, spinner, table, ui } from "@adriangalilea/utils/cli"
 import type { ApiError } from "@/lib/api"
 import type { KeptShortLink } from "@/lib/card-edit"
 import type { Allowance } from "@/lib/trust"
+import {
+  COMMANDS,
+  type CommandName,
+  commandNamed,
+  detail,
+  overview,
+} from "./commands"
+import { installSkill, refreshSkill, skill } from "./skill"
 
 const VERSION = "0.1.0"
-
-const HELP = `eid ${VERSION}: your e-ID from a terminal
-
-  eid login                 sign this machine in (opens the browser; over
-                            ssh, or with --no-browser, prints where)
-  eid logout                sign it out, revoking its key
-  eid whoami                who you are, and your addresses
-  eid link <url> [name]     a short link to <url>, at /you/<name> (a made-up
-                            code without one); printed and copied
-      --until <day|Nd>        the last day it opens: 2026-12-31, or 7d
-      --opens <n>             how many times it opens (1: one use)
-      --card <label>          on your card too, named <label>
-      --on <domain>           eid.to (default), e-id.to, 👤.to, xn--mq8h.to
-  eid ls                    your short links
-  eid rm <name>             delete one
-  eid stats                 your numbers
-  eid card [username]       a card as text (yours without a name)
-
-  --json                    the answer as JSON, for scripts
-  EID_URL                   another e-ID (http://localhost:3456)
-`
 
 /** The domains an address can be printed on (lib/addresses FORMS). */
 const DOMAINS = ["eid.to", "e-id.to", "👤.to", "xn--mq8h.to"] as const
@@ -71,12 +60,6 @@ function readConfig(): Config | null {
     if ((error as NodeJS.ErrnoException).code === "ENOENT") return null
     throw error
   }
-}
-
-function signedIn(): Config {
-  const config = readConfig()
-  if (!config) throw new Said(`Not signed in to ${BASE}: run eid login`)
-  return config
 }
 
 /** One question to the API: its JSON, or its error said as e-ID words it. */
@@ -142,7 +125,7 @@ function openInBrowser(url: string) {
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
 
-async function login(browser: boolean) {
+async function login(browser: boolean): Promise<Config> {
   const host = hostname()
     .replace(/\.local$/, "")
     .replace(/[^\w.-]/g, "-")
@@ -184,22 +167,10 @@ async function login(browser: boolean) {
   const config: Config = { base: BASE, key: got.key, username: got.username }
   writeFileSync(CONFIG, `${JSON.stringify(config, null, 2)}\n`, { mode: 0o600 })
   chmodSync(CONFIG, 0o600)
-  console.log(`${ui.ok("signed in")} as ${ui.accent(got.username)} on ${BASE}`)
-}
-
-async function logout() {
-  const config = readConfig()
-  if (!config) return console.log(`Not signed in to ${BASE}.`)
-  await api("/key", { method: "DELETE", key: config.key }).catch(
-    (error: unknown) => {
-      // A key revoked at /cli already is signed out all the same.
-      if ((error as { code?: string }).code !== "unauthorized") throw error
-    },
+  console.error(
+    `${ui.ok("signed in")} as ${ui.accent(got.username)} on ${BASE}`,
   )
-  rmSync(CONFIG)
-  console.log(
-    `${ui.ok("signed out")} of ${BASE}: this machine's key is revoked`,
-  )
+  return config
 }
 
 /** An address on one of e-ID's domains, as copied: always with https://. */
@@ -219,6 +190,164 @@ function said(link: KeptShortLink): string {
   return parts.join(" · ")
 }
 
+type Values = {
+  until?: string
+  opens?: string
+  card?: string
+  on?: string
+  dir?: string
+  json?: boolean
+  "no-browser"?: boolean
+}
+
+type Context = {
+  rest: string[]
+  values: Values
+  /** The answer as JSON (`--json`), or `human` for a person. */
+  out: (data: unknown, human: () => void) => void
+  /** This machine signed in, signing it in first where it is not (in a
+   *  terminal; a script is told to run eid login). */
+  session: () => Promise<Config>
+  /** Where the browser may open: not over ssh, not with --no-browser. */
+  browser: boolean
+  /** The domain addresses are printed on (--on). */
+  domain: string
+}
+
+/** What each command does: one for every command in the table, by type. */
+const RUN: Record<CommandName, (c: Context) => Promise<void>> = {
+  async login({ browser }) {
+    await login(browser)
+  },
+  async logout() {
+    const config = readConfig()
+    if (!config) return console.log(`Not signed in to ${BASE}.`)
+    await api("/key", { method: "DELETE", key: config.key }).catch(
+      (error: unknown) => {
+        // A key revoked at /cli already is signed out all the same.
+        if ((error as { code?: string }).code !== "unauthorized") throw error
+      },
+    )
+    rmSync(CONFIG)
+    console.log(
+      `${ui.ok("signed out")} of ${BASE}: this machine's key is revoked`,
+    )
+  },
+  async whoami({ out }) {
+    const config = readConfig()
+    if (!config)
+      return out({ signedIn: false, base: BASE }, () =>
+        console.log(`Not signed in to ${BASE}: eid login`),
+      )
+    const me = await api<{
+      username: string
+      name: string | null
+      addresses: Record<string, string>
+    }>("/me", { key: config.key })
+    out({ signedIn: true, ...me }, () =>
+      console.log(
+        kv([
+          ["name", me.name ?? ui.muted("none")],
+          ["username", ui.accent(me.username)],
+          ...Object.values(me.addresses).map(
+            (a, i) => [i === 0 ? "address" : "", a] as [string, string],
+          ),
+        ]),
+      ),
+    )
+  },
+  async link({ rest, values, out, session, domain }) {
+    const [to, name] = rest
+    if (!to) throw new Said("eid link <url> [name]")
+    const opens = values.opens === undefined ? undefined : Number(values.opens)
+    if (opens !== undefined && !Number.isInteger(opens))
+      throw new Said("--opens is a whole number")
+    const { key, username } = await session()
+    const link = await api<KeptShortLink>("/links", {
+      method: "POST",
+      key,
+      body: {
+        to,
+        name,
+        until: values.until,
+        opens,
+        ...(values.card !== undefined && { onCard: true, label: values.card }),
+      },
+    })
+    const address = addressOn(domain, `/${username}/${link.slug}`)
+    const copied = copy(address)
+    out({ ...link, address }, () =>
+      console.log(`${address}${copied ? ui.muted(" (copied)") : ""}`),
+    )
+  },
+  async ls({ out, session }) {
+    const { key, username } = await session()
+    const mine = await api<{ links: KeptShortLink[]; allowance: Allowance }>(
+      "/links",
+      { key },
+    )
+    out(mine, () => {
+      if (mine.links.length === 0)
+        return console.log(ui.muted("No short links yet: eid link <url>"))
+      console.log(
+        table(
+          mine.links.map((l) => [ui.accent(`/${username}/${l.slug}`), said(l)]),
+        ),
+      )
+      const { most, next } = mine.allowance
+      console.log(
+        ui.muted(
+          `${mine.links.length} of ${most}${next ? `, ${next.most} from ${next.on}` : ""}`,
+        ),
+      )
+    })
+  },
+  async rm({ rest, out, session }) {
+    const [name] = rest
+    if (!name) throw new Said("eid rm <name>")
+    await api(`/links/${encodeURIComponent(name)}`, {
+      method: "DELETE",
+      key: (await session()).key,
+    })
+    out({ deleted: name }, () => console.log(`${ui.ok("deleted")} /${name}`))
+  },
+  async stats({ out, session }) {
+    const stats = await api<{ views: number; hits: number }>("/stats", {
+      key: (await session()).key,
+    })
+    out(stats, () =>
+      console.log(
+        kv([
+          ["visits", String(stats.views)],
+          ["links opened", String(stats.hits)],
+        ]),
+      ),
+    )
+  },
+  async card({ rest, session }) {
+    const username = rest[0] ?? (await session()).username
+    const res = await fetch(`${BASE}/${encodeURIComponent(username)}/txt`, {
+      headers: { "user-agent": `eid/${VERSION}` },
+    })
+    if (res.status === 404) throw new Said(`No e-ID is called ${username}`)
+    if (!res.ok) throw new Error(`/${username}/txt: HTTP ${res.status}`)
+    process.stdout.write(await res.text())
+  },
+  async skill({ rest, values }) {
+    if (rest[0] === undefined) return void process.stdout.write(skill(VERSION))
+    if (rest[0] !== "install") throw new Said("eid skill [install]")
+    const file = installSkill(VERSION, values.dir)
+    console.log(`${ui.ok("installed")} ${file}`)
+  },
+  async help({ rest }) {
+    const [name] = rest
+    if (!name) return console.log(overview(VERSION))
+    const command = commandNamed(name)
+    if (!command) throw new Said(`No command "${name}". eid help`)
+    console.log(detail(command))
+  },
+}
+
 async function main() {
   const { values, positionals } = parseArgs({
     allowPositionals: true,
@@ -227,137 +356,43 @@ async function main() {
       opens: { type: "string" },
       card: { type: "string" },
       on: { type: "string" },
+      dir: { type: "string" },
       json: { type: "boolean" },
       "no-browser": { type: "boolean" },
       help: { type: "boolean", short: "h" },
       version: { type: "boolean", short: "v" },
     },
   })
-  const [command, ...rest] = positionals
-  const json = values.json === true
-  const out = (data: unknown, human: () => void) =>
-    json ? console.log(JSON.stringify(data, null, 2)) : human()
-
+  refreshSkill(VERSION)
   if (values.version) return console.log(VERSION)
-  if (values.help || !command) return console.log(HELP)
+  const [name = "help", ...rest] = positionals
+  if (values.help) return RUN.help({ rest: [name] } as Context)
 
   const domain = values.on ?? "eid.to"
   if (!(DOMAINS as readonly string[]).includes(domain))
     throw new Said(`--on is one of ${DOMAINS.join(", ")}`)
+  const command = commandNamed(name)
+  if (!command) throw new Said(`No command "${name}". eid help`)
 
-  switch (command) {
-    case "login":
-      // Over ssh the browser would open on the far machine, if at all: the
-      // address is printed and opened wherever the person is.
-      return login(!values["no-browser"] && !process.env.SSH_CONNECTION)
-    case "logout":
-      return logout()
-    case "whoami": {
-      const me = await api<{
-        username: string
-        name: string | null
-        addresses: Record<string, string>
-      }>("/me", { key: signedIn().key })
-      return out(me, () =>
-        console.log(
-          kv([
-            ["name", me.name ?? ui.muted("none")],
-            ["username", ui.accent(me.username)],
-            ...Object.values(me.addresses).map(
-              (a, i) => [i === 0 ? "address" : "", a] as [string, string],
-            ),
-          ]),
-        ),
-      )
-    }
-    case "link": {
-      const [to, name] = rest
-      if (!to) throw new Said("eid link <url> [name]")
-      const { key, username } = signedIn()
-      const opens =
-        values.opens === undefined ? undefined : Number(values.opens)
-      if (opens !== undefined && !Number.isInteger(opens))
-        throw new Said("--opens is a whole number")
-      const link = await api<KeptShortLink>("/links", {
-        method: "POST",
-        key,
-        body: {
-          to,
-          name,
-          until: values.until,
-          opens,
-          ...(values.card !== undefined && {
-            onCard: true,
-            label: values.card,
-          }),
-        },
-      })
-      const address = addressOn(domain, `/${username}/${link.slug}`)
-      const copied = copy(address)
-      return out({ ...link, address }, () =>
-        console.log(`${address}${copied ? ui.muted(" (copied)") : ""}`),
-      )
-    }
-    case "ls": {
-      const { key, username } = signedIn()
-      const mine = await api<{ links: KeptShortLink[]; allowance: Allowance }>(
-        "/links",
-        { key },
-      )
-      return out(mine, () => {
-        if (mine.links.length === 0)
-          return console.log(ui.muted("No short links yet: eid link <url>"))
-        console.log(
-          table(
-            mine.links.map((l) => [
-              ui.accent(`/${username}/${l.slug}`),
-              said(l),
-            ]),
-          ),
-        )
-        console.log(
-          ui.muted(
-            `${mine.links.length} of ${mine.allowance.most}${mine.allowance.next ? `, ${mine.allowance.next.most} from ${mine.allowance.next.on}` : ""}`,
-          ),
-        )
-      })
-    }
-    case "rm": {
-      const [name] = rest
-      if (!name) throw new Said("eid rm <name>")
-      await api(`/links/${encodeURIComponent(name)}`, {
-        method: "DELETE",
-        key: signedIn().key,
-      })
-      return out({ deleted: name }, () =>
-        console.log(`${ui.ok("deleted")} /${name}`),
-      )
-    }
-    case "stats": {
-      const stats = await api<{ views: number; hits: number }>("/stats", {
-        key: signedIn().key,
-      })
-      return out(stats, () =>
-        console.log(
-          kv([
-            ["visits", String(stats.views)],
-            ["links opened", String(stats.hits)],
-          ]),
-        ),
-      )
-    }
-    case "card": {
-      const username = rest[0] ?? signedIn().username
-      const res = await fetch(`${BASE}/${encodeURIComponent(username)}/txt`, {
-        headers: { "user-agent": `eid/${VERSION}` },
-      })
-      if (res.status === 404) throw new Said(`No e-ID is called ${username}`)
-      if (!res.ok) throw new Error(`/${username}/txt: HTTP ${res.status}`)
-      return process.stdout.write(await res.text())
-    }
-    default:
-      throw new Said(`No command "${command}". eid --help`)
+  const json = values.json === true
+  const browser = !values["no-browser"] && !process.env.SSH_CONNECTION
+  const context: Context = {
+    rest,
+    values,
+    out: (data, human) =>
+      json ? console.log(JSON.stringify(data, null, 2)) : human(),
+    browser,
+    domain,
+    session: async () => {
+      const config = readConfig()
+      if (config) return config
+      if (json || !process.stdin.isTTY)
+        throw new Said(`Not signed in to ${BASE}: run eid login`)
+      console.error(ui.muted(`Signing this machine in to ${BASE} first.`))
+      return login(browser)
+    },
   }
+  await RUN[command.name as CommandName](context)
 }
 
 main().catch((error: unknown) => {
@@ -367,3 +402,9 @@ main().catch((error: unknown) => {
   }
   throw error
 })
+
+// Every command in the table has a runner (RUN's type says so); this says the
+// table has no runner it lacks.
+for (const name of Object.keys(RUN))
+  if (!COMMANDS.some((c) => c.name === name))
+    throw new Error(`eid: a runner for "${name}", which no command names`)
