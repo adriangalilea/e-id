@@ -22,8 +22,7 @@ const GITHUB_CLIENT_ID = "Iv1.e0894ce8ac7d6472"
 const GITHUB_SECRET = "op://Private/e-ID GitHub App client secret/password"
 /** The Safe Browsing key (lib/safe-browsing), the same one production uses: a
  *  question about an address costs nothing and writes nothing. */
-const SAFE_BROWSING_KEY =
-  "op://Private/Google Safe Browsing API key (e-ID)/credential"
+const SAFE_BROWSING_KEY = "op://Private/e-ID Safe Browsing API key/credential"
 
 const run = (cmd: string, args: string[], what: string): string => {
   try {

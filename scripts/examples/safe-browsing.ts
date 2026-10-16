@@ -3,7 +3,7 @@
 // named for, and a clean page listed under nothing. The recorded answers are
 // bytes Google sent on 2026-10-16; a change in how it answers throws here.
 //
-//   SAFE_BROWSING_KEY=$(op read "op://Private/Google Safe Browsing API key (e-ID)/credential") \
+//   SAFE_BROWSING_KEY=$(op read "op://Private/e-ID Safe Browsing API key/credential") \
 //     bun --conditions=react-server scripts/examples/safe-browsing.ts
 import assert from "node:assert/strict"
 import { threatOf } from "@/lib/safe-browsing"
