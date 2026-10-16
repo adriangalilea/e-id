@@ -5,7 +5,13 @@ import { updateTag } from "next/cache"
 import { headers } from "next/headers"
 import { hasFlag } from "@/components/ui/flag"
 import { db } from "@/db"
-import { comments, links, type SelectComment, users } from "@/db/schema"
+import {
+  comments,
+  links,
+  proInterest,
+  type SelectComment,
+  users,
+} from "@/db/schema"
 import { answerLogin, keysOf, revokeKey } from "@/lib/api-keys"
 import { asLinks, type Written } from "@/lib/card-draft"
 import type { CardEdit, SaveResult } from "@/lib/card-edit"
@@ -502,6 +508,19 @@ export async function revokeMyKey(id: string): Promise<void> {
   const user = await requireUser()
   if (!(await revokeKey(user.id, id)))
     throw new Error(`revokeMyKey: ${id} is not a key of ${user.id}'s`)
+}
+
+/** The signed-in user asking to be told when Pro opens (`want`), or taking
+ *  it back: whether they are asking now. */
+export async function wantPro(want: boolean): Promise<boolean> {
+  const user = await requireUser()
+  if (want)
+    await db
+      .insert(proInterest)
+      .values({ user_id: user.id, created_at: new Date() })
+      .onConflictDoNothing()
+  else await db.delete(proInterest).where(eq(proInterest.user_id, user.id))
+  return want
 }
 
 /** An admin taking a link down (it opens nothing and leaves the card) or

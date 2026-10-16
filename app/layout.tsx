@@ -60,6 +60,9 @@ export default async function RootLayout({
             <NextImageLoaderProvider>{children}</NextImageLoaderProvider>
             {/* What every page owes the people reading it, at its very foot. */}
             <footer className="mt-auto flex justify-center gap-3 pt-16 font-mono text-foreground/40 text-xs">
+              <Link href="/pro" className="hover:text-foreground/70">
+                pro
+              </Link>
               <Link href="/privacy" className="hover:text-foreground/70">
                 privacy
               </Link>

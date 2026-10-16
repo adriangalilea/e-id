@@ -40,7 +40,7 @@ Built with Next.js, better-auth, and Drizzle on Turso. The interface comes from 
 ## To do
 
 - [ ] **the `eid` CLI, in phases.** e-ID owns the whole stack in this repo: the site, the API, the CLI (`cli/`, npm `@e-id/eid`: `e-id` was refused as too close to `eid`; Decisions). It replaces `adriangalilea/share`, whose design was right and whose setup (a Cloudflare account, R2, KV, a Worker to deploy) was not; `icecube.to` redirects here once `eid` keeps files too (5): `share`'s links were kept files.
-  1. **Built:** links, sends, the card, numbers (Decisions: the CLI, and sending a file). Left: decide free with these limits (60 writes a minute and 1000 a day a key), or Premium.
+  1. **Built:** links, sends, the card, numbers (Decisions: the CLI, and sending a file). Free at these limits, higher ones with Pro (Premium, below).
   2. **Relays for sends that see real use.** n0's public relays are for development (rate-limited, no guarantees). Before sends grow: n0's shared relays on its Pro plan, or our own `iroh-relay` (tether runs one; it would admit e-ID's senders by a token the API hands out with the ticket).
   3. **A send for a browser.** Today a send's page shows the `npx` command; a browser getting the file itself waits on whether `iroh-blobs` runs in one (iroh does, over the relay; unchecked).
   4. **Sending to people, an inbox, and asking before taking** (next):
@@ -66,11 +66,22 @@ Built with Next.js, better-auth, and Drizzle on Turso. The interface comes from 
 
 ### Premium
 
-Everything here waits on the first item.
+**The line** (decided; prices are the plan, tweakable): free is everything that makes e-ID spread and costs it nearly nothing per person; Pro is what costs money per person, what is scarce, and what only heavy use needs. Never behind it: the checks that keep links safe, privacy, and getting a file someone sends you (every `npx @e-id/eid get` is someone meeting e-ID). Said publicly at [/pro](https://e-id.to/pro), which also counts who wants it (`pro_interest`, `/admin`): the number that says when billing is worth building.
 
-- [ ] billing: a way to pay (a provider, a price per item or a plan), and what a lapsed payment takes away
-  - **Before the first payment, move link checking to Web Risk.** Taking money makes e-ID commercial, and Safe Browsing is for non-commercial use only. Web Risk is the same lists under a commercial licence and needs a billing account on Google Cloud: `lib/safe-browsing` (its endpoint, `uris:search` with `threatTypes`) and its key, nothing else.
-- [ ] analytics: the detail of your numbers (visits per day, what each `/you/<name>` opened and the names that opened nothing, referrers, countries). Built (`readOwner`) and shown to admins only; everyone sees their totals. Decide what is free and what is Premium once billing exists.
+- **Free, always:** the card and page on every domain, links by name, the card as contact, data and embed, short links (200, earned), link checks and previews, live sends and getting files, the inbox when it comes, the CLI and the API at 60 writes a minute and 1000 a day (gate volume, never access: a script brings people, and a call costs a row).
+- **Pro, about €4 a month or €36 a year:** kept files, 10 GB (the anchor: a real cost and plain value); your own domain for your card; your numbers in full (built, `readOwner`, admins only today); no waiting (the earned allowance skipped, payment being its own proof of a person) and higher API limits; `you@eid.to`.
+- **Once, not a subscription:** short usernames (3 and 4 characters) and more usernames.
+- **What it costs, once anyone pays** (about $40 to $60 a month, so some 15 to 25 subscribers; estimates): Vercel Pro ($20 a month: Hobby is "non-commercial, personal use only"), Web Risk for link checks, relays for sends (to do, above), the three `.to` domains, forwarding for `you@eid.to`. Turso's free tier holds for a long while.
+- **The order:** now, everything free and `/pro` counting; when enough ask, or when kept files are built, whichever is first, billing opens with kept files as its anchor; then usernames sold once.
+
+- [ ] billing: through a **merchant of record** (Polar, Lemon Squeezy or Paddle, about 4 to 5% and a fixed fee a sale): it sells, charges and remits VAT in every country, invoices, and handles the EU's 14-day withdrawal right, so e-ID gets one payout and one invoice a month instead of an EU VAT registration (OSS) and an invoice a sale. The income is the owner's to declare as any other. Decide what a lapsed payment takes away (kept files kept 30 days, then gone, said before). **The day before the first payment, flip every switch that taking money flips:**
+  - Vercel Pro (Hobby is non-commercial only)
+  - link checking to Web Risk: Safe Browsing is for non-commercial use only; Web Risk is the same lists under a commercial licence, a billing account on Google Cloud, `lib/safe-browsing` and its key, nothing else
+  - sends on relays fit for production (to do, above)
+  - the terms (a subscription, its renewal, withdrawal) and the privacy page (the merchant of record among who else handles data)
+  - write to everyone `/pro` counted, once (they were told so)
+- [ ] analytics in full for Pro: built (`readOwner`), shown to admins only today; everyone keeps their totals.
+- [ ] your own domain for your card: a CNAME to e-ID, the domain added to the project through Vercel's domains API, the card answered at it.
 - [ ] more usernames, sold: each a permanent redirect to your page, so a new main name keeps every old link working. The redirect is built (`username_alias`, `adriangalilea` → `adrian`); buying one, and renaming yourself with the old name kept, are not.
 - [ ] claiming a squatted username: a request to take an address someone holds and does not use, or that is your own name or brand (the terms already allow taking one back); decide who judges and how long an unused one is held
 - [ ] short usernames (3 and 4 characters) sold, 1 and 2 kept for e-ID; decide the price, and whether a bought name can be resold

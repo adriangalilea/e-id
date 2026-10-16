@@ -5,7 +5,7 @@ import { Suspense } from "react"
 import { LinkUp } from "@/app/admin/link-up"
 import { PathTree, TopPaths } from "@/components/ui/user-flows"
 import { db } from "@/db"
-import { links, users } from "@/db/schema"
+import { links, proInterest, users } from "@/db/schema"
 import { isAdmin } from "@/lib/env"
 import { ANYWHERE } from "@/lib/link-safety"
 import { getSession } from "@/lib/session"
@@ -33,6 +33,7 @@ export default function Page() {
     <main className="mx-auto flex w-full max-w-4xl flex-col gap-10 px-4 py-16">
       <Suspense fallback={null}>
         <Admins>
+          <ProAsked />
           <LinksMade />
           <Report />
         </Admins>
@@ -46,6 +47,28 @@ async function Admins({ children }: { children: React.ReactNode }) {
   const session = await getSession()
   if (!session || !isAdmin(session.user.id)) notFound()
   return children
+}
+
+/** Who asked to be told when Pro opens (app/pro): how many, and the newest,
+ *  the number that says when billing is worth building (README, Premium). */
+async function ProAsked() {
+  const rows = await db
+    .select({ username: users.username, at: proInterest.created_at })
+    .from(proInterest)
+    .innerJoin(users, eq(proInterest.user_id, users.id))
+    .orderBy(desc(proInterest.created_at))
+  return (
+    <Section title={`asked for Pro: ${fmt.format(rows.length)}`}>
+      <p className="font-mono text-sm">
+        {rows.length === 0
+          ? "nobody yet"
+          : rows
+              .slice(0, 30)
+              .map((r) => `@${r.username}`)
+              .join(" · ")}
+      </p>
+    </Section>
+  )
 }
 
 /** How many of the newest links that go anywhere the list shows. */

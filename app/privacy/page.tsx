@@ -47,6 +47,12 @@ export default function Page() {
         used, and a hash of the key, never the key itself. You see and revoke
         them at <Link href="/cli">/cli</Link>; they go with your account.
       </p>
+      <p>
+        If you ask to be told when Pro opens (<Link href="/pro">/pro</Link>),
+        e-ID keeps that you asked and when, and writes to your account&apos;s
+        email once, when it opens. You can take it back on the same page; it
+        goes with your account.
+      </p>
       <h3>Vouches</h3>
       <p>
         A vouch you write is shown with your name and picture on the page you

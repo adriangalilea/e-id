@@ -6,10 +6,11 @@ export const forbiddenUsernames: string[] = [
   "null",
   "",
   // The site's own routes beside the profiles (app/api, app/dev, app/cli,
-  // app/flags, app/embed.js, the old /about).
+  // app/pro, app/flags, app/embed.js, the old /about).
   "api",
   "dev",
   "cli",
+  "pro",
   "flags",
   "embed",
   "about",

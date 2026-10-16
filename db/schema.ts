@@ -271,6 +271,17 @@ export const apiKeys = sqliteTable(
   (table) => ({ userIdx: index("api_key_user_idx").on(table.user_id) }),
 )
 
+// WHO ASKED TO BE TOLD WHEN PRO OPENS (app/pro): a person and when, nothing
+// else, gone with them. How many would pay is what says when billing is worth
+// building (README, Premium).
+export const proInterest = sqliteTable("pro_interest", {
+  user_id: text("user_id")
+    .notNull()
+    .primaryKey()
+    .references(() => users.id, { onDelete: "cascade" }),
+  created_at: integer("created_at", { mode: "timestamp" }).notNull(),
+})
+
 // HOW MANY WRITES A KEY MADE ON A DAY (UTC), counted as each is made, so a key
 // is held to its day's most across every server (lib/api). Gone with its key.
 export const apiKeyDays = sqliteTable(
