@@ -48,5 +48,16 @@ backup*.sql
 .capture-*
 
 # @ag/sealed: committed encrypted beside themselves (scripts/sealed.mts)
+/components/ui/github.tsx
 /components/ui/shimmer.tsx
+/components/ui/social-profile.tsx
+/components/ui/tweet.tsx
+/components/ui/x-profile.tsx
+/lib/github-data.ts
+/lib/social-profile-core.ts
+/lib/social-profile-github.ts
+/lib/social-profile-telegram.ts
+/lib/social-profile-youtube.ts
+/lib/tweet-data.ts
+/lib/x-profile-data.ts
 # end @ag/sealed
