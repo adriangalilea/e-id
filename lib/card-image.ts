@@ -45,17 +45,18 @@ const FONTS = [
   "SpaceGrotesk-Medium.ttf",
   "SpaceMono-Regular.ttf",
 ].map((file) => join(process.cwd(), "public/fonts", file))
-const RESVG_FONT = {
+// The kit every share image draws with (this card, lib/send-image's file card).
+export const RESVG_FONT = {
   fontFiles: FONTS,
   loadSystemFonts: false,
   defaultFontFamily: "Space Grotesk",
 }
-const SANS = "Space Grotesk"
-const MONO = "Space Mono"
+export const SANS = "Space Grotesk"
+export const MONO = "Space Mono"
 
 /** The page and the card, the site's dark (`--background`, `--foreground`, globals.css). */
-const PAGE = "#060606"
-const INK = "#f5f5f5"
+export const PAGE = "#060606"
+export const INK = "#f5f5f5"
 
 /** THE FOIL, lib/foil's stops (one OKLCH lightness and chroma, only the hue
  *  turning), written here as sRGB since that is what resvg takes. */
@@ -102,13 +103,13 @@ function oklchHex(L: number, C: number, hue: number): string {
     .join("")}`
 }
 
-const esc = (s: string) =>
+export const esc = (s: string) =>
   s
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
-const f = (n: number) => Number(n.toFixed(2))
+export const f = (n: number) => Number(n.toFixed(2))
 
 /** A CSS `linear-gradient(<angle>deg, …)` over a box, as an SVG gradient's ends: the
  *  line through the box's centre at that angle, long enough that its ends' normals
@@ -129,7 +130,7 @@ const foilStops = () =>
   ).join("")
 
 /** How wide `text` sets, in px: the renderer's own measure of it. */
-function measure(
+export function measure(
   text: string,
   family: string,
   weight: number,
@@ -164,19 +165,19 @@ function wrap(
 }
 
 /** The longest start of `text` that fits with an ellipsis after it. */
-function cut(text: string, fits: (s: string) => boolean): string {
+export function cut(text: string, fits: (s: string) => boolean): string {
   let n = text.length
   while (n > 1 && !fits(`${text.slice(0, n).trimEnd()}…`)) n--
   return `${text.slice(0, n).trimEnd()}…`
 }
 
 /** The mark (lib/mark), its own box `size` tall, its foot on `y`. */
-function mark(x: number, y: number, size: number, fill: string): string {
+export function mark(x: number, y: number, size: number, fill: string): string {
   const k = size / MARK_BOX.h
   return `<path transform="translate(${f(x - MARK_BOX.x * k)} ${f(y - size - MARK_BOX.y * k)}) scale(${f(k)})" d="${MARK_PATH}" fill="${fill}"/>`
 }
 
-function icon(
+export function icon(
   node: IconNode,
   x: number,
   y: number,
@@ -205,7 +206,7 @@ const dataUri = (mime: string, bytes: Uint8Array) =>
   `data:${mime};base64,${Buffer.from(bytes).toString("base64")}`
 
 /** The person's photo as a data URI resvg can draw, or null. */
-async function photoOf(url: string | null): Promise<string | null> {
+export async function photoOf(url: string | null): Promise<string | null> {
   // PNG, JPEG and GIF, which is what resvg reads too.
   const photo = await fetchPhoto(url, "share image")
   return photo && dataUri(photo.mime, photo.bytes)

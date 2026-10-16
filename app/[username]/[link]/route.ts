@@ -8,6 +8,8 @@ import {
 } from "@/lib/data"
 import { LINK_SLUG, platformNamed } from "@/lib/link-names"
 import { renamedAnswer } from "@/lib/renamed"
+import { peekSend } from "@/lib/sends"
+import { getSession } from "@/lib/session"
 import { hits, visitsEnabled } from "@/lib/visit-store"
 import { isCrawler } from "@/lib/visits"
 
@@ -69,13 +71,21 @@ export async function GET(
   if (to) return Response.redirect(to, 307)
   // A send (lib/sends) has no address to go to: its page says what it is and
   // how to get it, the open counted by `eid get` when the file is asked for. A
-  // send for people is nothing here: its address goes to the profile, as a name
-  // of theirs that opens nothing does.
+  // send for people opens its page to them alone, signed in; to anyone else its
+  // address goes to the profile, as a name of theirs that opens nothing does.
   const send =
     !platform && LINK_SLUG.test(name.toLowerCase())
       ? await readOwnLink(profile.id, name)
       : null
-  if (send?.kind === "send" && !send.stopped_why && !send.addressed)
+  const shown =
+    send?.kind === "send" &&
+    !send.stopped_why &&
+    (!send.addressed ||
+      (await peekSend(username, name, {
+        userId: (await getSession())?.user.id ?? null,
+        password: null,
+      }).then((p) => p.ok)))
+  if (shown)
     return Response.redirect(
       new URL(`/${username}/${name.toLowerCase()}+`, request.url),
       307,

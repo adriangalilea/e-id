@@ -32,6 +32,7 @@ import { ANYWHERE, refusedDestination } from "@/lib/link-safety"
 import { DRAFTED } from "@/lib/platforms"
 import { getPresence, getWebsite, type Presence } from "@/lib/presence"
 import { allowed, callerOf } from "@/lib/rate-limit"
+import { peekSend } from "@/lib/sends"
 import { getSession } from "@/lib/session"
 import {
   removeShortLink,
@@ -496,6 +497,45 @@ export async function answerCliLogin(
         gone: true,
         why: "That sign-in is gone: run eid login again.",
       }
+}
+
+/** Tries at a send's password a caller may make in ten minutes, on its page: a person
+ *  mistyping is never held, a guesser is held to a crawl. */
+const PEEKS = { most: 10, windowMs: 10 * 60_000 }
+
+/** What a send behind a password is, for whoever says it on its page: the file and
+ *  who sends it, its ticket never (that is `eid get`'s). Wrong, it says so; past
+ *  PEEKS, it says to wait. */
+export async function peekSendAt(
+  username: string,
+  slug: string,
+  password: string,
+): Promise<
+  | {
+      ok: true
+      file: { name: string; size: number }
+      from: { username: string; name: string | null }
+    }
+  | { ok: false; why: string }
+> {
+  const caller = callerOf(await headers())
+  if (
+    !allowed(`peek:${caller}:${username}/${slug}`, PEEKS.most, PEEKS.windowMs)
+  )
+    return { ok: false, why: "Too many tries: wait a few minutes." }
+  const session = await getSession()
+  const peek = await peekSend(username, slug, {
+    userId: session?.user.id ?? null,
+    password,
+  })
+  if (peek.ok) return { ok: true, file: peek.file, from: peek.from }
+  return {
+    ok: false,
+    why:
+      peek.why === "password"
+        ? "Not the password."
+        : "Nothing is being sent here any more.",
+  }
 }
 
 /** Whether the terminal the signed-in user approved under `code` has taken its key:

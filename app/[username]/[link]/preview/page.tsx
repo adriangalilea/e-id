@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Copy } from "@/components/ui/copy"
 import { Image } from "@/components/ui/image"
 import { Panel } from "@/components/ui/panel"
+import { bytes } from "@/lib/bytes"
 import {
   cardLinkOf,
   getProfile,
@@ -16,6 +17,8 @@ import {
 import { LINK_SLUG, platformNamed } from "@/lib/link-names"
 import { ANYWHERE } from "@/lib/link-safety"
 import { threatOf } from "@/lib/safe-browsing"
+import { peekSend, sendShownAt } from "@/lib/sends"
+import { getSession } from "@/lib/session"
 import {
   ADVISORY,
   isThreat,
@@ -24,6 +27,7 @@ import {
   WARNINGS,
 } from "@/lib/threats"
 import { hostOf, hrefOf } from "@/lib/web-preview-facts"
+import { Peek } from "./peek"
 
 // A LINK'S PREVIEW, `/you/<name>+` (proxy.ts rewrites it here): whose link it is,
 // where it goes, whether it still opens, and what Google Safe Browsing says of
@@ -32,9 +36,37 @@ import { hostOf, hrefOf } from "@/lib/web-preview-facts"
 // is used: anyone who distrusts a link can look before opening it, and a
 // one-use link survives being looked at.
 
-export const metadata: Metadata = {
-  title: "where this link goes",
-  robots: { index: false, follow: false },
+/** What a link preview says of this address: a send's file and who sends it (only
+ *  that it is a file, behind a password), or whose link it is. Never e-ID's own line:
+ *  whoever reads a preview of someone's link is reading about that link. */
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ username: string; link: string }>
+}): Promise<Metadata> {
+  const { username, link } = await params
+  const robots = { index: false, follow: false }
+  const send = await sendShownAt(username, link)
+  if (send)
+    return send.file
+      ? {
+          title: { absolute: `${send.file.name} from ${send.from.name}` },
+          description: `${bytes(send.file.size)}, straight from ${send.from.name}'s machine while they send it.`,
+          robots,
+        }
+      : {
+          title: { absolute: `a file from ${send.from.name}` },
+          description:
+            "Behind a password: its name and size are shown to whoever says it.",
+          robots,
+        }
+  const profile = await getProfile(username)
+  const whose = profile ? (profile.name ?? `@${profile.username}`) : username
+  return {
+    title: { absolute: `a link from ${whose}` },
+    description: "See where it goes before it opens.",
+    robots,
+  }
 }
 
 const DAY = new Intl.DateTimeFormat("en", {
@@ -116,19 +148,44 @@ async function Preview({
       ? await readOwnLink(profile.id, name)
       : null
   const whose = <Whose profile={profile} />
-  // A send for people is nothing here (the route sends its address to the
-  // profile): it reads as a name of theirs that opens nothing.
+  const from = profile.name ?? profile.username
+  const down = own?.stopped_why ? takenDown(own.stopped_why) : null
   if (own?.kind === "send" && !own.addressed)
     return (
       <SendShown
         whose={whose}
         at={at}
-        from={profile.name ?? profile.username}
+        from={from}
         file={own.file}
         locked={own.locked}
-        down={own.stopped_why ? takenDown(own.stopped_why) : null}
+        forYou={false}
+        down={down}
       />
     )
+  // A send for people shows itself to them alone, signed in (the route sent them
+  // here): who sends what, before they take it. To anyone else it is a name of
+  // theirs that opens nothing.
+  if (own?.kind === "send" && own.addressed) {
+    const session = await getSession()
+    const peek = session
+      ? await peekSend(profile.username ?? username, name, {
+          userId: session.user.id,
+          password: null,
+        })
+      : null
+    if (peek?.ok)
+      return (
+        <SendShown
+          whose={whose}
+          at={at}
+          from={from}
+          file={peek.file}
+          locked={false}
+          forYou={peek.forYou}
+          down={down}
+        />
+      )
+  }
   const found = await destinationOf(profile.id, name)
   const verdict = found?.anywhere ? await verdictOf(found.to) : null
   const warned = verdict && isThreat(verdict) ? verdict : null
@@ -224,13 +281,6 @@ function Whose({ profile }: { profile: Profile }) {
   )
 }
 
-const BYTES = new Intl.NumberFormat("en", {
-  notation: "compact",
-  style: "unit",
-  unit: "byte",
-  unitDisplay: "narrow",
-})
-
 /** A send's page (lib/sends): what it is, from whom, and the one line that
  *  gets it, on any machine, account or not. */
 function SendShown({
@@ -239,32 +289,37 @@ function SendShown({
   from,
   file,
   locked,
+  forYou,
   down,
 }: {
   whose: React.ReactNode
   at: string
   from: string
   file: { name: string; size: number } | null
-  /** Behind a password: the file's name and size are said only to whoever says
-   *  it, in the terminal. */
+  /** Behind a password: what the file is is shown to whoever says it (Peek). */
   locked: boolean
+  /** Sent to the person signed in: it waits in their inbox too. */
+  forYou: boolean
   down: string | null
 }) {
   if (!file) throw new Error(`the send at ${at} has no file`)
+  const [, username = "", slug = ""] = at.split("/")
   const command = `npx @e-id/eid get eid.to${at}`
   return (
     <>
       {whose}
       <Panel bodyClassName="gap-3 p-4">
         <span className="font-mono text-foreground/50 text-xs">{at}</span>
-        <span className="text-foreground/60 text-sm">is sending</span>
+        <span className="text-foreground/60 text-sm">
+          {forYou ? "is sending you" : "is sending"}
+        </span>
         {locked ? (
-          <span className="font-medium text-lg">a file, behind a password</span>
+          <Peek username={username} slug={slug} />
         ) : (
           <>
             <span className="break-all font-medium text-lg">{file.name}</span>
             <span className="text-foreground/50 text-xs">
-              {BYTES.format(file.size)}
+              {bytes(file.size)}
             </span>
           </>
         )}
@@ -276,7 +331,9 @@ function SendShown({
       ) : (
         <div className="flex flex-col gap-2">
           <span className="text-foreground/60 text-sm">
-            Get it from a terminal, nothing to install:
+            {forYou
+              ? "It waits in your inbox (eid inbox). Get it from a terminal signed in as you:"
+              : "Get it from a terminal, nothing to install:"}
           </span>
           <div className="flex items-center gap-2 rounded-xl border border-border px-3 py-2">
             <code className="min-w-0 grow break-all font-mono text-sm">

@@ -136,8 +136,49 @@ export type SendRead =
 export async function readSend(
   username: string,
   slug: string,
-  asker: { userId: string | null; password: string | null },
+  asker: Asker,
 ): Promise<SendRead> {
+  const may = await mayHave(username, slug, asker)
+  if (!may.ok) return may
+  await db
+    .update(links)
+    .set({ visits: sql`${links.visits} + 1` })
+    .where(eq(links.id, may.id))
+  return {
+    ok: true,
+    ticket: may.ticket,
+    file: may.file,
+    from: may.from,
+  }
+}
+
+/** Who sends what at `/username/slug`, for whoever may have it (its people, or
+ *  whoever says its password): the preview before taking it, on its page. Nothing is
+ *  counted and no ticket is given. */
+export async function peekSend(
+  username: string,
+  slug: string,
+  asker: Asker,
+): Promise<
+  | {
+      ok: true
+      file: { name: string; size: number }
+      from: { username: string; name: string | null }
+      forYou: boolean
+    }
+  | { ok: false; why: "not_found" | "password" }
+> {
+  const may = await mayHave(username, slug, asker)
+  if (!may.ok) return may
+  return { ok: true, file: may.file, from: may.from, forYou: may.forYou }
+}
+
+type Asker = { userId: string | null; password: string | null }
+
+/** The one gate on a send: whether `asker` may have it. An addressed send asked for
+ *  by anyone but its people and its sender is not found, as a stopped one is; one
+ *  behind a password needs it said, except by its sender. */
+async function mayHave(username: string, slug: string, asker: Asker) {
   const [row] = await db
     .select({
       id: links.id,
@@ -158,7 +199,7 @@ export async function readSend(
       ),
     )
   if (!row?.ticket || !row.data?.file || !row.username)
-    return { ok: false, why: "not_found" }
+    return { ok: false as const, why: "not_found" as const }
   const people = await db
     .select({ userId: sendTo.user_id })
     .from(sendTo)
@@ -166,22 +207,20 @@ export async function readSend(
   const addressed = people.length > 0
   const theirs = people.some((p) => p.userId === asker.userId)
   if (addressed && !theirs && row.owner !== asker.userId)
-    return { ok: false, why: "not_found" }
+    return { ok: false as const, why: "not_found" as const }
   if (
     row.data.password &&
     row.owner !== asker.userId &&
     !(asker.password && passwordMatches(row.data.password, asker.password))
   )
-    return { ok: false, why: "password" }
-  await db
-    .update(links)
-    .set({ visits: sql`${links.visits} + 1` })
-    .where(eq(links.id, row.id))
+    return { ok: false as const, why: "password" as const }
   return {
-    ok: true,
+    ok: true as const,
+    id: row.id,
     ticket: row.ticket,
     file: row.data.file,
     from: { username: row.username, name: row.name },
+    forYou: theirs,
   }
 }
 
@@ -204,6 +243,43 @@ export async function markTaken(
     )
     .returning({ linkId: sendTo.link_id })
   return taken.length > 0
+}
+
+/** What anyone may know of the send at `/username/slug`, as its page and its link
+ *  preview show it: who sends it, and its file unless it is behind a password.
+ *  Null where there is no send there to show anyone: none, stopped, or for people
+ *  (theirs alone: its address is the profile's). */
+export async function sendShownAt(username: string, slug: string) {
+  const [row] = await db
+    .select({
+      username: users.username,
+      name: users.name,
+      image: users.image,
+      data: links.custom_data,
+      id: links.id,
+    })
+    .from(links)
+    .innerJoin(users, eq(users.id, links.user_id))
+    .where(
+      and(
+        eq(links.slug, slug.toLowerCase()),
+        eq(links.kind, "send"),
+        isNull(links.stopped_at),
+        eq(users.username_normalized, username.toLowerCase()),
+      ),
+    )
+  if (!row?.username || !row.data?.file) return null
+  const [addressed] = await db
+    .select({ id: sendTo.user_id })
+    .from(sendTo)
+    .where(eq(sendTo.link_id, row.id))
+    .limit(1)
+  if (addressed) return null
+  return {
+    at: `/${row.username}/${slug.toLowerCase()}`,
+    from: { name: row.name ?? row.username, image: row.image },
+    file: row.data.password ? null : row.data.file,
+  }
 }
 
 export type Waiting = {

@@ -19,8 +19,7 @@ export const metadata: Metadata = {
     // icon, and a title opening with 👤 too read it twice and cut off mid-phrase.
     default: "e-ID · your digital identity",
   },
-  description:
-    "one link for everywhere you are online. sign in with github and your page fills itself.",
+  description: "one link for everywhere you are online.",
   authors: [{ name: "Adrian Galilea" }],
   keywords: [
     "link in bio",
