@@ -10,6 +10,7 @@
     "build": "next build",
     "start": "next start",
     "check": "tsc --noEmit && biome check",
+    "verify": "next typegen && pnpm run check",
     "fix": "biome check --write",
     "captures": "bun $UI/scripts/capture.ts captures.ts",
     "db:push": "drizzle-kit push"
