@@ -28,6 +28,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { handleState, saveCard } from "@/db/actions"
 import { type CardEdit, cardEditSchema, type EditLink } from "@/lib/card-edit"
 import { errorAt, isDirty } from "@/lib/form-core"
+import { linkCode } from "@/lib/link-names"
 import { HIGHLIGHTED, type LinkPlatform, OFFERED } from "@/lib/platforms"
 import { cn } from "@/lib/utils"
 
@@ -263,6 +264,12 @@ const BLANK_LINK = (platform: LinkPlatform): EditLink => ({
   note: "",
   highlight: "",
   public: true,
+  // A link of your own gets an address at once, a made-up one its owner can
+  // rename (lib/link-names).
+  slug: platform === "link" ? linkCode() : "",
+  expires: "",
+  maxVisits: null,
+  visits: 0,
 })
 
 /** The card's links, written as every card's are (card-fields, `LinksOnCard`),
@@ -276,19 +283,29 @@ function LinksField({ form }: { form: CardForm }) {
   const wrong = useFormState(form, (s) =>
     s.values.links
       .map((_, i) =>
-        (["value", "note", "highlight"] as const).some(
-          (field) => errorAt(s, `links.${i}.${field}`) !== undefined,
-        )
+        (
+          [
+            "value",
+            "label",
+            "note",
+            "highlight",
+            "slug",
+            "expires",
+            "maxVisits",
+            "public",
+          ] as const
+        ).some((field) => errorAt(s, `links.${i}.${field}`) !== undefined)
           ? "1"
           : "0",
       )
       .join(""),
   )
-  const save = (platform: LinkPlatform, value: string) => {
-    const index = form
-      .get()
-      .values.links.findIndex((l) => l.platform === platform)
-    if (index === -1) form.append("links", { ...BLANK_LINK(platform), value })
+  const save = (
+    index: number | null,
+    platform: LinkPlatform,
+    value: string,
+  ) => {
+    if (index === null) form.append("links", { ...BLANK_LINK(platform), value })
     else if (!value) form.remove("links", index)
     else form.setValue(`links.${index}.value`, value)
   }
@@ -363,6 +380,7 @@ function LinkMore({ form, index }: { form: CardForm; index: number }) {
   if (!platform) return null
   return (
     <>
+      {platform === "link" && <OwnLink form={form} index={index} />}
       <form.Field
         name={`${path}.note`}
         label="note"
@@ -399,19 +417,110 @@ function LinkMore({ form, index }: { form: CardForm; index: number }) {
           )}
         </form.Field>
       )}
-      <form.Field
-        name={`${path}.public`}
-        label="on your card"
-        orientation="horizontal"
-      >
+      <OnCard form={form} index={index} />
+    </>
+  )
+}
+
+/** Whether a link shows on the card. One that stops opening never does: it is an
+ *  address handed out for a while (lib/card-edit). */
+function OnCard({ form, index }: { form: CardForm; index: number }) {
+  const path = `links.${index}` as const
+  const ends = useFormState(form, (s) => {
+    const l = s.values.links[index]
+    return Boolean(l?.expires) || l?.maxVisits != null
+  })
+  return (
+    <form.Field
+      name={`${path}.public`}
+      label="on your card"
+      aside={ends ? "not while it stops opening" : undefined}
+      orientation="horizontal"
+    >
+      {(c) => (
+        <Switch
+          size="sm"
+          checked={c.value && !ends}
+          disabled={ends}
+          onCheckedChange={(checked) => c.onValueChange(checked)}
+        />
+      )}
+    </form.Field>
+  )
+}
+
+/** A link of your own beyond where it goes: its name on the card, its address
+ *  under yours (`/you/<slug>`, made up until renamed), and when it stops opening
+ *  (a day, a number of opens; one that stops comes off the card). */
+function OwnLink({ form, index }: { form: CardForm; index: number }) {
+  const path = `links.${index}` as const
+  const handle = useFormState(form, (s) => s.values.handle)
+  const visits = useFormState(form, (s) => s.values.links[index]?.visits ?? 0)
+  // Stopping takes it off the card, in the same change.
+  const offCard = () => form.setValue(`${path}.public`, false)
+  return (
+    <>
+      <form.Field name={`${path}.label`} label="name" aside="on your card">
         {(c) => (
-          <Switch
+          <InputGroup
             size="sm"
-            checked={c.value}
-            onCheckedChange={(checked) => c.onValueChange(checked)}
+            {...WRITTEN_HERE}
+            placeholder="my CV, a talk, the book"
+            {...c.input}
           />
         )}
       </form.Field>
+      <form.Field
+        name={`${path}.slug`}
+        label="address"
+        aside={visits > 0 ? `opened ${visits} times` : undefined}
+      >
+        {(c) => (
+          <InputGroup
+            size="sm"
+            {...WRITTEN_HERE}
+            spellCheck={false}
+            autoCapitalize="none"
+            prefix={`${handle}/`}
+            {...c.input}
+          />
+        )}
+      </form.Field>
+      <div className="grid grid-cols-2 gap-3">
+        <form.Field name={`${path}.expires`} label="until" aside="optional">
+          {(c) => (
+            <InputGroup
+              size="sm"
+              type="date"
+              {...c.input}
+              onChange={(e) => {
+                c.input.onChange(e)
+                if (e.target.value) offCard()
+              }}
+            />
+          )}
+        </form.Field>
+        <form.Field
+          name={`${path}.maxVisits`}
+          label="opens"
+          aside="optional, 1 for one use"
+        >
+          {(c) => (
+            <InputGroup
+              size="sm"
+              type="number"
+              min={1}
+              inputMode="numeric"
+              value={c.value ?? ""}
+              onChange={(e) => {
+                const n = e.target.value === "" ? null : Number(e.target.value)
+                c.onValueChange(n)
+                if (n !== null) offCard()
+              }}
+            />
+          )}
+        </form.Field>
+      </div>
     </>
   )
 }

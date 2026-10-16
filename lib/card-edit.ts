@@ -1,5 +1,6 @@
 import { hasFlag } from "country-flag-icons"
 import { z } from "zod"
+import { LINK_SLUG, refusedLinkName } from "@/lib/link-names"
 import { HIGHLIGHTED, linkPlatforms, OFFERED } from "@/lib/platforms"
 import { usernameProblem } from "@/lib/username-rules"
 
@@ -29,14 +30,62 @@ export const editLinkSchema = z
     /** On the card, the profile and every form of the card (its data, its
      *  contact); off, stored and kept for the owner alone. */
     public: z.boolean(),
+    /** A `link`'s address name, `/you/<slug>`; "" on a platform's. */
+    slug: z.string().trim(),
+    /** The day a `link` stops opening (YYYY-MM-DD, through that day, UTC); ""
+     *  for never. */
+    expires: z
+      .string()
+      .refine((d) => d === "" || /^\d{4}-\d{2}-\d{2}$/.test(d), "A day."),
+    /** How many opens a `link` has before it stops (1: one use); null for no
+     *  end. */
+    maxVisits: z
+      .number()
+      .int("A whole number.")
+      .min(1, "At least one.")
+      .max(1_000_000)
+      .nullable(),
+    /** How many times it has been opened: shown, never written. */
+    visits: z.number().int(),
   })
   .refine((l) => OFFERED.includes(l.platform), {
-    message: "Links of your own are not open yet.",
+    message: "Not a platform e-ID offers.",
     path: ["platform"],
   })
   .refine((l) => l.platform !== "link" || l.label !== "", {
     message: "Name the link.",
     path: ["label"],
+  })
+  .superRefine((l, ctx) => {
+    if (l.platform !== "link") {
+      if (l.slug || l.expires || l.maxVisits !== null)
+        ctx.addIssue({
+          code: "custom",
+          message: "Only a link of your own has an address.",
+          path: ["slug"],
+        })
+      return
+    }
+    // Where it sends people: a page on the web, never a script or a bare word.
+    if (!/^https?:\/\/[^\s/]+\.[^\s]+$/i.test(l.value.trim()))
+      ctx.addIssue({
+        code: "custom",
+        message: "A whole address: https://…",
+        path: ["value"],
+      })
+    const slug = l.slug.toLowerCase()
+    const why = !LINK_SLUG.test(slug)
+      ? "Letters, digits and single hyphens, at most 40."
+      : refusedLinkName(slug)
+    if (why) ctx.addIssue({ code: "custom", message: why, path: ["slug"] })
+    // An address handed out for a while, never a part of the card: the card is
+    // cached, and could not know the moment it stops.
+    if ((l.expires || l.maxVisits !== null) && l.public)
+      ctx.addIssue({
+        code: "custom",
+        message: "A link that stops opening is never on your card.",
+        path: ["public"],
+      })
   })
   .refine((l) => l.highlight === "" || HIGHLIGHTED.includes(l.platform), {
     message: "Only a video or a post can be highlighted.",
@@ -69,7 +118,21 @@ export const cardEditSchema = z.object({
         .filter((l) => l.platform !== "link")
         .map((l) => l.platform)
       return new Set(known).size === known.length
-    }, "One link per platform."),
+    }, "One link per platform.")
+    .superRefine((links, ctx) => {
+      const seen = new Set<string>()
+      links.forEach((l, i) => {
+        if (l.platform !== "link") return
+        const slug = l.slug.toLowerCase()
+        if (seen.has(slug))
+          ctx.addIssue({
+            code: "custom",
+            message: `You have another link at /${slug}.`,
+            path: [i, "slug"],
+          })
+        seen.add(slug)
+      })
+    }),
 })
 
 /** The card as it is being written (untrimmed). */
@@ -101,6 +164,9 @@ export function linkErrors(errors: CardErrors, index: number) {
     label: at("label"),
     note: at("note"),
     highlight: at("highlight"),
+    slug: at("slug"),
+    expires: at("expires"),
+    maxVisits: at("maxVisits"),
   }
 }
 

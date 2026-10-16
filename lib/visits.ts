@@ -118,6 +118,13 @@ export function callerOf(request: Request): Caller {
 const CRAWLER =
   /bot|crawl|spider|slurp|facebookexternalhit|embedly|preview|monitor|curl|wget|python-requests|go-http-client/i
 
+/** Whether a user agent is a crawler's (a search engine, a link preview, a
+ *  monitor, a command-line client) and never a person's: what a site must not
+ *  count, or let use up a link meant for one open. */
+export function isCrawler(agent: string): boolean {
+  return CRAWLER.test(agent)
+}
+
 /** A field named like a person: refused, so no page or server ever writes one. */
 const PERSONAL = new Set(["ip", "user_agent", "email", "user", "name", "phone"])
 

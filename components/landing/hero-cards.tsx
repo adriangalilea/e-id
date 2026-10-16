@@ -46,7 +46,7 @@ import type { Card } from "@/lib/card-schema"
 import { EMOJI_DOMAIN } from "@/lib/const"
 import { clearDraft, readDraft, useDraft, writeDraft } from "@/lib/draft"
 import type { HandoffProvider } from "@/lib/handoff"
-import { knownPlatform, type LinkPlatform, OFFERED } from "@/lib/platforms"
+import { DRAFTED, knownPlatform, type LinkPlatform } from "@/lib/platforms"
 import type { Presence } from "@/lib/presence"
 import { startSignIn } from "@/lib/sign-in"
 import { cn } from "@/lib/utils"
@@ -437,7 +437,12 @@ function ClaimButton(props: React.ComponentProps<typeof Button>) {
  *  moves the page under the card (`shape`): the profile it makes appears with the
  *  first. */
 function Links({ links }: { links: DraftLink[] }) {
-  const save = (platform: LinkPlatform, value: string) => {
+  // A blank card holds one link per platform, so its link is found by platform.
+  const save = (
+    _index: number | null,
+    platform: LinkPlatform,
+    value: string,
+  ) => {
     const now = readDraft().links
     // Changed where it stands, added at the end, taken off when emptied.
     const next = !value
@@ -450,7 +455,7 @@ function Links({ links }: { links: DraftLink[] }) {
       () => writeDraft({ links: next }),
     )
   }
-  return <LinksOnCard links={links} offered={OFFERED} onSave={save} />
+  return <LinksOnCard links={links} offered={DRAFTED} onSave={save} />
 }
 
 /** The card becomes the account's: when the sign-in the address started comes

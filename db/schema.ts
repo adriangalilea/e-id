@@ -160,7 +160,10 @@ export const comments = sqliteTable(
 
 /** A person's links, one row each, in their order (`order`). `value` is the
  *  username there, or the whole address where the platform takes none; `label`
- *  their own name for it, a `link`'s only name. Migrations: db/migrations. */
+ *  their own name for it, a `link`'s only name. A `link` (anywhere at all) is also
+ *  an address of theirs, `/you/<slug>` (app/[username]/[link]), which can stop
+ *  opening at `expires_at` or after `max_visits` opens (`visits` counts them).
+ *  Migrations: db/migrations. */
 export const links = sqliteTable(
   "link",
   {
@@ -183,10 +186,19 @@ export const links = sqliteTable(
       channel_id?: string
       followers?: number
     }>(),
+    /** A `link`'s address name, lowercase: `/you/<slug>`. Null on a platform's. */
+    slug: text("slug"),
+    expires_at: integer("expires_at", { mode: "timestamp" }),
+    max_visits: integer("max_visits"),
+    visits: integer("visits").notNull().default(0),
   },
   (table) => {
     return {
       userIdIdx: index("user_id_idx").on(table.user_id),
+      // One address name per person; a platform's link has none.
+      slugIdx: uniqueIndex("link_user_slug_idx")
+        .on(table.user_id, table.slug)
+        .where(sql`${table.slug} IS NOT NULL`),
     }
   },
 )

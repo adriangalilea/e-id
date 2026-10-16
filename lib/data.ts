@@ -103,6 +103,34 @@ export async function getPublicLinks(userId: string): Promise<SelectLink[]> {
   return rows.filter((link) => link.value).sort(byLinkOrder)
 }
 
+/** Where one of a person's own links (`/you/<slug>`) goes, and the open counted;
+ *  null where they have none at that name or it has stopped opening (past its
+ *  day, out of opens). One write, uncached: the count and the check are one
+ *  statement, so a one-use link opened twice at once opens once. `count` false
+ *  (a crawler: a link preview fetching what was pasted) reads it without using an
+ *  open, or a preview would spend a one-use link before its person arrived. */
+export async function openOwnLink(
+  userId: string,
+  slug: string,
+  count: boolean,
+): Promise<string | null> {
+  const open = and(
+    eq(links.user_id, userId),
+    eq(links.slug, slug.toLowerCase()),
+    eq(links.platform, "link"),
+    sql`(${links.expires_at} IS NULL OR ${links.expires_at} > unixepoch())`,
+    sql`(${links.max_visits} IS NULL OR ${links.visits} < ${links.max_visits})`,
+  )
+  const [row] = count
+    ? await db
+        .update(links)
+        .set({ visits: sql`${links.visits} + 1` })
+        .where(open)
+        .returning({ value: links.value })
+    : await db.select({ value: links.value }).from(links).where(open).limit(1)
+  return row?.value ?? null
+}
+
 /** Every link of a user, private and empty ones included: the editor's. */
 export async function getAllLinks(userId: string): Promise<SelectLink[]> {
   const rows = await db.select().from(links).where(eq(links.user_id, userId))

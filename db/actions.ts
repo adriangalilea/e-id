@@ -24,7 +24,7 @@ import {
 } from "@/lib/data"
 import { isAdmin } from "@/lib/env"
 import { getGithubProfile } from "@/lib/github"
-import { OFFERED } from "@/lib/platforms"
+import { DRAFTED } from "@/lib/platforms"
 import { getPresence, getWebsite } from "@/lib/presence"
 import { getSession } from "@/lib/session"
 import { profileTag, USERS_TAG, usernameTag } from "@/lib/tags"
@@ -237,6 +237,12 @@ export async function cardToEdit(): Promise<CardEdit> {
       note: link.note ?? "",
       highlight: link.custom_data?.highlight ?? "",
       public: link.public,
+      slug: link.slug ?? "",
+      expires: link.expires_at
+        ? link.expires_at.toISOString().slice(0, 10)
+        : "",
+      maxVisits: link.max_visits,
+      visits: link.visits,
     })),
   }
 }
@@ -281,10 +287,17 @@ export async function saveCard(input: unknown): Promise<SaveResult> {
         .where(eq(users.id, user.id))
       const gone = owned.filter((l) => !named.has(l.id)).map((l) => l.id)
       if (gone.length > 0) await tx.delete(links).where(inArray(links.id, gone))
+      // Address names cleared first: two links trading names (/cv and /talk)
+      // would otherwise collide with each other half way.
+      await tx
+        .update(links)
+        .set({ slug: null })
+        .where(eq(links.user_id, user.id))
       for (const [order, link] of card.links.entries()) {
         // What was read from the platform stays; the highlight is the owner's
         // (none is left out of the stored JSON).
         const read = owned.find((l) => l.id === link.id)?.custom_data ?? {}
+        const own = link.platform === "link"
         const fields = {
           value: link.value,
           label: link.label || null,
@@ -292,6 +305,13 @@ export async function saveCard(input: unknown): Promise<SaveResult> {
           order,
           note: link.note || null,
           custom_data: { ...read, highlight: link.highlight || undefined },
+          slug: own ? link.slug.toLowerCase() : null,
+          // Through the day it names, in UTC.
+          expires_at:
+            own && link.expires
+              ? new Date(`${link.expires}T23:59:59.999Z`)
+              : null,
+          max_visits: own ? link.maxVisits : null,
         }
         if (link.id)
           await tx.update(links).set(fields).where(eq(links.id, link.id))
@@ -306,7 +326,17 @@ export async function saveCard(input: unknown): Promise<SaveResult> {
       if (renamed) await claimUsername(user.id, card.handle, tx)
     })
   } catch (error) {
-    if (renamed && /unique/i.test(String(error)))
+    // What the database said: drizzle wraps it ("Failed query: …") and keeps it
+    // as the cause.
+    const said = String((error as { cause?: unknown }).cause ?? error)
+    // The card's own check refuses two links at one name, so the database
+    // refusing one is a race between two saves: said, not thrown.
+    if (/UNIQUE constraint failed: link\.user_id, link\.slug/.test(said))
+      return {
+        ok: false,
+        errors: { links: "Two of your links have the same address." },
+      }
+    if (renamed && /UNIQUE constraint failed: user\.username/.test(said))
       return { ok: false, errors: { handle: "That username is taken." } }
     throw error
   }
@@ -458,7 +488,7 @@ export async function claimDraft(draft: Written): Promise<Claimed> {
     .from(links)
     .where(eq(links.user_id, user.id))
   const drafted = draft.links.filter(
-    (l) => OFFERED.includes(l.platform) && l.value.trim() !== "",
+    (l) => DRAFTED.includes(l.platform) && l.value.trim() !== "",
   )
   for (const link of drafted) {
     const had = owned.find((o) => o.platform === link.platform)

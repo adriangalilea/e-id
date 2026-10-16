@@ -64,7 +64,7 @@ export const cardSchema = z
             .url()
             .optional()
             .describe(
-              'The e-ID address that sends people there (https://👤.to/<handle>/gh): on the first link of each platform; absent on a "link", which has none.',
+              'The e-ID address that sends people there: on the first link of each platform (https://👤.to/<handle>/gh), and on every "link", at the name its owner gave it (https://👤.to/<handle>/cv).',
             ),
           handle: z
             .string()

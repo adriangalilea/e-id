@@ -58,6 +58,23 @@ export function platformNamed(
   return null
 }
 
+/** A link's address name as it is written: lowercase letters and digits, single
+ *  hyphens between, at most 40. */
+export const LINK_SLUG = /^[a-z0-9](?:-?[a-z0-9]){0,39}$/
+
+/** A made-up address name for a link the owner has not named: six letters and
+ *  digits, at least one a digit, so it is never a platform's name or a word. */
+export function linkCode(): string {
+  const ALPHABET = "abcdefghijkmnpqrstuvwxyz23456789"
+  for (;;) {
+    const code = Array.from(
+      crypto.getRandomValues(new Uint8Array(6)),
+      (b) => ALPHABET[b % ALPHABET.length],
+    ).join("")
+    if (/\d/.test(code)) return code
+  }
+}
+
 /** Why `name` cannot be one of a person's own links (`/you/<name>`), or null
  *  where it can. Every card already answers to its platforms' names, from its
  *  links, so those are never a person's to give; the card's own files and their

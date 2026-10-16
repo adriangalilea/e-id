@@ -17,7 +17,7 @@ import { type HandleState, handleState } from "@/db/actions"
 import { toHandle } from "@/lib/card-draft"
 import { prefixOf, usernameIn } from "@/lib/link-names"
 import { getLinkIcon, getLinkPlaceholder } from "@/lib/links"
-import type { LinkPlatform } from "@/lib/platforms"
+import { type LinkPlatform, single } from "@/lib/platforms"
 import { cn } from "@/lib/utils"
 
 // WRITING ON A CARD: the fields an e-ID card is written on where it lies, worn as
@@ -254,11 +254,12 @@ export type LinkDetail = {
 }
 
 /** THE CARD'S LINKS, written on: each a mark that opens to it, and "+" to add one
- *  (the platforms on offer not on it yet, `offered`). One row and one popover for
- *  every card being written (the home's blank one, an owner's), so a link is
- *  added, changed and taken off the same way on both. `onSave(platform, value)`
- *  keeps what was written, "" takes it off; what more a card offers per link is
- *  `detail`'s. */
+ *  (the platforms on offer not on it yet, `offered`, and a `link` of your own
+ *  always, any number of them). One row and one popover for every card being
+ *  written (the home's blank one, an owner's), so a link is added, changed and
+ *  taken off the same way on both. `onSave(index, platform, value)` keeps what was
+ *  written (`index`: the link's place, null for one being added), "" takes it
+ *  off; what more a card offers per link is `detail`'s. */
 export function LinksOnCard({
   links,
   offered,
@@ -267,15 +268,20 @@ export function LinksOnCard({
 }: {
   links: readonly MarkedLink[]
   offered: readonly LinkPlatform[]
-  onSave: (platform: LinkPlatform, value: string) => void
+  onSave: (index: number | null, platform: LinkPlatform, value: string) => void
   detail?: (index: number) => LinkDetail
 }) {
-  const rest = offered.filter((p) => !links.some((l) => l.platform === p))
+  const rest = offered.filter(
+    (p) => !single(p) || !links.some((l) => l.platform === p),
+  )
   return (
     <fieldset aria-label="links" className={LINKS_ON_CARD}>
       {links.map((link, index) => (
         <LinkPopover
-          key={link.platform}
+          // Its place: a card holds several links of your own, one platform.
+          // biome-ignore lint/suspicious/noArrayIndexKey: a link is its place on the card; one moved is redrawn closed
+          key={index}
+          index={index}
           trigger={
             <button
               type="button"
@@ -307,6 +313,7 @@ export function LinksOnCard({
               <Plus />
             </button>
           }
+          index={null}
           platforms={rest}
           onSave={onSave}
         />
@@ -322,15 +329,18 @@ export function LinksOnCard({
  *  card opens straight to its field, with the way to take it off. */
 function LinkPopover({
   trigger,
+  index,
   platforms,
   link,
   onSave,
   detail,
 }: {
   trigger: React.ReactElement
+  /** The link's place on the card, null while adding one. */
+  index: number | null
   platforms: readonly LinkPlatform[]
   link?: MarkedLink
-  onSave: (platform: LinkPlatform, value: string) => void
+  onSave: (index: number | null, platform: LinkPlatform, value: string) => void
   detail?: LinkDetail
 }) {
   const only = platforms.length === 1 ? (platforms[0] ?? null) : null
@@ -343,7 +353,7 @@ function LinkPopover({
   const keep = () => {
     if (!chosen) return
     const value = usernameIn(chosen, typed)
-    if (link ? value !== link.value : value !== "") onSave(chosen, value)
+    if (link ? value !== link.value : value !== "") onSave(index, chosen, value)
   }
   return (
     <Popover
@@ -401,7 +411,7 @@ function LinkPopover({
                     aria-label={`remove ${chosen}`}
                     onClick={() => {
                       setTyped("")
-                      onSave(link.platform, "")
+                      onSave(index, link.platform, "")
                       setOpen(false)
                     }}
                     className="text-foreground/50"

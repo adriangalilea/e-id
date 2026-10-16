@@ -17,12 +17,19 @@ export const linkPlatforms = [
 
 export type LinkPlatform = (typeof linkPlatforms)[number]
 
-/** The platforms a person can add a link on: every known one. A `link`
- *  (anywhere at all, named by its label) is ready in the data and the card
- *  format, and not offered yet: no picker lists it and no save takes one. */
-export const OFFERED: readonly LinkPlatform[] = linkPlatforms.filter(
+/** The platforms an owner can add a link on: every one, and a `link` (anywhere
+ *  at all, named by its label, an address of theirs at `/you/<slug>`), as many as
+ *  they like. */
+export const OFFERED: readonly LinkPlatform[] = linkPlatforms
+
+/** The platforms the home's blank card offers: every known one, never a `link`,
+ *  which is an address under its owner's name and so needs an account. */
+export const DRAFTED: readonly LinkPlatform[] = linkPlatforms.filter(
   (p) => p !== "link",
 )
+
+/** A platform a card holds one link on; a `link` it holds any number of. */
+export const single = (p: LinkPlatform) => p !== "link"
 
 /** The platforms a highlight is read on (components/profile-links). */
 export const HIGHLIGHTED: readonly LinkPlatform[] = ["youtube", "twitter"]

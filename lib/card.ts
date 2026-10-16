@@ -32,9 +32,12 @@ export async function cardOf(username: string): Promise<Card | null> {
       const { name, url } = cardLinkOf(row)
       const value = row.value ?? ""
       // The route the redirect resolves (app/[username]/[link]) is the first
-      // link of its platform's: only that one has one.
-      const short = shortName(row.platform)
-      const first = rows.findIndex((r) => r.platform === row.platform) === i
+      // link of its platform's, only that one has one; a link of your own is
+      // at its own address name.
+      const short = row.slug ?? shortName(row.platform)
+      const first =
+        row.slug !== null ||
+        rows.findIndex((r) => r.platform === row.platform) === i
       const handle = handleOf(row.platform, value)
       // Who they are there, where the platform is read (lib/presence: cached a
       // day, a failed read a few minutes, so a card never waits on it twice).
