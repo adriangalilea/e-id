@@ -59,7 +59,7 @@ const WHEN = new Intl.DateTimeFormat("en", {
 })
 
 /** The links people point wherever they like, newest first (the ones made
- *  before their making was kept last): whose, where, what Web Risk last said,
+ *  before their making was kept last): whose, where, what Safe Browsing last said,
  *  and a switch to take one down or put it back (lib/link-safety). */
 async function LinksMade() {
   const rows = await db

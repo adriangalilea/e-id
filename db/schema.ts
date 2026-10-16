@@ -195,11 +195,11 @@ export const links = sqliteTable(
     created_at: integer("created_at", { mode: "timestamp" }).$defaultFn(
       () => new Date(),
     ),
-    /** When where it goes was last asked of Web Risk (lib/web-risk); null for
+    /** When where it goes was last asked of Safe Browsing (lib/safe-browsing); null for
      *  never, which the daily check takes first. */
     checked_at: integer("checked_at", { mode: "timestamp" }),
     /** Taken down: it opens nothing and leaves the card (lib/data reads only
-     *  links without it). Why in `stopped_why`: a Web Risk threat, or "admin". */
+     *  links without it). Why in `stopped_why`: a Safe Browsing threat, or "admin". */
     stopped_at: integer("stopped_at", { mode: "timestamp" }),
     stopped_why: text("stopped_why"),
   },

@@ -70,8 +70,8 @@ export default function Page() {
       <h3>Checking where your links go</h3>
       <p>
         So e-ID&apos;s addresses never lead to phishing or malware, the address
-        your website and your own links point to is checked with Google&apos;s
-        Web Risk when you save it and once a day after. Only that address is
+        your website and your own links point to is checked with Google Safe
+        Browsing when you save it and once a day after. Only that address is
         sent, nothing about you. A link Google lists stops opening and leaves
         your card. This is e-ID&apos;s legitimate interest in keeping its
         addresses safe for everyone who opens them.
@@ -104,7 +104,8 @@ export default function Page() {
         <li>Turso (the databases, in Ireland).</li>
         <li>GitHub and Google, when you sign in with them.</li>
         <li>
-          Google Web Risk: the addresses your links point to, to be checked.
+          Google Safe Browsing: the addresses your links point to, to be
+          checked.
         </li>
       </ul>
       <p>e-ID sells nothing and shows no ads.</p>

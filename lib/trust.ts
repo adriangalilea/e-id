@@ -13,7 +13,7 @@ import { MOST_SHORT_LINKS } from "@/lib/card-edit"
 // link on the first day, more as the account ages, the whole MOST_SHORT_LINKS
 // after three months. A GitHub account a year old or more is a person who did
 // not sign up yesterday to send one phishing link: their account counts a week
-// older. A link of theirs taken down (lib/web-risk, or an admin) freezes it at
+// older. A link of theirs taken down (lib/safe-browsing, or an admin) freezes it at
 // what they have until it is put back. Read where a link is written, and shown
 // in the short links list with when the next step comes.
 

@@ -1,4 +1,4 @@
--- Where a link goes is asked of Web Risk (lib/web-risk) when saved and every day
+-- Where a link goes is asked of Safe Browsing (lib/safe-browsing) when saved and every day
 -- after, and a link can be taken down (db/schema.ts `link`). A link made before
 -- today keeps a null `created_at` and a null `checked_at`, so the first daily
 -- check asks about it first. Applied once.

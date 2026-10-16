@@ -91,7 +91,7 @@ export function byLinkOrder(a: SelectLink, b: SelectLink) {
 }
 
 /** What a visitor sees: public links that carry a value, in order, none taken
- *  down (lib/web-risk). */
+ *  down (lib/link-safety). */
 export async function getPublicLinks(userId: string): Promise<SelectLink[]> {
   "use cache"
   cacheLife("max")

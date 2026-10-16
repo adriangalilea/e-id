@@ -5,19 +5,19 @@ import { links } from "@/db/schema"
 import { required } from "@/lib/env"
 import { ANYWHERE } from "@/lib/link-safety"
 import { getLinkUrl } from "@/lib/links"
+import { threatOf } from "@/lib/safe-browsing"
 import { profileTag } from "@/lib/tags"
 import { hrefOf } from "@/lib/web-preview-facts"
-import { threatOf } from "@/lib/web-risk"
 
 // EVERY DESTINATION ASKED AGAIN, daily (vercel.json `crons`): a page that was
-// clean when its link was saved can be phishing a week later, and Web Risk lists
-// it once Google finds it. The links asked longest ago first (never asked, first
+// clean when its link was saved can be phishing a week later, and Safe Browsing
+// lists it once Google finds it. The links asked longest ago first (never asked, first
 // of all), BATCH a run; one listed now is taken down there and then (it opens
 // nothing and leaves the card, lib/data) and its owner's page drawn again. Called
 // by Vercel's cron with CRON_SECRET, by nobody else.
 
-/** How many links a run asks about: every link once in a few days at most, at a
- *  pace Web Risk's quota and one function's time both hold. */
+/** How many links a run asks about, one question each (lib/safe-browsing): well
+ *  inside Safe Browsing's daily quota and one function's time. */
 const BATCH = 500
 /** How many questions are in flight at once. */
 const AT_ONCE = 10

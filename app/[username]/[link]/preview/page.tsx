@@ -10,8 +10,8 @@ import { takenDown } from "@/lib/threats"
 import { hostOf } from "@/lib/web-preview-facts"
 
 // A LINK'S PREVIEW, `/you/<name>+` (proxy.ts rewrites it here): whose link it is,
-// where it goes, whether it still opens, and what Google's Web Risk said of it
-// when it was last asked (lib/web-risk), with the way on. Nothing is counted and
+// where it goes, whether it still opens, and what Google Safe Browsing said of
+// it when it was last asked (lib/safe-browsing), with the way on. Nothing is counted and
 // no open is used: anyone who distrusts a link can look before opening it, and a
 // one-use link survives being looked at.
 
@@ -109,8 +109,8 @@ async function Preview({
             </span>
             <span className="text-foreground/45 text-xs">
               {found.checked
-                ? `Google's Web Risk listed nothing here on ${DAY.format(found.checked)}.`
-                : "Not checked with Google's Web Risk yet."}
+                ? `Google Safe Browsing listed nothing here on ${DAY.format(found.checked)}.`
+                : "Not checked with Google Safe Browsing yet."}
             </span>
           </>
         ) : (

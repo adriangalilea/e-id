@@ -1,20 +1,23 @@
-// WHY A LINK WAS TAKEN DOWN, in a person's words: a Web Risk threat
-// (lib/web-risk) or an admin's hand. Client-safe, so the owner's list and the
-// link's preview say it the same way.
+// WHY A LINK WAS TAKEN DOWN, in a person's words: a Safe Browsing threat
+// (lib/safe-browsing) or an admin's hand. Client-safe, so the owner's list, the
+// link's preview and the admin's list say it the same way.
 
-/** What Web Risk is asked about. Malware and phishing are the two that get a
- *  whole domain flagged; unwanted software rides along at no cost. */
+/** What Safe Browsing answers with (v5 `ThreatType`, less its "unspecified"). */
 export const THREATS = [
   "MALWARE",
   "SOCIAL_ENGINEERING",
   "UNWANTED_SOFTWARE",
+  "POTENTIALLY_HARMFUL_APPLICATION",
 ] as const
 export type Threat = (typeof THREATS)[number]
 
 const WORDS: Record<Threat | "admin", string> = {
-  MALWARE: "taken down: Web Risk lists it as malware",
-  SOCIAL_ENGINEERING: "taken down: Web Risk lists it as phishing",
-  UNWANTED_SOFTWARE: "taken down: Web Risk lists it as unwanted software",
+  MALWARE: "taken down: Google Safe Browsing lists it as malware",
+  SOCIAL_ENGINEERING: "taken down: Google Safe Browsing lists it as phishing",
+  UNWANTED_SOFTWARE:
+    "taken down: Google Safe Browsing lists it as unwanted software",
+  POTENTIALLY_HARMFUL_APPLICATION:
+    "taken down: Google Safe Browsing lists it as a harmful app",
   admin: "taken down by e-ID",
 }
 

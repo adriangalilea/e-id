@@ -287,7 +287,7 @@ export async function saveCard(input: unknown): Promise<SaveResult> {
       throw new Error(`saveCard: link ${id} is not on ${user.id}'s card`)
   const renamed = card.handle !== row.username
 
-  // What goes somewhere new is asked of Web Risk (lib/link-safety).
+  // What goes somewhere new is asked of Safe Browsing (lib/link-safety).
   const fresh = card.links.filter(
     (l) => l.value !== owned.find((o) => o.id === l.id)?.value,
   )
@@ -439,7 +439,7 @@ export type ShortLinkResult =
  *  theirs: checked with the schema the list writes it with (lib/card-edit). A
  *  new one goes last on the card when it is on it. Refused past what they may
  *  keep (lib/trust), past MOST_ON_CARD links on the card, at a name they already
- *  use, or where Web Risk lists where it goes (lib/link-safety). One taken down
+ *  use, or where Safe Browsing lists where it goes (lib/link-safety). One taken down
  *  stays down: it can be deleted, not changed. The API's writes come through
  *  here too, when there is one. */
 export async function saveShortLink(input: unknown): Promise<ShortLinkResult> {
@@ -723,7 +723,7 @@ export async function claimDraft(draft: Written): Promise<Claimed> {
     if (had)
       await db.update(links).set({ public: true }).where(eq(links.id, had.id))
   }
-  // One Web Risk lists is left off the card, not the sign-up refused with it
+  // One Safe Browsing lists is left off the card, not the sign-up refused with it
   // (lib/link-safety): the person finishes signing up and adds what they can.
   const added = (
     await Promise.all(
