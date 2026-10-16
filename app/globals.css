@@ -215,8 +215,16 @@
   @media (width >= 48rem) {
     /* On the glass itself, never on the nav round it: an ancestor whose
        opacity is animated is a backdrop root, and the glass under it then
-       blurs nothing (what lay under the bar showed through it sharp). */
-    :root:has([data-slot="hero"]) [data-slot="site-nav"] > [data-slot="glass"] {
+       blurs nothing (what lay under the bar showed through it sharp).
+       Only a hero that is SHOWN hides the bar: with cacheComponents, Next keeps a
+       page left behind mounted in a hidden <Activity>, which React hides with an
+       inline `display: none`, so after leaving the home its hero is still in the
+       document and every page reached from it opened with no bar. */
+    :root:has([data-slot="hero"]):not(
+        :has([style*="display: none"] [data-slot="hero"])
+      )
+      [data-slot="site-nav"]
+      > [data-slot="glass"] {
       animation: bar-arrive linear both;
       animation-timeline: scroll(root);
       animation-range: 6rem 18rem;
