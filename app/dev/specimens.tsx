@@ -20,6 +20,8 @@ const KEPT: KeptShortLink[] = [
     public: true,
     visits: 41,
     stopped: null,
+    kind: "url",
+    file: null,
   },
   {
     id: "talk",
@@ -31,6 +33,8 @@ const KEPT: KeptShortLink[] = [
     public: false,
     visits: 7,
     stopped: null,
+    kind: "url",
+    file: null,
   },
   {
     id: "file",
@@ -42,6 +46,8 @@ const KEPT: KeptShortLink[] = [
     public: false,
     visits: 1,
     stopped: null,
+    kind: "url",
+    file: null,
   },
   {
     id: "bad",
@@ -53,6 +59,21 @@ const KEPT: KeptShortLink[] = [
     public: false,
     visits: 3,
     stopped: "SOCIAL_ENGINEERING",
+    kind: "url",
+    file: null,
+  },
+  {
+    id: "send",
+    slug: "notes",
+    value: "blobexampleticket",
+    label: "",
+    expires: "",
+    maxVisits: null,
+    public: false,
+    visits: 2,
+    stopped: null,
+    kind: "send",
+    file: { name: "notes.zip", size: 2_400_000 },
   },
 ]
 

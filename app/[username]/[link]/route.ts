@@ -1,5 +1,11 @@
 import { after } from "next/server"
-import { cardLinkOf, getProfile, getPublicLinks, openOwnLink } from "@/lib/data"
+import {
+  cardLinkOf,
+  getProfile,
+  getPublicLinks,
+  openOwnLink,
+  readOwnLink,
+} from "@/lib/data"
 import { LINK_SLUG, platformNamed } from "@/lib/link-names"
 import { renamedAnswer } from "@/lib/renamed"
 import { hits, visitsEnabled } from "@/lib/visit-store"
@@ -60,6 +66,17 @@ export async function GET(
         opened: link ? link.platform : own ? "link" : null,
       }),
     )
-  if (!to) return Response.redirect(new URL(`/${username}`, request.url), 307)
-  return Response.redirect(to, 307)
+  if (to) return Response.redirect(to, 307)
+  // A send (lib/sends) has no address to go to: its page says what it is and
+  // how to get it, the open counted by `eid get` when the file is asked for.
+  const send =
+    !platform && LINK_SLUG.test(name.toLowerCase())
+      ? await readOwnLink(profile.id, name)
+      : null
+  if (send?.kind === "send" && !send.stopped_why)
+    return Response.redirect(
+      new URL(`/${username}/${name.toLowerCase()}+`, request.url),
+      307,
+    )
+  return Response.redirect(new URL(`/${username}`, request.url), 307)
 }

@@ -1,10 +1,18 @@
 import type { Metadata } from "next"
 import { notFound } from "next/navigation"
+import type * as React from "react"
 import { Suspense } from "react"
 import { Button } from "@/components/ui/button"
+import { Copy } from "@/components/ui/copy"
 import { Image } from "@/components/ui/image"
 import { Panel } from "@/components/ui/panel"
-import { cardLinkOf, getProfile, getPublicLinks, readOwnLink } from "@/lib/data"
+import {
+  cardLinkOf,
+  getProfile,
+  getPublicLinks,
+  type Profile,
+  readOwnLink,
+} from "@/lib/data"
 import { LINK_SLUG, platformNamed } from "@/lib/link-names"
 import { ANYWHERE } from "@/lib/link-safety"
 import { threatOf } from "@/lib/safe-browsing"
@@ -101,32 +109,28 @@ async function Preview({
   const { username, link: name } = await params
   const profile = await getProfile(username)
   if (!profile) notFound()
+  const at = `/${profile.username}/${name.toLowerCase()}`
+  const own =
+    !platformNamed(name) && LINK_SLUG.test(name.toLowerCase())
+      ? await readOwnLink(profile.id, name)
+      : null
+  const whose = <Whose profile={profile} />
+  if (own?.kind === "send")
+    return (
+      <SendShown
+        whose={whose}
+        at={at}
+        from={profile.name ?? profile.username}
+        file={own.file}
+        down={own.stopped_why ? takenDown(own.stopped_why) : null}
+      />
+    )
   const found = await destinationOf(profile.id, name)
   const verdict = found?.anywhere ? await verdictOf(found.to) : null
   const warned = verdict && isThreat(verdict) ? verdict : null
-  const at = `/${profile.username}/${name.toLowerCase()}`
   return (
     <>
-      <a
-        href={`/${profile.username}`}
-        className="flex items-center gap-3 self-start"
-      >
-        {profile.image && (
-          <Image
-            src={profile.image}
-            alt=""
-            width={40}
-            height={40}
-            className="size-10 rounded-full object-cover"
-          />
-        )}
-        <span className="flex flex-col">
-          <span>{profile.name ?? profile.username}</span>
-          <span className="font-mono text-foreground/50 text-xs">
-            @{profile.username}
-          </span>
-        </span>
-      </a>
+      {whose}
       <Panel bodyClassName="gap-3 p-4">
         <span className="font-mono text-foreground/50 text-xs">{at}</span>
         {found ? (
@@ -185,6 +189,93 @@ async function Preview({
         >
           {found ? `continue to ${hostOf(found.to)}` : "open their profile"}
         </Button>
+      )}
+    </>
+  )
+}
+
+/** Whose link it is: their face and names, the way to their page. */
+function Whose({ profile }: { profile: Profile }) {
+  return (
+    <a
+      href={`/${profile.username}`}
+      className="flex items-center gap-3 self-start"
+    >
+      {profile.image && (
+        <Image
+          src={profile.image}
+          alt=""
+          width={40}
+          height={40}
+          className="size-10 rounded-full object-cover"
+        />
+      )}
+      <span className="flex flex-col">
+        <span>{profile.name ?? profile.username}</span>
+        <span className="font-mono text-foreground/50 text-xs">
+          @{profile.username}
+        </span>
+      </span>
+    </a>
+  )
+}
+
+const BYTES = new Intl.NumberFormat("en", {
+  notation: "compact",
+  style: "unit",
+  unit: "byte",
+  unitDisplay: "narrow",
+})
+
+/** A send's page (lib/sends): what it is, from whom, and the one line that
+ *  gets it, on any machine, account or not. */
+function SendShown({
+  whose,
+  at,
+  from,
+  file,
+  down,
+}: {
+  whose: React.ReactNode
+  at: string
+  from: string
+  file: { name: string; size: number } | null
+  down: string | null
+}) {
+  if (!file) throw new Error(`the send at ${at} has no file`)
+  const command = `npx @e-id/eid get eid.to${at}`
+  return (
+    <>
+      {whose}
+      <Panel bodyClassName="gap-3 p-4">
+        <span className="font-mono text-foreground/50 text-xs">{at}</span>
+        <span className="text-foreground/60 text-sm">is sending</span>
+        <span className="break-all font-medium text-lg">{file.name}</span>
+        <span className="text-foreground/50 text-xs">
+          {BYTES.format(file.size)}
+        </span>
+      </Panel>
+      {down ? (
+        <p className="text-foreground/70 text-sm first-letter:uppercase">
+          {down}.
+        </p>
+      ) : (
+        <div className="flex flex-col gap-2">
+          <span className="text-foreground/60 text-sm">
+            Get it from a terminal, nothing to install:
+          </span>
+          <div className="flex items-center gap-2 rounded-xl border border-border px-3 py-2">
+            <code className="min-w-0 grow break-all font-mono text-sm">
+              {command}
+            </code>
+            <Copy value={command} className="size-8 shrink-0 rounded-full" />
+          </div>
+          <p className="text-foreground/45 text-xs">
+            The file comes straight from {from}&apos;s machine, never through
+            e-ID, so it is here only while they keep sending it. The two
+            machines see each other&apos;s IP address.
+          </p>
+        </div>
       )}
     </>
   )

@@ -2,6 +2,7 @@ import { sql } from "drizzle-orm"
 import {
   index,
   integer,
+  primaryKey,
   sqliteTable,
   text,
   uniqueIndex,
@@ -185,7 +186,15 @@ export const links = sqliteTable(
       platform_user_id?: string
       channel_id?: string
       followers?: number
+      /** A send's file (`kind` "send"): its name and size in bytes. */
+      file?: { name: string; size: number }
     }>(),
+    /** What a link of their own is: `url`, a redirect to its value; or `send`,
+     *  a file served from its owner's machine (lib/sends), its value the sendme
+     *  ticket, opened by `eid get`. One namespace for both (`slug`). */
+    kind: text("kind", { enum: ["url", "send"] })
+      .notNull()
+      .default("url"),
     /** A `link`'s address name, lowercase: `/you/<slug>`. Null on a platform's. */
     slug: text("slug"),
     expires_at: integer("expires_at", { mode: "timestamp" }),
@@ -260,6 +269,21 @@ export const apiKeys = sqliteTable(
     last_used_at: integer("last_used_at", { mode: "timestamp" }),
   },
   (table) => ({ userIdx: index("api_key_user_idx").on(table.user_id) }),
+)
+
+// HOW MANY WRITES A KEY MADE ON A DAY (UTC), counted as each is made, so a key
+// is held to its day's most across every server (lib/api). Gone with its key.
+export const apiKeyDays = sqliteTable(
+  "api_key_day",
+  {
+    key_id: text("key_id")
+      .notNull()
+      .references(() => apiKeys.id, { onDelete: "cascade" }),
+    /** "2026-10-16". */
+    day: text("day").notNull(),
+    writes: integer("writes").notNull().default(0),
+  },
+  (table) => ({ pk: primaryKey({ columns: [table.key_id, table.day] }) }),
 )
 
 // A SIGN-IN OF THE CLI UNDER WAY (the OAuth device flow, RFC 8628): `eid login`

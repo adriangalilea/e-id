@@ -73,6 +73,18 @@ export default function Page() {
         from GitHub, Telegram, YouTube, X and your website, and keeps what it
         read for a day.
       </p>
+      <h3>Sending a file</h3>
+      <p>
+        When you send a file with <code>eid send</code>, it goes from your
+        machine straight to the one that gets it, never through e-ID. e-ID keeps
+        only its name under your page, what the file is called, its size and the
+        ticket the two machines use to find each other, until you stop sending.
+        The transfer uses n0&apos;s sendme, encrypted end to end; where the two
+        machines cannot reach each other directly, n0&apos;s relays pass the
+        encrypted traffic on and see which two machines talk, never the file.
+        Where they connect directly, each machine sees the other&apos;s IP
+        address.
+      </p>
       <h3>Checking where your links go</h3>
       <p>
         To keep e-ID&apos;s addresses from leading to phishing or malware, the
@@ -114,6 +126,10 @@ export default function Page() {
         <li>
           Google Safe Browsing: the addresses your links point to, to be
           checked.
+        </li>
+        <li>
+          n0 (sendme&apos;s relays), only when you send or get a file: they see
+          which two machines connect, never the file.
         </li>
       </ul>
       <p>e-ID sells nothing and shows no ads.</p>

@@ -122,6 +122,8 @@ export async function readOwnLink(userId: string, slug: string) {
       visits: links.visits,
       checked_at: links.checked_at,
       stopped_why: links.stopped_why,
+      kind: links.kind,
+      file: sql<string | null>`json_extract(${links.custom_data}, '$.file')`,
     })
     .from(links)
     .where(
@@ -132,7 +134,12 @@ export async function readOwnLink(userId: string, slug: string) {
       ),
     )
     .limit(1)
-  return row ?? null
+  if (!row) return null
+  const { file, ...rest } = row
+  return {
+    ...rest,
+    file: file ? (JSON.parse(file) as { name: string; size: number }) : null,
+  }
 }
 
 /** Where one of a person's own links (`/you/<slug>`) goes, and the open counted;
@@ -150,6 +157,9 @@ export async function openOwnLink(
     eq(links.user_id, userId),
     eq(links.slug, slug.toLowerCase()),
     eq(links.platform, "link"),
+    // A send is no redirect: its name opens its page (the route), and `eid get`
+    // its ticket (lib/sends).
+    eq(links.kind, "url"),
     isNull(links.stopped_at),
     sql`(${links.expires_at} IS NULL OR ${links.expires_at} > unixepoch())`,
     sql`(${links.max_visits} IS NULL OR ${links.visits} < ${links.max_visits})`,

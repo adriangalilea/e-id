@@ -38,6 +38,8 @@ export async function GET(request: Request) {
     .where(
       and(
         inArray(links.platform, [...ANYWHERE]),
+        // A send's value is a ticket, not an address (lib/sends).
+        eq(links.kind, "url"),
         isNull(links.stopped_at),
         isNotNull(links.value),
       ),

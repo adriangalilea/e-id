@@ -63,7 +63,7 @@ function opens(a: KeptShortLink, now: number) {
 /** What a short link says of itself under its name: where it goes, how often it
  *  opened, when it stops, whether it is on the card. */
 function said(a: KeptShortLink, now: number): string {
-  const parts = [hostOf(a.value)]
+  const parts = [a.file ? `sending ${a.file.name}` : hostOf(a.value)]
   parts.push(a.visits === 1 ? "opened once" : `opened ${a.visits} times`)
   if (a.stopped) parts.push(takenDown(a.stopped))
   else if (!opens(a, now)) parts.push("stopped")
@@ -201,8 +201,11 @@ export function ShortLinkList({
           >
             <button
               type="button"
+              // A send is the CLI's, served from a machine: stopping `eid send`
+              // ends it, so there is nothing here to change.
+              disabled={a.kind === "send"}
               onClick={() => onOpen(a.id)}
-              className="flex min-w-0 flex-1 flex-col items-start rounded-md px-1 py-0.5 text-left transition-colors hover:bg-foreground/[0.04]"
+              className="flex min-w-0 flex-1 flex-col items-start rounded-md px-1 py-0.5 text-left transition-colors enabled:hover:bg-foreground/[0.04]"
             >
               <AddressText
                 form={form}

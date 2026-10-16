@@ -75,7 +75,13 @@ async function LinksMade() {
     })
     .from(links)
     .innerJoin(users, eq(links.user_id, users.id))
-    .where(and(inArray(links.platform, [...ANYWHERE]), isNotNull(links.value)))
+    .where(
+      and(
+        inArray(links.platform, [...ANYWHERE]),
+        eq(links.kind, "url"),
+        isNotNull(links.value),
+      ),
+    )
     .orderBy(sql`${links.created_at} IS NULL`, desc(links.created_at))
     .limit(NEWEST)
   return (
