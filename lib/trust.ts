@@ -15,7 +15,8 @@ import { MOST_SHORT_LINKS } from "@/lib/card-edit"
 // not sign up yesterday to send one phishing link: their account counts a week
 // older. A link of theirs taken down (lib/safe-browsing, or an admin) freezes it at
 // what they have until it is put back. Read where a link is written, and shown
-// in the short links list with when the next step comes.
+// in the short links list with when the next step comes. The same age says
+// whose links are shown before they open (`unsureOf`, app/[username]/[link]).
 
 const DAY = 24 * 60 * 60 * 1000
 
@@ -26,6 +27,9 @@ const STEPS = [
   { days: 30, most: 50 },
   { days: 90, most: MOST_SHORT_LINKS },
 ] as const
+
+/** How long an account is new: its first step, one link (`unsureOf`). */
+const NEW_DAYS = STEPS[1].days
 
 /** How much older a GitHub account at least a year old makes an e-ID one. */
 const GITHUB_VOUCH_DAYS = 7
@@ -65,12 +69,10 @@ async function githubSince(id: string): Promise<Date | null> {
   }
 }
 
-/** What `userId` may keep now (`now` in ms since the epoch). */
-export async function allowanceOf(
-  userId: string,
-  now = Date.now(),
-): Promise<Allowance> {
-  const [[user], github, stopped] = await Promise.all([
+/** When `userId`'s account counts from, ms since the epoch: when it was made, a
+ *  week earlier where a GitHub account a year old stands behind it. */
+async function startOf(userId: string, now: number): Promise<number> {
+  const [[user], github] = await Promise.all([
     db
       .select({ createdAt: users.createdAt })
       .from(users)
@@ -81,24 +83,50 @@ export async function allowanceOf(
       .where(
         and(eq(accounts.userId, userId), eq(accounts.providerId, "github")),
       ),
+  ])
+  if (!user) throw new Error(`trust: no user ${userId}`)
+  const since = github[0] ? await githubSince(github[0].id) : null
+  const vouched =
+    since !== null && now - since.getTime() >= GITHUB_OLD_DAYS * DAY
+  return user.createdAt.getTime() - (vouched ? GITHUB_VOUCH_DAYS * DAY : 0)
+}
+
+/** Why e-ID is not sure enough of a link to send someone through it unseen: its
+ *  owner's account is in its first week (when a throwaway account made for one
+ *  phishing link is used), or where it goes was never answered by Safe Browsing
+ *  (it could not be asked when the link was saved). Its preview (`/you/<name>+`)
+ *  then stands in front of it. Null: it opens at once. */
+export type Unsure = "new" | "unchecked"
+
+export async function unsureOf(
+  userId: string,
+  checkedAt: Date | null,
+  now = Date.now(),
+): Promise<Unsure | null> {
+  const days = (now - (await startOf(userId, now))) / DAY
+  if (days < NEW_DAYS) return "new"
+  return checkedAt ? null : "unchecked"
+}
+
+/** What `userId` may keep now (`now` in ms since the epoch). */
+export async function allowanceOf(
+  userId: string,
+  now = Date.now(),
+): Promise<Allowance> {
+  const [start, stopped] = await Promise.all([
+    startOf(userId, now),
     db
       .select({ id: links.id })
       .from(links)
       .where(and(eq(links.user_id, userId), isNotNull(links.stopped_at)))
       .limit(1),
   ])
-  if (!user) throw new Error(`allowanceOf: no user ${userId}`)
   if (stopped.length > 0)
     return {
       most: 0,
       why: "A link of yours was taken down: no new ones until it is reviewed.",
       next: null,
     }
-  const since = github[0] ? await githubSince(github[0].id) : null
-  const vouched =
-    since !== null && now - since.getTime() >= GITHUB_OLD_DAYS * DAY
-  const start =
-    user.createdAt.getTime() - (vouched ? GITHUB_VOUCH_DAYS * DAY : 0)
   const age = (now - start) / DAY
   const at = STEPS.findLastIndex((s) => age >= s.days)
   const step = STEPS[at]

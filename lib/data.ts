@@ -150,6 +150,24 @@ export async function readOwnLink(userId: string, slug: string) {
   }
 }
 
+/** Whether a link as `readOwnLink` reads it still opens: not taken down, not past
+ *  its day, not used up. `openOwnLink`'s own test, for a reader that counts nothing. */
+export function stillOpens(
+  own: {
+    stopped_why: string | null
+    expires_at: Date | null
+    max_visits: number | null
+    visits: number
+  },
+  now = Date.now(),
+): boolean {
+  return (
+    !own.stopped_why &&
+    (!own.expires_at || own.expires_at.getTime() > now) &&
+    (own.max_visits === null || own.visits < own.max_visits)
+  )
+}
+
 /** Where one of a person's own links (`/you/<slug>`) goes, and the open counted;
  *  null where they have none at that name or it has stopped opening (past its
  *  day, out of opens, taken down). One write, uncached: the count and the check are one
