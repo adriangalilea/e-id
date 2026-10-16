@@ -74,28 +74,30 @@ export function SubjectLight() {
 }
 
 /** The site's shimmer, one surface wherever it lies: its facets a little sparse,
- *  barely frosted, swaying a little, and white with only a trace of a diamond's
- *  fire (`colour`). Drawn at one canvas pixel per CSS pixel (`resolution`): it
- *  lies over the whole hero, and the whole window behind a profile, and at a
- *  2x screen's own it was four times the pixels every frame for a grain the eye
- *  reads the same (measured on a real device, 2026-10-16). */
+ *  barely frosted, each speck's edge softened (`soft`, half a pixel), and white
+ *  with only a trace of a diamond's fire (`colour`). The surface itself never
+ *  moves: no `sway`, which carried every speck at once and, at one canvas pixel
+ *  to a CSS pixel, in visible steps of two screen pixels; the cards it once
+ *  swayed with lie still. Drawn at one canvas pixel per CSS pixel
+ *  (`resolution`): it lies over the whole hero, and the whole window behind a
+ *  profile, and at a 2x screen's own it was four times the pixels every frame
+ *  for a grain the eye reads the same (measured on a real device, 2026-10-16). */
 const FACETS = {
   density: 0.45,
   frost: 0.01,
-  sway: 6,
+  soft: 0.5,
   colour: 0.1,
   resolution: 1,
 } as const
 
-/** How strong the hero's shimmer is: present, never harsh over the cards. At 1x
- *  a speck covers four of a 2x screen's pixels, so it reads brighter than the
- *  same strength did at 2x: a quarter less. */
-const HERO_SHIMMER = 0.38
+/** How strong the hero's shimmer is: a texture under the cards, never their
+ *  rival. At 1x a speck covers four of a 2x screen's pixels and reads brighter
+ *  than the same strength did at 2x: half what it was there. */
+const HERO_SHIMMER = 0.25
 
-/** How strong a profile's shimmer is, about three fifths of the hero's: the
- *  home's surface carried onto the profile, faint enough to stay behind the
- *  card. */
-const PROFILE_SHIMMER = 0.22
+/** How strong a profile's shimmer is, three fifths of the hero's: the home's
+ *  surface carried onto the profile, faint enough to stay behind the card. */
+const PROFILE_SHIMMER = 0.15
 
 /** THE PROFILE'S SHIMMER: the hero's surface of facets (@ag/shimmer) across the
  *  whole profile, its card and its links alike, so a profile stands in the same
