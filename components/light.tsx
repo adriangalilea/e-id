@@ -74,9 +74,18 @@ export function SubjectLight() {
 }
 
 /** The site's shimmer, one surface wherever it lies: its facets a little sparse,
- *  barely frosted, swaying as the hero's cards float (hero-cards, `card-float`:
- *  ±0.4rem), and white with only a trace of a diamond's fire (`colour`). */
-const FACETS = { density: 0.45, frost: 0.01, sway: 6, colour: 0.1 } as const
+ *  barely frosted, swaying a little, and white with only a trace of a diamond's
+ *  fire (`colour`). Drawn at one canvas pixel per CSS pixel (`resolution`): it
+ *  lies over the whole hero, and the whole window behind a profile, and at a
+ *  2x screen's own it was four times the pixels every frame for a grain the eye
+ *  reads the same (measured on a real device, 2026-10-16). */
+const FACETS = {
+  density: 0.45,
+  frost: 0.01,
+  sway: 6,
+  colour: 0.1,
+  resolution: 1,
+} as const
 
 /** How strong the hero's shimmer is: present, never harsh over the cards. */
 const HERO_SHIMMER = 0.5

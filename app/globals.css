@@ -236,8 +236,9 @@
   }
 }
 
-/* A real card's slow drift in the home's spread (components/landing/hero-cards,
-   `Float`): up a little and turned a hair, then back. Keyframes, which no utility
+/* The visitor's card's slow drift while it waits in the home's spread
+   (components/landing/hero-cards): up a little and turned a hair, then back. Only
+   a card in focus drifts: a blurred one moving is blurred again every frame. Keyframes, which no utility
    can write; on `translate` and `rotate`, so it adds to the card's placed
    `transform` instead of replacing it. */
 @keyframes card-float {

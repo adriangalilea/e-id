@@ -602,9 +602,10 @@ function useWriting() {
   return writing
 }
 
-/** How many cards lie under the pile's top one, each with how long its slow
- *  drift takes (globals.css, `card-float`), no two in step. */
-const UNDER = [9, 11, 10, 12, 9.5, 10.5, 11.5, 8.5] as const
+/** How many cards lie under the pile's top one. They lie still: each is out of
+ *  focus, and a blurred card that moves is blurred again every frame (a GPU kept
+ *  busy at 120 Hz, measured 2026-10-16). */
+const UNDER = 8
 
 /** Where the pile's far end lies, in the top card's widths across and heights
  *  up or down from its middle: the layout Adrian chose, fixed. The pile is
@@ -656,7 +657,7 @@ function widthAt(depth: number) {
 function funneled(depth: number) {
   const wobble = WOBBLE[depth - 1] as (typeof WOBBLE)[number]
   const tip = end()
-  const t = (depth / UNDER.length) ** ALONG + wobble.along
+  const t = (depth / UNDER) ** ALONG + wobble.along
   // Its axis starts past the top card's right side (`BEHIND`), so the wide
   // mouth lies behind the top card, and runs left to the tip.
   const along = BEHIND + (1 - BEHIND) * t
@@ -707,7 +708,7 @@ function settled() {
   const right = ROOM.right
   const top = ROOM.top * ratio
   const bottom = ROOM.bottom * ratio
-  const free = UNDER.map((_, i) => {
+  const free = Array.from({ length: UNDER }, (_, i) => {
     const { dx, dy } = funneled(i + 1)
     return {
       u: Math.min(right, Math.max(left, dx / 100)),
@@ -774,10 +775,9 @@ function settled() {
  *  than the ground it fades onto, as dimming made it, and never see-through,
  *  which showed the shimmer through it), and out of focus the way a lens sets
  *  what lies behind its subject, plainly from the first card under the top
- *  (4px; the top card itself 3.2px) to the deepest (11px). Each drifts on its
- *  own
- *  (globals.css, `card-float`). */
-function under(depth: number, float: number) {
+ *  (4px; the top card itself 3.2px) to the deepest (11px). It lies still
+ *  (`UNDER`). */
+function under(depth: number) {
   const { dx, dy, r } = settled()[depth - 1] as ReturnType<
     typeof settled
   >[number]
@@ -788,8 +788,6 @@ function under(depth: number, float: number) {
     "--r": `${r.toFixed(2)}deg`,
     "--fade": (0.45 + 0.07 * (depth - 1)).toFixed(2),
     "--bl": `${(4 + 1 * (depth - 1)).toFixed(2)}px`,
-    animationDuration: `${float}s`,
-    animationDelay: `-${(float * depth) / UNDER.length}s`,
   } as React.CSSProperties
 }
 
@@ -846,8 +844,8 @@ function Pile({ people, away }: { people: Shown[]; away: boolean }) {
             // focus, but keeps its depth in the pile: never over a card that
             // lies above it. On one column the top card stands alone: there is
             // no room round it to spread into.
-            className="group/card absolute top-[calc(50%+var(--dy))] left-[calc(50%+var(--dx))] z-0 w-(--lw) animate-[card-float_ease-in-out_infinite_alternate] blur-(--bl) [transform:translate(-50%,-50%)_rotate(var(--r))] [transition:filter_1s_cubic-bezier(0.22,1,0.36,1)] held:blur-none motion-reduce:animate-none motion-reduce:transition-none max-lg:hidden"
-            style={under(depth, UNDER[depth - 1] as number)}
+            className="group/card absolute top-[calc(50%+var(--dy))] left-[calc(50%+var(--dx))] z-0 w-(--lw) blur-(--bl) [transform:translate(-50%,-50%)_rotate(var(--r))] [transition:filter_1s_cubic-bezier(0.22,1,0.36,1)] held:blur-none motion-reduce:transition-none max-lg:hidden"
+            style={under(depth)}
           >
             {/* Its own light, so it alone tilts toward the hand on it, its
                 near edge going down where the hand presses (±9° across, ±7° up
@@ -872,11 +870,10 @@ function Pile({ people, away }: { people: Shown[]; away: boolean }) {
             </HoloLight>
           </div>
         ))}
-      {/* Drifting as the cards under it do (globals.css, `card-float`), on its
-          own time, so the pile moves as one loose thing. Under the shimmer
-          with the rest of the pile (z-0 below its z-[5]): only the visitor's
-          card stands over it. */}
-      <div className="relative z-0 animate-[card-float_10s_ease-in-out_infinite_alternate] [animation-delay:-3s] motion-reduce:animate-none">
+      {/* Still, as the cards under it are. Under the shimmer with the rest of
+          the pile (z-0 below its z-[5]): only the visitor's card stands over
+          it. */}
+      <div className="relative z-0">
         {/* Its light, carried with it. */}
         {!away && <SubjectLight />}
         {/* Dropped on the table a little askew, as the rest lie, never square
@@ -1039,7 +1036,7 @@ export function Stage({
   }, [putBack])
   // Everyone's, theirs too: a visitor's own card may lie in the pile and wait
   // beside it at once.
-  const pile = people.slice(0, UNDER.length + 1)
+  const pile = people.slice(0, UNDER + 1)
   return (
     <Writing
       value={{
