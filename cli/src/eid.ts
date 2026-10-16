@@ -75,6 +75,9 @@ const CONFIG_DIR = join(
   "eid",
 )
 const CONFIG = join(CONFIG_DIR, "config.json")
+/** Here once this machine was told that a send shows the two machines each other's
+ *  IP address: it is said on the first send only. */
+const TOLD = join(CONFIG_DIR, "told-peer-to-peer")
 
 type Config = { base: string; key: string; username: string }
 
@@ -573,8 +576,15 @@ const RUN: Record<CommandName, (c: Context) => Promise<void>> = {
       stdio: ["ignore", "pipe", "pipe"],
     })
     let slug: string | null = null
+    // Stopping is one way out, whoever asks: Ctrl-C (0, said quietly) or sendme
+    // ending on its own (1, said as the failure it is). The name goes either way.
+    let stopping = false
     const stop = async (code: number) => {
+      if (stopping) return
+      stopping = true
       child.kill()
+      if (code === 0 && !json)
+        console.log(ui.muted(`\n  stopped: /${slug ?? ""} is gone`))
       if (slug)
         await api(`/links/${slug}`, { method: "DELETE", key }).catch(
           (error: unknown) =>
@@ -588,8 +598,9 @@ const RUN: Record<CommandName, (c: Context) => Promise<void>> = {
       process.exit(code)
     }
     try {
-      const ticket = await spinner(`getting ${file.name} ready`, () =>
-        ticketFrom(child),
+      const ticket = await spinner(
+        `${file.name} ${ui.muted(BYTES.format(file.size))}`,
+        () => ticketFrom(child),
       )
       const sent = await api<SendMade>("/sends", {
         method: "POST",
@@ -611,27 +622,44 @@ const RUN: Record<CommandName, (c: Context) => Promise<void>> = {
     process.on("SIGINT", () => void stop(0))
     process.on("SIGTERM", () => void stop(0))
     child.on("exit", (code) => {
+      if (stopping) return
       console.error(ui.bad(`sendme stopped (${code}): the send is over`))
       void stop(1)
     })
     const address = addressOn(domain, `/${username}/${slug}`)
     const command = `npx @e-id/eid get ${bare(address)}`
     const copied = !json && copy(command)
-    out({ from: username, slug, file, to, address, command }, () =>
-      console.log(`${command}${copied ? ui.muted(" (copied)") : ""}`),
-    )
-    // Said whoever reads: a person, or a program whose stdout is the JSON.
-    const whom =
-      to.length > 0
-        ? `for ${to.join(", ")} only: it waits in their eid inbox, and nobody else can open it`
-        : values.password !== undefined
-          ? "for whoever has the address and the password"
-          : "for whoever has the address"
-    console.error(
-      ui.muted(
-        `sending ${file.name} (${BYTES.format(file.size)}) ${whom}, until you stop (Ctrl-C), straight from this machine. Where the two machines connect directly, each sees the other's IP address.`,
-      ),
-    )
+    // A person reads a few aligned lines, then each download as it happens; what is
+    // said once (the IP note) is said once on a machine, and always in `eid help
+    // send` and on the privacy page.
+    out({ from: username, slug, file, to, address, command }, () => {
+      const forWhom =
+        to.length > 0
+          ? `${to.map((p) => ui.accent(`@${p}`)).join(", ")} only ${ui.muted("(in their eid inbox)")}`
+          : values.password !== undefined
+            ? "anyone with the address and the password"
+            : "anyone with the address"
+      console.log(
+        `\n${kv(
+          [
+            ["address", bare(address)],
+            ["get it", `${command}${copied ? ui.muted("  (copied)") : ""}`],
+            ["for", forWhom],
+          ],
+          { indent: 2 },
+        )}\n`,
+      )
+      if (!existsSync(TOLD)) {
+        console.log(
+          ui.muted(
+            "  Peer to peer: where the two machines connect directly, each sees the other's IP address. (said once)\n",
+          ),
+        )
+        mkdirSync(CONFIG_DIR, { recursive: true, mode: 0o700 })
+        writeFileSync(TOLD, "")
+      }
+      console.log(ui.muted("  sending from this machine · Ctrl-C to stop"))
+    })
     // Live: each download as it starts and as it lands, asked of e-ID one held
     // question at a time (GET /links/:name/events). A person reads them on stderr;
     // with --json each is a line on stdout, after the send's own.
@@ -654,8 +682,8 @@ const RUN: Record<CommandName, (c: Context) => Promise<void>> = {
         after = e.id
         if (json) console.log(JSON.stringify(e))
         else
-          console.error(
-            `${ui.muted(new Date(e.at).toTimeString().slice(0, 8))}  ${e.who ? ui.accent(`@${e.who}`) : "someone"} ${e.kind === "got" ? ui.ok("got it") : "is getting it"}`,
+          console.log(
+            `  ${ui.muted(new Date(e.at).toTimeString().slice(0, 8))}  ${e.who ? ui.accent(`@${e.who}`) : "someone"} ${e.kind === "got" ? ui.ok("got it") : "is getting it"}`,
           )
       }
     }
