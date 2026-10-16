@@ -29,8 +29,13 @@ Built with Next.js, better-auth, and Drizzle on Turso. The interface comes from 
 
 ## To do
 
-- [ ] an API for your short links: personal API keys (`@better-auth/api-key`, its own package since 1.4), each scoped to your short links and rate-limited, so a script or a CLI makes one (`curl -H "Authorization: Bearer …" eid.to/api/links -d '{"to":"…","expires":"7d"}'`), written through the same `saveShortLink` the list uses. Probably Premium.
-- [ ] a write API for the card (`card.json` is the read one), on the same API keys
+- [ ] an API, for scripts and CLIs (a one-use link to send a file, your card kept current from a deploy). The design:
+  - First, the writes take a user, not a session: `writeShortLink(userId, …)` and `writeCard(userId, …)`, which the site's actions call with the session's user and the API with the key's, one path for both.
+  - Keys: made in the account menu, named, scoped (`links`, `card`, `stats`; never the account itself), shown once (`eid_…`), kept hashed, listed with their prefix and last use, revocable. Built here, a table of hashed keys, rather than `@better-auth/api-key` (its own package since 1.4, with a schema for what is not needed).
+  - Endpoints, `/api/v1`, JSON, `Authorization: Bearer eid_…`: `POST /links` `{to, name?, until?, opens?, onCard?}` (`until` a day or `"7d"`), `GET /links`, `PATCH`/`DELETE /links/:name`; `GET /stats`; `PATCH /card` `{name?, bio?, country?, vouches?}`; `PUT`/`DELETE /card/links/:platform`. No whole-card replace: a script replacing everything is easy to get wrong.
+  - Limits: the 200 short links and 12 card marks hold; per key, 60 writes a minute and 1000 a day, counted in the database. Optionally, new destinations checked against Google Safe Browsing.
+  - Docs: an OpenAPI file from the same schemas, as `card.schema.json` is.
+  - Decide: free with these limits, or Premium.
 - [ ] passkeys (better-auth has them)
 - [ ] download your data, all of it: `/you/json` is the card; what it lacks (the account's email, the vouches you wrote, your numbers) is asked for by email today, as the privacy page says, answered within a month. A button would hand over both.
 - [ ] more sources for "latest", by what each would take:
