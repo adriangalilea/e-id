@@ -88,12 +88,14 @@ export default function Page() {
         A send for people (<code>--to</code>) also keeps who it is for and when
         each of them took it, which you see in <code>eid ls</code> and they see
         in their inbox; a send behind a password keeps the password hashed,
-        never as you typed it. All of it goes when you stop sending. The
-        transfer uses n0&apos;s sendme, encrypted end to end; where the two
-        machines cannot reach each other directly, n0&apos;s relays pass the
-        encrypted traffic on and see which two machines talk, never the file.
-        Where they connect directly, each machine sees the other&apos;s IP
-        address.
+        never as you typed it. While you send, e-ID keeps when each download
+        starts and when it lands, and who it was where they are signed in, so
+        your terminal can show you; never their address. All of it goes when you
+        stop sending. The transfer uses n0&apos;s sendme, encrypted end to end;
+        where the two machines cannot reach each other directly, n0&apos;s
+        relays pass the encrypted traffic on and see which two machines talk,
+        never the file. Where they connect directly, each machine sees the
+        other&apos;s IP address.
       </p>
       <h3>Checking where your links go</h3>
       <p>

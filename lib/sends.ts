@@ -4,7 +4,7 @@ import { randomBytes, scryptSync, timingSafeEqual } from "node:crypto"
 import { and, desc, eq, gt, inArray, isNull, sql } from "drizzle-orm"
 import type { z } from "zod"
 import { db } from "@/db"
-import { links, sendTo, users } from "@/db/schema"
+import { links, sendEvents, sendTo, users } from "@/db/schema"
 import type { SendCreateBody } from "@/lib/api-schemas"
 import type { CardErrors } from "@/lib/card-edit"
 import { slugProblem } from "@/lib/card-edit"
@@ -140,10 +140,19 @@ export async function readSend(
 ): Promise<SendRead> {
   const may = await mayHave(username, slug, asker)
   if (!may.ok) return may
-  await db
-    .update(links)
-    .set({ visits: sql`${links.visits} + 1` })
-    .where(eq(links.id, may.id))
+  await db.batch([
+    db
+      .update(links)
+      .set({ visits: sql`${links.visits} + 1` })
+      .where(eq(links.id, may.id)),
+    // A download starting, for its sender to see live.
+    db.insert(sendEvents).values({
+      link_id: may.id,
+      kind: "asked",
+      user_id: asker.userId,
+      at: new Date(),
+    }),
+  ])
   return {
     ok: true,
     ticket: may.ticket,
@@ -224,25 +233,82 @@ async function mayHave(username: string, slug: string, asker: Asker) {
   }
 }
 
-/** `userId` has the file of a send addressed to them: it leaves their inbox and its
- *  sender's `eid ls` says when (the first time, however often it is said). False
- *  where it is not theirs, or not there. */
-export async function markTaken(
+/** Someone who may have the send says its file came: its sender sees it live
+ *  (`got`), and for one of its people it leaves their inbox and `eid ls` says when
+ *  (the first time, however often it is said). Held to the same gate as taking it,
+ *  so nobody can say it of a send they could not have. False where they may not. */
+export async function markGot(
   username: string,
   slug: string,
-  userId: string,
+  asker: Asker,
 ): Promise<boolean> {
-  const taken = await db
-    .update(sendTo)
-    .set({ taken_at: sql`coalesce(${sendTo.taken_at}, unixepoch())` })
+  const may = await mayHave(username, slug, asker)
+  if (!may.ok) return false
+  await db.batch([
+    db.insert(sendEvents).values({
+      link_id: may.id,
+      kind: "got",
+      user_id: asker.userId,
+      at: new Date(),
+    }),
+    ...(may.forYou && asker.userId
+      ? [
+          db
+            .update(sendTo)
+            .set({ taken_at: sql`coalesce(${sendTo.taken_at}, unixepoch())` })
+            .where(
+              and(eq(sendTo.link_id, may.id), eq(sendTo.user_id, asker.userId)),
+            ),
+        ]
+      : []),
+  ])
+  return true
+}
+
+export type SendEvent = {
+  /** Increasing: ask again for those after the last one seen. */
+  id: number
+  kind: "asked" | "got"
+  /** Their username, signed in; null for someone without a key. */
+  who: string | null
+  at: string
+}
+
+/** What happened to `ownerId`'s send `slug` after event `after`, oldest first: what
+ *  `eid send` prints live. Null where they have no send there (it stopped). */
+export async function eventsOf(
+  ownerId: string,
+  slug: string,
+  after: number,
+): Promise<SendEvent[] | null> {
+  const [link] = await db
+    .select({ id: links.id })
+    .from(links)
     .where(
       and(
-        eq(sendTo.user_id, userId),
-        sql`${sendTo.link_id} = (SELECT ${links.id} FROM ${links} JOIN ${users} ON ${users.id} = ${links.user_id} WHERE ${links.slug} = ${slug.toLowerCase()} AND ${links.kind} = 'send' AND ${users.username_normalized} = ${username.toLowerCase()})`,
+        eq(links.user_id, ownerId),
+        eq(links.slug, slug.toLowerCase()),
+        eq(links.kind, "send"),
       ),
     )
-    .returning({ linkId: sendTo.link_id })
-  return taken.length > 0
+  if (!link) return null
+  const rows = await db
+    .select({
+      id: sendEvents.id,
+      kind: sendEvents.kind,
+      who: users.username,
+      at: sendEvents.at,
+    })
+    .from(sendEvents)
+    .leftJoin(users, eq(users.id, sendEvents.user_id))
+    .where(and(eq(sendEvents.link_id, link.id), gt(sendEvents.id, after)))
+    .orderBy(sendEvents.id)
+  return rows.map((r) => ({
+    id: r.id,
+    kind: r.kind,
+    who: r.who,
+    at: r.at.toISOString(),
+  }))
 }
 
 /** What anyone may know of the send at `/username/slug`, as its page and its link

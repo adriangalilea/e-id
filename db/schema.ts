@@ -248,6 +248,27 @@ export const sendTo = sqliteTable(
   }),
 )
 
+// WHAT HAPPENED TO A SEND, for its sender to watch live (`eid send` prints each, lib/sends):
+// someone asked for its ticket ("asked", a download starting), or said the file came
+// ("got"). Who, where they were signed in; nothing of anyone else, no address. The
+// events go with the send, when its sender stops. Migrations: db/migrations.
+export const sendEvents = sqliteTable(
+  "send_event",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    link_id: text("link_id")
+      .notNull()
+      .references(() => links.id, { onDelete: "cascade" }),
+    kind: text("kind", { enum: ["asked", "got"] }).notNull(),
+    /** Who, signed in; null for someone without a key. */
+    user_id: text("user_id").references(() => users.id, {
+      onDelete: "set null",
+    }),
+    at: integer("at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (table) => ({ linkIdx: index("send_event_link_idx").on(table.link_id) }),
+)
+
 // A NAME A PERSON ALSO ANSWERS TO: a former username, or one more they hold, each a
 // permanent redirect to their page (paths too: /old/gh opens /new/gh), so a new
 // main name keeps every link people already have. Held as a username is: nobody

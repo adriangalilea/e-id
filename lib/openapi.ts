@@ -101,10 +101,19 @@ const OPS: Op[] = [
     method: "post",
     path: "/sends/{username}/{name}/taken",
     summary:
-      "Say you have the file of a send sent to you: it leaves your inbox, its sender sees when",
-    key: true,
+      "Say the file of a send came: its sender sees it live, and one sent to you leaves your inbox. Asked as taking it is: a key for a send for people, the e-id-password header for one behind a password",
+    key: false,
     ok: null,
     params: ["username", "name"],
+  },
+  {
+    method: "get",
+    path: "/links/{name}/events",
+    summary:
+      "What is happening to one of your sends (downloads starting, files come, by whom); ?after=<id>, ?wait=<s> (25 at most) holds the answer until one arrives",
+    key: true,
+    ok: "SendEvents",
+    params: ["name"],
   },
   {
     method: "get",

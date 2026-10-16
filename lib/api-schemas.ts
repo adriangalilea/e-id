@@ -221,6 +221,30 @@ export const SendOut = z
   })
   .meta({ id: "Send" })
 
+export const SendEvents = z
+  .object({
+    events: z
+      .array(
+        z.object({
+          id: z
+            .number()
+            .describe("increasing: ask again with after=<the last id seen>"),
+          kind: z
+            .enum(["asked", "got"])
+            .describe("asked: a download starting; got: the file came"),
+          who: z
+            .string()
+            .nullable()
+            .describe(
+              "their username, signed in; null for someone without a key",
+            ),
+          at: z.string().describe("when, ISO"),
+        }),
+      )
+      .describe("what happened to the send, oldest first"),
+  })
+  .meta({ id: "SendEvents" })
+
 export const Inbox = z
   .object({
     waiting: z

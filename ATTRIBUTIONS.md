@@ -15,3 +15,4 @@ What e-ID uses that others made, and on what terms. The one list: the README poi
 ## In the CLI
 
 - **`@adriangalilea/utils`** (its terminal output), bundled into `cli/dist/eid.js`: MIT.
+- **[sendme](https://github.com/n0-computer/sendme)**, what `eid send` and `eid get` move files with (peer to peer over [iroh](https://github.com/n0-computer/iroh), BLAKE3-verified), © n0, Inc., Apache License 2.0. Not shipped in the package: each machine fetches n0's own release build from GitHub, checked against its published SHA-256 (`cli/src/sendme.ts`). Where two machines cannot connect directly, n0's public relays carry the encrypted traffic.
