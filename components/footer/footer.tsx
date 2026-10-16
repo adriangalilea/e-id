@@ -17,7 +17,10 @@ export default function Footer() {
     >
       <Glass
         shape="bar"
-        className="pointer-events-auto mx-auto flex w-full max-w-md justify-between pl-4 [--glass-size:3.5rem] md:max-w-6xl md:[--glass-size:3.25rem]"
+        // The account's pill sits concentric in the bar's round end: as far from
+        // its right edge as from its top and bottom, half of what the bar's height
+        // (`--glass-size`) has over the pill's (2rem, AccountMenu `md`).
+        className="pointer-events-auto mx-auto flex w-full max-w-md items-center justify-between pr-[calc((var(--glass-size)-2rem)/2)] pl-4 [--glass-size:3.5rem] md:max-w-6xl md:[--glass-size:3.25rem]"
       >
         <HomeLink
           aria-label="home"
