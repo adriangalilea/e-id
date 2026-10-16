@@ -8,7 +8,7 @@
 // Signed in with the OAuth device flow (lib/api-keys): `eid login` shows a code,
 // opens the page that approves it, and keeps the key it is given in
 // $XDG_CONFIG_HOME/eid/config.json (0600). A command that needs a signed-in
-// machine signs it in first, so `npx e-id link …` works on a machine that never
+// machine signs it in first, so `npx @e-id/eid link …` works on a machine that never
 // saw eid. EID_URL points it at another e-ID (the dev server).
 
 import { execFileSync, spawn } from "node:child_process"

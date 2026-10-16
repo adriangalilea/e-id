@@ -235,7 +235,7 @@ export function Story(props: StoryProps) {
                   progress={p}
                   accent={PHOSPHOR}
                   rows={12}
-                  alt="a terminal: npx e-id link makes a short link, signing the machine in first, then eid ls lists it"
+                  alt="a terminal: npx @e-id/eid link makes a short link, signing the machine in first, then eid ls lists it"
                   className="size-full"
                 />
               </Fit>

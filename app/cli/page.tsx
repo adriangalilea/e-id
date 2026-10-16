@@ -25,8 +25,11 @@ export default function Page({
         <h1 className="text-2xl">the eid CLI</h1>
         <p className="text-foreground/60 text-sm">
           Your short links and your numbers from a terminal.{" "}
-          <code className="font-mono text-foreground/80">npm i -g e-id</code>,
-          then <code className="font-mono text-foreground/80">eid login</code>.
+          <code className="font-mono text-foreground/80">
+            npm i -g @e-id/eid
+          </code>
+          , then <code className="font-mono text-foreground/80">eid login</code>
+          .
         </p>
       </header>
       <Suspense fallback={null}>

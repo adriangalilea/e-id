@@ -119,7 +119,7 @@ const pad = (s: string, n: number) => s + " ".repeat(Math.max(1, n - s.length))
 export function overview(version: string): string {
   const width = Math.max(...COMMANDS.map((c) => c.usage.length)) + 6
   return [
-    `eid ${version}: your e-ID from a terminal (also 👤, and npx e-id)`,
+    `eid ${version}: your e-ID from a terminal (also 👤, and npx @e-id/eid)`,
     "",
     ...COMMANDS.map((c) => `  ${pad(`eid ${c.usage}`, width)}${c.says}`),
     "",

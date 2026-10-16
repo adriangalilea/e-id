@@ -88,7 +88,7 @@ export async function Features() {
  *  (lib/terminal-session): what `eid` really prints (cli/src/eid.ts), on a
  *  machine that never ran it, so the first command signs it in. */
 function cliSession(username: string): string {
-  return `$ npx e-id link https://example.com/cv.pdf cv
+  return `$ npx @e-id/eid link https://example.com/cv.pdf cv
 code BCDF-GHJK  approve it at https://e-id.to/cli?code=BCDF-GHJK
 ✓ waiting for you in the browser 4s
 signed in as ${username} on https://e-id.to

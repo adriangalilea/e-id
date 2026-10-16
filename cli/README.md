@@ -3,7 +3,7 @@
 Your [e-ID](https://e-id.to) from a terminal: short links under your page, your numbers, anyone's card.
 
 ```sh
-npx e-id link https://example.com/cv.pdf cv
+npx @e-id/eid link https://example.com/cv.pdf cv
 # https://eid.to/you/cv (copied)
 ```
 
@@ -12,7 +12,7 @@ Nothing to set up: the first command that needs you signs this machine in. It sh
 Installed, it answers to `eid`, and to `👤`:
 
 ```sh
-npm i -g e-id
+npm i -g @e-id/eid
 eid help
 ```
 

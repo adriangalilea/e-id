@@ -1,5 +1,5 @@
 {
-  "name": "e-id",
+  "name": "@e-id/eid",
   "version": "0.1.0",
   "description": "eid: your e-ID from a terminal. Short links, your numbers, your card.",
   "homepage": "https://e-id.to/cli",
@@ -11,7 +11,6 @@
   "license": "AGPL-3.0-only",
   "type": "module",
   "bin": {
-    "e-id": "dist/eid.js",
     "eid": "dist/eid.js",
     "👤": "dist/eid.js"
   },
