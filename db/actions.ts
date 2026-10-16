@@ -8,9 +8,14 @@ import { comments, links, type SelectComment, users } from "@/db/schema"
 import { asLinks, type Written } from "@/lib/card-draft"
 import {
   type CardEdit,
+  type CardErrors,
   cardEditSchema,
   errorsOf,
+  type KeptShortLink,
+  MOST_ON_CARD,
+  MOST_SHORT_LINKS,
   type SaveResult,
+  shortLinkSchema,
 } from "@/lib/card-edit"
 import { type Chip, chipOf } from "@/lib/chip"
 import { writeChip } from "@/lib/chip-server"
@@ -229,7 +234,7 @@ export async function cardToEdit(): Promise<CardEdit> {
     country: row.country ?? "XX",
     bio: row.bio ?? "",
     vouches: row.vouches,
-    links: owned.map((link) => ({
+    links: owned.filter(onCard).map((link) => ({
       id: link.id,
       platform: link.platform,
       value: link.value ?? "",
@@ -264,14 +269,23 @@ export async function saveCard(input: unknown): Promise<SaveResult> {
     .from(users)
     .where(eq(users.id, user.id))
   if (!row?.username) throw new Error(`saveCard: no user ${user.id}`)
-  const owned = await db
-    .select({ id: links.id, custom_data: links.custom_data })
-    .from(links)
-    .where(eq(links.user_id, user.id))
+  // The card's links only: an address off the card is the addresses' list's,
+  // never touched here.
+  const owned = (
+    await db
+      .select({
+        id: links.id,
+        platform: links.platform,
+        public: links.public,
+        custom_data: links.custom_data,
+      })
+      .from(links)
+      .where(eq(links.user_id, user.id))
+  ).filter(onCard)
   const named = new Set(card.links.flatMap((l) => (l.id ? [l.id] : [])))
   for (const id of named)
     if (!owned.some((l) => l.id === id))
-      throw new Error(`saveCard: link ${id} is not ${user.id}'s`)
+      throw new Error(`saveCard: link ${id} is not on ${user.id}'s card`)
   const renamed = card.handle !== row.username
 
   try {
@@ -287,12 +301,14 @@ export async function saveCard(input: unknown): Promise<SaveResult> {
         .where(eq(users.id, user.id))
       const gone = owned.filter((l) => !named.has(l.id)).map((l) => l.id)
       if (gone.length > 0) await tx.delete(links).where(inArray(links.id, gone))
-      // Address names cleared first: two links trading names (/cv and /talk)
-      // would otherwise collide with each other half way.
-      await tx
-        .update(links)
-        .set({ slug: null })
-        .where(eq(links.user_id, user.id))
+      // The card's address names cleared first: two links trading names (/cv
+      // and /talk) would otherwise collide with each other half way.
+      const kept = owned.filter((l) => named.has(l.id)).map((l) => l.id)
+      if (kept.length > 0)
+        await tx
+          .update(links)
+          .set({ slug: null })
+          .where(inArray(links.id, kept))
       for (const [order, link] of card.links.entries()) {
         // What was read from the platform stays; the highlight is the owner's
         // (none is left out of the stored JSON).
@@ -334,7 +350,9 @@ export async function saveCard(input: unknown): Promise<SaveResult> {
     if (/UNIQUE constraint failed: link\.user_id, link\.slug/.test(said))
       return {
         ok: false,
-        errors: { links: "Two of your links have the same address." },
+        errors: {
+          links: "One of your short links already has that name.",
+        },
       }
     if (renamed && /UNIQUE constraint failed: user\.username/.test(said))
       return { ok: false, errors: { handle: "That username is taken." } }
@@ -348,6 +366,146 @@ export async function saveCard(input: unknown): Promise<SaveResult> {
     await writeChip(chipOf({ username: card.handle, image: user.image }))
   }
   return { ok: true, username: card.handle }
+}
+
+// ── short links ─────────────────────────────────────────────────────────────
+
+/** Whether a link is the card's (edited on it): a platform's, or one of your
+ *  own shown on it. One of your own off the card is a short link only, kept in
+ *  its own list (lib/card-edit). */
+function onCard(link: { platform: string; public: boolean }) {
+  return link.platform !== "link" || link.public
+}
+
+const dayOf = (at: Date | null) => (at ? at.toISOString().slice(0, 10) : "")
+
+/** The signed-in user's short links, every link of their own, on the card or
+ *  not, newest first. */
+export async function myShortLinks(): Promise<KeptShortLink[]> {
+  const user = await requireUser()
+  const rows = await db
+    .select()
+    .from(links)
+    .where(and(eq(links.user_id, user.id), eq(links.platform, "link")))
+    .orderBy(desc(links.order))
+  return rows.map((l) => ({
+    id: l.id,
+    value: l.value ?? "",
+    slug: l.slug ?? "",
+    label: l.label ?? "",
+    expires: dayOf(l.expires_at),
+    maxVisits: l.max_visits,
+    public: l.public,
+    visits: l.visits,
+  }))
+}
+
+export type ShortLinkResult =
+  | { ok: true; link: KeptShortLink }
+  | { ok: false; errors: CardErrors }
+
+/** Writes one of the signed-in user's short links, a new one (`id` null) or
+ *  theirs: checked with the schema the list writes it with (lib/card-edit). A
+ *  new one goes last on the card when it is on it. Refused past
+ *  MOST_SHORT_LINKS, past MOST_ON_CARD links on the card, or at a name they
+ *  already use. The API's writes come through here too, when there is one. */
+export async function saveShortLink(input: unknown): Promise<ShortLinkResult> {
+  const user = await requireUser()
+  const parsed = shortLinkSchema.safeParse(input)
+  if (!parsed.success) return { ok: false, errors: errorsOf(parsed.error) }
+  const a = parsed.data
+  const owned = await db
+    .select({
+      id: links.id,
+      platform: links.platform,
+      public: links.public,
+      order: links.order,
+    })
+    .from(links)
+    .where(eq(links.user_id, user.id))
+  const was = a.id ? owned.find((l) => l.id === a.id) : undefined
+  if (a.id && was?.platform !== "link")
+    throw new Error(
+      `saveShortLink: ${a.id} is not a short link of ${user.id}'s`,
+    )
+  if (
+    !a.id &&
+    owned.filter((l) => l.platform === "link").length >= MOST_SHORT_LINKS
+  )
+    return {
+      ok: false,
+      errors: { slug: `You keep ${MOST_SHORT_LINKS} short links at most.` },
+    }
+  const onCardNow = owned.filter((l) => l.public && l.id !== a.id).length
+  if (a.public && onCardNow >= MOST_ON_CARD)
+    return {
+      ok: false,
+      errors: {
+        public: `A card shows at most ${MOST_ON_CARD} links: hide one first.`,
+      },
+    }
+  const fields = {
+    value: a.value,
+    slug: a.slug.toLowerCase(),
+    label: a.label || null,
+    // Through the day it names, in UTC.
+    expires_at: a.expires ? new Date(`${a.expires}T23:59:59.999Z`) : null,
+    max_visits: a.maxVisits,
+    public: a.public,
+  }
+  let id = a.id
+  try {
+    if (id) await db.update(links).set(fields).where(eq(links.id, id))
+    else {
+      id = crypto.randomUUID()
+      await db.insert(links).values({
+        id,
+        user_id: user.id,
+        platform: "link",
+        order: Math.max(-1, ...owned.map((l) => l.order ?? -1)) + 1,
+        ...fields,
+      })
+    }
+  } catch (error) {
+    const said = String((error as { cause?: unknown }).cause ?? error)
+    if (/UNIQUE constraint failed: link\.user_id, link\.slug/.test(said))
+      return {
+        ok: false,
+        errors: { slug: `You already have a short link at /${fields.slug}.` },
+      }
+    throw error
+  }
+  // The card changes only where the short link is on it, or was.
+  if (a.public || was?.public) updateTag(profileTag(user.id))
+  const [row] = await db
+    .select({ visits: links.visits })
+    .from(links)
+    .where(eq(links.id, id))
+  return {
+    ok: true,
+    link: { ...a, id, slug: fields.slug, visits: row?.visits ?? 0 },
+  }
+}
+
+/** Deletes one of the signed-in user's short links: it opens nothing from now
+ *  on, its name free for another of theirs. */
+export async function deleteShortLink(id: string): Promise<void> {
+  const user = await requireUser()
+  const [gone] = await db
+    .delete(links)
+    .where(
+      and(
+        eq(links.id, id),
+        eq(links.user_id, user.id),
+        eq(links.platform, "link"),
+      ),
+    )
+    .returning({ public: links.public })
+  if (!gone)
+    throw new Error(
+      `deleteShortLink: ${id} is not a short link of ${user.id}'s`,
+    )
+  if (gone.public) updateTag(profileTag(user.id))
 }
 
 export type HandleState = "free" | "taken" | "invalid"

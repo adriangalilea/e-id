@@ -26,7 +26,12 @@ import { InputGroup } from "@/components/ui/input"
 import { Switch } from "@/components/ui/switch"
 import { Textarea } from "@/components/ui/textarea"
 import { handleState, saveCard } from "@/db/actions"
-import { type CardEdit, cardEditSchema, type EditLink } from "@/lib/card-edit"
+import {
+  type CardEdit,
+  cardEditSchema,
+  type EditLink,
+  MOST_ON_CARD,
+} from "@/lib/card-edit"
 import { errorAt, isDirty } from "@/lib/form-core"
 import { linkCode } from "@/lib/link-names"
 import { HIGHLIGHTED, type LinkPlatform, OFFERED } from "@/lib/platforms"
@@ -317,7 +322,11 @@ function LinksField({ form }: { form: CardForm }) {
         hidden: !l.public,
         wrong: wrong[i] === "1",
       }))}
-      offered={OFFERED}
+      // A full card (MOST_ON_CARD shown) offers nothing more: hide one first, or
+      // keep the link as an address.
+      offered={
+        links.filter((l) => l.public).length < MOST_ON_CARD ? OFFERED : []
+      }
       onSave={save}
       detail={(index) => ({
         head: (
@@ -422,26 +431,26 @@ function LinkMore({ form, index }: { form: CardForm; index: number }) {
   )
 }
 
-/** Whether a link shows on the card. One that stops opening never does: it is an
- *  address handed out for a while (lib/card-edit). */
+/** Whether a link shows on the card. A platform's off the card stays here,
+ *  dimmed, kept for its owner; one of your own off the card leaves it for your
+ *  addresses (components/addresses), where it still opens at its address. */
 function OnCard({ form, index }: { form: CardForm; index: number }) {
   const path = `links.${index}` as const
-  const ends = useFormState(form, (s) => {
-    const l = s.values.links[index]
-    return Boolean(l?.expires) || l?.maxVisits != null
-  })
+  const own = useFormState(
+    form,
+    (s) => s.values.links[index]?.platform === "link",
+  )
   return (
     <form.Field
       name={`${path}.public`}
       label="on your card"
-      aside={ends ? "not while it stops opening" : undefined}
+      aside={own ? "off: kept in your short links" : undefined}
       orientation="horizontal"
     >
       {(c) => (
         <Switch
           size="sm"
-          checked={c.value && !ends}
-          disabled={ends}
+          checked={c.value}
           onCheckedChange={(checked) => c.onValueChange(checked)}
         />
       )}
@@ -449,15 +458,14 @@ function OnCard({ form, index }: { form: CardForm; index: number }) {
   )
 }
 
-/** A link of your own beyond where it goes: its name on the card, its address
- *  under yours (`/you/<slug>`, made up until renamed), and when it stops opening
- *  (a day, a number of opens; one that stops comes off the card). */
+/** A link of your own on the card beyond where it goes: its name on the card,
+ *  and its address under yours (`/you/<slug>`, made up until renamed). When it
+ *  stops opening is the addresses' (components/addresses): one that stops is
+ *  never on the card. */
 function OwnLink({ form, index }: { form: CardForm; index: number }) {
   const path = `links.${index}` as const
   const handle = useFormState(form, (s) => s.values.handle)
   const visits = useFormState(form, (s) => s.values.links[index]?.visits ?? 0)
-  // Stopping takes it off the card, in the same change.
-  const offCard = () => form.setValue(`${path}.public`, false)
   return (
     <>
       <form.Field name={`${path}.label`} label="name" aside="on your card">
@@ -486,41 +494,6 @@ function OwnLink({ form, index }: { form: CardForm; index: number }) {
           />
         )}
       </form.Field>
-      <div className="grid grid-cols-2 gap-3">
-        <form.Field name={`${path}.expires`} label="until" aside="optional">
-          {(c) => (
-            <InputGroup
-              size="sm"
-              type="date"
-              {...c.input}
-              onChange={(e) => {
-                c.input.onChange(e)
-                if (e.target.value) offCard()
-              }}
-            />
-          )}
-        </form.Field>
-        <form.Field
-          name={`${path}.maxVisits`}
-          label="opens"
-          aside="optional, 1 for one use"
-        >
-          {(c) => (
-            <InputGroup
-              size="sm"
-              type="number"
-              min={1}
-              inputMode="numeric"
-              value={c.value ?? ""}
-              onChange={(e) => {
-                const n = e.target.value === "" ? null : Number(e.target.value)
-                c.onValueChange(n)
-                if (n !== null) offCard()
-              }}
-            />
-          )}
-        </form.Field>
-      </div>
     </>
   )
 }
