@@ -1,3 +1,11 @@
+// How hot a machine runs, over time: the data a thermal view draws, framework-free.
+// A driver (a scene timeline, a page's own story, a live app) keys readings and view
+// depths at moments; `thermalAt` folds them into the one moment a frame draws. Pure,
+// so a scrubbed frame, a played one and a filmed one are the same frame.
+// device-frame draws a moment; macos-session sequences them in a scene.
+
+/** A part of the machine with its own temperature sensor, as the machine names them
+ *  (chill's badge reads the same five). */
 export type ThermalPart = "cpu" | "gpu" | "memory" | "ssd" | "battery"
 
 /** What the machine reports at one moment. Temperatures in °C, any part it has.

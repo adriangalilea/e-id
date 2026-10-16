@@ -1,3 +1,16 @@
+// THE HAND ON A SURFACE, read once for every viewer that zooms: a pinch (a trackpad's,
+// which arrives as a ctrl-wheel in Chrome and Firefox and as gesture events in Safari;
+// two fingers on a screen), a wheel that is not a pinch, and one pointer's drag. The
+// readers (VideoPicture's zoom, film-wall) say what each means; how a pinch is told
+// from a rest, where it is centred and how far it has stretched is decided here, so a
+// pinch is the same distance of the hand in every one of them.
+//
+// A pinch's STRETCH is the fingers' spread over where they began (a trackpad's alike,
+// `exp(-deltaY × PINCH_PER_WHEEL)` per wheel step): above 1 a spread, below a close.
+// It has a direction once it has moved PINCH_SLOP from 1 (two fingers resting are not
+// a pinch yet); `begin` says which, then `pinch` follows it to `end`. A wheel's
+// gesture ends when no event has come for WHEEL_END_MS: browsers report no phases.
+
 import { wheelPx, wheelTick } from "@/lib/lightbox-motion"
 import { PINCH_PER_WHEEL, PINCH_SLOP } from "@/lib/picture-zoom"
 

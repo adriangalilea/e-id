@@ -1,3 +1,12 @@
+/* lightbox: the root is Base UI's popup, fixed over the viewport. Its z-index is a
+   function of phase: under the page's chrome while flying (--lb-z-fly), over
+   everything once it owns the screen (--lb-z); consumers set both beside their nav.
+   --lb-p (0 at the source, 1 at rest) is the one number the engine writes per frame
+   besides the active layer's transform. It does not inherit: the engine sets it on
+   its three readers (the scrim, the chrome group, the active layer), so the rail's
+   subtree and the sheet never restyle per frame. The scroll lock and its gutter are
+   Base UI's (useScrollLock); no token rule duplicates them. */
+
 @property --lb-p {
   syntax: "<number>";
   inherits: false;

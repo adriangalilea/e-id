@@ -1,3 +1,57 @@
+// VISITS, kept by the site itself: the server half of a page in the event stream (the
+// utils contract, "Web pages"). page-sensor posts each page's lines to the site's own
+// route; this module reads them, puts each page in a visit and keeps the rows the views
+// read (user-flows). The three are one family: the page, the store, the views.
+// Framework-free: a route is a Request in and a Response out, and the store is the
+// app's own SQLite through ts-utils' metrics drivers (libSQL / Turso, D1).
+//
+//     // app/api/events/route.ts
+//     export const POST = visitsRoute({ db: libsqlDriver(client), site: "untitled.garden", services: ["garden-web"] })
+//
+//     // a view
+//     const visits = await readVisits(libsqlDriver(client), { site: "untitled.garden", days: 14 })
+//
+// A VISIT is one caller's pages, each within VISIT_GAP_MS of the one before, within one
+// UTC day. The caller is a hash of its IP and user agent with the site and a random
+// salt of the day, the salt deleted once the day is over (one store can hold several
+// sites, never linking a person across them): a visitor is recognisable within a day,
+// never across two, and once the salt is gone by no one. The IP and user agent are
+// never stored; nothing is kept in the browser.
+//
+// ROWS: `visits_visit` (one per visit: when, how many pages, where it came from, coarse
+// country and viewport, whether a probe or the site's staff made it), `visits_page`
+// (one per page span: its place, path, how it was reached, how long it was on screen,
+// the sections it reached, the vitals), `visits_event` (every line of the page's trace
+// as written: the page span's own start and end, fetch spans, named events, errors, so
+// a page's trace is read back from its lines alone, on the visitor's one clock) and
+// `visits_views` (per day, per page, how many visits read it, each once, the staff's
+// and probes' never: a count with nothing of who; a visit reads a page by opening it or
+// by a `view` line naming it, a post shown whole elsewhere). Pages and visits are kept
+// VISIT_DAYS, events EVENT_DAYS, a probe's or staff's FLAGGED_DAYS; old rows go on the
+// first write of each day. Views are kept for good: they are what a page's all-time
+// count is read from (`readViews`). Provision VISITS_SCHEMA once, never on a request
+// (an older store runs VISITS_MIGRATIONS first).
+//
+// OWNERS: a site whose pages belong to people (a profile, what is under it) says whose
+// each page is (`ownerOf`), by an id that never changes, so a person renamed keeps
+// their history whole. Each page row carries it, and `visits_owner_views` counts, per
+// owner and day, the visits that read any of their pages, each once: kept for good,
+// like the views. A person reading their own pages (`readerOf`) is kept, flagged
+// `self`, and never counted, in their numbers or a page's.
+//
+// HITS: a visit to an address that is a redirect (a person's `/gh`) loads no page, so
+// no sensor writes it; the route that redirects records it (`visitHits`): whose, the
+// name asked for, what it opened (null: nothing), the outside referrer, the country,
+// and the day's caller hash, so a caller asking twice in a day is one. A crawler (a
+// link preview, a search engine) is kept, flagged, and never counted. `visits_hit`
+// keeps them VISIT_DAYS, `visits_owner_hits` the counts for good. `readOwner` reads
+// one owner's numbers, and only aggregates: a visit can cross several people's pages,
+// so no one is shown another's trace.
+//
+// REFUSED: a line that is no event, a service the site did not name, a line outside a
+// page's trace, a field named like a person (ip, user_agent, email, user, name, phone).
+// A crawler's batch is dropped whole and answered 204.
+
 import { type LogEvent, parseEvent } from "@adriangalilea/utils/log"
 import type {
   MetricsDriver,

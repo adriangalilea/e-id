@@ -1,3 +1,13 @@
+// A VISIT, scripted: what a person does in a browser told as steps (type an address,
+// follow a link, go back, scroll), timed into a clip any driver moves through, and
+// folded into the frame the browser draws at an instant: what the address field
+// holds, whether it has focus, how far the page has loaded, which page is drawn and
+// how far down it is. The browser (ui/browser) draws the frame; a Player, a scroll
+// stage or a fixed progress moves time. Framework-free.
+//
+// The pacing is one table (TYPE_MS, LOAD_MS, ...): a step's time is decided here and
+// nowhere else, so a played visit and a scrubbed one are the same frames.
+
 import type { Chapter, Clip } from "@/lib/clip"
 
 /** One thing a person does in the browser, after `delay` ms (default none). */

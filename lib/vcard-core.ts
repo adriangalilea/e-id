@@ -1,3 +1,9 @@
+// A VCARD READ (RFC 6350, and the 3.0 every phone still writes): its text to the
+// fields a person reads, for `contact` to draw. Lines unfolded (a line that goes on
+// starts with a space), escapes undone, a property's group read (Apple's `item1.URL`
+// labelled by `item1.X-ABLabel`), the structured name and address split, an inline
+// photo made a data URL. No framework, no DOM. A text that is no vCard screams.
+
 export interface VCardField {
   value: string
   /** What the field is called here: its group's label, else its TYPE (home,

@@ -97,6 +97,13 @@ export type VideoProps = Omit<
    *  must stand for the video from the server's HTML on, like a stage resting
    *  mid-clip; Image's `priority`). */
   posterArrival?: "fade" | "instant"
+  /** How it looks while asked to play with no frame up yet. "water" (default): the
+   *  poster under the registry's falling water, a video on its way, for a video that
+   *  is the picture someone is waiting on. "still": the poster stands sharp as the
+   *  picture itself and the video takes its place with no seam, for a video that is
+   *  one part of a larger picture carrying on without it (a stage's surface resting
+   *  on its own frame), where water would blur a piece of a scene that is not loading. */
+  waiting?: "water" | "still"
   className?: string
   videoClassName?: string
   /** The element whose hover and focus count as looking at this video (its card). */
@@ -205,6 +212,7 @@ function VideoSource({
   sizes = "100vw",
   optimizePoster = true,
   posterArrival = "fade",
+  waiting = "water",
   className,
   videoClassName,
   interactionRef,
@@ -258,9 +266,14 @@ function VideoSource({
   // A frame has been shown: from then on, "hold" keeps the video over the poster.
   const [shown, setShown] = useState(false)
   // The video knows its size (the empty frame's ground can go), and has decoded a
-  // frame (the poster can go, unless the video is held unseen).
+  // frame (it may be revealed, unless it is held unseen).
   const [sized, setSized] = useState(false)
   const [loaded, setLoaded] = useState(false)
+  // The video stands fully over its poster: revealed, and its fade-in finished. Only
+  // then is the poster hidden, never before (a poster gone while the video still fades
+  // in shows the frame's own ground through it: a dip to black), and it is hidden, not
+  // removed, so it stands again the instant the video is held unseen once more.
+  const [covered, setCovered] = useState(false)
   // "follow" with `at`: the video has shown an instant asked of it.
   const [onInstant, setOnInstant] = useState(false)
   const [completedAt, setCompletedAt] = useState<number | null>(null)
@@ -430,12 +443,45 @@ function VideoSource({
     follows && at !== undefined
       ? !onInstant
       : (automatic || follows) && !playing && !shown
+  // The poster goes once the video's own fade-in has run its course, read from the
+  // browser's running transitions (none under reduced motion, or for a video never
+  // held unseen): a timer would guess the duration the stylesheet owns.
+  const revealed = loaded && !hidden
+  useEffect(() => {
+    const el = video.current
+    if (!el || !revealed) {
+      setCovered(false)
+      return
+    }
+    const fading = el
+      .getAnimations()
+      .filter(
+        (a): a is CSSTransition =>
+          a instanceof CSSTransition && a.transitionProperty === "opacity",
+      )
+    if (fading.length === 0) {
+      setCovered(true)
+      return
+    }
+    let live = true
+    Promise.all(fading.map((a) => a.finished)).then(
+      () => live && setCovered(true),
+      // Cancelled: held unseen again before it finished; the poster stays.
+      () => {},
+    )
+    return () => {
+      live = false
+    }
+  }, [revealed])
   // Asked to play (by the hand, by sight, by the page it follows) and no frame up yet:
   // its poster lies under falling water (the registry's water) until the picture
-  // comes in over it. A manual video's own controls say it is loading.
+  // comes in over it, unless it is `waiting="still"`. A manual video's own controls
+  // say it is loading.
   const asked = automatic ? autoPlay : follows ? wanted === true : false
   const water = useWater<HTMLImageElement>(
-    poster && asked && hidden && !failed ? "falling" : null,
+    waiting === "water" && poster && asked && hidden && !failed
+      ? "falling"
+      : null,
   )
 
   return (
@@ -461,7 +507,7 @@ function VideoSource({
           : undefined
       }
     >
-      {poster && (hidden || !loaded) && (
+      {poster && (
         <Image
           ref={water.ref}
           style={water.style}
@@ -474,6 +520,9 @@ function VideoSource({
           blurDataURL={blurDataURL}
           className={cn(
             "pointer-events-none rounded-[inherit] object-cover",
+            // Hidden at once, never faded: under a painted video it would show
+            // through the rounded edge's anti-aliasing as a light rim.
+            covered && "invisible",
             videoClassName,
           )}
         />
@@ -502,9 +551,13 @@ function VideoSource({
         // element's own corners smoothly.
         className={cn(
           "relative block size-full rounded-[inherit] object-cover transition-[opacity,filter] duration-300 ease-out motion-reduce:transition-none",
-          // Only where scripts run: without them nothing would ever reveal it.
+          // Only where scripts run: without them nothing would ever reveal it. Out of
+          // water it sharpens as it comes; over a still it only fades, the still
+          // and its first frame being one picture.
+          hidden && "[@media(scripting:enabled)]:opacity-0",
           hidden &&
-            "[@media(scripting:enabled)]:opacity-0 motion-safe:[@media(scripting:enabled)]:blur-sm",
+            waiting === "water" &&
+            "motion-safe:[@media(scripting:enabled)]:blur-sm",
           videoClassName,
         )}
         onLoadedMetadata={(e) => {

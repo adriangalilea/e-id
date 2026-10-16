@@ -1,3 +1,19 @@
+// A timebase: the one clock an instant is read from, and the contract everything that
+// shows or moves time speaks. It is the clock and nothing else: how the medium is cut
+// (lib/clip `Outline`) and what happens in it (claims) live beside it, never in it. Exactly one thing OWNS a timebase (a synthetic clock
+// walking a clip, ui/playback; a video's decoder, ui/video); everything else FOLLOWS
+// it: content drawn at its moment, a video seeking to it, a still fetched for it, the
+// bar and keys that move it. Owners differ in how time passes; followers never know
+// which owner they follow. What an owner can do beyond play, pause and seek is stated,
+// never assumed: `fps` is set only when the timebase knows its frames (stepping,
+// a frame readout), `volume` only when there is sound, `setRate` only when speed can
+// change. A control shows what the timebase can do instead of every control being
+// the weakest kind. Time is whole ms everywhere, the unit a clip is written in: an
+// instant is an integer, a frame is named by the first whole ms inside it. Seconds
+// exist only at a media element's door, converted by the four helpers below and
+// nothing else.
+// Framework-free: the store, the contract and the frame arithmetic.
+
 import type { Span } from "@/lib/clip"
 
 // ── the door to seconds ──────────────────────────────────────────────────────────

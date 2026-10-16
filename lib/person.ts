@@ -1,3 +1,9 @@
+// A person, as every surface that shows one needs them: a chat's contact, a Mac's
+// lock-screen account. Defined once by the page and handed to each component, so the
+// same person wears the same name and picture everywhere. A surface with more to say
+// about someone extends this (telegram-chat's `ChatProfile` adds `bot`).
+// Framework-free.
+
 export interface Person {
   /** The display name, in full: "John F. Kennedy". */
   name: string

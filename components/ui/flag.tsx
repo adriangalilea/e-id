@@ -1,3 +1,26 @@
+// A COUNTRY'S FLAG, drawn: the same picture on every system, which a flag emoji is not
+// (Windows has none and draws the two letters, other systems their own art). The art is
+// country-flag-icons' (MIT, maintained; each flag simplified to read at icon size, a
+// few hundred bytes where the full-detail sets weigh tens of kilobytes for one coat of
+// arms), each its own SVG file the site serves (`flag-route`, installed at
+// app/flags/[shape]/[file]/route.ts: prerendered, on the CDN), drawn as an image:
+// a page loads the few hundred bytes of the flags it shows, and no script. Inline
+// art shipped every flag's drawing with any client component that drew one.
+//
+//   <Flag code="ES" />                  beside a name: 3:2, as tall as the text's capitals
+//   <Flag code="JP" shape="square" />   a mark: 1:1, for a bar-list row or a list's column
+//
+// Its size is the words': height in em, width from the shape, so a flag beside a name
+// at any size is in proportion and on its baseline; `className` sets another
+// (`size-4` for bar-list's 16 px mark). A hairline drawn over its edge keeps a white
+// field (Japan, Finland) from melting into a light page and a dark one (Germany's
+// black) into a dark page.
+//
+// The code is ISO 3166-1 alpha-2 (`ES`), in either case, and the set's subdivisions
+// (`GB-SCT`). A code with no flag THROWS: `hasFlag(code)` asks first, where a country
+// may be unknown. Its name is the reader's language's (`Intl.DisplayNames`), as the
+// image's label and its title.
+
 import { hasFlag as known } from "country-flag-icons"
 import { Image } from "@/components/ui/image"
 import { cn } from "@/lib/utils"

@@ -1,3 +1,14 @@
+/* scroll-stage: a tall TRACK whose sticky STAGE stays in view while the page scrolls
+   past it. Progress (0..1 over the sticky dwell) is the inherited custom property
+   --stage-p, set by a CSS scroll-driven animation (view() timeline, contain range =
+   track top at viewport top → track bottom at viewport bottom). No JavaScript runs per
+   frame; a browser without animation-timeline gets the same number from a scroll
+   listener (data-engine="js"). Children read --stage-p (or --act-p via <Act>).
+
+   Pinning happens at lg (64rem) and only when motion is welcome. Below that, or under
+   prefers-reduced-motion, the track is its natural height, --stage-p is 1 (the
+   completed state is the accessible one), and the `stacked` alternative shows. */
+
 @property --stage-p {
   syntax: "<number>";
   inherits: true;

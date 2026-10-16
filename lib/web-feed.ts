@@ -1,3 +1,13 @@
+// A SITE'S FEED, READ: the latest of what it published, from its RSS 2.0 or Atom
+// feed (a blog, a YouTube channel's uploads, a podcast, a changelog). `parseFeed` is
+// string work on the XML and nothing else, so it runs anywhere; `feedOf` finds the
+// feed a page names (<link rel="alternate">); `readFeed` fetches one, on a server,
+// through `publicFetch`, since the address usually comes from a person.
+//
+// What an item is: a title, where it opens, when, and its picture where the feed
+// carries one (media:thumbnail, an enclosure image). Items without a title or an
+// address are no items; a date that does not parse leaves the item undated, last.
+
 import { publicFetch } from "@/lib/public-fetch"
 import { hrefOf } from "@/lib/web-preview-facts"
 

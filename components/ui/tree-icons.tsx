@@ -1,3 +1,9 @@
+// The icons a tree of files and places wears, usable anywhere else too. A file's icon
+// is read from its kind, and its kind from its mime type when there is one, else
+// from its extension; a folder is open or closed. Places and layer verbs are a fixed
+// set under plain names (`disk`, `phone`, `eye`), so a caller never hunts lucide for
+// "the offline drive". Every icon is lucide's, drawn in currentColor.
+
 import {
   Archive,
   Camera,

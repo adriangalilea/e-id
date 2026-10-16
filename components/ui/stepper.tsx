@@ -267,7 +267,7 @@ export function Stepper<T>({
             // biome-ignore lint/suspicious/noArrayIndexKey: the options' order is their identity
             key={i}
             aria-hidden={i !== at}
-            className={cn("px-1 [grid-area:1/1]", i !== at && "invisible")}
+            className={cn("[grid-area:1/1] px-1", i !== at && "invisible")}
           >
             {w}
           </span>

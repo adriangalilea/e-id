@@ -1,3 +1,10 @@
+// A YOUTUBE VIDEO'S FACTS, framework-free: which video a link names (every form YouTube
+// hands out: watch?v=, youtu.be/, /shorts/, /embed/, /live/, with a start time as
+// t=1m30s, t=90 or start=90), and its title and channel from YouTube's oEmbed, the
+// endpoint its own embeds read, no key. Fetched once at authoring time and shipped as
+// data beside the link (`mise youtube <url>`), the way tweet and web-preview do, so a
+// page never depends on YouTube answering to draw.
+
 export interface YouTubeRef {
   id: string
   /** seconds in, when the link names a start */

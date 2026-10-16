@@ -1,3 +1,13 @@
+// Captions as data: the languages a medium is captioned in (a WebVTT file each), the
+// lines a file holds, which of them show at an instant, and which language a person's
+// choice lands on. Framework-free: ui/media-captions binds it to a media element (the
+// browser parses the WebVTT, its entries are read off the element's TextTrack) and the
+// player draws it.
+//
+// The words of "Time" hold: a line is shown over a span, in the medium's own time. The
+// browser calls a WebVTT file's entries cues; here they are lines, the word a person
+// reading captions would use, since a cue means a scroll stage's act everywhere else.
+
 import type { Span } from "@/lib/clip"
 
 /** One language's captions for a medium: a WebVTT file. `lang` is BCP 47 (`en`,

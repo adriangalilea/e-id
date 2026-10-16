@@ -1,3 +1,17 @@
+// The terminal-session DSL: ONE source feeding two emitters, the animated web
+// terminal (ui/terminal.tsx) and the static SVG still (renderSessionSvg, rasterized
+// by a CLI). A session .txt doubles as an animation script: one line = one reveal
+// step. Framework-free by contract: nothing here may import React or touch the DOM.
+//
+// The DSL, one line each (XML/HTML escaping is each emitter's job; sessions are
+// written verbatim):
+//   $ cmd args        prompt line: dim $, near-white command
+//   plain text        output, full accent
+//   ~ text            muted output (secondary info, refusals, metadata)
+//   # anything        comment, dropped
+//   @800 <line>       a pause of 800 ms before this line lands (any line kind)
+//   (blank)           vertical breathing room
+
 import type { Clip } from "@/lib/clip"
 
 export type SessionLine = (

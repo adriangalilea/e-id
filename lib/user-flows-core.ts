@@ -1,3 +1,25 @@
+// USER FLOWS: where people go on a site. Each visit is the places it went, in order
+// (a place: a page, or a group of pages read as one, like a project's); every view of
+// where people go is worked out from those lists, framework-free (the `-core`: the
+// views' file shares the name). Proven by
+// scripts/examples/user-flows.ts; drawn by ui/user-flows.
+//
+// TOP PATHS (the rule that keeps an eighty-page visit from swamping the list): a path
+// is a visit's first four distinct places, in the order first seen; going back to a
+// place already on it is no new stop, and whatever comes after the fourth is counted,
+// never listed. How many pages its visits saw is a number beside it, so a long visit is
+// still seen. THE PATH TREE is the same paths folded by where they landed ("after
+// landing on X, what next"), each branch ending in EXIT for the visits that stopped.
+//
+// BEFORE AND AFTER ONE PLACE: where the visits that reached it came from (the place
+// before their first time there, or the referrer they landed from) and where they went
+// next (the place after, or EXIT). THE FUNNEL: the visits reaching each step in order,
+// and for those that dropped, where they went instead.
+
+/** One visit: the places it went, in order (a place twice is two visits to it), the
+ *  outside site it landed from (a referrer's host), if any, and how many pages it
+ *  saw, when that is more than its places (a store that keeps a move within a place
+ *  as no new place: lib/visits); unsaid, a place is a page. */
 export interface Visit {
   places: readonly string[]
   referrer?: string

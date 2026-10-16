@@ -1,3 +1,9 @@
+// A flight: a spring sampled into a frame table, played on the compositor as a Web
+// Animation and read back through that animation's own clock. The binder owns the
+// DOM (it creates the animations and cancels them); this module owns the table, the
+// clock read and the landing rule. Framework-free: the clock is anything with a
+// `currentTime`. `bun scripts/examples/lightbox-flight.ts` exercises it.
+
 import {
   type Axes,
   assert,

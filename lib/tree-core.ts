@@ -1,3 +1,15 @@
+// THE TREE'S ARITHMETIC, framework-free: a forest of nodes in, the rows a list draws
+// out, plus every question a tree UI asks of its data (what is visible, what a filter
+// keeps, what a count sums to, where a drag lands, what a key does). ui/tree draws on
+// it; anything else can too (a server rendering a sidebar, a test). Marks on a tree
+// (include, exclude, the lens) are lib/tree-marks-core's, a layer over this.
+//
+// A NODE is any object with an `id` and optional `children`; nothing else is read
+// here. Children are always asked through a `Children` function rather than read off
+// the node, so a lazy tree (children fetched on expand, kept beside the data) and an
+// eager one go through the same arithmetic. Every function is pure: nothing mutates
+// its input, and a move returns a new forest.
+
 export type Nodelike<N> = { id: string; children?: readonly N[] }
 
 /** The children a node has right now: its own, or what a loader brought. */

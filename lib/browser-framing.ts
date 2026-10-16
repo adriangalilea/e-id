@@ -1,3 +1,19 @@
+// WHETHER A SITE CAN BE SHOWN LIVE IN A FRAME, and what to show when it cannot. A
+// page put in an <iframe> is drawn only if its server allows it: `X-Frame-Options`
+// (DENY, SAMEORIGIN) or the newer `Content-Security-Policy: frame-ancestors`, which
+// wins over it where both are sent. A refusing page is not an error the embedding page
+// can see: the frame draws the browser's own blank or error page, its load event fires
+// all the same, and its document is another origin's, so nothing in the browser can
+// tell a refused frame from a loaded one. The answer is in the response headers, which
+// only a server or a CLI can read (a browser's fetch of another origin is CORS-blocked
+// and never sees them). So it is read where the network is, once, at authoring time
+// (`mise live-page <url>`), the way a link's unfurl is, and ships as data: a
+// `LivePage` the browser draws as a live frame, or, for a site that refuses, as its
+// unfurled facts. A server that wants it live imports the same function; it asks the
+// public internet only (`publicFetch`), whoever named the address.
+//
+// Framework-free: fetch and string work, on a server.
+
 import { publicFetch } from "@/lib/public-fetch"
 import { hrefOf, type Unfurl } from "@/lib/web-preview-facts"
 import { unfurl } from "@/lib/web-preview-unfurl"

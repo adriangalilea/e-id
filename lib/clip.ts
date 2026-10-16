@@ -1,3 +1,20 @@
+// A clip: anything drawn from an instant, told as the facts a driver moves through it
+// by: how long it runs, how it is cut, and (when it is told in frames) its rate. The
+// content's own lib makes its clip (macos-session's scene clock, terminal-session's
+// session timeline); a driver moves through it (the player by the clock, a scroll
+// stage by scroll, a still by one fixed instant); the component draws the frame at a
+// progress. One contract, so any content plays in any driver. Framework-free.
+//
+// The words, each with one meaning: an INSTANT is a point in time (ms); a SPAN is a
+// stretch `{from, to}` (ms); the OUTLINE is how the clip is cut, coarse to fine; a
+// LEVEL is one depth of it (chapter, scene, shot); a DIVISION is one item of a level,
+// written the concise way, a start and a title, running to the next division's start.
+// Chapters are the outline's first level. Nesting is never stored: a scene's chapter
+// is the chapter containing its start, so a level that cuts across another breaks
+// nothing.
+
+/** One item of a level: where it starts (ms) and its title. It runs to the next
+ *  division's start, the last to the end. */
 export interface Division {
   start: number
   title: string

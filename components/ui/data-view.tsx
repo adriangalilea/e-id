@@ -423,7 +423,7 @@ function Table({ node, query }: { node: DataNode; query: string }) {
     // fading where there is more, below the pinned header row (scrims'
     // `ag-edge-fade-xy`, the head its cover).
     <div className="flex min-h-0 flex-1 rounded-md ring-1 ring-foreground/10">
-      <div className="ag-edge-fade-xy min-h-0 flex-1 [--ag-data-view-head:1.5rem] [--edge-cover:var(--ag-data-view-head)]">
+      <div className="ag-edge-fade-xy min-h-0 flex-1 [--edge-cover:var(--ag-data-view-head)] [--ag-data-view-head:1.5rem]">
         <table className="w-max min-w-full border-collapse font-mono text-[11px]">
           <thead className="sticky top-0 h-(--ag-data-view-head) bg-[oklch(0.2_0.005_270)]">
             <tr>

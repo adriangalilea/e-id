@@ -64,7 +64,7 @@ export function PreviewPicker<T extends string | number>({
               data-selected={value === option.value || undefined}
               data-disabled={option.disabled || undefined}
               className={cn(
-                "has-focus-visible:focus-ring relative flex shrink-0 cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-full font-medium text-muted-foreground text-sm transition-colors hover:text-foreground has-focus-visible:-outline-offset-(--focus-ring-offset) data-disabled:cursor-not-allowed data-selected:bg-foreground/10 data-selected:text-foreground data-disabled:opacity-40 motion-reduce:transition-none",
+                "relative flex shrink-0 cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-full text-sm font-medium text-muted-foreground transition-colors hover:text-foreground data-selected:bg-foreground/10 data-selected:text-foreground has-focus-visible:focus-ring has-focus-visible:-outline-offset-(--focus-ring-offset) data-disabled:cursor-not-allowed data-disabled:opacity-40 motion-reduce:transition-none",
                 size === "compact" ? "min-h-8 px-3 py-1" : "min-h-11 px-4 py-2",
                 iconsOnly &&
                   (size === "compact" ? "size-8 p-0" : "size-11 p-0"),

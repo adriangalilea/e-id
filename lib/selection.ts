@@ -1,3 +1,21 @@
+// THE SELECTION KERNEL, framework-free, one for every set that is shown (a gallery's
+// files, a table's rows, a rail's rows): what a click, a ⌘-click, a ⇧-click, ⌘A, Esc
+// and a marquee do to a selection, as pure functions over the set's order and the
+// selection. The selection is `{ ids, anchor, cursor }`: the anchor is where a range
+// starts (the last plain or ⌘ click), the cursor is where the keyboard is. A range is
+// always in SET ORDER, never the rectangle on screen: the set's order is the
+// meaningful one (from this date to that, this score to that), the keyboard extends
+// the same way, and it is the list a slideshow plays. A marquee is the geometric
+// selection and arrives here as the ids it touched.
+//
+// The selection outlives the set: a filter that hides selected items keeps them
+// selected, and `shownOf` says how many are visible and how many the filter hides, so
+// a bar can say "12 selected, 3 hidden by the filter" and act on the visible ones.
+//
+// What a verb acts on is decided once, here: `actsOn` is the visible selection when
+// the item asked about is in it, else that item alone (a right click on an item
+// outside the selection never acts on the selection).
+
 export interface Selection {
   ids: ReadonlySet<string>
   anchor?: string

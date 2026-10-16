@@ -161,7 +161,7 @@ export function Switch({
     <label
       data-slot="switch-label"
       className={cn(
-        "inline-flex cursor-pointer select-none items-center has-[[data-disabled]]:cursor-not-allowed has-[[data-disabled]]:opacity-50",
+        "inline-flex cursor-pointer items-center select-none has-[[data-disabled]]:cursor-not-allowed has-[[data-disabled]]:opacity-50",
         schemeOf(s),
         WORDS[size],
         m === "glass" ? "text-current/90" : "text-foreground/85",

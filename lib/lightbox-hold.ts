@@ -1,3 +1,10 @@
+// The hold loop: a key held while zoomed drives the image at a constant rate until
+// keyup. Arrows pan, every held arrow adding its axis, so up + left is a diagonal;
+// + and - zoom about the center, doubling every KEY_ZOOM_MS. One glide, not a spring
+// restarted on every repeat. Framework-free: the binder owns the rAF loop and the
+// key tracking, this module turns the set of held verbs and a frame's dt into a
+// view. `bun scripts/examples/lightbox-hold.ts` exercises it.
+
 import {
   type Band,
   clampPan,

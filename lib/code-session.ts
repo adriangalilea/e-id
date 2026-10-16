@@ -1,3 +1,20 @@
+// AN EDIT, scripted: what a developer does to a project's files told as steps (open a
+// file, type at a place in it, save), timed into a clip any driver moves through, and
+// folded into the frame an editor draws at an instant: the tabs open, the file in
+// front and what it holds so far, where the caret is, what is unsaved, and the modal
+// editor's mode and command line. `ide` draws it as VS Code, `terminal-editor` as a
+// modal editor in the terminal; a Player, a scroll stage or a fixed progress moves
+// time. Framework-free.
+//
+// Text is only ever added, so every character the session will type has a place in
+// the file as the session leaves it (`final`), and the frame at an instant is that
+// file with what is not typed yet left out. Each character carries its offset in the
+// final file (`origin`), which is where a view reads its colour: highlighted once,
+// the finished file, so a half-typed attribute already reads as one.
+//
+// The pacing is one table (TYPE_MS, OPEN_MS, ...): a step's time is decided here and
+// nowhere else, so a played edit and a scrubbed one are the same frames.
+
 import type { Chapter, Clip } from "@/lib/clip"
 
 /** A file of the project: its path (`/` between folders), and what it holds before

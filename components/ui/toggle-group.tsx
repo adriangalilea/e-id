@@ -303,7 +303,7 @@ export function ToggleGroupItem({
       <BaseToggle
         data-slot="toggle-group-item"
         className={cn(
-          "group/toggle grid size-6 shrink-0 cursor-pointer in-data-readonly:cursor-default place-items-center rounded-full outline-none focus-visible:ring-2 focus-visible:ring-ring/60 data-disabled:cursor-not-allowed data-disabled:opacity-50",
+          "group/toggle grid size-6 shrink-0 cursor-pointer place-items-center rounded-full outline-none focus-visible:ring-2 focus-visible:ring-ring/60 data-disabled:cursor-not-allowed data-disabled:opacity-50 in-data-readonly:cursor-default",
           className,
         )}
         {...props}
@@ -317,10 +317,10 @@ export function ToggleGroupItem({
     <BaseToggle
       data-slot="toggle-group-item"
       className={cn(
-        "group/toggle relative isolate inline-flex shrink-0 cursor-pointer in-data-readonly:cursor-default select-none items-center justify-center gap-1.5 whitespace-nowrap font-medium transition-[color,background-color,opacity,scale] duration-200 data-disabled:cursor-not-allowed data-disabled:opacity-50 [&_svg]:shrink-0",
+        "group/toggle relative isolate inline-flex shrink-0 cursor-pointer items-center justify-center gap-1.5 font-medium whitespace-nowrap transition-[color,background-color,opacity,scale] duration-200 select-none data-disabled:cursor-not-allowed data-disabled:opacity-50 in-data-readonly:cursor-default [&_svg]:shrink-0",
         ITEM[group.size],
         glass
-          ? "rounded-full ease-[cubic-bezier(0.34,1.56,0.64,1)] active:scale-[1.06] in-data-readonly:active:scale-100 motion-reduce:active:scale-100"
+          ? "rounded-full ease-[cubic-bezier(0.34,1.56,0.64,1)] active:scale-[1.06] motion-reduce:active:scale-100 in-data-readonly:active:scale-100"
           : "rounded-md",
         // Inherited, the option that applies is lit a step less than one set here.
         glass

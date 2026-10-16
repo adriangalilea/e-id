@@ -1,3 +1,26 @@
+// REMEMBERED: what a person set, kept, and given back to its default when it should be.
+// Every "keep this" of an interface goes through here (a gallery's size, a player's
+// volume, a rail's folded sections, a query for the session), so they all keep the same
+// way: one definition per setting, its default the base, what was set an override on
+// top, and how long it lives said where it is defined:
+//
+//   "tab"         this tab's session: kept across reloads and navigation, gone with the
+//                 tab (a query being looked through, a private view switched on)
+//   "always"      until changed (a size, lanes or rows, motion, a volume)
+//   { idle: ms }  until untouched that long, then the default again (a fold, a slideshow
+//                 setting): a thing set once and forgotten falls back, a thing in use
+//                 stays, since every page that reads it touches it
+//
+// What is kept is checked by the setting's `parse` on every read: what fails it (a shape
+// from before, a value from elsewhere) is said in the console and gives the default, and
+// a plain object kept is laid over its default first, so a field the setting gained since
+// takes its default. Framework-free: the shelf (a Storage's get, set and remove) is
+// handed in, ui/remembered binds it to the page's and is what an interface imports.
+//
+//   const SIZE = setting("gallery:size", { initial: 280, keep: "always", parse: number })
+//   read(SIZE, shelf, now)          → 280, or what was set
+//   write(SIZE, shelf, 320, now)    → kept, with when
+
 export type Keep = "tab" | "always" | { idle: number }
 
 export interface Setting<T> {

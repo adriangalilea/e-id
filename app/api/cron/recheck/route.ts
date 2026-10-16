@@ -33,6 +33,7 @@ export async function GET(request: Request) {
       user_id: links.user_id,
       platform: links.platform,
       value: links.value,
+      checked_at: links.checked_at,
     })
     .from(links)
     .where(
@@ -62,10 +63,14 @@ export async function GET(request: Request) {
             ...(threat && { stopped_at: now, stopped_why: threat }),
           })
           .where(eq(links.id, link.id))
+        // Drawn again where it changes what opens: taken down, or answered for
+        // the first time (a link never answered shows its preview before it
+        // opens, app/[username]/[link]).
+        if (link.user_id && (threat || !link.checked_at))
+          revalidateTag(profileTag(link.user_id), { expire: 0 })
         if (!threat) return
         console.warn(`recheck: took down ${link.id} (${url}): ${threat}`)
         stopped.push(link.id)
-        if (link.user_id) revalidateTag(profileTag(link.user_id), { expire: 0 })
       }),
     )
   return Response.json({ checked: due.length, stopped })

@@ -111,7 +111,7 @@ export function Textarea({
         "block w-full resize-none outline-none disabled:cursor-not-allowed disabled:opacity-50",
         TYPE[size],
         autosize &&
-          "max-h-(--ag-textarea-max) min-h-(--ag-textarea-min) [field-sizing:content]",
+          "min-h-(--ag-textarea-min) max-h-(--ag-textarea-max) [field-sizing:content]",
         schemeOf(s),
         m === "glass"
           ? [glassVariants({ shape: "surface" }), GLASS_WELL]

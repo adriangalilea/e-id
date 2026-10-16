@@ -156,7 +156,7 @@ export function CardGallery({
         seek(next)
       }}
       className={cn(
-        "group/gallery @container/gallery w-full min-w-0 outline-none [--card-bg:color-mix(in_oklab,var(--foreground)_8%,var(--background))] [--card:min(88cqw,72rem)] [--gap:2rem]",
+        "group/gallery w-full min-w-0 @container/gallery [--card:min(88cqw,72rem)] [--card-bg:color-mix(in_oklab,var(--foreground)_8%,var(--background))] [--gap:2rem] outline-none",
         className,
       )}
     >
@@ -164,7 +164,7 @@ export function CardGallery({
         <div
           data-slot="card-gallery-viewport"
           className={cn(
-            "relative touch-pan-y touch-pinch-zoom overflow-x-clip py-8",
+            "relative overflow-x-clip py-8 touch-pan-y touch-pinch-zoom",
             classNames?.viewport,
           )}
           style={

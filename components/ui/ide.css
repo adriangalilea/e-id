@@ -1,3 +1,4 @@
+/* What no utility can express: the caret's blink, a keyframe. */
 @layer theme, base, components, utilities;
 
 @layer components {

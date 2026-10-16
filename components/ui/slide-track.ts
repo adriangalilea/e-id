@@ -1,3 +1,32 @@
+// THE SLIDE TRACK: a row of slides in a real scroll container, one filling it at a
+// time, driven by this engine for every input. What the lightbox swipes its pictures
+// on and what tabs swipe their panels on: ONE engine, so the two cannot feel apart.
+// Its rules, and why each is so, are the lightbox's (`lightbox.notes.md`, "The slide
+// track"; the numbers in `lib/lightbox-motion`):
+//
+//   - The track has ONE writer and two terms: `scrollLeft = base + offset`, clamped
+//     to the first and the last slide. `base` is where the machine has it (a slide at
+//     rest, or a glide in flight); `offset` where the hand has the slides from the
+//     slide it is anchored to. A commit moves the anchor and resets the offset, and
+//     their sum does not move a pixel.
+//   - A slide TIPS past its halfway point (`SWIPE_TIP`): the outcome is on the
+//     screen before it happens. A finger holds the slides 1:1, never torn away, and
+//     they go where it leaves them; a wheel moves them by `swipeGain` (its hand's
+//     price for a slide carries one to its tip) and they tip the moment they pass it.
+//   - A gesture that ends lands where its motion would have coasted (`swipeTip`):
+//     on a pointer's release, on a wheel's lift (its pace falling under `SWIPE_LIFT`
+//     of its own peak: a coast only slows), or on `SWIPE_END` of silence.
+//   - One slide a gesture; decided, the gesture is spent and what the device still
+//     sends moves nothing, until a surge, a turn (`swipeBreak`), the wheel phase's
+//     `handBack` or the pace climbing again says the hand is back.
+//   - Every move after a decision is a Hermite glide (`glide`) from where the slides
+//     STAND at the speed they were moving: nothing jumps in speed.
+//
+// The scroller wears `SLIDE_TRACK` (or the same rules in a stylesheet): mandatory
+// snapping lands what the engine leaves, and `data-stepping` stands it down while the
+// engine drives. Each slide wears `SLIDE`. No React: the binder (a lightbox, tabs)
+// feeds it and is told where it is heading and where it arrived.
+
 import {
   carryMs,
   clamp,

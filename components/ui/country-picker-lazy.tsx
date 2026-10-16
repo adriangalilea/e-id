@@ -1,8 +1,9 @@
 "use client"
 
-// THE COUNTRY PICKER, OFF THE PAGE'S FIRST LOAD: every country's flag is about
-// 45 KB gzipped, which a page should not wait for, and which a person should
-// not wait for either when they press the trigger. So it is fetched as soon as
+// THE COUNTRY PICKER, OFF THE PAGE'S FIRST LOAD: its list and its search, every
+// country named in English and in its own language, are no part of a page's first
+// paint, and a person should not wait for them either when they press the
+// trigger (the flags are images, flag's own). So it is fetched as soon as
 // its trigger is on the page, after the page has loaded, and the trigger is
 // drawn at once as itself until the picker is there; by the time a hand reaches
 // it, it is.

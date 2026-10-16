@@ -1,3 +1,11 @@
+// The pointer state machine, framework-free. Points in, a new state and effects out;
+// the binder owns capture, the DOM and the clock. `samples` hold ONE trajectory: the
+// finger, or the pinch midpoint; the span is emptied whenever the pointer count
+// changes. `anchor` is the last point the hand was at, relative to the band center:
+// where a rubbered zoom is undone. `raw0` is the grab read back through the pan
+// rubber: a drag offsets it and rubbers the sum, so a grab taken mid-bounce moves
+// under the finger from its first px. `bun scripts/examples/lightbox-gesture.ts`.
+
 import {
   type Band,
   clampPan,

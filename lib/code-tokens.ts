@@ -1,3 +1,13 @@
+// Code's colours, character by character: the same highlighter `code` renders with
+// (Shiki, VS Code's own grammars), read as one style per character instead of as
+// markup, for a view that draws text which is not all there yet (an editor whose
+// file is being typed: each character keeps the colour it has in the finished file,
+// so a half-typed attribute already reads as one). Framework-free; Shiki loads on the
+// first call, so the page ships none of it until something asks, and then only its
+// core, the JavaScript regex engine and the one grammar and two themes asked for.
+
+/** The two themes every code view here wears, light and dark, picked by the scheme
+ *  it stands in. `code` and `markdown` render with them. */
 export const CODE_THEMES = {
   light: "github-light",
   dark: "github-dark",

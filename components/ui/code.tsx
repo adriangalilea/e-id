@@ -1,3 +1,12 @@
+// A code block, highlighted on the SERVER. Shiki is the highlighter VS Code uses, so
+// the grammars and themes are the ones the reader already knows, and running it at
+// build time means the page ships the markup and none of the highlighter: only the
+// copy control is client code.
+//
+// Two themes are baked into one render (`--shiki-light` / `--shiki-dark` on every
+// token) and code.css picks with the theme, so switching does not re-highlight and
+// cannot flash.
+
 import "server-only"
 import {
   transformerNotationDiff,
@@ -6,7 +15,7 @@ import {
   transformerNotationHighlight,
   transformerNotationWordHighlight,
 } from "@shikijs/transformers"
-import { type BundledLanguage, codeToHtml } from "shiki"
+import { type BundledLanguage, codeToHtml, type ShikiTransformer } from "shiki"
 import { Copy } from "@/components/ui/copy"
 import { Glass } from "@/components/ui/material-glass"
 import { CODE_THEMES, linesOf } from "@/lib/code-tokens"
@@ -48,6 +57,47 @@ export interface CodeProps {
    *  holder's. */
   bare?: boolean
   className?: string
+}
+
+/** One of the two inks a Shiki style names (`--shiki-light`, `--shiki-dark`). */
+const inkOf = (style: string, name: string) =>
+  new RegExp(`(?:^|;)${name}:([^;]+)`).exec(style)?.[1]?.toLowerCase()
+
+/** A token in the block's own colours says nothing its line does not: the line wears
+ *  them already (the `<pre>`'s `--shiki-light` and `--shiki-dark`, inherited, which
+ *  code.css colours every span with), so its span is markup alone, two in five of a
+ *  page's tokens. It goes, its text left in the line. Run last, once every notation
+ *  has read the spans: a word highlight counts characters through them. */
+const unwrapPlainTokens: ShikiTransformer = {
+  name: "ag:unwrap-plain-tokens",
+  root(root) {
+    const pre = root.children.find(
+      (n) => n.type === "element" && n.tagName === "pre",
+    )
+    if (pre?.type !== "element") throw new Error("code: Shiki drew no <pre>")
+    const own = String(pre.properties.style ?? "")
+    const light = inkOf(own, "--shiki-light")
+    const dark = inkOf(own, "--shiki-dark")
+    if (!light || !dark)
+      throw new Error(`code: the <pre> names no inks of its own (${own})`)
+    const plain = `--shiki-light:${light};--shiki-dark:${dark}`
+    const code = pre.children.find(
+      (n) => n.type === "element" && n.tagName === "code",
+    )
+    if (code?.type !== "element") throw new Error("code: Shiki drew no <code>")
+    for (const line of code.children) {
+      if (line.type !== "element") continue
+      line.children = line.children.flatMap((token) =>
+        token.type === "element" &&
+        token.tagName === "span" &&
+        Object.keys(token.properties).length === 1 &&
+        String(token.properties.style).toLowerCase() === plain &&
+        token.children.every((c) => c.type === "text")
+          ? token.children
+          : [token],
+      )
+    }
+  },
 }
 
 /** Strip the shortest indentation any non-blank line has, and the blank first and
@@ -103,6 +153,7 @@ export async function Code({
           if (marked?.has(line)) this.addClassToHast(node, "highlighted")
         },
       },
+      unwrapPlainTokens,
     ],
   })
   const body = (

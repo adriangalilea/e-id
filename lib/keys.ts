@@ -1,3 +1,10 @@
+// Keyboard shortcuts as data: a string of keys split into the caps a person presses,
+// in the Mac's own glyphs. It reads the notations people write (`⌃⌥⌘A`,
+// `ctrl+alt+cmd+a`, `⇧⌘F`, `← →`) and refuses anything that is not keys (`awake
+// hotkey`), so a renderer can tell a shortcut from a command without being told.
+// Framework-free.
+
+/** Modifier glyphs, in the order macOS prints them. */
 const MODIFIERS = ["fn", "⌃", "⌥", "⇧", "⌘"] as const
 const MODIFIER_GLYPHS = "⌃⌥⇧⌘"
 

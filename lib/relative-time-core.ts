@@ -1,3 +1,21 @@
+// AN INSTANT SAID FROM NOW: "just now", "12s ago", "4m ago", "in 3d", and past a
+// reach its date ("Oct 8", with its year when it is not now's). Framework-free, so a
+// server, an email or a log line says it the same way the label does.
+//
+//   relativeText(at, now)               the words
+//   nextChange(at, now)                 ms until the words change, or null for never
+//
+// Instants are ms since the epoch. A count is floored ("4m ago" from 4:00 to 4:59),
+// ahead as behind ("in 4m" from 4:59 down to 4:00), in the largest unit that fits
+// (seconds, minutes, hours, days, weeks, months of 30 days, years of 365). Under one
+// of the finest unit said (`precision`) it is "just now", or "now" ahead. Past
+// `dateAfter` days either way it is the date, in the reader's time zone.
+//
+// `nextChange` is what makes a label's clock follow the age: the words change once a
+// second while they count seconds, once a minute while they count minutes, and a date
+// changes only when the year turns. A clock that waits exactly that long ticks no
+// more often than the words move, and never late.
+
 const SECOND = 1000
 const MINUTE = 60 * SECOND
 const HOUR = 60 * MINUTE

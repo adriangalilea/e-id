@@ -1,3 +1,11 @@
+// A SITE AS IT LOOKS, CAPTURED: the manifest `mise browser-shot` writes beside its
+// pictures (`<out>.json`) and a page imports as it is, the one spelling of a
+// capture on both sides. The page in both schemes as `MediaAsset`s whose `src` is
+// already the address it is served at, its content's hash in it (`?v=`), so a
+// page captured again is a new address and nothing builds a path by hand; and the
+// places of things found on it (`--find`), for a story to press a button drawn in
+// the picture. Framework-free: a build script reads it as well as a component.
+
 import type { MediaAsset } from "@/lib/media-asset"
 
 /** Where a thing is on the captured page, CSS px from its top-left corner. */

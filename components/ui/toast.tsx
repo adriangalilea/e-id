@@ -211,7 +211,7 @@ const PLAIN_FACE =
   "rounded-xl border border-border bg-popover text-popover-foreground shadow-lg"
 const GLASS_FACE = cn(
   glassVariants({ shape: "surface" }),
-  "[--glass-blur:18px] [--glass-radius:--theme(--radius-2xl)]",
+  "[--glass-radius:--theme(--radius-2xl)] [--glass-blur:18px]",
 )
 
 /** The stack, drawn: once per page, anywhere in the app. */

@@ -1,3 +1,10 @@
+/* reveal: content that arrives as it enters the viewport, so no stretch of page is a
+   scroll where nothing happens. Two modes. "once" (default): IntersectionObserver
+   sets data-in, a transition plays, and that is that; scrolling back never hides it.
+   "scroll": a CSS view() timeline, reversible, no JavaScript at all. Both are inert
+   under prefers-reduced-motion, and the hidden start state only applies when a script
+   can lift it (scripting: enabled), so content is never trapped invisible. */
+
 @layer components {
   .ag-reveal {
     --reveal-y: 16px;

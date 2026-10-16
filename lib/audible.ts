@@ -1,3 +1,19 @@
+// WHAT IS AUDIBLE: one voice on a page at a time. A thing that starts to sound claims
+// the floor under its key; the voice that held it is silenced (each of its claimers
+// told, in the order they claimed: a video pauses, a gallery cell ramps down and
+// mutes, a reading closes its docked face). Claims under the SAME key are one voice:
+// a reading and the video it plays claim together and are silenced together, never
+// each other. A claimer releases when it stops wanting the floor (it unmounts, it is
+// closed); the floor is free once the voice's last claimer has gone.
+//
+// One floor per page: whatever sounds, from any item, asks it, so a gallery cell, a
+// player and a reading can never be heard at once. Keys are compared by identity: a
+// string names a voice several things share, an object (an element) a voice of one.
+//
+// Framework-free (no React, no DOM); ui/use-audible is the hook over it. Proven by
+// scripts/examples/audible.ts.
+
+/** Who a voice is: a shared name, or the one thing speaking (an element). */
 export type VoiceKey = string | object
 
 /** What a claimer does when its voice loses the floor. */

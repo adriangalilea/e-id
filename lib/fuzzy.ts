@@ -1,3 +1,18 @@
+// FUZZY MATCHING, once, for every text search: what you type is found inside a text
+// when its letters appear there in order, not only side by side ("ppl smlg" finds
+// "a person smiling"). Case and accents never matter. Every word of the query must be
+// found (they are ANDed, in any order). Each match scores so the one you meant comes
+// first:
+//   - a whole run of letters together beats the same letters spread out;
+//   - letters at the start of a word (after a space, a "/", "-", "_", ".", or a
+//     lowerCase→UpperCase step) beat letters inside one;
+//   - an earlier match beats a later one, a shorter text a longer one.
+// The match reports the ranges it lit, so a list can draw them. Framework-free.
+//
+//   fuzzy("smlg", "a person smiling")          → { score, ranges: [[9,11],[13,14],[15,16]] }
+//   fuzzyFilter(tags, "brd gul", (t) => t.path) → the tags, best first, each with its match
+
+/** Characters [from, to) of the text the query lit. */
 export type Range = readonly [from: number, to: number]
 
 export interface Match {

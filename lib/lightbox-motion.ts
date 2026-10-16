@@ -1,3 +1,8 @@
+// The lightbox's math, framework-free: geometry (fit, source view, stage band), the
+// gesture rules (zoom at a point, rubber, pan bounds, momentum, commit tests) and one
+// interruptible spring. Numbers in, numbers out; the component owns the DOM and the
+// clock. `bun scripts/examples/lightbox-motion.ts` exercises every invariant.
+
 export type View = { x: number; y: number; s: number }
 /** The view plus `p`, how far the room is lit: 0 at the source, 1 at rest. */
 export type Pose = View & { p: number }

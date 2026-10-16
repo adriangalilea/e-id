@@ -1,3 +1,25 @@
+// WHAT THE PIXELS BEHIND A SURFACE ASK FOR: light ink or dark, read off the picture it
+// stands over. Framework-free arithmetic; the side holding the pixels (ui/backdrop:
+// a video, a picture) samples a frame into a small grid and asks here, per surface.
+//
+// The unit is the one contrast is felt in: CIE lightness L* (0 black, 100 white,
+// 50 a perceptual mid-grey), never a raw channel average, which calls a saturated
+// blue sky dark. A surface's area of the frame gives its mean lightness and the band
+// most of it lies in (the 10th to the 90th percentile of the cells under it): a light
+// frame wants the light scheme (light glass, dark words), a dark one the dark scheme.
+// And the glass is as thick as its words need and no thicker (`tintFor`): dark glass
+// enough to darken the BRIGHTEST part under it for white words, light glass enough to
+// lighten the darkest for dark ones. A fixed thickening for any surface over light
+// and dark at once overshot (82% black over a rock its 50% already darkened enough).
+// The area's mean colour, averaged in linear light, is what the glass's edge picks
+// up from what it stands over (light catching a curve takes the colour around it).
+//
+// A verdict has memory. Between `darkBelow` and `lightAbove` the scheme it has is
+// kept (a mid-grey frame never flickers), and a change it can be SEEN making waits
+// for the frame to hold it `holdMs`: a cut, a flash, a pan across a window. A surface
+// no one can see (chrome hidden while a video plays) changes at once, so it shows
+// up already right.
+
 export type Worn = "light" | "dark"
 
 /** A frame as lightness and colour, one value per cell, rows top to bottom. */

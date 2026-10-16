@@ -1,3 +1,19 @@
+// PREPARE A FILE ONCE, for the web: its facts (`MediaAsset`) and the files a page shows
+// (the source made web-ready, a poster, stills along a clip), content-addressed, with
+// no storage, credentials or database: the host writes the files where it keeps them
+// and stores the asset beside them.
+//
+// What comes in: bytes (an upload), a path (a file on disk) or a URL (a file on
+// another host, read by ranges: ffmpeg seeks, so a span of a long video costs that
+// span). Images go through sharp, untouched but measured; video and sound through
+// ffmpeg, opt-in. What a gallery needs beyond a player is asked for, not assumed: a
+// `span` of the source, `frames` along it (a still every so many seconds, what a cell
+// scrubs and a hover lands on), sound alone (`audioOnly`, a speech kept as audio), and
+// always the picture's `average` colour.
+//
+// The asset is the contract (lib/media-asset): a Mac app making the same JSON with
+// AVFoundation is read by the same gallery.
+
 import { execFile } from "node:child_process"
 import { createHash } from "node:crypto"
 import {
@@ -511,3 +527,13 @@ export function mediaAsset(
       : {}),
   }
 }
+
+/** This preparer's own recipe, what `keep` (prepare-keep) keys every result by beside
+ *  its inputs: the code that prepares (its functions' own source) and sharp's versions
+ *  (libvips and the codecs). Any of them changing prepares everything again. */
+export const RECIPE = [
+  String(preview),
+  String(averageOf),
+  String(prepareMedia),
+  JSON.stringify(sharp.versions),
+].join("\0")

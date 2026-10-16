@@ -55,7 +55,7 @@ export type AccountUser = {
 }
 
 /** A way in: `id` is what `onSignIn` is called with, `label` its name in words
- *  ("github"), `icon` its mark (`ProviderGlyph`, or any glyph). */
+ *  ("github"), `icon` its mark (brand-mark's `BrandMark`, or any glyph). */
 export type AccountProvider<P extends string = string> = {
   id: P
   label: string
@@ -87,28 +87,6 @@ const END: Record<AccountMenuSize, string> = { md: "pr-2", lg: "pr-3" }
 /** A 16 px icon at the start (one given in place of the face), concentric with
  *  the round start by the same arithmetic. */
 const START: Record<AccountMenuSize, string> = { md: "pl-2", lg: "pl-3" }
-
-/** A brand's mark from a 24-unit path (simple-icons' shape: `{ path }`), in the
- *  current colour, sized by whatever holds it (a button's icon slot, a menu row). */
-export function ProviderGlyph({
-  icon,
-  className,
-}: {
-  icon: { path: string }
-  className?: string
-}) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      aria-hidden
-      fill="currentColor"
-      data-slot="provider-glyph"
-      className={className}
-    >
-      <path d={icon.path} />
-    </svg>
-  )
-}
 
 /** A press that waits on its callback's promise: busy from the press until it
  *  rejects, the page leaves, or the state that drew it is replaced. Restored from the

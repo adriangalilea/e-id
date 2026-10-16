@@ -1,3 +1,25 @@
+// FETCH THE PUBLIC INTERNET, and only it. A server that fetches an address a stranger
+// named (a live link preview, whether a page frames) is a door into the network it
+// runs in: `http://169.254.169.254/` is the cloud's metadata service, `localhost` the
+// server itself, `10.0.0.5` a machine nobody outside can reach. `publicFetch` refuses
+// them all: http and https only, and every address the name resolves to must be
+// public. It follows redirects itself (at most `REDIRECTS`) and checks each hop again,
+// since a public page answering 302 to `http://127.0.0.1/` is the same request one
+// step later.
+//
+// The check that counts is made where the connection is: undici's own fetch, its
+// connections resolving names through `publicLookup`, so the address checked is the
+// address connected to. A check made only before the fetch, with a resolve again
+// inside it, let a name server answer public the first time and private the second
+// (DNS rebinding); in Node there is one resolve that connects, and it is the checked
+// one. The names are also checked before the request (`assertPublic`): Bun replaces
+// the undici package with its own, which ignores a dispatcher, so there that early
+// check is the one that holds (everything but a rebinding name server, measured
+// 2026-10-16). An address written as an IP is no lookup at all, checked there too.
+//
+// Server-only: it connects with node:net and resolves with node:dns, which a
+// browser has not.
+
 import { type LookupAddress, lookup } from "node:dns"
 import { lookup as resolve } from "node:dns/promises"
 import { BlockList, isIP, type LookupFunction } from "node:net"

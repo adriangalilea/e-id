@@ -1,7 +1,37 @@
+// Somebody else's words, on the page, at THREE WEIGHTS — and every one of them reads its
+// numbers from `quote-card`, the same module that draws the social preview, so there is
+// nothing to keep in sync by hand and nothing that can drift when either is touched.
+//
+//   card     the poster: the portrait bleeding out of the right edge, the ghost mark, the
+//            words composed in the band. It IS the link preview, drawn in the DOM.
+//   feature  the page's own weight: no frame, no portrait — the mark, the words set at
+//            display size over it, one line of attribution. What a quote's own page opens
+//            with, and the step the other two left missing.
+//   prose    a quotation inside an article, at the page's own type, marked by a small
+//            mark rather than a rule. What an embed in a feed card is.
+//
+// WHAT THE THREE CANNOT SHARE WITH THE STILL is measurement. A browser knows exactly how
+// wide a character is and the still has no way to find out, so the still estimates `ch`
+// and these state the measure in real `ch` and let the layout engine be right. They agree
+// on how many characters a line carries; they may disagree about which word ends one.
+//
+// It renders a real `<blockquote>` with a real `<cite>`, because that is what this is,
+// and a screen reader announcing "blockquote" is information the styling cannot carry.
+//
+// STYLE IS UTILITIES IN THE JSX, merged with `cn` and `className` last, the way every
+// shadcn item is, so a consumer overrides a padding by passing a class and never fights
+// a stylesheet. The numbers that are not fixed values — everything the card and the
+// feature derive from the module's constants (cqw sizes, shares of the frame, the focus
+// gradient, the dissolve mask) — arrive as custom properties on `style` and LAND through
+// `-(--…)` utilities: `w-(--ag-quote-column)`, `text-(length:--ag-quote-size)`. The
+// property is the seam between the arithmetic and the CSS; the class says which
+// property each number drives. There is no quote.css.
+
 import { Avatar } from "@/components/ui/avatar"
 import { AvatarPortrait } from "@/components/ui/avatar-portrait"
 import { Image } from "@/components/ui/image"
 import type { Material, Scheme } from "@/components/ui/material"
+import { QuoteMarkMask } from "@/components/ui/quote-mark"
 import { QuoteSurface } from "@/components/ui/quote-surface"
 import {
   ATTRIB_GAP,
@@ -29,7 +59,6 @@ import {
   MARK_BOX,
   MARK_EM,
   MARK_OPACITY,
-  MARK_PATH,
   NAME_EM,
   QUOTE_CH,
   type Quote as QuoteData,
@@ -177,7 +206,7 @@ export function Quote({
         )}
         style={{ "--ag-quote-ink": ink } as React.CSSProperties}
       >
-        <Mark className="top-[1.089em] left-[0.8em] h-[0.95em] opacity-30" />
+        <Mark className="left-[0.8em] top-[1.089em] h-[0.95em] opacity-30" />
         <blockquote
           data-slot="quote-body"
           className={cn(WORDS, "ms-[1.2em] text-foreground/92")}
@@ -218,7 +247,7 @@ export function Quote({
         variant="feature"
         material={material}
         scheme={scheme}
-        className={cn("@container relative m-0 px-8 py-6", className)}
+        className={cn("relative m-0 @container px-8 py-6", className)}
         style={
           {
             "--ag-quote-ink": ink,
@@ -234,13 +263,13 @@ export function Quote({
           } as React.CSSProperties
         }
       >
-        <Mark className="top-6 left-8 h-(--ag-quote-mark) opacity-(--ag-quote-mark-fill) blur-(--ag-quote-soften)" />
+        <Mark className="left-8 top-6 h-(--ag-quote-mark) opacity-(--ag-quote-mark-fill) blur-(--ag-quote-soften)" />
         <blockquote
           data-slot="quote-body"
           className={cn(
             WORDS,
             MEASURED,
-            "text-(length:--ag-quote-size) ms-(--ag-quote-indent) pt-(--ag-quote-climb) text-foreground/92 leading-(--ag-quote-line)",
+            "ms-(--ag-quote-indent) pt-(--ag-quote-climb) text-(length:--ag-quote-size) leading-(--ag-quote-line) text-foreground/92",
           )}
         >
           {body}
@@ -316,7 +345,7 @@ export function Quote({
       data-slot="quote"
       data-variant="card"
       className={cn(
-        "@container bg-(image:--ag-quote-ground) relative m-0 aspect-(--ag-quote-aspect) overflow-hidden rounded-lg text-foreground",
+        "relative m-0 @container aspect-(--ag-quote-aspect) overflow-hidden rounded-lg bg-(image:--ag-quote-ground) text-foreground",
         className,
       )}
       style={
@@ -357,14 +386,14 @@ export function Quote({
         // Decorative: the name below it is the accessible attribution.
         <Image
           data-slot="quote-portrait"
-          className="mask-(--ag-quote-dissolve) absolute top-0 left-(--ag-quote-slot) size-(--ag-quote-square) max-w-none object-cover"
+          className="absolute top-0 left-(--ag-quote-slot) size-(--ag-quote-square) max-w-none object-cover mask-(--ag-quote-dissolve)"
           src={author.avatar}
           alt=""
         />
       )}
       {/* The ghost, in the picture's own colour so it belongs to the photograph rather
           than to the type. It takes no space: the words are composed over it. */}
-      <Mark className="top-(--ag-quote-edge) left-(--ag-quote-margin) h-(--ag-quote-mark) opacity-(--ag-quote-mark-fill) blur-(--ag-quote-soften)" />
+      <Mark className="left-(--ag-quote-margin) top-(--ag-quote-edge) h-(--ag-quote-mark) opacity-(--ag-quote-mark-fill) blur-(--ag-quote-soften)" />
       {/* The words are CENTRED in the band the mark and the attribution leave, so the air
           around them never depends on how long the quote is. The band's floor is the
           attribution's CAP, not its baseline: the still reserves (CAP+DESC)·nameSize
@@ -376,7 +405,7 @@ export function Quote({
         className={cn(
           WORDS,
           MEASURED,
-          "text-(length:--ag-quote-size) absolute top-(--ag-quote-edge) bottom-(--ag-quote-floor) left-(--ag-quote-indent) flex w-(--ag-quote-column) flex-col justify-center text-foreground leading-(--ag-quote-line)",
+          "absolute left-(--ag-quote-indent) top-(--ag-quote-edge) bottom-(--ag-quote-floor) flex w-(--ag-quote-column) flex-col justify-center text-(length:--ag-quote-size) leading-(--ag-quote-line) text-foreground",
         )}
       >
         {body}
@@ -387,7 +416,7 @@ export function Quote({
       <By
         className={cn(
           BY,
-          "text-(length:--ag-quote-name) absolute bottom-(--ag-quote-edge) left-(--ag-quote-margin) m-0 gap-(--ag-quote-by-gap)",
+          "absolute left-(--ag-quote-margin) bottom-(--ag-quote-edge) m-0 gap-(--ag-quote-by-gap) text-(length:--ag-quote-name)",
         )}
         nameClassName="text-[length:inherit]"
         dateClassName="text-(length:--ag-quote-date)"
@@ -401,16 +430,25 @@ export function Quote({
 /** THE MARK IS THE SIGNAL AT EVERY WEIGHT, and a rule down the side is not. A rule is
  *  what every blockquote on the web does; the mark is what makes this one the same object
  *  as its card. One drawing, shipped as an outline; each weight places and scales it. */
+/** The mark, painted in the quote's ink through the outline `QuoteMarkMask` sets once
+ *  per page (quote-mark). Printed as an svg in every quote, the 876-byte outline was
+ *  most of a feed of short quotes. */
+const MARK_ASPECT = `${MARK_BOX.w} / ${MARK_BOX.h}`
+
 function Mark({ className }: { className: string }) {
   return (
-    <svg
-      data-slot="quote-mark"
-      className={cn("absolute w-auto fill-(--ag-quote-ink)", className)}
-      viewBox={`0 0 ${MARK_BOX.w} ${MARK_BOX.h}`}
-      aria-hidden="true"
-    >
-      <path d={MARK_PATH} />
-    </svg>
+    <>
+      <QuoteMarkMask />
+      <span
+        data-slot="quote-mark"
+        aria-hidden="true"
+        className={cn(
+          "absolute w-auto bg-(--ag-quote-ink) [mask:var(--ag-quote-mark-mask)_center/contain_no-repeat]",
+          className,
+        )}
+        style={{ aspectRatio: MARK_ASPECT }}
+      />
+    </>
   )
 }
 

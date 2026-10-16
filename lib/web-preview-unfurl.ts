@@ -1,3 +1,15 @@
+// THE ONE FETCH THAT READS A LINK'S FACTS (`Unfurl`, web-preview-facts) from its
+// page; nothing else in the family fetches, and the card is a pure function of them.
+//
+// WHERE THE FETCH RUNS is a decision, and it is: at authoring time, on the machine that
+// has the network, the way a portrait's sidecar is written once by `mise portrait`. A
+// browser cannot unfurl a foreign page (CORS), and a build that unfurls on every deploy
+// makes the site depend on YouTube answering at 3 a.m. So a site runs `mise unfurl
+// <url>` once, pastes the JSON beside the link, and ships facts as data; a server that
+// wants to unfurl live imports this same function. A live server fetches what
+// strangers type, so every request goes through `publicFetch`: nothing but the public
+// internet is ever asked, never the server's own network.
+
 import { publicFetch } from "@/lib/public-fetch"
 import { hostOf, hrefOf, type Unfurl } from "@/lib/web-preview-facts"
 

@@ -1,3 +1,7 @@
+/* The frame around highlighted code. Shiki writes both themes onto every token as
+   custom properties; this picks one, so a theme switch is a repaint and never a
+   re-highlight, and there is no flash of the wrong palette on first paint. */
+
 @layer components {
   .ag-code {
     overflow: hidden;

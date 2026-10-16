@@ -1,3 +1,15 @@
+// A quote's RULES, framework-free: the accent it keeps, the size its text is set at,
+// where the lines break, and the SVG still. ONE source feeding two emitters, the web
+// card (ui/quote.tsx) and the social preview a build script rasterizes — the same
+// arrangement the terminal and its session still use, and for the same reason.
+//
+// The reason is worth stating, because a site that draws these twice always ends up
+// with two: a card and its preview drift the first time either is touched, and the
+// drift is invisible until someone shares a link. Here the size ladder, the hue and
+// the wrap are decided once and both emitters read them, so the preview IS the card.
+//
+// Nothing here may import React or touch the DOM. `bun scripts/examples/quote-card.ts`.
+
 export interface QuoteAuthor {
   name: string
   /** A URL on the web; a data URI in the still, which cannot fetch. */
@@ -272,6 +284,11 @@ export const DISSOLVE: readonly [number, number][] = Array.from(
 export const MARK_PATH =
   "M54.0 227.8Q29.0 227.8 14.5 209.8Q0.0 191.8 0.0 160.8Q0.0 114.8 20.5 76.8Q41.0 38.8 87.0 5.8Q99.0 -3.2 106.0 1.8Q110.0 4.8 110.0 10.3Q110.0 15.8 103.0 20.8Q69.0 49.8 59.5 65.3Q50.0 80.8 50.0 97.8Q50.0 115.8 58.0 125.3Q66.0 134.8 76.0 141.3Q86.0 147.8 94.0 156.8Q102.0 165.8 102.0 183.8Q102.0 201.8 89.5 214.8Q77.0 227.8 54.0 227.8ZM204.0 227.8Q179.0 227.8 164.5 209.8Q150.0 191.8 150.0 160.8Q150.0 114.8 170.5 76.8Q191.0 38.8 237.0 5.8Q249.0 -3.2 256.0 1.8Q260.0 4.8 260.0 10.3Q260.0 15.8 253.0 20.8Q219.0 49.8 209.5 65.3Q200.0 80.8 200.0 97.8Q200.0 115.8 208.0 125.3Q216.0 134.8 226.0 141.3Q236.0 147.8 244.0 156.8Q252.0 165.8 252.0 183.8Q252.0 201.8 239.5 214.8Q227.0 227.8 204.0 227.8Z"
 export const MARK_BOX = { w: 260, h: 228 }
+/** The mark as a CSS mask image, for a page that draws it in its ink through a mask
+ *  instead of printing the outline in every quote. */
+export const MARK_MASK = `url("data:image/svg+xml,${encodeURIComponent(
+  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${MARK_BOX.w} ${MARK_BOX.h}"><path d="${MARK_PATH}"/></svg>`,
+)}")`
 /** The ink's height as a share of the frame. It is the one measurement here that is
  *  NOT a rung: the scale governs the gaps between things, and how big a drawing is
  *  belongs to the drawing. Where it sits is a rung, like everything else. */

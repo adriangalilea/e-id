@@ -1,3 +1,20 @@
+// Zooming into a moving picture on a stage, as data. Framework-free; ui/video-playback
+// holds the view, ui/player's gestures, keys and finder move it.
+//
+// THE LADDER. A picture fitted whole in a stage of another shape leaves bars on two
+// sides. Zooming in, the first stop is FILL, the picture just covering the stage (the
+// bars gone, the least of it cut); past it the zoom is free up to `max`. Zooming out
+// comes back down the same way: free until fill, which catches, then FIT. A stop is a
+// DETENT under a pinch: a stretch of the hand that does not change the scale, so a stop
+// is felt and has to be pushed through rather than flown past. Keys and buttons step
+// to the stops exactly. A picture of the stage's own shape has no fill: fit covers.
+//
+// THE VIEW is the lightbox's: { x, y, s }, a translation in px of the stage from its
+// centre and a scale over the fitted picture, transform-origin at the centre
+// (lib/lightbox-motion's `zoomAt` keeps a point under the hand). Panned, the picture
+// never uncovers the stage on an axis it overflows; on an axis it does not overflow it
+// stays centred.
+
 import {
   PINCH_CLOSE,
   type Point,

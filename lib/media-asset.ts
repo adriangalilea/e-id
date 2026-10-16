@@ -1,3 +1,14 @@
+// A MEDIA ASSET'S FACTS, portable: what a file is, how big, how long, its picture and
+// its tone, and the stills along it, stored beside the file and read by whatever draws
+// it. Never inferred in a renderer.
+//
+// THE CONTRACT BETWEEN PREPARATION AND DISPLAY, whoever prepares. `prepare-media` makes
+// it in Node (ffmpeg, sharp); a Mac app makes the same JSON with AVFoundation
+// (`AVAssetExportSession` for a span, `AVAssetImageGenerator` for frames at
+// `i × every` seconds, `CIAreaAverage` for the tone), and a gallery reads either
+// without knowing which. Every unit is the one both sides already speak: pixels,
+// bytes, seconds.
+
 export type MediaAsset = {
   src: string
   kind: "image" | "animation" | "video" | "audio"

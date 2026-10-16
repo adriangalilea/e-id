@@ -110,7 +110,7 @@ export function HoloLean({
     <div
       data-slot="holo-lean"
       className={cn(
-        "transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] [transform:var(--holo-lean)] group-data-[hover]/holo:duration-240 motion-reduce:[transform:none]",
+        "[transform:var(--holo-lean)] transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-data-[hover]/holo:duration-240 motion-reduce:[transform:none]",
         className,
       )}
       style={{ "--holo-lean": POSES[pose] } as React.CSSProperties}

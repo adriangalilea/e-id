@@ -1,3 +1,17 @@
+// The wheel session, framework-free. Three axes, all of them the POSE: a ctrl-wheel
+// zoom, a pan while zoomed, and the vertical drag that dismisses. Each offsets the
+// pose the hand found (`grab`) and lets silence decide where it lands, which is safe
+// because each springs back to a resting place, so a mistimed release costs nothing.
+//
+// There is no horizontal axis here: sideways wheel belongs to the track. `wheelAxisOf`
+// and `wheelIsTrackable` say when a tick is the track's, and the binder hands those
+// ticks to the track's own swipe rather than opening a session for them.
+//
+// `last` is the accepted tick the velocity span is measured against; `at` the last
+// cursor; `live` whether a vertical session ever passed the inertia guard. Ticks in,
+// a session and effects out; the binder owns the timers and applies the effects.
+// `bun scripts/examples/lightbox-wheel.ts`.
+
 import {
   type Band,
   wheelTick as boundTick,

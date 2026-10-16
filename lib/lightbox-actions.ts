@@ -1,3 +1,10 @@
+// The lightbox's action registry: the single source for key dispatch, buttons,
+// tooltips, aria-keyshortcuts, the live region and the `?` sheet (`sheet()` renders
+// the table for one layer set). Every pointer verb
+// dispatches an id from this table too. Layers stack innermost first; `resolve` hands a
+// key to the innermost active layer that owns it. Framework-free; the shape is what a
+// future keymap item adopts unchanged.
+
 export type Layer =
   | "always"
   | "fit"

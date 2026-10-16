@@ -21,7 +21,7 @@ export function Label({ material, className, ...props }: LabelProps) {
       data-slot="label"
       data-material={m}
       className={cn(
-        "inline-flex select-none items-center gap-2 font-medium text-[13px] leading-none peer-disabled:opacity-50 has-[:disabled]:opacity-50",
+        "inline-flex items-center gap-2 font-medium text-[13px] leading-none select-none has-[:disabled]:opacity-50 peer-disabled:opacity-50",
         m === "glass"
           ? "text-current/90 [text-shadow:0_0.5px_0_color-mix(in_oklab,var(--glass-rim-ink,white)_40%,transparent)]"
           : "text-foreground/80",

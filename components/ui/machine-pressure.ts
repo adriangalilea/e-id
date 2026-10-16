@@ -1,3 +1,9 @@
+// THE MACHINE'S OWN WORD ON ITS LOAD, for the page's ambient budgets (lib/ambient-budget
+// `pressure`): the Compute Pressure API's CPU states (nominal, fair, serious, critical,
+// from the processor's load and heat), heard by one observer for the whole page and
+// told to every budget alive. Chrome and Edge say it; where the browser has no
+// PressureObserver (Safari, Firefox) nothing is heard and the frame counts decide alone.
+
 import type { AmbientBudget, AmbientPressure } from "@/lib/ambient-budget"
 
 /** The Compute Pressure API, as much of it as the budgets read (not in TypeScript's DOM

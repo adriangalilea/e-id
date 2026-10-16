@@ -1,3 +1,10 @@
+// A FINGER ON A SCREEN, as iOS draws one with Show Touches and in a screen
+// recording: a soft white disc where the finger lands. A phone has no pointer, so
+// a story told on one shows its taps with this (`macos` shows a Mac's clicks with
+// its pointer). One tap over `tap`, 0..1: the finger comes down, holds the
+// control pressed, lifts. Placed in the box it presses on (positioned), at `x`
+// and `y` from that box's top-left. Display-only: no role, nothing focusable.
+
 import type * as React from "react"
 import { cn } from "@/lib/utils"
 

@@ -1,3 +1,23 @@
+// A PERSON'S FACE, the same object everywhere it appears: beside a quotation, at the head
+// of their page, in a feed card, on a comment, in a picker. One round crop, sized on the
+// studio's scale, positioned on the subject rather than on the middle of the file, ringed
+// in the picture's own colour.
+//
+// It reads the same two facts the quote card reads from a portrait's sidecar: `focus`,
+// where the subject sits across the picture, and the tone the average colour gives. A
+// face cropped on the centre of a file that had its subject to one side is how a
+// thumbnail ends up showing an ear; `object-position` from the focus is how it does not.
+//
+// A face that opens its full portrait is `avatar-portrait` (it brings the lightbox): a
+// face alone installs nothing else, so a picker or a chat that only shows faces never
+// carries a viewer it does not use. Both draw through `avatarLook` and `AvatarImage`,
+// one look for the two.
+//
+// STYLE IS UTILITIES, the way every shadcn item is, so a consumer overrides with
+// `className` and never fights a stylesheet. The two numbers that are not a fixed value,
+// the rung and the focus, arrive as custom properties and land through `size-(--…)` and
+// `object-(--…)`; the class says which property each one drives.
+
 import type * as React from "react"
 import { Image } from "@/components/ui/image"
 import { cn } from "@/lib/utils"

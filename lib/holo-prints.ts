@@ -1,3 +1,19 @@
+// THE HOLOGRAM'S PRINTS, framework-free: what a security hologram is made of, drawn
+// from geometry as SVG, white on nothing, for a surface to use as MASKS over the foil
+// (lib/foil). A print is never a wash of colour: a smooth gradient this faint over a
+// dark ground bands into mud in eight bits, where fine lines lit by a band of foil
+// stay crisp. Each is from a fixed seed or pure geometry, so a server and a browser
+// draw the same, and a drawing that is not CSS (an SVG, a share image) can lay the
+// same art in its own patterns (`HoloArt`'s body).
+//
+// Four prints:
+//   guilloche  the line work of banknotes, a tile that repeats seamlessly
+//   emblems    a small emblem, twice in a tile, staggered: a texture
+//   web        nodes joined to their nearest, a few hubs ringed: people linked
+//   seal       two rings and a rosette of ticks, the emblem at its heart
+// The emblem is yours (your mark), a four-pointed spark if you give none.
+
+/** A print as SVG: its tile's size and what is drawn in it, white on nothing. */
 export type HoloArt = { width: number; height: number; body: string }
 
 /** A glyph to print: an SVG path and the box it is drawn in. */

@@ -1,3 +1,5 @@
+// DOM measurements are isolated from the gesture/flight controller. Coordinates
+// remain in visual-viewport pixels, including browser zoom and reserved chrome.
 import {
   assert,
   type Band,

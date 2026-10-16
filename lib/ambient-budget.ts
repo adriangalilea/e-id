@@ -1,3 +1,36 @@
+// AMBIENT MOTION'S BUDGET: how many videos a page plays by themselves at once (a
+// gallery's cells, a wall's tiles), as the machine shows it can. Framework-free;
+// ui/gallery-cell and ui/film-wall ask it for turns. Proven by
+// scripts/examples/gallery-ambient.ts.
+//
+// TURNS. Every video that wants to play asks for a turn; a granted one plays ONE PASS
+// (its pieces in turn, its span round once), then gives its slot to the one that has
+// waited longest and joins the back of the queue. With nobody waiting it keeps its slot
+// and loops on. So every video plays, however many there are, a few at a time.
+//
+// HOW MANY AT A TIME IS THE MACHINE'S: the budget starts at what the machine says of
+// itself (`ambientStart`, half its cores) and each playing video reports its own frame
+// counters (getVideoPlaybackQuality). Over a window of its play, a video that dropped
+// at most `KEEPS_UP` of its frames kept up, one that dropped more than `FALLS_BEHIND`
+// fell behind. The budget grows by one while videos wait and as many videos as it has
+// slots kept up since its last change, and shrinks to one fewer than are playing the
+// moment any falls behind (never below one); a size it fell behind at is not tried
+// again for `RETRY_MS`. A consumer may cap it; below the cap the machine decides.
+//
+// WHAT KEEPING UP COSTS: frame counts say whether the videos keep up, never what that
+// takes from the rest of the machine; a browser decodes a dozen videos without dropping
+// a frame while the machine's other work (an indexer, the window server, every other
+// app) starves (2026-10-12: a gallery taking files in froze a laptop with nothing
+// dropped). Where the machine says how loaded it is (`pressure`, the Compute Pressure
+// API's states, ui/machine-pressure), the budget grows only while it is `nominal` or
+// `fair`, holds while `serious`, and while `critical` gives up a decoder at once and one
+// more every window after, down to one. Where nothing says it, the frames alone decide.
+
+/** Where a budget starts: half the machine's cores, at least two (what any machine
+ *  that plays video at all keeps up with). Started at two and grown on evidence, a
+ *  screen of twenty took half a minute to wake one cell at a time ("so slowly",
+ *  Adrian, 2026-10-11); started from the machine, the frame counts correct it within
+ *  a window either way. */
 export const ambientStart = (cores: number) =>
   Math.max(2, Math.floor(cores / 2))
 /** How often a playing video reads its frame counters. */

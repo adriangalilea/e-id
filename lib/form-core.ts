@@ -1,3 +1,42 @@
+// THE FORM, framework-free: values, what is wrong with them and when to say so, what
+// changed since they were loaded, and sending them. `ui/form` binds it to React and
+// draws it; this file runs in bun (scripts/examples/form-core.ts) and in any UI.
+//
+// WHY ITS OWN, not react-hook-form or TanStack Form. The registry ships source a
+// consumer owns, so a form is better as two small files than as two packages and a
+// resolver. Validation is Standard Schema (zod, valibot and arktype all answer
+// `~standard`), so there is nothing to adapt. The controls here are value controls
+// (`value` + `onValueChange`: number, slider, people-picker, chip-input) with no DOM
+// input to register, which react-hook-form's uncontrolled refs are built around. And
+// the timing, async checks, server errors, autosave and optimistic rollback are one
+// model here, the same one the table's optimistic and staged edits follow, rather than
+// four options of a library's.
+//
+// WHEN AN ERROR IS SAID: reward early, punish late. Everything is validated on every
+// change, silently; a field's error is shown once it has been left (`blur`) or a
+// submit was tried, and from then on it follows every change, so it disappears the
+// moment the value is fixed. A server's answer is shown at once, and cleared by the
+// next change to its field.
+//
+// PATHS are dot strings (`tracks.0.title`), typed from the values (`Path<T>`). A field
+// array keeps a stable key per row (`keysOf`), and its rows' touched marks, errors and
+// check answers move with the rows when they are inserted, removed or moved; a reset
+// gives the loaded rows back their own keys.
+//
+// WHAT IS SENT IS WHAT WAS CHECKED. A submit takes the values as they stand at the
+// press and decides on exactly those: their rules, and every check answered for exactly
+// those values (asked again where the answer is missing, stale or was cut short). A
+// change typed while it settles or sends is the next change, never part of this send.
+//
+// A CHECK THAT CANNOT ANSWER (it threw, the network is down, an async schema rejected)
+// is a state, `failed`, with its reason: never a verdict on the value, never a form left
+// busy. The field says it could not be checked; a submit asks again, and `recheck`
+// asks one field again.
+//
+// ONE CHANGE, ONE NOTICE: a mutation's state writes are batched, so a keystroke wakes
+// each subscriber once, whatever the rules and checks it sets going.
+
+/** Standard Schema v1 (standardschema.dev), copied as the spec asks: no dependency. */
 export interface StandardSchemaV1<Input = unknown, Output = Input> {
   readonly "~standard": {
     readonly version: 1

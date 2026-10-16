@@ -1,3 +1,10 @@
+/* The rim's brightness as a registered number, so it can ease: an unregistered
+   custom property swaps at once, which made a glass's light jump while the
+   glass itself (a lifting card, a pressed button) was still easing. Inherited,
+   so a bare edge (a pane's, a frame's) follows the glass it belongs to; a glass
+   inside starts again at its own (`glassVariants`). It eases on the element that
+   draws the light, never on a container: an inherited number moving every frame
+   restyles everything under it. */
 @property --glass-rim {
   syntax: "<number>";
   inherits: true;
