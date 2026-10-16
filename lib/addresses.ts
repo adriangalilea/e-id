@@ -1,18 +1,30 @@
-import { EMOJI_DOMAIN, MAIN_DOMAIN, SHORT_DOMAIN } from "@/lib/const"
+import {
+  EMOJI_DOMAIN,
+  EMOJI_DOMAIN_PUNYCODE,
+  MAIN_DOMAIN,
+  SHORT_DOMAIN,
+} from "@/lib/const"
 
 // WHICH OF E-ID'S DOMAINS TO HAND OUT. Every address opens the same page on all
-// three (next.config sends Safari to 👤.to and every other browser to e-id.to), so
-// the choice is only where the address is going: the emoji where it is shown as
-// written, the short one to say or type, the plain one where an emoji is refused.
-// A copy is always the whole address, `https://` and all: without it, the emoji
-// domain is a link nowhere checked (CHECKED), and with it, everywhere.
+// of them (next.config sends Safari to 👤.to and every other browser to e-id.to),
+// so the choice is only where the address is going: the emoji where it is shown
+// as written, the emoji spelled out (xn--mq8h.to, the same domain as a browser
+// sends it) where a field refuses the emoji but shows it back, the short one to
+// say or type, the plain one where an emoji is refused for good. A copy is
+// always the whole address, `https://` and all: without it, the emoji domain is
+// a link nowhere checked (CHECKED), and with it, everywhere it is accepted.
 // One choice for every place that copies an address (components/addresses).
 
 export const FORMS = [
   {
     id: "emoji",
     host: EMOJI_DOMAIN,
-    for: "where it is shown as written: X and GitHub show 👤.to",
+    for: "in a post or a message: X and GitHub show 👤.to",
+  },
+  {
+    id: "spelled",
+    host: EMOJI_DOMAIN_PUNYCODE,
+    for: "the emoji spelled out, for a field that refuses it: X's website field takes it and shows 👤.to",
   },
   {
     id: "short",
@@ -43,56 +55,84 @@ export function urlOf(id: FormId, path: string): string {
   return `https://${formOf(id).host}${path}`
 }
 
-/** What turns an address into a link, written as each form: with its scheme, and
- *  bare (as a person types it). */
-export type Linked = { scheme: boolean; bare: boolean }
+/** What a place did with an address on a form: a link, text (no link), refused
+ *  (not saved), or not checked. `shows` is what it drew where that differs from
+ *  what was typed. */
+export type Verdict =
+  | { is: "link"; bare: boolean; shows?: string }
+  | { is: "text" }
+  | { is: "refused"; says: string }
+  | { is: "unchecked" }
 
 /** Where an address was checked, how, and what it does there. Facts measured, not
- *  remembered: each says how it was checked, so it can be checked again. */
+ *  remembered: each says how it was checked, so it can be checked again. Addresses
+ *  are written with "/you". */
 export const CHECKED: {
   place: string
   how: string
-  linked: Record<FormId, Linked>
-  /** What the place shows of a linked address. */
-  shows: string
+  verdicts: Record<FormId, Verdict>
 }[] = [
   {
-    place: "X",
-    how: "twitter-text 3.1.0, the library X finds links with (extractUrls)",
-    linked: {
-      emoji: { scheme: true, bare: false },
-      short: { scheme: true, bare: true },
-      main: { scheme: true, bare: true },
+    place: "X, your profile's website",
+    how: "by hand, 2026-10-16, Edit profile › Website",
+    verdicts: {
+      emoji: {
+        is: "refused",
+        says: `Url can't include "invalid characters"`,
+      },
+      spelled: { is: "link", bare: false, shows: "👤.to/you" },
+      short: { is: "unchecked" },
+      main: { is: "unchecked" },
     },
-    shows: "the address without https://, the emoji as it is: 👤.to/you",
   },
   {
-    place: "GitHub",
-    how: "GitHub's markdown API, GFM (gh api markdown)",
-    linked: {
-      emoji: { scheme: true, bare: false },
-      short: { scheme: true, bare: false },
-      main: { scheme: true, bare: false },
+    place: "X, a post",
+    how: "twitter-text 3.1.0, the library X finds links with (extractUrls)",
+    verdicts: {
+      emoji: { is: "link", bare: false, shows: "👤.to/you" },
+      spelled: { is: "link", bare: true },
+      short: { is: "link", bare: true },
+      main: { is: "link", bare: true },
     },
-    shows: "the address as written, https:// and the emoji",
+  },
+  {
+    place: "Telegram, a message",
+    how: "by hand, 2026-10-16, Telegram for macOS",
+    verdicts: {
+      emoji: { is: "unchecked" },
+      spelled: { is: "unchecked" },
+      short: { is: "link", bare: true },
+      main: { is: "unchecked" },
+    },
+  },
+  {
+    place: "GitHub, markdown",
+    how: "GitHub's markdown API, GFM (gh api markdown)",
+    verdicts: {
+      emoji: { is: "link", bare: false },
+      spelled: { is: "link", bare: false },
+      short: { is: "link", bare: false },
+      main: { is: "link", bare: false },
+    },
   },
   {
     place: "markdown-it",
     how: "linkify-it 6.1.0, markdown-it's links (Discourse, many docs sites)",
-    linked: {
-      emoji: { scheme: true, bare: false },
-      short: { scheme: true, bare: false },
-      main: { scheme: true, bare: false },
+    verdicts: {
+      emoji: { is: "link", bare: false },
+      spelled: { is: "link", bare: false },
+      short: { is: "link", bare: false },
+      main: { is: "link", bare: false },
     },
-    shows: "the address as written",
   },
 ]
 
 /** Places not checked yet: each needs a phone or an account, by hand, then CHECKED. */
 export const UNCHECKED = [
-  "Telegram",
+  "X's bio",
   "iMessage",
   "WhatsApp",
   "LinkedIn",
   "Instagram's bio",
+  "GitHub's profile website",
 ] as const

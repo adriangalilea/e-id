@@ -118,7 +118,16 @@ export default async function Page(props: {
         links={links}
         presence={presence}
         made={made}
-        actions={<OwnerActions username={user.username} />}
+        actions={
+          <OwnerActions
+            holder={{
+              username: user.username,
+              name: user.name,
+              image: user.image,
+              x: links.find((l) => l.platform === "twitter")?.value ?? null,
+            }}
+          />
+        }
         vouches={
           <>
             {testimonials.length > 0 && (

@@ -5,7 +5,8 @@ import { ShortLinksSpecimen } from "@/app/dev/specimens"
 import { Address, AddressFormPicker } from "@/components/addresses"
 import { EmojiDomain } from "@/components/brand"
 import { Tweet } from "@/components/ui/tweet"
-import { CHECKED, FORMS, type Linked, UNCHECKED, urlOf } from "@/lib/addresses"
+import { XProfileGuide } from "@/components/x-profile-guide"
+import { CHECKED, FORMS, UNCHECKED, urlOf, type Verdict } from "@/lib/addresses"
 import { isAdmin } from "@/lib/env"
 import { getSession } from "@/lib/session"
 import type { Tweet as TweetFacts } from "@/lib/tweet-data"
@@ -108,20 +109,43 @@ function Specimen({ name, children }: { name: string; children: ReactNode }) {
   )
 }
 
-const said = (l: Linked) =>
-  l.bare ? "a link, even bare" : l.scheme ? "a link with https://" : "text"
+/** One place's verdict on one form: a link at full strength, what refuses it
+ *  loud, what was not checked faint. */
+function Cell({ verdict: v }: { verdict: Verdict }) {
+  const cell = "py-2 pr-4"
+  if (v.is === "link")
+    return (
+      <td className={`${cell} text-foreground/85`}>
+        {v.bare ? "a link, even bare" : "a link with https://"}
+        {v.shows && (
+          <div className="text-foreground/45 text-xs">shown as {v.shows}</div>
+        )}
+      </td>
+    )
+  if (v.is === "refused")
+    return (
+      <td className={`${cell} text-destructive`}>
+        refused
+        <div className="text-foreground/45 text-xs">“{v.says}”</div>
+      </td>
+    )
+  if (v.is === "text")
+    return <td className={`${cell} text-foreground/55`}>text</td>
+  return <td className={`${cell} text-foreground/25`}>not checked</td>
+}
 
-/** The three domains, what each is for, and what was checked of each. */
+/** The domains, what each is for, and what was checked of each. */
 function Addresses() {
   return (
     <Section
-      title="three domains, one page"
+      title="four spellings, one page"
       says={
         <>
-          Every address opens the same page on all three, so which one to hand
+          Every address opens the same page on all of them, so which one to hand
           out depends only on where it is going (lib/addresses). A copy is
           always the whole address: without https://, <EmojiDomain /> is a link
-          nowhere checked.
+          nowhere checked. xn--mq8h.to is the same domain, spelled the way a
+          browser sends it.
         </>
       }
     >
@@ -157,17 +181,9 @@ function Addresses() {
                   <td className="py-2 pr-4">
                     <div>{c.place}</div>
                     <div className="text-foreground/40 text-xs">{c.how}</div>
-                    <div className="text-foreground/40 text-xs">
-                      shows {c.shows}
-                    </div>
                   </td>
                   {FORMS.map((f) => (
-                    <td
-                      key={f.id}
-                      className={`py-2 pr-4 ${c.linked[f.id].bare ? "text-foreground/85" : "text-foreground/55"}`}
-                    >
-                      {said(c.linked[f.id])}
-                    </td>
+                    <Cell key={f.id} verdict={c.verdicts[f.id]} />
                   ))}
                 </tr>
               ))}
@@ -206,7 +222,19 @@ function HandingOut() {
           shows. Choosing a domain belongs to the places that offer one.
         </p>
       </Specimen>
-      <Specimen name="where it lands: on X">
+      <Specimen name="on your X profile: <XProfileGuide /> (share › show me)">
+        <div className="max-w-md">
+          <XProfileGuide
+            holder={{
+              username: ADA,
+              name: AUTHOR.name,
+              image: AUTHOR.avatar,
+              x: null,
+            }}
+          />
+        </div>
+      </Specimen>
+      <Specimen name="where it lands: a post on X">
         <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-2">
             <p className="text-foreground/60 text-sm">
