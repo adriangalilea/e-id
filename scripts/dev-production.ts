@@ -4,7 +4,8 @@
 // argument (`bun scripts/dev-production.ts <script>`), runs with production's
 // database behind a token that can only read and lives a day, minted now
 // (`turso`), and the GitHub App's secret and the Safe Browsing key read from
-// 1Password (`op`) so signing in with GitHub and checking links work locally. Nothing is written to disk: every value lives in this
+// 1Password (`op`) so signing in with GitHub and checking links work locally, and the
+// sealed key so a build opens the sealed files (scripts/sealed.mts). Nothing is written to disk: every value lives in this
 // process's environment and the script's. A write the page tries fails at the
 // database, which is the point.
 //
@@ -23,6 +24,8 @@ const GITHUB_SECRET = "op://Private/e-ID GitHub App client secret/password"
 /** The Safe Browsing key (lib/safe-browsing), the same one production uses: a
  *  question about an address costs nothing and writes nothing. */
 const SAFE_BROWSING_KEY = "op://Private/e-ID Safe Browsing API key/credential"
+/** The key `pnpm build` opens the sealed files with (scripts/sealed.mts). */
+const SEALED_KEY = "op://Private/sealed key/credential"
 
 const run = (cmd: string, args: string[], what: string): string => {
   try {
@@ -56,6 +59,7 @@ const safeBrowsingKey = run(
   ["read", SAFE_BROWSING_KEY],
   "reading the Safe Browsing key",
 )
+const sealedKey = run("op", ["read", SEALED_KEY], "reading the sealed key")
 const githubToken = run(
   "gh",
   ["auth", "token"],
@@ -81,6 +85,7 @@ const server = spawn("pnpm", [script], {
     GOOGLE_CLIENT_SECRET: "off-locally",
     API_GITHUB_TOKEN: githubToken,
     SAFE_BROWSING_KEY: safeBrowsingKey,
+    SEALED_KEY: sealedKey,
   },
 })
 server.on("exit", (code) => process.exit(code ?? 0))

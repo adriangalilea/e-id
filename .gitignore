@@ -46,3 +46,7 @@ backup*.sql
 
 # `pnpm captures`' scratch folder, left only by a run that was killed
 .capture-*
+
+# @ag/sealed: committed encrypted beside themselves (scripts/sealed.mts)
+/components/ui/shimmer.tsx
+# end @ag/sealed
