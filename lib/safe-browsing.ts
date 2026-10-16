@@ -1,6 +1,7 @@
 import "server-only"
 
-import { isThreat, type Threat } from "@/lib/threats"
+import { threatsIn } from "@/lib/safe-browsing-wire"
+import type { Threat } from "@/lib/threats"
 
 // WHETHER AN ADDRESS IS KNOWN BAD, asked of Google Safe Browsing (v5,
 // `urls:search`). Every address a person points a link of theirs at is asked when
@@ -40,14 +41,10 @@ export async function threatOf(url: string): Promise<Threat | null> {
     throw new Error(
       `Safe Browsing on ${url}: HTTP ${res.status} ${await res.text()}`,
     )
-  const body = (await res.json()) as {
-    threats?: { url: string; threatTypes: string[] }[]
-  }
-  const found = (body.threats ?? []).flatMap((t) => t.threatTypes)
-  for (const t of found)
-    if (!isThreat(t))
-      throw new Error(`Safe Browsing on ${url}: an unknown threat "${t}"`)
-  return (found[0] as Threat | undefined) ?? null
+  const type = res.headers.get("content-type")
+  if (type !== "application/x-protobuf")
+    throw new Error(`Safe Browsing on ${url}: answered ${type}, not protobuf`)
+  return threatsIn(new Uint8Array(await res.arrayBuffer()))[0] ?? null
 }
 
 /** Words for a person whose link was refused. */
