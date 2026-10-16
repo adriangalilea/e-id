@@ -19,6 +19,7 @@ const KEPT: KeptShortLink[] = [
     maxVisits: null,
     public: true,
     visits: 41,
+    stopped: null,
   },
   {
     id: "talk",
@@ -29,6 +30,7 @@ const KEPT: KeptShortLink[] = [
     maxVisits: null,
     public: false,
     visits: 7,
+    stopped: null,
   },
   {
     id: "file",
@@ -39,6 +41,18 @@ const KEPT: KeptShortLink[] = [
     maxVisits: 1,
     public: false,
     visits: 1,
+    stopped: null,
+  },
+  {
+    id: "bad",
+    slug: "login",
+    value: "https://example.net/sign-in",
+    label: "",
+    expires: "",
+    maxVisits: null,
+    public: false,
+    visits: 3,
+    stopped: "SOCIAL_ENGINEERING",
   },
 ]
 

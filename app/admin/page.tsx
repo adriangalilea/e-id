@@ -1,18 +1,23 @@
-import { inArray } from "drizzle-orm"
+import { and, desc, eq, inArray, isNotNull, sql } from "drizzle-orm"
 import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 import { Suspense } from "react"
+import { LinkUp } from "@/app/admin/link-up"
 import { PathTree, TopPaths } from "@/components/ui/user-flows"
 import { db } from "@/db"
-import { users } from "@/db/schema"
+import { links, users } from "@/db/schema"
 import { isAdmin } from "@/lib/env"
+import { ANYWHERE } from "@/lib/link-safety"
 import { getSession } from "@/lib/session"
+import { takenDown } from "@/lib/threats"
 import { pathTree, topPaths } from "@/lib/user-flows-core"
 import { SITE, visitDriver, visitsEnabled } from "@/lib/visit-store"
 import { readOwners, readVisits } from "@/lib/visits"
 
 // THE SITE'S OWN NUMBERS, for e-ID's admins (ADMIN_USER_IDS) and nobody else: a
-// 404 to anyone else, signed in or not. The last 30 days of visits as where people
+// 404 to anyone else, signed in or not. First the links people point anywhere
+// (a website, a link of their own), each with a switch to take it down. Then the
+// last 30 days of visits as where people
 // went (ui user-flows: every profile is one place), where they came from, whose
 // pages were read most, and the names asked of a person that opened nothing.
 
@@ -28,15 +33,89 @@ export default function Page() {
   return (
     <main className="mx-auto flex w-full max-w-4xl flex-col gap-10 px-4 py-16">
       <Suspense fallback={null}>
-        <Report />
+        <Admins>
+          <LinksMade />
+          <Report />
+        </Admins>
       </Suspense>
     </main>
   )
 }
 
-async function Report() {
+/** What only an admin reaches: anyone else is a 404. */
+async function Admins({ children }: { children: React.ReactNode }) {
   const session = await getSession()
   if (!session || !isAdmin(session.user.id)) notFound()
+  return children
+}
+
+/** How many of the newest links that go anywhere the list shows. */
+const NEWEST = 100
+
+const WHEN = new Intl.DateTimeFormat("en", {
+  month: "short",
+  day: "numeric",
+  timeZone: "UTC",
+})
+
+/** The links people point wherever they like, newest first (the ones made
+ *  before their making was kept last): whose, where, what Web Risk last said,
+ *  and a switch to take one down or put it back (lib/link-safety). */
+async function LinksMade() {
+  const rows = await db
+    .select({
+      id: links.id,
+      username: users.username,
+      platform: links.platform,
+      slug: links.slug,
+      value: links.value,
+      visits: links.visits,
+      created_at: links.created_at,
+      checked_at: links.checked_at,
+      stopped_why: links.stopped_why,
+    })
+    .from(links)
+    .innerJoin(users, eq(links.user_id, users.id))
+    .where(and(inArray(links.platform, [...ANYWHERE]), isNotNull(links.value)))
+    .orderBy(sql`${links.created_at} IS NULL`, desc(links.created_at))
+    .limit(NEWEST)
+  return (
+    <Section title={`links that go anywhere, the newest ${NEWEST}`}>
+      <ul className="flex flex-col text-sm">
+        {rows.map((l) => (
+          <li
+            key={l.id}
+            className="flex items-center gap-3 border-border border-t py-2 first:border-t-0"
+          >
+            <div className="flex min-w-0 grow flex-col">
+              <span className="font-mono">
+                /{l.username}/{l.platform === "link" ? l.slug : "web"}
+              </span>
+              <span className="truncate text-foreground/55 text-xs">
+                {l.value}
+              </span>
+              <span className="text-foreground/40 text-xs">
+                {[
+                  l.created_at ? `made ${WHEN.format(l.created_at)}` : null,
+                  `opened ${fmt.format(l.visits)}`,
+                  l.checked_at
+                    ? `checked ${WHEN.format(l.checked_at)}`
+                    : "never checked",
+                  l.stopped_why ? takenDown(l.stopped_why) : null,
+                ]
+                  .filter(Boolean)
+                  .join(" · ")}
+              </span>
+            </div>
+            <LinkUp id={l.id} up={l.stopped_why === null} />
+          </li>
+        ))}
+      </ul>
+    </Section>
+  )
+}
+
+async function Report() {
   if (!visitsEnabled) return <p>Visits are off: no VISITS_DATABASE_URL.</p>
   const store = visitDriver()
   const [visits, { owners, missed }] = await Promise.all([

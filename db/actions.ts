@@ -14,7 +14,6 @@ import {
   errorsOf,
   type KeptShortLink,
   MOST_ON_CARD,
-  MOST_SHORT_LINKS,
   type SaveResult,
   shortLinkSchema,
 } from "@/lib/card-edit"
@@ -30,11 +29,13 @@ import {
 } from "@/lib/data"
 import { isAdmin } from "@/lib/env"
 import { getGithubProfile } from "@/lib/github"
+import { ANYWHERE, refusedDestination } from "@/lib/link-safety"
 import { DRAFTED } from "@/lib/platforms"
 import { getPresence, getWebsite, type Presence } from "@/lib/presence"
 import { allowed, callerOf } from "@/lib/rate-limit"
 import { getSession } from "@/lib/session"
 import { profileTag, USERS_TAG, usernameTag } from "@/lib/tags"
+import { type Allowance, allowanceOf } from "@/lib/trust"
 import { claimUsername, holderOf } from "@/lib/username"
 import { usernameProblem } from "@/lib/username-rules"
 import { SITE, visitDriver, visitsEnabled } from "@/lib/visit-store"
@@ -267,24 +268,43 @@ export async function saveCard(input: unknown): Promise<SaveResult> {
     .from(users)
     .where(eq(users.id, user.id))
   if (!row?.username) throw new Error(`saveCard: no user ${user.id}`)
+  const all = await db
+    .select({
+      id: links.id,
+      platform: links.platform,
+      value: links.value,
+      public: links.public,
+      custom_data: links.custom_data,
+    })
+    .from(links)
+    .where(eq(links.user_id, user.id))
   // The card's links only: a short link off the card is its list's, never
   // touched here.
-  const owned = (
-    await db
-      .select({
-        id: links.id,
-        platform: links.platform,
-        public: links.public,
-        custom_data: links.custom_data,
-      })
-      .from(links)
-      .where(eq(links.user_id, user.id))
-  ).filter(onCard)
+  const owned = all.filter(onCard)
   const named = new Set(card.links.flatMap((l) => (l.id ? [l.id] : [])))
   for (const id of named)
     if (!owned.some((l) => l.id === id))
       throw new Error(`saveCard: link ${id} is not on ${user.id}'s card`)
   const renamed = card.handle !== row.username
+
+  // What goes somewhere new is asked of Web Risk (lib/link-safety).
+  const fresh = card.links.filter(
+    (l) => l.value !== owned.find((o) => o.id === l.id)?.value,
+  )
+  const refused = await refusedDestination(fresh)
+  if (refused) return { ok: false, errors: { links: refused } }
+  // A link of their own the card adds counts towards what they may keep
+  // (lib/trust), its short links with it.
+  const added = card.links.filter((l) => l.platform === "link" && !l.id).length
+  if (added > 0) {
+    const allowance = await allowanceOf(user.id)
+    const gone = owned.filter(
+      (o) => o.platform === "link" && !named.has(o.id),
+    ).length
+    const kept = all.filter((l) => l.platform === "link").length - gone
+    if (kept + added > allowance.most)
+      return { ok: false, errors: { links: reached(allowance) } }
+  }
 
   try {
     await db.transaction(async (tx) => {
@@ -320,6 +340,8 @@ export async function saveCard(input: unknown): Promise<SaveResult> {
           note: link.note || null,
           custom_data: { ...read, highlight: link.highlight || undefined },
           slug: own ? link.slug.toLowerCase() : null,
+          ...(ANYWHERE.includes(link.platform) &&
+            fresh.includes(link) && { checked_at: new Date() }),
         }
         if (link.id)
           await tx.update(links).set(fields).where(eq(links.id, link.id))
@@ -372,24 +394,41 @@ function onCard(link: { platform: string; public: boolean }) {
 const dayOf = (at: Date | null) => (at ? at.toISOString().slice(0, 10) : "")
 
 /** The signed-in user's short links, every link of their own, on the card or
- *  not, newest first. */
-export async function myShortLinks(): Promise<KeptShortLink[]> {
+ *  not, newest first, and how many they may keep (lib/trust). */
+export async function myShortLinks(): Promise<{
+  links: KeptShortLink[]
+  allowance: Allowance
+}> {
   const user = await requireUser()
-  const rows = await db
-    .select()
-    .from(links)
-    .where(and(eq(links.user_id, user.id), eq(links.platform, "link")))
-    .orderBy(desc(links.order))
-  return rows.map((l) => ({
-    id: l.id,
-    value: l.value ?? "",
-    slug: l.slug ?? "",
-    label: l.label ?? "",
-    expires: dayOf(l.expires_at),
-    maxVisits: l.max_visits,
-    public: l.public,
-    visits: l.visits,
-  }))
+  const [rows, allowance] = await Promise.all([
+    db
+      .select()
+      .from(links)
+      .where(and(eq(links.user_id, user.id), eq(links.platform, "link")))
+      .orderBy(desc(links.order)),
+    allowanceOf(user.id),
+  ])
+  return {
+    links: rows.map((l) => ({
+      id: l.id,
+      value: l.value ?? "",
+      slug: l.slug ?? "",
+      label: l.label ?? "",
+      expires: dayOf(l.expires_at),
+      maxVisits: l.max_visits,
+      public: l.public,
+      visits: l.visits,
+      stopped: l.stopped_why,
+    })),
+    allowance,
+  }
+}
+
+/** Words for an allowance reached: why, and when it grows. */
+function reached(allowance: Allowance): string {
+  return allowance.next
+    ? `${allowance.why} ${allowance.next.most} from ${allowance.next.on}.`
+    : allowance.why
 }
 
 export type ShortLinkResult =
@@ -398,9 +437,11 @@ export type ShortLinkResult =
 
 /** Writes one of the signed-in user's short links, a new one (`id` null) or
  *  theirs: checked with the schema the list writes it with (lib/card-edit). A
- *  new one goes last on the card when it is on it. Refused past
- *  MOST_SHORT_LINKS, past MOST_ON_CARD links on the card, or at a name they
- *  already use. The API's writes come through here too, when there is one. */
+ *  new one goes last on the card when it is on it. Refused past what they may
+ *  keep (lib/trust), past MOST_ON_CARD links on the card, at a name they already
+ *  use, or where Web Risk lists where it goes (lib/link-safety). One taken down
+ *  stays down: it can be deleted, not changed. The API's writes come through
+ *  here too, when there is one. */
 export async function saveShortLink(input: unknown): Promise<ShortLinkResult> {
   const user = await requireUser()
   const parsed = shortLinkSchema.safeParse(input)
@@ -410,8 +451,10 @@ export async function saveShortLink(input: unknown): Promise<ShortLinkResult> {
     .select({
       id: links.id,
       platform: links.platform,
+      value: links.value,
       public: links.public,
       order: links.order,
+      stopped: links.stopped_why,
     })
     .from(links)
     .where(eq(links.user_id, user.id))
@@ -420,14 +463,23 @@ export async function saveShortLink(input: unknown): Promise<ShortLinkResult> {
     throw new Error(
       `saveShortLink: ${a.id} is not a short link of ${user.id}'s`,
     )
-  if (
-    !a.id &&
-    owned.filter((l) => l.platform === "link").length >= MOST_SHORT_LINKS
-  )
+  if (was?.stopped)
     return {
       ok: false,
-      errors: { slug: `You keep ${MOST_SHORT_LINKS} short links at most.` },
+      errors: { value: "This link was taken down: it can only be deleted." },
     }
+  if (!a.id) {
+    const allowance = await allowanceOf(user.id)
+    if (owned.filter((l) => l.platform === "link").length >= allowance.most)
+      return { ok: false, errors: { slug: reached(allowance) } }
+  }
+  const checked = a.value !== was?.value
+  if (checked) {
+    const refused = await refusedDestination([
+      { platform: "link", value: a.value },
+    ])
+    if (refused) return { ok: false, errors: { value: refused } }
+  }
   const onCardNow = owned.filter((l) => l.public && l.id !== a.id).length
   if (a.public && onCardNow >= MOST_ON_CARD)
     return {
@@ -444,6 +496,7 @@ export async function saveShortLink(input: unknown): Promise<ShortLinkResult> {
     expires_at: a.expires ? new Date(`${a.expires}T23:59:59.999Z`) : null,
     max_visits: a.maxVisits,
     public: a.public,
+    ...(checked && { checked_at: new Date() }),
   }
   let id = a.id
   try {
@@ -475,7 +528,13 @@ export async function saveShortLink(input: unknown): Promise<ShortLinkResult> {
     .where(eq(links.id, id))
   return {
     ok: true,
-    link: { ...a, id, slug: fields.slug, visits: row?.visits ?? 0 },
+    link: {
+      ...a,
+      id,
+      slug: fields.slug,
+      visits: row?.visits ?? 0,
+      stopped: null,
+    },
   }
 }
 
@@ -664,9 +723,19 @@ export async function claimDraft(draft: Written): Promise<Claimed> {
     if (had)
       await db.update(links).set({ public: true }).where(eq(links.id, had.id))
   }
-  const added = drafted.filter(
-    (l) => !owned.some((o) => o.platform === l.platform),
-  )
+  // One Web Risk lists is left off the card, not the sign-up refused with it
+  // (lib/link-safety): the person finishes signing up and adds what they can.
+  const added = (
+    await Promise.all(
+      drafted
+        .filter((l) => !owned.some((o) => o.platform === l.platform))
+        .map(async (l) =>
+          (await refusedDestination([{ ...l, value: l.value.trim() }]))
+            ? []
+            : [l],
+        ),
+    )
+  ).flat()
   if (added.length > 0)
     await db.insert(links).values(
       added.map((link, i) => ({
@@ -676,6 +745,7 @@ export async function claimDraft(draft: Written): Promise<Claimed> {
         value: link.value.trim(),
         public: true,
         order: owned.length + i,
+        ...(ANYWHERE.includes(link.platform) && { checked_at: new Date() }),
       })),
     )
   updateTag(USERS_TAG)
@@ -707,4 +777,22 @@ export async function ownStats(): Promise<OwnStats | null> {
     hits: report.hits,
     detail: isAdmin(session.user.id) ? report : null,
   }
+}
+
+/** An admin taking a link down (it opens nothing and leaves the card) or
+ *  putting it back up, whatever took it down. Anyone else: a throw. */
+export async function setLinkUp(id: string, up: boolean): Promise<void> {
+  const user = await requireUser()
+  if (!isAdmin(user.id)) throw new Error(`setLinkUp: ${user.id} is no admin`)
+  const [row] = await db
+    .update(links)
+    .set(
+      up
+        ? { stopped_at: null, stopped_why: null }
+        : { stopped_at: new Date(), stopped_why: "admin" },
+    )
+    .where(eq(links.id, id))
+    .returning({ owner: links.user_id })
+  if (!row) throw new Error(`setLinkUp: no link ${id}`)
+  if (row.owner) updateTag(profileTag(row.owner))
 }

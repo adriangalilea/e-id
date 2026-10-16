@@ -19,7 +19,8 @@ import { usernameProblem } from "@/lib/username-rules"
 /** The most links a card shows: about two rows of its marks. */
 export const MOST_ON_CARD = 12
 
-/** The most short links one person keeps. */
+/** The most links of their own one person keeps, short links and the card's
+ *  together, once their account has earned it (lib/trust). */
 export const MOST_SHORT_LINKS = 200
 
 /** What a short link must be, wherever it is written: where it sends people (a
@@ -190,7 +191,13 @@ export const shortLinkSchema = z
 export type ShortLink = z.input<typeof shortLinkSchema>
 
 /** A short link as the list shows it: as written, and how many times it opened. */
-export type KeptShortLink = ShortLink & { id: string; visits: number }
+/** A short link as kept: its opens, and why it was taken down (a Web Risk
+ *  threat, or "admin"; lib/web-risk), null while it is up. */
+export type KeptShortLink = ShortLink & {
+  id: string
+  visits: number
+  stopped: string | null
+}
 
 /** The card as it is being written (untrimmed). */
 export type CardEdit = z.input<typeof cardEditSchema>

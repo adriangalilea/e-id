@@ -1,6 +1,6 @@
 import "server-only"
 
-import { and, asc, desc, eq, isNotNull, ne, sql } from "drizzle-orm"
+import { and, asc, desc, eq, isNotNull, isNull, ne, sql } from "drizzle-orm"
 import { cacheLife, cacheTag } from "next/cache"
 import { db } from "@/db"
 import {
@@ -90,7 +90,8 @@ export function byLinkOrder(a: SelectLink, b: SelectLink) {
   return (a.order ?? Infinity) - (b.order ?? Infinity)
 }
 
-/** What a visitor sees: public links that carry a value, in order. */
+/** What a visitor sees: public links that carry a value, in order, none taken
+ *  down (lib/web-risk). */
 export async function getPublicLinks(userId: string): Promise<SelectLink[]> {
   "use cache"
   cacheLife("max")
@@ -99,13 +100,44 @@ export async function getPublicLinks(userId: string): Promise<SelectLink[]> {
   const rows = await db
     .select()
     .from(links)
-    .where(and(eq(links.user_id, userId), eq(links.public, true)))
+    .where(
+      and(
+        eq(links.user_id, userId),
+        eq(links.public, true),
+        isNull(links.stopped_at),
+      ),
+    )
   return rows.filter((link) => link.value).sort(byLinkOrder)
+}
+
+/** One of a person's own links as its preview tells it (`/you/<name>+`): where
+ *  it goes and whether it still opens, read without using an open. Null where
+ *  they have none at that name. */
+export async function readOwnLink(userId: string, slug: string) {
+  const [row] = await db
+    .select({
+      value: links.value,
+      expires_at: links.expires_at,
+      max_visits: links.max_visits,
+      visits: links.visits,
+      checked_at: links.checked_at,
+      stopped_why: links.stopped_why,
+    })
+    .from(links)
+    .where(
+      and(
+        eq(links.user_id, userId),
+        eq(links.slug, slug.toLowerCase()),
+        eq(links.platform, "link"),
+      ),
+    )
+    .limit(1)
+  return row ?? null
 }
 
 /** Where one of a person's own links (`/you/<slug>`) goes, and the open counted;
  *  null where they have none at that name or it has stopped opening (past its
- *  day, out of opens). One write, uncached: the count and the check are one
+ *  day, out of opens, taken down). One write, uncached: the count and the check are one
  *  statement, so a one-use link opened twice at once opens once. `count` false
  *  (a crawler: a link preview fetching what was pasted) reads it without using an
  *  open, or a preview would spend a one-use link before its person arrived. */
@@ -118,6 +150,7 @@ export async function openOwnLink(
     eq(links.user_id, userId),
     eq(links.slug, slug.toLowerCase()),
     eq(links.platform, "link"),
+    isNull(links.stopped_at),
     sql`(${links.expires_at} IS NULL OR ${links.expires_at} > unixepoch())`,
     sql`(${links.max_visits} IS NULL OR ${links.visits} < ${links.max_visits})`,
   )

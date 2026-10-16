@@ -87,6 +87,10 @@ export function asLinks(links: DraftLink[]): SelectLink[] {
     expires_at: null,
     max_visits: null,
     visits: 0,
+    created_at: null,
+    checked_at: null,
+    stopped_at: null,
+    stopped_why: null,
   }))
 }
 

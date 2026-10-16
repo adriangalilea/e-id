@@ -34,6 +34,7 @@ import {
   shortLinkSchema,
 } from "@/lib/card-edit"
 import { linkCode } from "@/lib/link-names"
+import { takenDown } from "@/lib/threats"
 import { hostOf } from "@/lib/web-preview-facts"
 
 // YOUR SHORT LINKS: the links of your own you hand out, `/you/<name>`, each
@@ -52,11 +53,11 @@ const DAY = new Intl.DateTimeFormat("en-US", {
 })
 
 /** Whether a short link still opens, as the route decides it (app/[username]/[link]):
- *  before the end of its day, and with opens left. */
+ *  up, before the end of its day, and with opens left. */
 function opens(a: KeptShortLink, now: number) {
   const before = !a.expires || Date.parse(`${a.expires}T23:59:59.999Z`) > now
   const left = a.maxVisits === null || a.visits < a.maxVisits
-  return before && left
+  return !a.stopped && before && left
 }
 
 /** What a short link says of itself under its name: where it goes, how often it
@@ -64,7 +65,8 @@ function opens(a: KeptShortLink, now: number) {
 function said(a: KeptShortLink, now: number): string {
   const parts = [hostOf(a.value)]
   parts.push(a.visits === 1 ? "opened once" : `opened ${a.visits} times`)
-  if (!opens(a, now)) parts.push("stopped")
+  if (a.stopped) parts.push(takenDown(a.stopped))
+  else if (!opens(a, now)) parts.push("stopped")
   else {
     if (a.expires) parts.push(`until ${DAY.format(new Date(a.expires))}`)
     if (a.maxVisits !== null)
@@ -81,12 +83,17 @@ function said(a: KeptShortLink, now: number): string {
 /** The button beside share and edit, and the list it opens. */
 export function ShortLinks({ username }: { username: string }) {
   const [open, setOpen] = useState(false)
-  const [kept, setKept] = useState<KeptShortLink[] | null>(null)
+  const [mine, setMine] = useState<Awaited<
+    ReturnType<typeof myShortLinks>
+  > | null>(null)
   /** The short link being written: one of `kept` by id, "new", or none. */
   const [editing, setEditing] = useState<string | null>(null)
-  const load = () => myShortLinks().then(setKept)
+  const load = () => myShortLinks().then(setMine)
   const [form] = useAddressForm()
   const now = Date.now()
+  const kept = mine?.links ?? null
+  const allowance = mine?.allowance
+  const full = kept !== null && allowance && kept.length >= allowance.most
   const writing =
     editing === "new"
       ? null
@@ -132,12 +139,22 @@ export function ShortLinks({ username }: { username: string }) {
                 <Button
                   variant="outline"
                   icon={<Plus strokeWidth={1.5} />}
+                  disabled={mine === null || Boolean(full)}
                   onClick={() => setEditing("new")}
                 >
                   new short link
                 </Button>
                 {kept !== null && kept.length > 0 && <AddressFormPicker />}
               </div>
+              {/* What they may keep, said only once it holds them back
+                  (lib/trust): why, and when it grows. */}
+              {full && allowance && (
+                <p className="text-foreground/55 text-xs">
+                  {allowance.why}
+                  {allowance.next &&
+                    ` ${allowance.next.most} from ${DAY.format(new Date(allowance.next.on))}.`}
+                </p>
+              )}
               {kept === null ? null : kept.length === 0 ? (
                 <p className="text-muted-foreground text-sm">
                   None yet: a CV, a talk, a file, anything you send people to.
