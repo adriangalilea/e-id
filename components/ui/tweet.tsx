@@ -18,9 +18,10 @@ export interface TweetProps {
   className?: string
 }
 
-const LINK = "text-[#1d9bf0] hover:underline"
-const MUTED = "text-foreground/55"
-const ANCHOR = { target: "_blank", rel: "noopener noreferrer" } as const
+// X's own words for its parts, shared with what else draws X (`x-profile`).
+export const LINK = "text-[#1d9bf0] hover:underline"
+export const MUTED = "text-foreground/55"
+export const ANCHOR = { target: "_blank", rel: "noopener noreferrer" } as const
 
 const DATE = new Intl.DateTimeFormat("en", {
   month: "short",
@@ -36,7 +37,11 @@ const BADGE: Record<NonNullable<TweetAuthor["verified"]>, string> = {
   government: "#829aab",
 }
 
-function Verified({ kind }: { kind: NonNullable<TweetAuthor["verified"]> }) {
+export function Verified({
+  kind,
+}: {
+  kind: NonNullable<TweetAuthor["verified"]>
+}) {
   return (
     <svg
       data-slot="tweet-verified"
@@ -57,7 +62,7 @@ function Verified({ kind }: { kind: NonNullable<TweetAuthor["verified"]> }) {
   )
 }
 
-function XMark() {
+export function XMark() {
   return (
     <svg viewBox="0 0 24 24" className="size-5" aria-hidden="true">
       <path
@@ -68,7 +73,14 @@ function XMark() {
   )
 }
 
-function Body({ runs, className }: { runs: TweetRun[]; className?: string }) {
+/** Text on X: its runs, the links in X's blue. A post's body, a profile's bio. */
+export function XText({
+  runs,
+  className,
+}: {
+  runs: TweetRun[]
+  className?: string
+}) {
   return (
     <p
       data-slot="tweet-body"
@@ -214,7 +226,7 @@ function Quote({ tweet }: { tweet: TweetFacts }) {
           <time dateTime={tweet.date}>{DATE.format(new Date(tweet.date))}</time>
         </a>
       </div>
-      {tweet.body.length > 0 && <Body runs={tweet.body} />}
+      {tweet.body.length > 0 && <XText runs={tweet.body} />}
       {tweet.media.length > 0 && <Media media={tweet.media} url={tweet.url} />}
       {tweet.card && <WebPreview facts={tweet.card} style="x" />}
     </Panel>
@@ -247,7 +259,7 @@ export function Tweet({ tweet, className }: TweetProps) {
           </a>
         </header>
         {tweet.body.length > 0 && (
-          <Body runs={tweet.body} className="text-[17px] leading-6" />
+          <XText runs={tweet.body} className="text-[17px] leading-6" />
         )}
         {tweet.media.length > 0 && (
           <Media media={tweet.media} url={tweet.url} />
