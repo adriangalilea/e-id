@@ -360,9 +360,11 @@ function sendmeRun(bin: string, args: string[], cwd: string): Promise<void> {
   })
 }
 
-/** A question for the person at the terminal, on stderr so stdout stays the answer. */
+/** A question for the person at the terminal, on stderr so stdout stays the answer.
+ *  Ctrl-C at it is Ctrl-C, which readline would otherwise swallow. */
 async function ask(question: string): Promise<string> {
   const rl = createInterface({ input: process.stdin, output: process.stderr })
+  rl.on("SIGINT", () => process.kill(process.pid, "SIGINT"))
   try {
     return (await rl.question(question)).trim()
   } finally {
@@ -370,22 +372,86 @@ async function ask(question: string): Promise<string> {
   }
 }
 
-/** Who sends what, as asked before taking it: "Ada Lovelace @ada: notes.zip (2.4MB)". */
-const offered = (
-  from: { username: string; name: string | null },
-  file: { name: string; size: number },
-) =>
-  `${from.name ? `${ui.head(from.name)} ` : ""}${ui.accent(`@${from.username}`)}${ui.muted(":")} ${file.name} ${ui.muted(`(${BYTES.format(file.size)})`)}`
+/** A question whose answer is never shown as it is typed (a password): read key by
+ *  key with the terminal in raw mode, so it is in no scrollback and no recording. */
+function askHidden(question: string): Promise<string> {
+  const input = process.stdin
+  process.stderr.write(question)
+  input.setRawMode(true)
+  input.resume()
+  return new Promise((done) => {
+    let typed: string[] = []
+    const finish = () => {
+      input.off("data", onKey)
+      input.setRawMode(false)
+      input.pause()
+      process.stderr.write("\n")
+    }
+    const onKey = (chunk: Buffer) => {
+      for (const c of chunk.toString("utf8")) {
+        if (c === "\u0003") {
+          finish()
+          process.kill(process.pid, "SIGINT")
+          return
+        }
+        if (c === "\r" || c === "\n") {
+          finish()
+          done(typed.join(""))
+          return
+        }
+        typed =
+          c === "\u007f" || c === "\b" ? typed.slice(0, -1) : [...typed, c]
+      }
+    }
+    input.on("data", onKey)
+  })
+}
+
+/** A path as a person reads it: under their home, from ~. */
+const fromHome = (path: string) =>
+  path === homedir() || path.startsWith(`${homedir()}/`)
+    ? `~${path.slice(homedir().length)}`
+    : path
+
+const RELATIVE = new Intl.RelativeTimeFormat("en", { numeric: "auto" })
+
+/** When, from now: "just now", "5 minutes ago", "yesterday". */
+function ago(iso: string): string {
+  const seconds = (Date.parse(iso) - Date.now()) / 1000
+  const far = Math.abs(seconds)
+  if (far < 60) return "just now"
+  const [n, unit]: [number, Intl.RelativeTimeFormatUnit] =
+    far < 3600
+      ? [seconds / 60, "minute"]
+      : far < 86400
+        ? [seconds / 3600, "hour"]
+        : [seconds / 86400, "day"]
+  return RELATIVE.format(Math.round(n), unit)
+}
+
+/** Who a send is from: "Ada Lovelace @ada", or "@ada" with no name on their card. */
+const fromWhom = (from: { username: string; name: string | null }) =>
+  `${from.name ? `${ui.head(from.name)} ` : ""}${ui.accent(`@${from.username}`)}`
+
+/** Said before sendme is fetched, the first time a machine needs it. */
+const fetchingSendme = () =>
+  console.error(ui.muted("  fetching sendme, once (about 4 MB)"))
 
 type Taken = { file: string; size: number; path: string; from: string }
 
 /** A send taken: its ticket asked for (with this machine's key where it has one, so a
  *  send for its person is given; with the password where it has one), who sends what
- *  shown and asked about unless `yes`, the file brought into `dir` with sendme, and,
- *  for a send addressed to this person, e-ID told it came. Null where it is declined. */
+ *  and where it goes shown (on stderr; not under `json` when nothing is asked), asked
+ *  about unless `yes`, the file brought into `dir` with sendme, and, for a send
+ *  addressed to this person, e-ID told it came. Null where it is declined. */
 async function take(
   address: string,
-  o: { dir: string; yes: boolean; password: string | undefined },
+  o: {
+    dir: string
+    yes: boolean
+    password: string | undefined
+    json: boolean
+  },
 ): Promise<Taken | null> {
   const at = sendAt(address)
   const key = readConfig()?.key
@@ -399,33 +465,45 @@ async function take(
     } catch (error) {
       if ((error as Said).code !== "password" || !process.stdin.isTTY)
         throw error
-      if (password) console.error(ui.bad("not the password"))
-      password = await ask(`password for ${at.username}/${at.name}: `)
+      if (password) console.error(`  ${ui.bad("not the password")}`)
+      password = await askHidden(`  password for ${at.username}/${at.name}: `)
     }
   }
+  const target = join(o.dir, send.file.name)
+  if (!o.json || !o.yes)
+    console.error(
+      `\n${kv(
+        [
+          ["from", fromWhom({ username: send.from, name: send.fromName })],
+          [
+            "file",
+            `${send.file.name}  ${ui.muted(BYTES.format(send.file.size))}`,
+          ],
+          ["into", fromHome(o.dir)],
+        ],
+        { indent: 2 },
+      )}\n`,
+    )
+  if (existsSync(target))
+    throw new Said(
+      `${fromHome(target)} is already there: --dir somewhere else`,
+      "exists",
+    )
   if (!o.yes) {
     if (!process.stdin.isTTY)
       throw new Said(
         `${at.username}/${at.name} is ${send.file.name} from @${send.from}: say --yes to take it without a terminal to ask in`,
         "unconfirmed",
       )
-    console.error(
-      offered({ username: send.from, name: send.fromName }, send.file),
-    )
-    if (!/^y(es)?$/i.test(await ask("take it? (y/N) "))) {
-      console.error(ui.muted("left where it is"))
+    if (!/^y(es)?$/i.test(await ask("  take it? (y/N) "))) {
+      console.error(ui.muted("  left where it is"))
       return null
     }
   }
-  const target = join(o.dir, send.file.name)
-  if (existsSync(target))
-    throw new Said(`${target} is already there: --dir somewhere else`, "exists")
   mkdirSync(o.dir, { recursive: true })
-  const bin = await sendme(() =>
-    console.error(ui.muted("fetching sendme, once (about 4 MB)…")),
-  )
+  const bin = await sendme(fetchingSendme)
   await spinner(
-    `getting ${send.file.name} (${BYTES.format(send.file.size)}) from ${send.from}`,
+    `${send.file.name} ${ui.muted(BYTES.format(send.file.size))}`,
     () => sendmeRun(bin, ["receive", send.ticket, "--no-progress"], o.dir),
   )
   // The file is here: its sender sees it live, and a send for this person leaves
@@ -435,7 +513,7 @@ async function take(
     (error: unknown) => {
       if (!(error instanceof Said)) throw error
       console.error(
-        ui.muted(`the sender was not told it came: ${error.message}`),
+        ui.muted(`  the sender was not told it came: ${error.message}`),
       )
     },
   )
@@ -567,9 +645,7 @@ const RUN: Record<CommandName, (c: Context) => Promise<void>> = {
       size: stat.isDirectory() ? sizeOf(path) : stat.size,
     }
     const { key, username } = await session()
-    const bin = await sendme(() =>
-      console.error(ui.muted("fetching sendme, once (about 4 MB)…")),
-    )
+    const bin = await sendme(fetchingSendme)
     const work = mkdtempSync(join(tmpdir(), "eid-send-"))
     const child = spawn(bin, ["send", path, "--no-progress"], {
       cwd: work,
@@ -678,7 +754,10 @@ const RUN: Record<CommandName, (c: Context) => Promise<void>> = {
         await sleep(5000)
         continue
       }
+      // Ids only increase: one at or before the last printed is an answer that
+      // reached here twice, never a new event.
       for (const e of answered.events) {
+        if (e.id <= after) continue
         after = e.id
         if (json) console.log(JSON.stringify(e))
         else
@@ -688,28 +767,38 @@ const RUN: Record<CommandName, (c: Context) => Promise<void>> = {
       }
     }
   },
-  async get({ rest, values, out }) {
+  async get({ rest, values, out, json }) {
     const [address] = rest
     if (!address) throw new Said("eid get <address>", "usage")
     const got = await take(address, {
       dir: resolve(values.dir ?? "."),
       yes: values.yes === true,
       password: values.password,
+      json,
     })
     if (!got) return out({ taken: false, address }, () => {})
-    out(got, () => console.log(`${ui.ok("got")} ${got.path}`))
+    out(got, () => console.log(`  saved to ${fromHome(got.path)}\n`))
   },
   async inbox({ values, out, session, json }) {
     const { key } = await session()
-    const shown = (w: Waiting) =>
-      `${offered(w.from, w.file)}  ${ui.muted(`eid get ${w.address} · since ${w.since.slice(0, 16).replace("T", " ")}`)}`
     if (!values.watch) {
       const inbox = await api<Inbox>("/inbox", { key })
       return out(inbox, () =>
         console.log(
           inbox.waiting.length === 0
-            ? ui.muted("Nothing waiting for you.")
-            : inbox.waiting.map(shown).join("\n"),
+            ? ui.muted("  Nothing waiting for you.")
+            : `\n${indent(
+                table(
+                  inbox.waiting.map((w: Waiting) => [
+                    fromWhom(w.from),
+                    w.file.name,
+                    ui.muted(BYTES.format(w.file.size)),
+                    ui.muted(ago(w.since)),
+                    ui.muted(`eid get ${w.address}`),
+                  ]),
+                ),
+                2,
+              )}\n`,
         ),
       )
     }
@@ -722,17 +811,37 @@ const RUN: Record<CommandName, (c: Context) => Promise<void>> = {
     const dir = resolve(values.dir ?? ".")
     const seen = new Set<string>()
     let after: string | undefined
-    if (!json)
+    if (!json) {
       console.error(
         ui.muted(
-          `waiting for sends to you${accepted.size ? `, taking ${[...accepted].join(", ")}'s without asking` : ""} (Ctrl-C to stop)`,
+          `\n  waiting for sends to you · into ${fromHome(dir)} · Ctrl-C to stop`,
         ),
       )
+      if (accepted.size)
+        console.error(
+          ui.muted(
+            `  taking what ${[...accepted].map((p) => `@${p}`).join(", ")} send without asking`,
+          ),
+        )
+      process.on("SIGINT", () => {
+        console.error(ui.muted("\n  stopped watching"))
+        process.exit(0)
+      })
+    }
     for (;;) {
+      // A question that fails (the network gone a moment) is asked again a little
+      // later; a key that stopped working ends the watch.
       const inbox = await api<Inbox>(
         `/inbox?wait=25${after ? `&after=${encodeURIComponent(after)}` : ""}`,
         { key },
-      )
+      ).catch((error: unknown) => {
+        if (error instanceof Said && error.code === "unauthorized") throw error
+        return null
+      })
+      if (!inbox) {
+        await sleep(5000)
+        continue
+      }
       after = inbox.now
       // Oldest first, as they arrived; one shown before is not shown again.
       for (const w of [...inbox.waiting].reverse()) {
@@ -742,20 +851,19 @@ const RUN: Record<CommandName, (c: Context) => Promise<void>> = {
           console.log(JSON.stringify(w))
           continue
         }
-        const known = accepted.has(w.from.username.toLowerCase())
-        if (known) console.error(shown(w))
         const got = await take(w.address, {
           dir,
-          yes: known,
+          yes: accepted.has(w.from.username.toLowerCase()),
           password: undefined,
+          json,
         }).catch((error: unknown) => {
           // One send that cannot be taken (its sender stopped, a file of that name
           // here already) is said, and the watch goes on.
           if (!(error instanceof Said)) throw error
-          console.error(ui.bad(`${w.address}: ${error.message}`))
+          console.error(`  ${ui.bad(`${w.address}: ${error.message}`)}`)
           return null
         })
-        if (got) console.log(`${ui.ok("got")} ${got.path}`)
+        if (got) console.log(`  saved to ${fromHome(got.path)}`)
       }
     }
   },
