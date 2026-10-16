@@ -131,12 +131,6 @@ export async function openOwnLink(
   return row?.value ?? null
 }
 
-/** Every link of a user, private and empty ones included: the editor's. */
-export async function getAllLinks(userId: string): Promise<SelectLink[]> {
-  const rows = await db.select().from(links).where(eq(links.user_id, userId))
-  return rows.sort(byLinkOrder)
-}
-
 export type Testimonial = {
   commentId: string
   body: string

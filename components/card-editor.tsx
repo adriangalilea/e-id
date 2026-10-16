@@ -272,8 +272,6 @@ const BLANK_LINK = (platform: LinkPlatform): EditLink => ({
   // A link of your own gets an address at once, a made-up one its owner can
   // rename (lib/link-names).
   slug: platform === "link" ? linkCode() : "",
-  expires: "",
-  maxVisits: null,
   visits: 0,
 })
 
@@ -289,16 +287,7 @@ function LinksField({ form }: { form: CardForm }) {
     s.values.links
       .map((_, i) =>
         (
-          [
-            "value",
-            "label",
-            "note",
-            "highlight",
-            "slug",
-            "expires",
-            "maxVisits",
-            "public",
-          ] as const
+          ["value", "label", "note", "highlight", "slug", "public"] as const
         ).some((field) => errorAt(s, `links.${i}.${field}`) !== undefined)
           ? "1"
           : "0",

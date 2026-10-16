@@ -243,10 +243,6 @@ export async function cardToEdit(): Promise<CardEdit> {
       highlight: link.custom_data?.highlight ?? "",
       public: link.public,
       slug: link.slug ?? "",
-      expires: link.expires_at
-        ? link.expires_at.toISOString().slice(0, 10)
-        : "",
-      maxVisits: link.max_visits,
       visits: link.visits,
     })),
   }
@@ -269,8 +265,8 @@ export async function saveCard(input: unknown): Promise<SaveResult> {
     .from(users)
     .where(eq(users.id, user.id))
   if (!row?.username) throw new Error(`saveCard: no user ${user.id}`)
-  // The card's links only: an address off the card is the addresses' list's,
-  // never touched here.
+  // The card's links only: a short link off the card is its list's, never
+  // touched here.
   const owned = (
     await db
       .select({
@@ -322,12 +318,6 @@ export async function saveCard(input: unknown): Promise<SaveResult> {
           note: link.note || null,
           custom_data: { ...read, highlight: link.highlight || undefined },
           slug: own ? link.slug.toLowerCase() : null,
-          // Through the day it names, in UTC.
-          expires_at:
-            own && link.expires
-              ? new Date(`${link.expires}T23:59:59.999Z`)
-              : null,
-          max_visits: own ? link.maxVisits : null,
         }
         if (link.id)
           await tx.update(links).set(fields).where(eq(links.id, link.id))

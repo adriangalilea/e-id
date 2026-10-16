@@ -229,12 +229,5 @@ export const releasedNames = sqliteTable("released_name", {
   until: integer("until", { mode: "timestamp" }).notNull(),
 })
 
-// Type exports
-export type InsertUser = typeof users.$inferInsert
-export type SelectUser = typeof users.$inferSelect
-
-export type InsertComment = typeof comments.$inferSelect
 export type SelectComment = typeof comments.$inferSelect
-
-export type InsertLink = typeof links.$inferInsert
 export type SelectLink = typeof links.$inferSelect

@@ -30,8 +30,8 @@ function shortLinkIssues(
   l: {
     value: string
     slug: string
-    expires: string
-    maxVisits: number | null
+    expires?: string
+    maxVisits?: number | null
     public: boolean
   },
   ctx: z.RefinementCtx,
@@ -47,7 +47,7 @@ function shortLinkIssues(
     ? "Letters, digits and single hyphens, at most 40."
     : refusedLinkName(slug)
   if (why) ctx.addIssue({ code: "custom", message: why, path: ["slug"] })
-  if ((l.expires || l.maxVisits !== null) && l.public)
+  if ((l.expires || (l.maxVisits ?? null) !== null) && l.public)
     ctx.addIssue({
       code: "custom",
       message: "One that stops opening is never on your card.",
@@ -86,14 +86,10 @@ export const editLinkSchema = z
     /** On the card, the profile and every form of the card (its data, its
      *  contact); off, stored and kept for the owner alone. */
     public: z.boolean(),
-    /** A `link`'s address name, `/you/<slug>`; "" on a platform's. */
+    /** A `link`'s address name, `/you/<slug>`; "" on a platform's. When it
+     *  stops opening is the short links' list's: one that stops is never on
+     *  the card, so a card's link never does. */
     slug: z.string().trim(),
-    /** The day a `link` stops opening (YYYY-MM-DD, through that day, UTC); ""
-     *  for never. Kept in the short links, never on the card: "" here. */
-    expires: EXPIRES,
-    /** How many opens a `link` has before it stops (1: one use); null for no
-     *  end. Kept in the short links, never on the card: null here. */
-    maxVisits: MAX_VISITS,
     /** How many times it has been opened: shown, never written. */
     visits: z.number().int(),
   })
@@ -107,7 +103,7 @@ export const editLinkSchema = z
   })
   .superRefine((l, ctx) => {
     if (l.platform !== "link") {
-      if (l.slug || l.expires || l.maxVisits !== null)
+      if (l.slug)
         ctx.addIssue({
           code: "custom",
           message: "Only a link of your own has an address.",
@@ -209,26 +205,6 @@ export function errorsOf(error: z.ZodError): CardErrors {
   for (const issue of error.issues)
     errors[issue.path.join(".")] ??= issue.message
   return errors
-}
-
-/** The card checked as it is written: its errors, none when it can be saved. */
-export function checkCard(edit: CardEdit): CardErrors {
-  const parsed = cardEditSchema.safeParse(edit)
-  return parsed.success ? {} : errorsOf(parsed.error)
-}
-
-/** The errors of one link on the card, by its field. */
-export function linkErrors(errors: CardErrors, index: number) {
-  const at = (field: keyof EditLink) => errors[`links.${index}.${field}`]
-  return {
-    value: at("value"),
-    label: at("label"),
-    note: at("note"),
-    highlight: at("highlight"),
-    slug: at("slug"),
-    expires: at("expires"),
-    maxVisits: at("maxVisits"),
-  }
 }
 
 /** What saving a card comes back with: the username it is at now, or what is

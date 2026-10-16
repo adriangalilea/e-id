@@ -69,9 +69,8 @@ export const SHORT_DOMAIN = "eid.to"
 export const EMOJI_DOMAIN = "👤.to"
 export const EMOJI_DOMAIN_PUNYCODE = "xn--mq8h.to"
 
-/** The brand's address as people read it, and as browsers send it. Safari shows
- *  the emoji in its address bar, so Safari is served here (next.config). */
-export const EMOJI_URL = `https://${EMOJI_DOMAIN}`
+/** The brand's address as browsers send it. Safari shows the emoji in its
+ *  address bar, so Safari is served here (next.config). */
 export const EMOJI_ORIGIN = `https://${EMOJI_DOMAIN_PUNYCODE}`
 
 /** The card's own files under a person's address (app/[username]/<file>): named
