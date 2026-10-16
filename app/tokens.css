@@ -93,13 +93,14 @@
   mask-image: radial-gradient(white, black);
 }
 
-/* Keyboard focus, as the ring means it: the browser's :focus-visible, less any element
-   whose focus came from a press (ui/focus-source marks it `data-focus-pointer`). The
-   browser alone rings the last thing clicked as soon as any key is pressed; with
-   focus-source mounted it never does, and focus the keyboard moved is always ringed.
-   Tailwind's own `focus-visible:` variant is redefined to the same selector, so every
+/* Keyboard focus, as the ring means it: the browser's :focus-visible, unless the focus
+   the page holds came from a press (ui/focus-source marks the document element
+   `data-focus-pointer`, never the focused one, which React owns). The browser alone
+   rings the last thing clicked as soon as any key is pressed; with focus-source
+   mounted it never does, and focus the keyboard moved is always ringed. Tailwind's
+   own `focus-visible:` variant is redefined to the same selector, so every
    `focus-visible:` utility anywhere means this too. */
-@custom-variant focus-visible (&:focus-visible:not([data-focus-pointer]));
+@custom-variant focus-visible (&:focus-visible:not([data-focus-pointer] *));
 
 /* The scheme an element stands in is the NEAREST one named, on it or above it: a
    control with no scheme of its own inside a light glass on a dark page is light, a
@@ -150,13 +151,13 @@
     scrollbar-color: color-mix(in oklab, currentColor 25%, transparent)
       transparent;
   }
-  :focus-visible:not([data-focus-pointer]) {
+  :focus-visible:not([data-focus-pointer] *) {
     @apply focus-ring;
   }
   /* A press's focus is never ringed, the browser's own outline included: its default
-     `outline: auto` still draws on a marked element once a key (Escape closing a
+     `outline: auto` still draws on focus under the mark once a key (Escape closing a
      popover) makes the browser call focus visible. */
-  [data-focus-pointer]:focus-visible {
+  [data-focus-pointer] :focus-visible {
     outline: none;
   }
   /* tabindex=-1 on what is not a control is where a script puts focus (a dialog, a

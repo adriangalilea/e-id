@@ -1,6 +1,8 @@
+@layer theme, base, components, utilities;
+
 /* The lid's position, a number so a frame-owned lid can transition it (an
-   unregistered custom property flips at once). Declared first: @property cannot sit
-   inside a layer. */
+   unregistered custom property flips at once). Outside the layers: @property cannot
+   sit inside one. */
 @property --device-lid {
   syntax: "<number>";
   inherits: true;
