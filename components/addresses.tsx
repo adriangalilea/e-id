@@ -1,64 +1,99 @@
+"use client"
+
 import { EmojiDomain } from "@/components/brand"
 import { Copy } from "@/components/ui/copy"
-import { EMOJI_DOMAIN, EMOJI_DOMAIN_PUNYCODE, PROD_URL } from "@/lib/const"
+import { useRemembered } from "@/components/ui/remembered"
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
+import { FORM_IDS, FORMS, type FormId, formOf, urlOf } from "@/lib/addresses"
+import { oneOf, setting } from "@/lib/remembered-core"
+import { cn } from "@/lib/utils"
 
-/** A person's e-ID addresses, every form that opens their page, each where it
- *  works best: 👤.to everywhere (next.config sends every browser but Safari on
- *  to e-id.to), e-id.to where an emoji is not welcome, and the emoji domain
- *  spelled out (punycode) for a bio that drops emoji. Each a real link, its
- *  own copy beside it (@ag/copy). One list, the share menu's and the home's. */
-export function addressesOf(username: string) {
-  return [
-    {
-      what: "everywhere",
-      shown: <EmojiDomain path={`/${username}`} />,
-      url: `https://${EMOJI_DOMAIN}/${username}`,
-    },
-    {
-      what: "where emoji are not welcome",
-      shown: `e-id.to/${username}`,
-      url: `${PROD_URL}/${username}`,
-    },
-    {
-      what: "in a bio that drops emoji",
-      shown: `${EMOJI_DOMAIN_PUNYCODE}/${username}`,
-      url: `https://${EMOJI_DOMAIN_PUNYCODE}/${username}`,
-    },
-  ]
+// HANDING OUT AN ADDRESS ON THE DOMAIN IT IS GOING TO (lib/addresses): one choice
+// of domain, remembered for good and the same in every place that copies one (the
+// share menu, the short links), so choosing eid.to once copies eid.to everywhere.
+// The choice is made where the address is, as a clone address's protocol is:
+// the domains in a bar above it, what the chosen one is for under it.
+//
+//   <Address path="/you" />          one address: the bar, the address, its copy
+//   <AddressFormPicker />            the bar alone, over a list of addresses
+//   <AddressText form={id} path />   an address as shown, on a form
+
+const FORM = setting<FormId>("e-id:address-form", {
+  initial: "emoji",
+  keep: "always",
+  parse: oneOf(FORM_IDS),
+})
+
+const isForm = oneOf(FORM_IDS)
+
+/** The domain chosen to copy, and its setter. */
+export function useAddressForm() {
+  return useRemembered(FORM)
 }
 
-/** The addresses as a list: each one a link, what it is for under it, and its
- *  copy. `size` the address's type: the share menu's small, the home's large. */
-export function Addresses({
-  username,
-  size = "sm",
+/** An address as shown on a form: the emoji domain as e-ID writes it (its mark),
+ *  the others as text. */
+export function AddressText({
+  form,
+  path,
+  className,
 }: {
-  username: string
-  size?: "sm" | "lg"
+  form: FormId
+  path: string
+  className?: string
 }) {
+  return form === "emoji" ? (
+    <EmojiDomain path={path} className={className} />
+  ) : (
+    <span className={cn("whitespace-nowrap", className)}>
+      {formOf(form).host}
+      {path}
+    </span>
+  )
+}
+
+/** The domains side by side, the chosen one lit. */
+export function AddressFormPicker({ className }: { className?: string }) {
+  const [form, setForm] = useAddressForm()
   return (
-    <ul className="flex flex-col">
-      {addressesOf(username).map((address) => (
-        <li
-          key={address.url}
-          className="flex items-center gap-3 border-border border-b py-3 last:border-b-0"
-        >
-          <div className="flex min-w-0 grow flex-col gap-1">
-            <a
-              href={address.url}
-              className={
-                size === "lg"
-                  ? "w-fit truncate font-mono text-foreground/90 text-xl underline decoration-foreground/25 underline-offset-[0.3em] transition-colors hover:decoration-foreground/70"
-                  : "w-fit truncate font-mono text-foreground/90 text-sm underline decoration-foreground/25 underline-offset-[0.3em] transition-colors hover:decoration-foreground/70"
-              }
-            >
-              {address.shown}
-            </a>
-            <span className="text-foreground/45 text-xs">{address.what}</span>
-          </div>
-          <Copy value={address.url} label className="rounded-full" />
-        </li>
+    <ToggleGroup
+      size="sm"
+      aria-label="the domain to copy"
+      value={form}
+      onValueChange={(v) => {
+        const id = isForm(v)
+        if (!id) throw new Error(`no address form "${v}"`)
+        setForm(id)
+      }}
+      className={className}
+    >
+      {FORMS.map((f) => (
+        <ToggleGroupItem key={f.id} value={f.id} className="font-mono">
+          {f.id === "emoji" ? <EmojiDomain /> : f.host}
+        </ToggleGroupItem>
       ))}
-    </ul>
+    </ToggleGroup>
+  )
+}
+
+/** One address to hand out: the domains above it, the address on the chosen one
+ *  as a link with its copy, and what that domain is for under it. */
+export function Address({ path }: { path: string }) {
+  const [form] = useAddressForm()
+  const url = urlOf(form, path)
+  return (
+    <div className="flex flex-col gap-2.5">
+      <AddressFormPicker className="self-start" />
+      <div className="flex items-center gap-3">
+        <a
+          href={url}
+          className="min-w-0 grow truncate font-mono text-foreground/90 text-sm underline decoration-foreground/25 underline-offset-[0.3em] transition-colors hover:decoration-foreground/70"
+        >
+          <AddressText form={form} path={path} />
+        </a>
+        <Copy value={url} label className="rounded-full" />
+      </div>
+      <p className="text-foreground/45 text-xs">{formOf(form).for}</p>
+    </div>
   )
 }

@@ -1,7 +1,7 @@
 "use client"
 
 import { Link as LinkIcon } from "lucide-react"
-import { Addresses } from "@/components/addresses"
+import { Address } from "@/components/addresses"
 import { Button } from "@/components/ui/button"
 import { Copy } from "@/components/ui/copy"
 import {
@@ -43,8 +43,8 @@ export default function ShareButton({ username }: { username: string }) {
         share
       </PopoverTrigger>
       <PopoverContent align="end" className="w-80 gap-0 p-0">
-        <div className="border-border border-b px-3">
-          <Addresses username={username} />
+        <div className="border-border border-b p-3">
+          <Address path={`/${username}`} />
         </div>
         {/* The card as a contact (lib/vcard): opened on a phone, it adds you. */}
         <Row name="contact card" value={`${PROD_URL}/${username}.vcf`} />

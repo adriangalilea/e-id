@@ -2,6 +2,11 @@
 
 import { Link2, Plus } from "lucide-react"
 import { useState } from "react"
+import {
+  AddressFormPicker,
+  AddressText,
+  useAddressForm,
+} from "@/components/addresses"
 import { WRITTEN_HERE } from "@/components/card-fields"
 import { Button } from "@/components/ui/button"
 import { Copy } from "@/components/ui/copy"
@@ -22,12 +27,12 @@ import {
 import { InputGroup } from "@/components/ui/input"
 import { Switch } from "@/components/ui/switch"
 import { deleteShortLink, myShortLinks, saveShortLink } from "@/db/actions"
+import { urlOf } from "@/lib/addresses"
 import {
   type KeptShortLink,
   type ShortLink,
   shortLinkSchema,
 } from "@/lib/card-edit"
-import { PROD_URL } from "@/lib/const"
 import { linkCode } from "@/lib/link-names"
 import { hostOf } from "@/lib/web-preview-facts"
 
@@ -35,8 +40,9 @@ import { hostOf } from "@/lib/web-preview-facts"
 // going anywhere, as many as you keep, never on your card unless you put one
 // there (lib/card-edit: the card shows where you are, a short link is what you
 // give out). A list from the profile's owner actions: each its address to copy,
-// where it goes, how often it opened, when it stops; pressed, it opens to be
-// changed; "new short link" adds one, its name made up until you rename it.
+// on the domain chosen above it (components/addresses), where it goes, how often
+// it opened, when it stops; pressed, it opens to be changed; "new short link"
+// adds one, its name made up until you rename it.
 
 const DAY = new Intl.DateTimeFormat("en-US", {
   month: "short",
@@ -79,6 +85,7 @@ export function ShortLinks({ username }: { username: string }) {
   /** The short link being written: one of `kept` by id, "new", or none. */
   const [editing, setEditing] = useState<string | null>(null)
   const load = () => myShortLinks().then(setKept)
+  const [form] = useAddressForm()
   const now = Date.now()
   const writing =
     editing === "new"
@@ -103,9 +110,10 @@ export function ShortLinks({ username }: { username: string }) {
           <DialogHeader>
             <DialogTitle>your short links</DialogTitle>
             <DialogDescription>
-              Links of your own at e-id.to/{username}/…, to hand out. They go
-              anywhere and can stop on a day or after a number of opens; one
-              that never stops can also be on your card.
+              Links of your own at{" "}
+              <AddressText form={form} path={`/${username}/…`} />, to hand out.
+              They go anywhere and can stop on a day or after a number of opens;
+              one that never stops can also be on your card.
             </DialogDescription>
           </DialogHeader>
           {editing !== null ? (
@@ -120,52 +128,82 @@ export function ShortLinks({ username }: { username: string }) {
             />
           ) : (
             <>
-              <Button
-                variant="outline"
-                icon={<Plus strokeWidth={1.5} />}
-                onClick={() => setEditing("new")}
-                className="self-start"
-              >
-                new short link
-              </Button>
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <Button
+                  variant="outline"
+                  icon={<Plus strokeWidth={1.5} />}
+                  onClick={() => setEditing("new")}
+                >
+                  new short link
+                </Button>
+                {kept !== null && kept.length > 0 && <AddressFormPicker />}
+              </div>
               {kept === null ? null : kept.length === 0 ? (
                 <p className="text-muted-foreground text-sm">
                   None yet: a CV, a talk, a file, anything you send people to.
                 </p>
               ) : (
-                <ul className="flex flex-col">
-                  {kept.map((a) => (
-                    <li
-                      key={a.id}
-                      className="flex items-center gap-2 border-border border-t py-2 first:border-t-0"
-                    >
-                      <button
-                        type="button"
-                        onClick={() => setEditing(a.id)}
-                        className="flex min-w-0 flex-1 flex-col items-start rounded-md px-1 py-0.5 text-left transition-colors hover:bg-foreground/[0.04]"
-                      >
-                        <span
-                          className={`font-mono text-sm ${opens(a, now) ? "text-foreground/85" : "text-foreground/40 line-through"}`}
-                        >
-                          /{username}/{a.slug}
-                        </span>
-                        <span className="truncate text-foreground/50 text-xs">
-                          {said(a, now)}
-                        </span>
-                      </button>
-                      <Copy
-                        value={`${PROD_URL}/${username}/${a.slug}`}
-                        className="size-9 shrink-0 rounded-full"
-                      />
-                    </li>
-                  ))}
-                </ul>
+                <ShortLinkList
+                  username={username}
+                  kept={kept}
+                  now={now}
+                  onOpen={setEditing}
+                />
               )}
             </>
           )}
         </DialogContent>
       </Dialog>
     </>
+  )
+}
+
+/** The short links as a list, each its address on the domain chosen to copy
+ *  (components/addresses), what it says of itself, and its copy; pressed, it
+ *  opens to be changed. */
+export function ShortLinkList({
+  username,
+  kept,
+  now,
+  onOpen,
+}: {
+  username: string
+  kept: KeptShortLink[]
+  now: number
+  onOpen: (id: string) => void
+}) {
+  const [form] = useAddressForm()
+  return (
+    <ul className="flex flex-col">
+      {kept.map((a) => {
+        const path = `/${username}/${a.slug}`
+        return (
+          <li
+            key={a.id}
+            className="flex items-center gap-2 border-border border-t py-2 first:border-t-0"
+          >
+            <button
+              type="button"
+              onClick={() => onOpen(a.id)}
+              className="flex min-w-0 flex-1 flex-col items-start rounded-md px-1 py-0.5 text-left transition-colors hover:bg-foreground/[0.04]"
+            >
+              <AddressText
+                form={form}
+                path={path}
+                className={`max-w-full truncate font-mono text-sm ${opens(a, now) ? "text-foreground/85" : "text-foreground/40 line-through"}`}
+              />
+              <span className="max-w-full truncate text-foreground/50 text-xs">
+                {said(a, now)}
+              </span>
+            </button>
+            <Copy
+              value={urlOf(form, path)}
+              className="size-9 shrink-0 rounded-full"
+            />
+          </li>
+        )
+      })}
+    </ul>
   )
 }
 
