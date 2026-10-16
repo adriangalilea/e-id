@@ -75,12 +75,14 @@ export default function Page() {
       </p>
       <h3>Checking where your links go</h3>
       <p>
-        So e-ID&apos;s addresses never lead to phishing or malware, the address
-        your website and your own links point to is checked with Google Safe
-        Browsing when you save it and once a day after. Only that address is
-        sent, nothing about you. A link Google lists stops opening and leaves
-        your card. This is e-ID&apos;s legitimate interest in keeping its
-        addresses safe for everyone who opens them.
+        To keep e-ID&apos;s addresses from leading to phishing or malware, the
+        address your website and your own links point to is checked with Google
+        Safe Browsing when you save it, once a day after, and when someone opens
+        its preview (<code>/you/name+</code>). Only that address is sent,
+        nothing about you or about who looks. A link Google lists stops opening
+        and leaves your card. The check is not perfect: it can miss a bad page,
+        and now and then flag a good one. This is e-ID&apos;s legitimate
+        interest in keeping its addresses safe for everyone who opens them.
       </p>
 
       <h2>How long</h2>

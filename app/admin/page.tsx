@@ -9,7 +9,6 @@ import { links, users } from "@/db/schema"
 import { isAdmin } from "@/lib/env"
 import { ANYWHERE } from "@/lib/link-safety"
 import { getSession } from "@/lib/session"
-import { takenDown } from "@/lib/threats"
 import { pathTree, topPaths } from "@/lib/user-flows-core"
 import { SITE, visitDriver, visitsEnabled } from "@/lib/visit-store"
 import { readOwners, readVisits } from "@/lib/visits"
@@ -101,7 +100,8 @@ async function LinksMade() {
                   l.checked_at
                     ? `checked ${WHEN.format(l.checked_at)}`
                     : "never checked",
-                  l.stopped_why ? takenDown(l.stopped_why) : null,
+                  // The raw reason: an admin's record, never a warning shown.
+                  l.stopped_why ? `taken down: ${l.stopped_why}` : null,
                 ]
                   .filter(Boolean)
                   .join(" · ")}
