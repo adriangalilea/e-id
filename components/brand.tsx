@@ -109,7 +109,10 @@ export function EmojiDomain({
   return (
     <span className={cn("whitespace-nowrap", className)}>
       <span className="relative mr-[0.08em]">
-        <BrandMark className="inline h-[1cap] align-baseline" />
+        {/* A letter, not an icon: `size-` in its class keeps it out of the
+            icon sizing of whatever holds it (a toggle's, a button's
+            `[&_svg:not([class*='size-'])]`), so it stays one cap tall. */}
+        <BrandMark className="inline size-auto h-[1cap] align-baseline" />
         {emoji}
       </span>
       {TLD}
