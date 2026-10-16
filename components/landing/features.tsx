@@ -79,8 +79,27 @@ export async function Features() {
         card: <LiveEmbed key="card" handle={holder.username} compact />,
         code: <EmbedCode username={holder.username} />,
       }}
+      cli={{ session: cliSession(holder.username) }}
     />
   )
+}
+
+/** The CLI at work for `username`, as a terminal session script
+ *  (lib/terminal-session): what `eid` really prints (cli/src/eid.ts), on a
+ *  machine that never ran it, so the first command signs it in. */
+function cliSession(username: string): string {
+  return `$ npx e-id link https://example.com/cv.pdf cv
+code BCDF-GHJK  approve it at https://e-id.to/cli?code=BCDF-GHJK
+✓ waiting for you in the browser 4s
+signed in as ${username} on https://e-id.to
+https://eid.to/${username}/cv (copied)
+
+@900 $ eid ls
+/${username}/cv  example.com · opened 0 times
+1 of 200
+
+@900 $ eid skill install
+installed ~/.claude/skills/eid/SKILL.md`
 }
 
 /** Where each of the holder's routes lands (link-map): the first link of each

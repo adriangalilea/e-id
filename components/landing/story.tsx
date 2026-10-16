@@ -1,6 +1,13 @@
 "use client"
 
-import { Braces, Code, Contact, IdCard, Route as RouteIcon } from "lucide-react"
+import {
+  Braces,
+  Code,
+  Contact,
+  IdCard,
+  Route as RouteIcon,
+  SquareTerminal,
+} from "lucide-react"
 import { useMemo } from "react"
 import { type Landing, routePages } from "@/components/landing/link-map"
 import { Scaled } from "@/components/landing/scaled"
@@ -19,6 +26,7 @@ import {
   type StoryChapter,
   StoryTitle,
 } from "@/components/ui/scroll-story"
+import { Terminal } from "@/components/ui/terminal"
 import { Touch, touchPressed } from "@/components/ui/touch"
 import { type BrowserStep, browserTimeline } from "@/lib/browser-session"
 import { EMOJI_DOMAIN } from "@/lib/const"
@@ -64,7 +72,16 @@ type StoryProps = {
     /** The same two lines, to copy. */
     code: React.ReactNode
   }
+  /** The CLI at work, as a terminal session script (lib/terminal-session): the
+   *  real commands and what they print, for the holder. */
+  cli: { session: string }
 }
+
+/** A terminal window's shape, width over height. */
+const TERMINAL = 1.6
+/** The terminal's ink: a pale phosphor, e-ID's own monochrome rather than the
+ *  registry's green. */
+const PHOSPHOR = "#d8d8d8"
 
 /** The laptop's screen, CSS px, before it is scaled to where it is shown: a small
  *  laptop's, so what is on it reads at the size a laptop is drawn here (a 1440
@@ -199,8 +216,35 @@ export function Story(props: StoryProps) {
           />
         ),
       },
+      {
+        id: "cli",
+        label: "terminal",
+        mark: <SquareTerminal />,
+        span: 1.4,
+        play: 0.8,
+        hold: 0.95,
+        content: ({ p }) => (
+          <StoryCard
+            title={<StoryTitle lead="from a terminal" rest="too" />}
+            body="A short link in one line, with nothing installed: the first command signs you in, one press in the browser. Your agents get a skill that never falls behind."
+            overflow
+            scene={
+              <Fit ratio={TERMINAL}>
+                <Terminal
+                  session={props.cli.session}
+                  progress={p}
+                  accent={PHOSPHOR}
+                  rows={12}
+                  alt="a terminal: npx e-id link makes a short link, signing the machine in first, then eid ls lists it"
+                  className="size-full"
+                />
+              </Fit>
+            }
+          />
+        ),
+      },
     ],
-    [story, routes, laptop, contact, site],
+    [story, routes, laptop, contact, site, props.cli.session],
   )
   return (
     <ScrollStory
