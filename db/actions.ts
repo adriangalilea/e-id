@@ -1,6 +1,6 @@
 "use server"
 
-import { and, desc, eq, inArray, not } from "drizzle-orm"
+import { and, desc, eq, not } from "drizzle-orm"
 import { updateTag } from "next/cache"
 import { headers } from "next/headers"
 import { hasFlag } from "@/components/ui/flag"
@@ -8,12 +8,8 @@ import { db } from "@/db"
 import { comments, links, type SelectComment, users } from "@/db/schema"
 import { answerLogin, keysOf, revokeKey } from "@/lib/api-keys"
 import { asLinks, type Written } from "@/lib/card-draft"
-import {
-  type CardEdit,
-  cardEditSchema,
-  errorsOf,
-  type SaveResult,
-} from "@/lib/card-edit"
+import type { CardEdit, SaveResult } from "@/lib/card-edit"
+import { editableCard, writeCard } from "@/lib/card-write"
 import { type Chip, chipOf } from "@/lib/chip"
 import { writeChip } from "@/lib/chip-server"
 import { countryOf } from "@/lib/country-of"
@@ -38,7 +34,6 @@ import {
   writeShortLink,
 } from "@/lib/short-links"
 import { profileTag, USERS_TAG, usernameTag } from "@/lib/tags"
-import { allowanceOf, reached } from "@/lib/trust"
 import { claimUsername, holderOf } from "@/lib/username"
 import { usernameProblem } from "@/lib/username-rules"
 import { SITE, visitDriver, visitsEnabled } from "@/lib/visit-store"
@@ -213,186 +208,22 @@ function renameError(error: unknown): string {
   return /unique/i.test(message) ? "The username is taken" : message
 }
 
-/** The signed-in user's card as they edit it in place (lib/card-edit): every
- *  link they have, the hidden ones too, which the public page never carries, so
- *  they are read only here, when the owner opens their card. */
+/** The signed-in user's card as they edit it in place (lib/card-write). */
 export async function cardToEdit(): Promise<CardEdit> {
-  const user = await requireUser()
-  const [row] = await db
-    .select({
-      name: users.name,
-      username: users.username,
-      country: users.country_code,
-      bio: users.bio,
-      vouches: users.allow_comments,
-    })
-    .from(users)
-    .where(eq(users.id, user.id))
-  if (!row?.username) throw new Error(`cardToEdit: no user ${user.id}`)
-  const owned = await db
-    .select()
-    .from(links)
-    .where(eq(links.user_id, user.id))
-    .orderBy(links.order)
-  return {
-    name: row.name ?? "",
-    handle: row.username,
-    country: row.country ?? "XX",
-    bio: row.bio ?? "",
-    vouches: row.vouches,
-    links: owned.filter(onCard).map((link) => ({
-      id: link.id,
-      platform: link.platform,
-      value: link.value ?? "",
-      label: link.label ?? "",
-      note: link.note ?? "",
-      highlight: link.custom_data?.highlight ?? "",
-      public: link.public,
-      slug: link.slug ?? "",
-      visits: link.visits,
-    })),
-  }
+  return editableCard((await requireUser()).id)
 }
 
-/** Writes the signed-in user's card whole, as edited in place, or nothing: the
- *  card parsed with the schema both sides share (lib/card-edit), every link it
- *  names checked as theirs, then one transaction (name, country, bio; links in
- *  the card's order, one gone from it deleted, a new one made; the handle). A
- *  taken handle undoes the lot and comes back as the handle's error. The page
- *  re-renders with the write in the same response (`updateTag`). */
+/** Writes the signed-in user's card whole, as edited in place (lib/card-write).
+ *  The page re-renders with the write in the same response (`updateTag`); a
+ *  rename moves the display cookie with it. */
 export async function saveCard(input: unknown): Promise<SaveResult> {
   const user = await requireUser()
-  const parsed = cardEditSchema.safeParse(input)
-  if (!parsed.success) return { ok: false, errors: errorsOf(parsed.error) }
-  const card = parsed.data
-
-  const [row] = await db
-    .select({ username: users.username })
-    .from(users)
-    .where(eq(users.id, user.id))
-  if (!row?.username) throw new Error(`saveCard: no user ${user.id}`)
-  const all = await db
-    .select({
-      id: links.id,
-      platform: links.platform,
-      value: links.value,
-      public: links.public,
-      custom_data: links.custom_data,
-    })
-    .from(links)
-    .where(eq(links.user_id, user.id))
-  // The card's links only: a short link off the card is its list's, never
-  // touched here.
-  const owned = all.filter(onCard)
-  const named = new Set(card.links.flatMap((l) => (l.id ? [l.id] : [])))
-  for (const id of named)
-    if (!owned.some((l) => l.id === id))
-      throw new Error(`saveCard: link ${id} is not on ${user.id}'s card`)
-  const renamed = card.handle !== row.username
-
-  // What goes somewhere new is asked of Safe Browsing (lib/link-safety).
-  const fresh = card.links.filter(
-    (l) => l.value !== owned.find((o) => o.id === l.id)?.value,
-  )
-  const refused = await refusedDestination(fresh)
-  if (refused) return { ok: false, errors: { links: refused } }
-  // A link of their own the card adds counts towards what they may keep
-  // (lib/trust), its short links with it.
-  const added = card.links.filter((l) => l.platform === "link" && !l.id).length
-  if (added > 0) {
-    const allowance = await allowanceOf(user.id)
-    const gone = owned.filter(
-      (o) => o.platform === "link" && !named.has(o.id),
-    ).length
-    const kept = all.filter((l) => l.platform === "link").length - gone
-    if (kept + added > allowance.most)
-      return { ok: false, errors: { links: reached(allowance) } }
-  }
-
-  try {
-    await db.transaction(async (tx) => {
-      await tx
-        .update(users)
-        .set({
-          name: card.name || null,
-          bio: card.bio || null,
-          country_code: card.country.toUpperCase(),
-          allow_comments: card.vouches,
-        })
-        .where(eq(users.id, user.id))
-      const gone = owned.filter((l) => !named.has(l.id)).map((l) => l.id)
-      if (gone.length > 0) await tx.delete(links).where(inArray(links.id, gone))
-      // The card's address names cleared first: two links trading names (/cv
-      // and /talk) would otherwise collide with each other half way.
-      const kept = owned.filter((l) => named.has(l.id)).map((l) => l.id)
-      if (kept.length > 0)
-        await tx
-          .update(links)
-          .set({ slug: null })
-          .where(inArray(links.id, kept))
-      for (const [order, link] of card.links.entries()) {
-        // What was read from the platform stays; the highlight is the owner's
-        // (none is left out of the stored JSON).
-        const read = owned.find((l) => l.id === link.id)?.custom_data ?? {}
-        const own = link.platform === "link"
-        const fields = {
-          value: link.value,
-          label: link.label || null,
-          public: link.public,
-          order,
-          note: link.note || null,
-          custom_data: { ...read, highlight: link.highlight || undefined },
-          slug: own ? link.slug.toLowerCase() : null,
-          ...(ANYWHERE.includes(link.platform) &&
-            fresh.includes(link) && { checked_at: new Date() }),
-        }
-        if (link.id)
-          await tx.update(links).set(fields).where(eq(links.id, link.id))
-        else
-          await tx.insert(links).values({
-            id: crypto.randomUUID(),
-            user_id: user.id,
-            platform: link.platform,
-            ...fields,
-          })
-      }
-      if (renamed) await claimUsername(user.id, card.handle, tx)
-    })
-  } catch (error) {
-    // What the database said: drizzle wraps it ("Failed query: …") and keeps it
-    // as the cause.
-    const said = String((error as { cause?: unknown }).cause ?? error)
-    // The card's own check refuses two links at one name, so the database
-    // refusing one is a race between two saves: said, not thrown.
-    if (/UNIQUE constraint failed: link\.user_id, link\.slug/.test(said))
-      return {
-        ok: false,
-        errors: {
-          links: "One of your short links already has that name.",
-        },
-      }
-    if (renamed && /UNIQUE constraint failed: user\.username/.test(said))
-      return { ok: false, errors: { handle: "That username is taken." } }
-    throw error
-  }
-
-  updateTag(USERS_TAG)
-  updateTag(profileTag(user.id))
-  if (renamed) {
-    updateTag(usernameTag(card.handle))
-    await writeChip(chipOf({ username: card.handle, image: user.image }))
-  }
-  return { ok: true, username: card.handle }
+  const { renamed, ...saved } = await writeCard(user.id, input, updateTag)
+  if (renamed) await writeChip(chipOf({ username: renamed, image: user.image }))
+  return saved
 }
 
 // ── short links ─────────────────────────────────────────────────────────────
-
-/** Whether a link is the card's (edited on it): a platform's, or one of your
- *  own shown on it. One of your own off the card is a short link only, kept in
- *  its own list (lib/card-edit). */
-function onCard(link: { platform: string; public: boolean }) {
-  return link.platform !== "link" || link.public
-}
 
 /** The signed-in user's short links and what they may keep (lib/short-links). */
 export async function myShortLinks() {

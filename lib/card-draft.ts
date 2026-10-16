@@ -91,6 +91,7 @@ export function asLinks(links: DraftLink[]): SelectLink[] {
     checked_at: null,
     stopped_at: null,
     stopped_why: null,
+    kind: "url",
   }))
 }
 
