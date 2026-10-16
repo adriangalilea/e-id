@@ -60,7 +60,7 @@ Built with Next.js, better-auth, and Drizzle on Turso. The interface comes from 
 - [ ] download your data, all of it: `/you/json` is the card; what it lacks (the account's email, the vouches you wrote, your numbers) is asked for by email today, as the privacy page says, answered within a month. A button would hand over both.
 - [ ] more sources for "latest", by what each would take:
   - a Telegram channel's posts: public at `t.me/s/<channel>` with no API key, and ui's `telegram-chat` already draws a post; the card has Telegram links today
-  - a website's releases, a podcast, a newsletter: nothing to build, they come with any RSS or Atom feed the website names
+  - **every website on the card, not just the first** (next: wanted for the owner's own profile, a second site with releases): `lib/activity` reads only the first website link's feed (`first(links, "website")`); read each website link's feed, its posts merged into the one date order with the rest. A website's releases, a podcast, a newsletter need nothing more: they come with any RSS or Atom feed the website names
   - Bluesky (its public API, no key) and Mastodon (every account has an RSS feed) once each is a platform on the card
   - X stays out: reading anyone's posts needs its paid API
 
