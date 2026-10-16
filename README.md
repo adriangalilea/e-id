@@ -19,17 +19,17 @@ Built with Next.js, better-auth, and Drizzle on Turso. The interface comes from 
 - **No anonymous short links on these domains,** at the root, under a path or on a subdomain. They are what phishing runs on, and once enough bad ones pass through, Safe Browsing and mail filters flag the whole domain, every profile with it. Anonymous shortening, if ever, gets a domain of its own.
 - **e-ID's own names are reserved** in `forbiddenUsernames` (`api`, `dev`, and what comes). Usernames are 5 characters or more today; whether shorter ones are sold is open (Premium).
 - **Links of your own are links on your card,** platform `link`: as many as you like, each also an address of yours, `/you/<name>` (a CV, a talk, a file). Named by you or a made-up code (six letters and digits, always a digit, so never a word or a platform's name); a platform's names and the card's files are refused (`refusedLinkName`). One can stop opening on a day or after a number of opens (1 is one use), and one that stops is never on the card: the card is cached and could not know when. A crawler (a link preview) is sent on without using an open, or pasting a one-use link anywhere would spend it.
+- **"Latest" is read, never set up** (`lib/activity`): your newest uploads (a YouTube channel's feed), the repositories you pushed to last (GitHub), and your posts (the RSS or Atom feed your website names, `<link rel="alternate">`), newest first, from the last 12 months, at most three a source. Older than a year is no news: an upload from 2006 would lead the page.
 - **Keep only what is used.** A session is a token and its dates (never an IP address or a browser); a provider's tokens are read once, at linking, then cleared; visits are counted without cookies and never store an IP address. The [privacy page](https://e-id.to/privacy) says what is kept, and must change when the code does.
 - **Deleting an account takes everything of theirs at once**, numbers included (`forgetPerson`). Their names are held from anyone else for 90 days (`released_name`), so links still out there open nobody else. The vouches they wrote on other pages stay, signed "a former e-ID member": the page's owner keeps them, nothing of the writer does.
 
 ## To do
 
 - [ ] an API for your own links: personal API keys (better-auth's API-key plugin), each scoped to your own links and rate-limited, so a script or a CLI makes one (`curl -H "Authorization: Bearer …" eid.to/api/links -d '{"to":"…","expires":"7d"}'`). Probably Premium.
-- [ ] an optional status line on the profile and its share image
 - [ ] a write API for the card (`card.json` is the read one), on the same API keys
 - [ ] passkeys (better-auth has them)
 - [ ] download your data, all of it: `/you/json` is the card; what it lacks (the account's email, the vouches you wrote, your numbers) is asked for by email today, as the privacy page says, answered within a month. A button would hand over both.
-- [ ] live activity: a feed (RSS or Atom), a YouTube channel (each has a feed), Bluesky, GitHub, mixed into the latest of what you made, on your page
+- [ ] more sources for "latest": Bluesky (its public API) once it is a platform on the card; X stays out (its API is paid)
 
 ### Premium
 
