@@ -14,8 +14,9 @@ import { type YouTubeFacts, youtubeOf } from "@/lib/youtube-data"
 // "latest" (components/profile-links): the repositories they pushed to last
 // (GitHub's repo card, its latest commits under it), their newest posts (the
 // feed their website names, each its link preview, picture and all) and their
-// newest upload (a YouTube channel's feed, its player card). Newest first, from
-// the last 12 months, two a source. Nothing to set up: a link that has a feed is
+// newest upload (a YouTube channel's feed, its player card). In the order they
+// were made, newest first, whatever their source: the date alone decides, from
+// the last 12 months. Nothing to set up: a link that has a feed is
 // read. Each list is read on its own and cached an hour, each thing as its card
 // reads it (a repo an hour, a page or a video a day); one that fails is logged,
 // kept minutes, and the rest still show.
@@ -31,19 +32,18 @@ type Found = { url: string; title: string; at: string }
 
 /** How far back "lately" reaches: an upload from years ago is no news. */
 const LATELY_MS = 365 * 24 * 60 * 60 * 1000
-/** At most this many from one source, so one busy feed does not fill it. */
-const PER_SOURCE = 2
-/** At most this many in all: a few things, each whole, never a list. */
+/** At most this many in all, the newest: a few things, each whole, never a list. */
 const MOST = 5
 
-/** A source's things made lately, newest first, at most PER_SOURCE. Inside each
- *  cached read, where the clock may be read (a prerender may not). */
+/** A source's things made lately, newest first, as many as could be the newest
+ *  overall (MOST): the date alone decides what shows, never the source. Inside
+ *  each cached read, where the clock may be read (a prerender may not). */
 function lately(items: Found[]): Found[] {
   const since = Date.now() - LATELY_MS
   return items
     .filter((i) => Date.parse(i.at) >= since)
     .sort((a, b) => b.at.localeCompare(a.at))
-    .slice(0, PER_SOURCE)
+    .slice(0, MOST)
 }
 
 const BROWSER = {
