@@ -56,6 +56,7 @@ type Links = z.infer<typeof S.Links>
 type Me = z.infer<typeof S.Me>
 type Send = z.infer<typeof S.SendOut>
 type SendMade = z.infer<typeof S.SendMade>
+type SendEvents = z.infer<typeof S.SendEvents>
 type Inbox = z.infer<typeof S.Inbox>
 type Waiting = Inbox["waiting"][number]
 type Stats = z.infer<typeof S.Stats>
@@ -424,14 +425,17 @@ async function take(
     `getting ${send.file.name} (${BYTES.format(send.file.size)}) from ${send.from}`,
     () => sendmeRun(bin, ["receive", send.ticket, "--no-progress"], o.dir),
   )
-  // Said for every send taken with a key: e-ID answers not found for one that was
-  // not for this person, and that is all it means here.
-  if (key)
-    await api(`${path}/taken`, { method: "POST", key }).catch(
-      (error: unknown) => {
-        if ((error as Said).code !== "not_found") throw error
-      },
-    )
+  // The file is here: its sender sees it live, and a send for this person leaves
+  // their inbox. Said as the file was asked for (the key, the password); the file
+  // is had either way, so a refusal here is said, never thrown.
+  await api(`${path}/taken`, { method: "POST", key, password }).catch(
+    (error: unknown) => {
+      if (!(error instanceof Said)) throw error
+      console.error(
+        ui.muted(`the sender was not told it came: ${error.message}`),
+      )
+    },
+  )
   return {
     file: send.file.name,
     size: send.file.size,
@@ -628,7 +632,33 @@ const RUN: Record<CommandName, (c: Context) => Promise<void>> = {
         `sending ${file.name} (${BYTES.format(file.size)}) ${whom}, until you stop (Ctrl-C), straight from this machine. Where the two machines connect directly, each sees the other's IP address.`,
       ),
     )
-    await new Promise(() => {})
+    // Live: each download as it starts and as it lands, asked of e-ID one held
+    // question at a time (GET /links/:name/events). A person reads them on stderr;
+    // with --json each is a line on stdout, after the send's own.
+    // The file is served whatever happens here: a question that fails (the network
+    // gone a moment) is asked again a little later, never the end of the send.
+    let after = 0
+    for (;;) {
+      const answered = await api<SendEvents>(
+        `/links/${encodeURIComponent(slug)}/events?wait=25&after=${after}`,
+        { key },
+      ).catch((error: unknown) => {
+        if (error instanceof Said && error.code === "not_found") throw error
+        return null
+      })
+      if (!answered) {
+        await sleep(5000)
+        continue
+      }
+      for (const e of answered.events) {
+        after = e.id
+        if (json) console.log(JSON.stringify(e))
+        else
+          console.error(
+            `${ui.muted(new Date(e.at).toTimeString().slice(0, 8))}  ${e.who ? ui.accent(`@${e.who}`) : "someone"} ${e.kind === "got" ? ui.ok("got it") : "is getting it"}`,
+          )
+      }
+    }
   },
   async get({ rest, values, out }) {
     const [address] = rest

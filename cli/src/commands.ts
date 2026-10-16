@@ -90,14 +90,14 @@ export const COMMANDS = [
         says: "the domain in the command printed (eid.to by default)",
       },
     ],
-    more: "Prints `npx @e-id/eid get eid.to/you/<name>`, copied, for whoever you send it to: they need nothing installed and no account. With --to it is for those people only: e-ID gives its ticket to their keys alone, it waits in their `eid inbox`, and `eid ls` says when each took it. With --password, whoever opens the address is asked for it (kept hashed at e-ID, checked there). The file goes straight from this machine to theirs (n0's sendme, end to end encrypted, through n0's relays where the two cannot reach each other), never through e-ID, which holds only the name and who may have it. It is there for as long as this command runs: Ctrl-C stops it and takes the name away. Where the machines connect directly, each sees the other's IP address. The first send fetches sendme (about 4 MB, checked against its known SHA-256) into ~/.cache/eid.",
+    more: "Prints `npx @e-id/eid get eid.to/you/<name>`, copied, for whoever you send it to: they need nothing installed and no account. With --to it is for those people only: e-ID gives its ticket to their keys alone, it waits in their `eid inbox`, and `eid ls` says when each took it. With --password, whoever opens the address is asked for it (kept hashed at e-ID, checked there). The file goes straight from this machine to theirs (n0's sendme, end to end encrypted, through n0's relays where the two cannot reach each other), never through e-ID, which holds only the name and who may have it. It is there for as long as this command runs, which prints each download as it starts and as it lands, and who it is where they are signed in: Ctrl-C stops it and takes the name away. Where the machines connect directly, each sees the other's IP address. The first send fetches sendme (about 4 MB, checked against its known SHA-256) into ~/.cache/eid.",
     examples: [
       "eid send notes.zip",
       "eid send ./slides talk",
       "eid send draft.pdf --to ada,bob",
       "eid send photos.zip --password 'blue harbour'",
     ],
-    json: "SendMade, with address and command, printed once serving; the command keeps running",
+    json: "SendMade, with address and command, printed once serving; then each SendEvents event as a line while the command keeps running",
   },
   {
     name: "get",
