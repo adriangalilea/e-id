@@ -18,7 +18,7 @@ import { Spinner, type SpinnerSize } from "@/components/ui/spinner"
 import { cn } from "@/lib/utils"
 
 // THE BUTTON, one behaviour in two materials. Base UI's button underneath, so it is a
-// real <button> (or, with `render`, a link that behaves as one), keeps its focus when
+// real <button> (or, with `render`, a link in a button's face), keeps its focus when
 // a `loading` press makes it wait, and reports `data-disabled`. shadcn's six variants
 // and its sizes, with two differences, both so a row of controls reads as one:
 //
@@ -152,11 +152,6 @@ const GLASS: Record<ButtonVariant, string> = {
   link: "",
 }
 
-const hasHref = (props: unknown): boolean =>
-  typeof props === "object" &&
-  props !== null &&
-  (props as { href?: unknown }).href !== undefined
-
 /** A link in the button's face: the element it is handed, its own semantics kept. */
 function ButtonLink({
   render,
@@ -175,8 +170,12 @@ function ButtonLink({
 
 export type ButtonProps = Omit<
   React.ComponentProps<typeof BaseButton>,
-  "className" | "style"
+  "className" | "style" | "nativeButton" | "render"
 > & {
+  /** The element a link in the button's face is drawn with: `<a href="…" />`, a
+   *  framework's `<Link href="…" />`, a trigger that is a link. Given, it is a link,
+   *  never a button. */
+  render?: React.ReactElement
   style?: React.CSSProperties
   variant?: ButtonVariant
   size?: ButtonSize
@@ -290,7 +289,6 @@ export function Button({
   iconEnd,
   disabled,
   render,
-  nativeButton,
   className,
   style,
   children: words,
@@ -388,14 +386,19 @@ export function Button({
       className,
     ),
   }
-  // A link wearing the button's look stays a link: Base UI's button gives anything
-  // that is not a <button> `role="button"`, and a screen reader then calls the hero's
-  // "read the essay" a button. It is never disabled, loading or a toggle; asked to be,
-  // it screams.
-  if (React.isValidElement(render) && hasHref(render.props)) {
+  // A button is a <button>; handed an element to draw it (`render`: an <a href>, a
+  // framework's <Link>, a trigger that is a link), it is a link in the button's face
+  // and stays one: Base UI's button gives anything that is not a <button>
+  // `role="button"`, and a screen reader then calls the hero's "read the essay" a
+  // button. Decided by `render` being given, never by reading the element: one a
+  // server component hands over is still on its way while the page is drawn on the
+  // server, and reading its href there drew a button the browser then drew as a
+  // link (a hydration mismatch). It is never disabled, loading or a toggle; asked to
+  // be, it screams.
+  if (render !== undefined) {
     if (disabled || loading || pressed !== undefined || on || off)
       throw new Error(
-        "Button: a link (render with an href) is never disabled, loading or a toggle",
+        "Button: a link (`render`) is never disabled, loading or a toggle",
       )
     return (
       <ButtonLink render={render} look={look} rest={{ ...props, ref: own }}>
@@ -414,8 +417,6 @@ export function Button({
       // Waiting, it keeps the focus the press gave it: a keyboard user is not
       // thrown back to the page's start while the work runs.
       focusableWhenDisabled={loading}
-      render={render}
-      nativeButton={nativeButton ?? render === undefined}
       {...props}
       ref={own}
     >
