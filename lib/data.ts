@@ -7,6 +7,7 @@ import {
   comments,
   links,
   type SelectLink,
+  sendTo,
   usernameAliases,
   users,
 } from "@/db/schema"
@@ -124,6 +125,11 @@ export async function readOwnLink(userId: string, slug: string) {
       stopped_why: links.stopped_why,
       kind: links.kind,
       file: sql<string | null>`json_extract(${links.custom_data}, '$.file')`,
+      // A send for people (lib/sends `send_to`) is nothing on the web: its page,
+      // its name and its file are theirs alone.
+      addressed: sql<number>`EXISTS (SELECT 1 FROM ${sendTo} WHERE ${sendTo.link_id} = ${links.id})`,
+      // A send behind a password shows no more than that it is a file.
+      locked: sql<number>`json_extract(${links.custom_data}, '$.password') IS NOT NULL`,
     })
     .from(links)
     .where(
@@ -135,9 +141,11 @@ export async function readOwnLink(userId: string, slug: string) {
     )
     .limit(1)
   if (!row) return null
-  const { file, ...rest } = row
+  const { file, addressed, locked, ...rest } = row
   return {
     ...rest,
+    addressed: Boolean(addressed),
+    locked: Boolean(locked),
     file: file ? (JSON.parse(file) as { name: string; size: number }) : null,
   }
 }

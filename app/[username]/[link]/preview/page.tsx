@@ -78,7 +78,8 @@ async function destinationOf(userId: string, name: string) {
   }
   if (!LINK_SLUG.test(name.toLowerCase())) return null
   const own = await readOwnLink(userId, name)
-  if (!own?.value) return null
+  // A send goes nowhere: its value is a ticket, never shown as a destination.
+  if (!own?.value || own.kind === "send") return null
   const why = own.stopped_why
     ? takenDown(own.stopped_why)
     : own.expires_at && own.expires_at.getTime() <= Date.now()
@@ -115,13 +116,16 @@ async function Preview({
       ? await readOwnLink(profile.id, name)
       : null
   const whose = <Whose profile={profile} />
-  if (own?.kind === "send")
+  // A send for people is nothing here (the route sends its address to the
+  // profile): it reads as a name of theirs that opens nothing.
+  if (own?.kind === "send" && !own.addressed)
     return (
       <SendShown
         whose={whose}
         at={at}
         from={profile.name ?? profile.username}
         file={own.file}
+        locked={own.locked}
         down={own.stopped_why ? takenDown(own.stopped_why) : null}
       />
     )
@@ -234,12 +238,16 @@ function SendShown({
   at,
   from,
   file,
+  locked,
   down,
 }: {
   whose: React.ReactNode
   at: string
   from: string
   file: { name: string; size: number } | null
+  /** Behind a password: the file's name and size are said only to whoever says
+   *  it, in the terminal. */
+  locked: boolean
   down: string | null
 }) {
   if (!file) throw new Error(`the send at ${at} has no file`)
@@ -250,10 +258,16 @@ function SendShown({
       <Panel bodyClassName="gap-3 p-4">
         <span className="font-mono text-foreground/50 text-xs">{at}</span>
         <span className="text-foreground/60 text-sm">is sending</span>
-        <span className="break-all font-medium text-lg">{file.name}</span>
-        <span className="text-foreground/50 text-xs">
-          {BYTES.format(file.size)}
-        </span>
+        {locked ? (
+          <span className="font-medium text-lg">a file, behind a password</span>
+        ) : (
+          <>
+            <span className="break-all font-medium text-lg">{file.name}</span>
+            <span className="text-foreground/50 text-xs">
+              {BYTES.format(file.size)}
+            </span>
+          </>
+        )}
       </Panel>
       {down ? (
         <p className="text-foreground/70 text-sm first-letter:uppercase">
