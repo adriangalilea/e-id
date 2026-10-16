@@ -44,14 +44,14 @@ Built with Next.js, better-auth, and Drizzle on Turso. The interface comes from 
   1. **Built:** links, sends, the card, numbers (Decisions: the CLI, and sending a file). Free at these limits, higher ones with Pro (Premium, below).
   2. **Relays for sends that see real use.** n0's public relays are for development (rate-limited, no guarantees). Before sends grow: n0's shared relays on its Pro plan, or our own `iroh-relay` (tether runs one; it would admit e-ID's senders by a token the API hands out with the ticket).
   3. **A send for a browser.** Today a send's page shows the `npx` command; a browser getting the file itself waits on whether `iroh-blobs` runs in one (iroh does, over the relay; unchecked).
-  4. **Sending to people, an inbox, and asking before taking** (next):
-     - `eid send <path> --to ada,bob`: addressed to e-ID accounts, not public. No page, no name anyone else opens: the API hands the ticket only to the named people's keys.
-     - `eid inbox`: what is waiting, each with who sent it (their name, `@handle` and card), the file's name and size, and since when.
-     - `eid inbox --watch`: waits, and shows each arrival with its sender before anything comes down, asking first (y/N). For a program, `--json` streams arrivals as lines and takes nothing; `eid get <id>` takes one.
-     - Asking first, everywhere a file arrives: `eid get` of a public send shows the sender and the file and asks in a terminal; a program says yes for the one file it chose with `--yes`. Taking without asking only by person, `--accept-from ada` (who, never "anything"): a blanket accept-all is how a stranger's file lands unread.
-     - `eid send --password`: a public send whose ticket is released only for the password (hashed at e-ID, checked there), for someone without an account.
-     - The outbox is `eid ls`: each send with whom it is for and whether they took it.
-     - The inbox learns by asking: the CLI holds one request open (up to 25 s, answered the moment something arrives), so nothing runs on e-ID's side to keep connections.
+  4. **Built: sending to people, an inbox, and asking before taking** (lib/sends, `send_to`; CLI 0.2.1):
+     - `eid send <path> --to ada,bob`: addressed to e-ID accounts, not public. No page, no name anyone else opens: the API hands the ticket only to the named people's keys, and to anyone else answers the not found of a stopped send.
+     - `eid inbox`: what is waiting, each with who sent it (their name and `@handle`), the file's name and size, and since when.
+     - `eid inbox --watch`: waits, and shows each arrival with its sender before anything comes down, asking first (y/N). For a program, `--json` streams arrivals as lines and takes nothing; `eid get <address>` takes one.
+     - Asking first, everywhere a file arrives: `eid get` shows the sender and the file and asks in a terminal; a program says yes for the one file it chose with `--yes`, and without a terminal is refused without it. Taking without asking only by person, `--accept-from ada` (who, never "anything"): a blanket accept-all is how a stranger's file lands unread.
+     - `eid send --password`: a public send whose ticket is released only for the password (scrypt-hashed at e-ID, checked there, said in the `e-id-password` header, never the address), for someone without an account.
+     - The outbox is `eid ls`: each send with whom it is for and when each took it. Taken means the file came (`POST /sends/:u/:n/taken`, after the download), never that the ticket was given: a send looked at and declined still waits.
+     - The inbox learns by asking: the CLI holds one request open (`GET /inbox?wait=25`, answered within a second and a half of an arrival), so nothing runs on e-ID's side to keep connections.
      - What it is not: a sendme ticket is a bearer capability (whoever holds it fetches the file while it is served); e-ID decides who is given it, nothing more.
   5. **`eid send --keep`: a kept file, hosted, Premium.** The same command with the file outliving the laptop: stored on R2 (no charge for downloads, which is a file link's whole cost), scanned, checked and taken down like any link. Live and free while the sender is online, kept and paid when it must outlast them.
   6. **Payments, x402.** Two angles, both binding:

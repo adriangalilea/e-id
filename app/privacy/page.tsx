@@ -85,7 +85,11 @@ export default function Page() {
         machine straight to the one that gets it, never through e-ID. e-ID keeps
         only its name under your page, what the file is called, its size and the
         ticket the two machines use to find each other, until you stop sending.
-        The transfer uses n0&apos;s sendme, encrypted end to end; where the two
+        A send for people (<code>--to</code>) also keeps who it is for and when
+        each of them took it, which you see in <code>eid ls</code> and they see
+        in their inbox; a send behind a password keeps the password hashed,
+        never as you typed it. All of it goes when you stop sending. The
+        transfer uses n0&apos;s sendme, encrypted end to end; where the two
         machines cannot reach each other directly, n0&apos;s relays pass the
         encrypted traffic on and see which two machines talk, never the file.
         Where they connect directly, each machine sees the other&apos;s IP

@@ -206,6 +206,10 @@ export type KeptShortLink = ShortLink & {
    *  lib/sends), its value the sendme ticket and `file` what it is. */
   kind: "url" | "send"
   file: { name: string; size: number } | null
+  /** A send's people and when each took it; null for anyone with the address. */
+  to: { username: string; taken: string | null }[] | null
+  /** A send behind a password. */
+  locked: boolean
 }
 
 /** The card as it is being written (untrimmed). */

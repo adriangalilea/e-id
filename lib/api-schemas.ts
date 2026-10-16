@@ -111,6 +111,13 @@ export const ShortLinkOut = z
       .object({ name: z.string(), size: z.number() })
       .nullable()
       .describe("a send's file"),
+    to: z
+      .array(z.object({ username: z.string(), taken: z.string().nullable() }))
+      .nullable()
+      .describe(
+        "a send's people and when each took it (ISO, null while it waits); null for anyone with the address",
+      ),
+    locked: z.boolean().describe("a send behind a password"),
   })
   .meta({ id: "ShortLink" })
 
@@ -168,17 +175,75 @@ export const SendCreateBody = z
       .string()
       .optional()
       .describe("its name, /you/<name>; none, a made-up code"),
+    to: z
+      .array(z.string().min(1))
+      .min(1)
+      .max(20)
+      .optional()
+      .describe(
+        "e-ID usernames it is for: only their keys are given its ticket, and it waits in their inbox; none, anyone with the address",
+      ),
+    password: z
+      .string()
+      .min(6)
+      .max(200)
+      .optional()
+      .describe(
+        "a public send's password: its ticket is given only to whoever says it (the e-id-password header)",
+      ),
+  })
+  .refine((b) => !(b.to && b.password), {
+    message: "A send is for people or behind a password, not both.",
+    path: ["password"],
   })
   .meta({ id: "SendCreate" })
 
-export const SendOut = z
+const file = z.object({ name: z.string(), size: z.number() })
+
+export const SendMade = z
   .object({
     from: z.string().describe("whose it is"),
     slug: z.string(),
+    file,
+    to: z
+      .array(z.string())
+      .describe("who it is for; empty, anyone with the address"),
+  })
+  .meta({ id: "SendMade" })
+
+export const SendOut = z
+  .object({
+    from: z.string().describe("whose it is: their username"),
+    fromName: z.string().nullable().describe("their name, as their card says"),
+    slug: z.string(),
     ticket: z.string().describe("for sendme receive"),
-    file: z.object({ name: z.string(), size: z.number() }),
+    file,
   })
   .meta({ id: "Send" })
+
+export const Inbox = z
+  .object({
+    waiting: z
+      .array(
+        z.object({
+          address: z.string().describe('as eid get takes it: "ada/notes"'),
+          from: z.object({
+            username: z.string(),
+            name: z.string().nullable(),
+            image: z.string().nullable(),
+          }),
+          file,
+          since: z.string().describe("when it was sent, ISO"),
+        }),
+      )
+      .describe("sends for you, still being sent and not taken, newest first"),
+    now: z
+      .string()
+      .describe(
+        "this answer's time, ISO: ask again with after=<now> for what comes next",
+      ),
+  })
+  .meta({ id: "Inbox" })
 
 // ── numbers ─────────────────────────────────────────────────────────────────
 

@@ -2,12 +2,13 @@ import { eq } from "drizzle-orm"
 import { db } from "@/db"
 import { users } from "@/db/schema"
 import { answer, bodyAs, fail, withKey } from "@/lib/api"
-import { SendCreateBody, SendOut } from "@/lib/api-schemas"
+import { SendCreateBody, SendMade } from "@/lib/api-schemas"
 import { writeSend } from "@/lib/sends"
 
 // `eid send`: a file served from your machine, named under your page
-// (lib/sends). The CLI names it once sendme is serving, and deletes the name
-// (DELETE /links/:name) when it stops.
+// (lib/sends): for anyone with the address, behind a password, or for the people
+// named (`to`), where it waits in their inbox. The CLI names it once sendme is
+// serving, and deletes the name (DELETE /links/:name) when it stops.
 
 export const POST = withKey(
   async (request, { userId }) => {
@@ -26,12 +27,12 @@ export const POST = withKey(
       .where(eq(users.id, userId))
     if (!user?.username) throw new Error(`POST /sends: ${userId} has no name`)
     return answer(
-      SendOut,
+      SendMade,
       {
         from: user.username,
         slug: written.slug,
-        ticket: body.ticket,
         file: body.file,
+        to: written.to,
       },
       201,
     )

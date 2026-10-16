@@ -11,6 +11,7 @@ import {
   shortLinkSchema,
 } from "@/lib/card-edit"
 import { refusedDestination } from "@/lib/link-safety"
+import { peopleOf } from "@/lib/sends"
 import { profileTag } from "@/lib/tags"
 import { type Allowance, allowanceOf, reached } from "@/lib/trust"
 
@@ -38,6 +39,9 @@ export async function shortLinksOf(userId: string): Promise<{
       .orderBy(desc(links.order)),
     allowanceOf(userId),
   ])
+  const people = await peopleOf(
+    rows.filter((l) => l.kind === "send").map((l) => l.id),
+  )
   return {
     links: rows.map((l) => ({
       id: l.id,
@@ -51,6 +55,8 @@ export async function shortLinksOf(userId: string): Promise<{
       stopped: l.stopped_why,
       kind: l.kind,
       file: l.custom_data?.file ?? null,
+      to: people.get(l.id) ?? null,
+      locked: Boolean(l.custom_data?.password),
     })),
     allowance,
   }
@@ -164,6 +170,8 @@ export async function writeShortLink(
       stopped: null,
       kind: "url",
       file: null,
+      to: null,
+      locked: false,
     },
   }
 }

@@ -81,19 +81,38 @@ const OPS: Op[] = [
   {
     method: "post",
     path: "/sends",
-    summary: "Name a file served from your machine (eid send)",
+    summary:
+      "Name a file served from your machine (eid send): public, behind a password, or for people",
     key: true,
     body: "SendCreate",
-    ok: "Send",
+    ok: "SendMade",
     status: 201,
   },
   {
     method: "get",
     path: "/sends/{username}/{name}",
-    summary: "A send's ticket and file, for eid get; no key",
+    summary:
+      "A send's ticket, file and sender, for eid get: no key for a public send, the e-id-password header for one behind a password, one of its people's keys for one sent to them",
     key: false,
     ok: "Send",
     params: ["username", "name"],
+  },
+  {
+    method: "post",
+    path: "/sends/{username}/{name}/taken",
+    summary:
+      "Say you have the file of a send sent to you: it leaves your inbox, its sender sees when",
+    key: true,
+    ok: null,
+    params: ["username", "name"],
+  },
+  {
+    method: "get",
+    path: "/inbox",
+    summary:
+      "Sends for you, waiting; ?wait=<s> (25 at most) holds the answer until one arrives after ?after=<ISO>",
+    key: true,
+    ok: "Inbox",
   },
   {
     method: "get",

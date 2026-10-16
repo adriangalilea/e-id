@@ -188,6 +188,9 @@ export const links = sqliteTable(
       followers?: number
       /** A send's file (`kind` "send"): its name and size in bytes. */
       file?: { name: string; size: number }
+      /** A public send's password, hashed (lib/sends `hashPassword`): its ticket is
+       *  given only to whoever says it. */
+      password?: string
     }>(),
     /** What a link of their own is: `url`, a redirect to its value; or `send`,
      *  a file served from its owner's machine (lib/sends), its value the sendme
@@ -221,6 +224,28 @@ export const links = sqliteTable(
         .where(sql`${table.slug} IS NOT NULL`),
     }
   },
+)
+
+// WHO A SEND IS FOR (`eid send --to ada,bob`, lib/sends): a send with rows here is
+// addressed, never public: its ticket goes only to these people's keys, it waits in
+// their inbox, and its sender sees who took it. Its rows go with the send (the name is
+// deleted when the sender stops) and with an account deleted. Migrations: db/migrations.
+export const sendTo = sqliteTable(
+  "send_to",
+  {
+    link_id: text("link_id")
+      .notNull()
+      .references(() => links.id, { onDelete: "cascade" }),
+    user_id: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    /** When they first asked for its ticket; null while it waits. */
+    taken_at: integer("taken_at", { mode: "timestamp" }),
+  },
+  (table) => ({
+    pk: primaryKey({ columns: [table.link_id, table.user_id] }),
+    userIdx: index("send_to_user_idx").on(table.user_id),
+  }),
 )
 
 // A NAME A PERSON ALSO ANSWERS TO: a former username, or one more they hold, each a

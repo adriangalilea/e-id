@@ -22,6 +22,8 @@ const KEPT: KeptShortLink[] = [
     stopped: null,
     kind: "url",
     file: null,
+    to: null,
+    locked: false,
   },
   {
     id: "talk",
@@ -35,6 +37,8 @@ const KEPT: KeptShortLink[] = [
     stopped: null,
     kind: "url",
     file: null,
+    to: null,
+    locked: false,
   },
   {
     id: "file",
@@ -48,6 +52,8 @@ const KEPT: KeptShortLink[] = [
     stopped: null,
     kind: "url",
     file: null,
+    to: null,
+    locked: false,
   },
   {
     id: "bad",
@@ -61,6 +67,8 @@ const KEPT: KeptShortLink[] = [
     stopped: "SOCIAL_ENGINEERING",
     kind: "url",
     file: null,
+    to: null,
+    locked: false,
   },
   {
     id: "send",
@@ -74,6 +82,26 @@ const KEPT: KeptShortLink[] = [
     stopped: null,
     kind: "send",
     file: { name: "notes.zip", size: 2_400_000 },
+    to: null,
+    locked: false,
+  },
+  {
+    id: "send-to",
+    slug: "draft",
+    value: "blobexampleticket",
+    label: "",
+    expires: "",
+    maxVisits: null,
+    public: false,
+    visits: 1,
+    stopped: null,
+    kind: "send",
+    file: { name: "draft.pdf", size: 180_000 },
+    to: [
+      { username: "ada", taken: "2026-10-16T18:02:00.000Z" },
+      { username: "bob", taken: null },
+    ],
+    locked: false,
   },
 ]
 
