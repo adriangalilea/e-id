@@ -4,7 +4,8 @@ import { Approve, CliSignIn, Keys } from "@/app/cli/parts"
 import { Wide } from "@/components/frame"
 import { HeldCard } from "@/components/held-card"
 import { SUBJECT } from "@/components/profile-layout"
-import { SubjectHead } from "@/components/subject"
+import { SubjectHead, SubjectSection } from "@/components/subject"
+import { Alert } from "@/components/ui/alert"
 import { Code } from "@/components/ui/code"
 import { InlineCode } from "@/components/ui/code-inline"
 import { Panel } from "@/components/ui/panel"
@@ -39,32 +40,20 @@ export default function Page({
   )
 }
 
-/** What the CLI is and how it is had, for a page that is not approving a code. */
+/** How it is had, for a page that is not approving a code: the two lines, one block,
+ *  copied together. */
 function Install() {
   return (
-    <section className="flex flex-col gap-3">
-      <h2 className="text-foreground/60 text-lg">
-        Install it, then sign the machine in
-      </h2>
-      <Code compact lang="sh">
-        npm i -g @e-id/eid
-      </Code>
-      <Code compact lang="sh">
-        eid login
-      </Code>
-    </section>
+    <SubjectSection label="install">
+      <Code lang="sh">{"npm i -g @e-id/eid\neid login"}</Code>
+    </SubjectSection>
   )
 }
 
 const HEAD = (
-  <SubjectHead says="your e-ID from a terminal">the eid CLI</SubjectHead>
-)
-
-const LEAD = (
-  <p className="max-w-prose text-foreground/70 text-lg">
-    Short links, files sent and received, your card and your numbers, from any
-    terminal, and for the agents working in it.
-  </p>
+  <SubjectHead lead="Your e-ID from a terminal: short links, files sent and received, your card and your numbers.">
+    the eid CLI
+  </SubjectHead>
 )
 
 async function Body({
@@ -84,7 +73,6 @@ async function Body({
         </aside>
         <section className={SUBJECT.what}>
           {HEAD}
-          {LEAD}
           {!code && <Install />}
         </section>
       </>
@@ -117,37 +105,30 @@ async function Body({
       </aside>
       <section className={SUBJECT.what}>
         {HEAD}
-        {code ? (
-          <Panel bodyClassName="gap-5 p-6">
-            {waiting ? (
-              <Approve
-                code={code.toUpperCase()}
-                host={waiting.host}
-                // An account with no address yet picks one in the same press,
-                // offered its email's name to start from.
-                name={
-                  username
-                    ? null
-                    : (session.user.email
-                        .split("@")[0]
-                        ?.toLowerCase()
-                        .replace(/[^a-z0-9_-]/g, "") ?? "")
-                }
-              />
-            ) : (
-              <p className="text-foreground/70 text-lg">
-                No sign-in waits under{" "}
-                <InlineCode>{code.toUpperCase()}</InlineCode>: it was answered,
-                or took longer than ten minutes. Run{" "}
-                <InlineCode>eid login</InlineCode> again.
-              </p>
-            )}
+        {waiting && code ? (
+          <Panel radius={SUBJECT.radius} bodyClassName="gap-6 p-6">
+            <Approve
+              code={code.toUpperCase()}
+              host={waiting.host}
+              // An account with no address yet picks one in the same press,
+              // offered its email's name to start from.
+              name={
+                username
+                  ? null
+                  : (session.user.email
+                      .split("@")[0]
+                      ?.toLowerCase()
+                      .replace(/[^a-z0-9_-]/g, "") ?? "")
+              }
+            />
           </Panel>
+        ) : code ? (
+          <Alert title="This code has run out">
+            It was already used, or ten minutes passed. Run{" "}
+            <InlineCode>eid login</InlineCode> for a new one.
+          </Alert>
         ) : (
-          <>
-            {LEAD}
-            <Install />
-          </>
+          <Install />
         )}
         <Keys
           keys={keys.map((k) => ({

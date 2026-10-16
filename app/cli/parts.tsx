@@ -2,10 +2,12 @@
 
 import { useRouter } from "next/navigation"
 import { useEffect, useState, useTransition } from "react"
+import { SUBJECT } from "@/components/profile-layout"
 import { SIGN_IN_PROVIDERS } from "@/components/session/sign-in-providers"
+import { SubjectSection } from "@/components/subject"
 import { Button } from "@/components/ui/button"
-import { InlineCode } from "@/components/ui/code-inline"
 import { InputGroup } from "@/components/ui/input"
+import { Panel } from "@/components/ui/panel"
 import { answerCliLogin, cliLoginTaken, revokeMyKey } from "@/db/actions"
 import { startSignIn } from "@/lib/sign-in"
 
@@ -18,9 +20,22 @@ const TAKE_WITHIN_MS = 60_000
 const DAY = new Intl.DateTimeFormat("en", {
   month: "short",
   day: "numeric",
+  timeZone: "UTC",
+})
+const DAY_YEAR = new Intl.DateTimeFormat("en", {
+  month: "short",
+  day: "numeric",
   year: "numeric",
   timeZone: "UTC",
 })
+
+/** A day as a person says it: "Oct 16", with its year only when it is not this one. */
+const dayOf = (iso: string) => {
+  const at = new Date(iso)
+  return (
+    at.getUTCFullYear() === new Date().getUTCFullYear() ? DAY : DAY_YEAR
+  ).format(at)
+}
 
 /** Signed out: the ways in, coming back to `back` (the code, still waiting). */
 export function CliSignIn({ back }: { back: string }) {
@@ -117,7 +132,7 @@ export function Approve({
   return (
     <>
       <p className="text-xl">
-        Sign in the eid CLI on <InlineCode>{host}</InlineCode>?
+        Sign in the eid CLI on <span className="font-medium">{host}</span>?
       </p>
       <p className="max-w-prose text-foreground/60">
         It will act for you: make and delete your short links, send files and
@@ -176,39 +191,45 @@ export function Keys({ keys }: { keys: KeyRow[] }) {
   const [pending, start] = useTransition()
   if (keys.length === 0)
     return (
-      <p className="text-foreground/50">No CLI is signed in to your account.</p>
+      <SubjectSection label="signed in">
+        <p className="text-foreground/50">No machine yet.</p>
+      </SubjectSection>
     )
   return (
-    <section className="flex flex-col gap-3">
-      <h2 className="text-foreground/60 text-lg">signed in</h2>
-      <ul className="flex flex-col">
-        {keys.map((k) => (
-          <li
-            key={k.id}
-            className="flex items-center gap-3 border-border border-t py-3 first:border-t-0"
-          >
-            <div className="flex min-w-0 grow flex-col gap-0.5">
-              <span>{k.name}</span>
-              <span className="font-mono text-foreground/45 text-sm">
-                {k.prefix}… · made {DAY.format(new Date(k.created))} ·{" "}
-                {k.used ? `used ${DAY.format(new Date(k.used))}` : "never used"}
-              </span>
-            </div>
-            <Button
-              variant="ghost"
-              disabled={pending}
-              onClick={() =>
-                start(async () => {
-                  await revokeMyKey(k.id)
-                  router.refresh()
-                })
-              }
+    <SubjectSection label="signed in">
+      <Panel radius={SUBJECT.radius} bodyClassName="p-0">
+        <ul className="flex flex-col">
+          {keys.map((k) => (
+            <li
+              key={k.id}
+              className="flex items-center gap-4 border-border border-t px-6 py-4 first:border-t-0"
             >
-              revoke
-            </Button>
-          </li>
-        ))}
-      </ul>
-    </section>
+              <div className="flex min-w-0 grow flex-col gap-2">
+                <span className="[text-box:trim-both_cap_alphabetic]">
+                  {k.name}
+                </span>
+                <span className="font-mono text-foreground/45 text-sm [text-box:trim-both_cap_alphabetic]">
+                  made {dayOf(k.created)} ·{" "}
+                  {k.used ? `used ${dayOf(k.used)}` : "never used"}
+                </span>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={pending}
+                onClick={() =>
+                  start(async () => {
+                    await revokeMyKey(k.id)
+                    router.refresh()
+                  })
+                }
+              >
+                revoke
+              </Button>
+            </li>
+          ))}
+        </ul>
+      </Panel>
+    </SubjectSection>
   )
 }

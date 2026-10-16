@@ -20,9 +20,15 @@
  *  its top on the card's). On a phone, the card and then the thing. Framed as a
  *  wide page (components/frame, `Wide`), so its edges are the bar's. */
 export const SUBJECT = {
-  grid: "grid gap-10 lg:grid-cols-[minmax(0,38.2fr)_minmax(0,61.8fr)] lg:gap-16",
+  grid: "grid gap-8 lg:grid-cols-[minmax(0,38.2fr)_minmax(0,61.8fr)] lg:gap-16",
   who: "flex min-w-0 flex-col gap-5 lg:sticky lg:top-20 lg:self-start",
-  what: "flex min-w-0 flex-col gap-10",
+  // One right edge for everything in it (the reading width), and the scale's
+  // 32 between its blocks.
+  what: "flex min-w-0 max-w-2xl flex-col gap-8",
+  /** The corners of every box stacked in WHAT: the theme's xl, which its Code and
+   *  its Alert already wear, so a Panel among them (glass by default, rounder) is
+   *  told the same. */
+  radius: "var(--radius-xl)",
 } as const
 
 export const PROFILE = {
