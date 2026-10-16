@@ -1,0 +1,69 @@
+# The eid CLI (cli/, npm `e-id`), released from CI: built and packed by
+# adriangalilea/ci with read-only permissions, published here with npm's
+# trusted publishing (this file and the `npm` environment are what npm trusts;
+# no token exists), then tagged `cli-v<version>` with notes from the commits
+# that touched cli/. A version already on npm is skipped, so a push that does
+# not bump cli/package.json's version releases nothing.
+
+name: cli-release
+
+on:
+  push:
+    branches: [main]
+    paths: ['cli/**', 'lib/**', '.github/workflows/cli-release.yml']
+  pull_request:
+    branches: [main]
+    paths: ['cli/**', 'lib/**', '.github/workflows/cli-release.yml']
+
+concurrency:
+  group: cli-release-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions: {}
+
+jobs:
+  build:
+    uses: adriangalilea/ci/.github/workflows/node.yml@19c0fbc70000fc05bd4ca945af10b418ad047e89 # v1.3.0
+    with:
+      directory: cli
+      tag-prefix: cli-
+      bun: true
+    permissions:
+      contents: read
+
+  publish:
+    needs: build
+    if: needs.build.outputs.release == 'true'
+    runs-on: ubuntu-latest
+    environment: npm
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: dist
+          path: dist
+      - name: Publish
+        run: |
+          # ./ is load-bearing: npm reads `dist/x.tgz` as the GitHub repo dist/x.tgz.
+          TGZ=$(echo ./dist/*.tgz)
+          NAME=$(tar -xOzf "$TGZ" package/package.json | jq -r .name)
+          VERSION=$(tar -xOzf "$TGZ" package/package.json | jq -r .version)
+          if npm view "$NAME@$VERSION" version > /dev/null 2>&1; then
+            echo "$NAME@$VERSION already on npm"
+          else
+            npm publish "$TGZ" --access public
+          fi
+
+  release:
+    needs: [build, publish]
+    uses: adriangalilea/ci/.github/workflows/release.yml@19c0fbc70000fc05bd4ca945af10b418ad047e89 # v1.3.0
+    with:
+      tag: ${{ needs.build.outputs.tag }}
+      tag-prefix: cli-
+      paths: cli/**
+    permissions:
+      contents: write
