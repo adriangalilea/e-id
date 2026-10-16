@@ -78,32 +78,78 @@ export const COMMANDS = [
     says: "send a file or a folder from this machine, until you stop",
     flags: [
       {
+        flag: "--to <people>",
+        says: "only for these e-ID accounts (ada,bob): it waits in their inbox, and nobody else can open it",
+      },
+      {
+        flag: "--password <words>",
+        says: "anyone with the address and the password (for someone without an account)",
+      },
+      {
         flag: "--on <domain>",
         says: "the domain in the command printed (eid.to by default)",
       },
     ],
-    more: "Prints `npx @e-id/eid get eid.to/you/<name>`, copied, for whoever you send it to: they need nothing installed and no account. The file goes straight from this machine to theirs (n0's sendme, end to end encrypted, through n0's relays where the two cannot reach each other), never through e-ID, which holds only the name. It is there for as long as this command runs: Ctrl-C stops it and takes the name away. Where the machines connect directly, each sees the other's IP address. The first send fetches sendme (about 4 MB, checked against its known SHA-256) into ~/.cache/eid.",
-    examples: ["eid send notes.zip", "eid send ./slides talk"],
-    json: "Send, with address and command, printed once serving; the command keeps running",
+    more: "Prints `npx @e-id/eid get eid.to/you/<name>`, copied, for whoever you send it to: they need nothing installed and no account. With --to it is for those people only: e-ID gives its ticket to their keys alone, it waits in their `eid inbox`, and `eid ls` says when each took it. With --password, whoever opens the address is asked for it (kept hashed at e-ID, checked there). The file goes straight from this machine to theirs (n0's sendme, end to end encrypted, through n0's relays where the two cannot reach each other), never through e-ID, which holds only the name and who may have it. It is there for as long as this command runs: Ctrl-C stops it and takes the name away. Where the machines connect directly, each sees the other's IP address. The first send fetches sendme (about 4 MB, checked against its known SHA-256) into ~/.cache/eid.",
+    examples: [
+      "eid send notes.zip",
+      "eid send ./slides talk",
+      "eid send draft.pdf --to ada,bob",
+      "eid send photos.zip --password 'blue harbour'",
+    ],
+    json: "SendMade, with address and command, printed once serving; the command keeps running",
   },
   {
     name: "get",
     usage: "get <address>",
-    says: "get what someone is sending you, by its address",
+    says: "get what someone is sending you, by its address, asking first",
     flags: [
       { flag: "--dir <path>", says: "where to put it (here by default)" },
+      {
+        flag: "--yes",
+        says: "take it without asking: for a program that chose this one file",
+      },
+      {
+        flag: "--password <words>",
+        says: "the send's password, where it has one (asked in a terminal otherwise)",
+      },
     ],
-    more: "Takes the address as it was given (eid.to/ada/notes, with or without https://, on any of e-ID's domains). No account needed. Refuses to overwrite a file of that name. The sender must still be sending.",
+    more: "Takes the address as it was given (eid.to/ada/notes, with or without https://, on any of e-ID's domains). Shows who is sending what, and its size, and asks before anything comes; without a terminal it refuses unless told --yes. No account needed for a public send; a send for you needs this machine signed in as you. Refuses to overwrite a file of that name. The sender must still be sending.",
     examples: [
       "eid get eid.to/ada/notes",
       "npx @e-id/eid get eid.to/ada/notes",
+      "eid get ada/notes --yes --json",
     ],
     json: "{ file, size, path, from }",
   },
   {
+    name: "inbox",
+    usage: "inbox",
+    says: "what people are sending you, waiting to be taken",
+    flags: [
+      {
+        flag: "--watch",
+        says: "wait, and ask about each send as it arrives (y/N)",
+      },
+      {
+        flag: "--accept-from <people>",
+        says: "while watching, take what these people send without asking (ada,bob)",
+      },
+      { flag: "--dir <path>", says: "where taken files go (here by default)" },
+    ],
+    more: "Each send for you with who sends it (their name and @handle), the file and its size, and since when; eid get <address> takes one. --watch waits for arrivals and asks before anything comes down; --accept-from names whom you take from without asking, never everyone: a blanket accept is how a stranger's file lands unread. With --json, --watch prints each arrival as a line and takes nothing. A send leaves the inbox once taken, or when its sender stops.",
+    examples: [
+      "eid inbox",
+      "eid inbox --watch",
+      "eid inbox --watch --accept-from ada",
+      "eid inbox --watch --json",
+    ],
+    json: "Inbox; with --watch, one waiting send per line",
+  },
+  {
     name: "ls",
     usage: "ls",
-    says: "your short links and sends, and how many you may keep",
+    says: "your short links and sends (whom each is for, who took it), and how many you may keep",
     json: "Links",
   },
   {

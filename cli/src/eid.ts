@@ -28,6 +28,7 @@ import {
 } from "node:fs"
 import { homedir, hostname, tmpdir } from "node:os"
 import { basename, join, resolve } from "node:path"
+import { createInterface } from "node:readline/promises"
 import { parseArgs } from "node:util"
 import { indent, kv, spinner, table, ui } from "@adriangalilea/utils/cli"
 import type { z } from "zod"
@@ -54,6 +55,9 @@ type ShortLink = z.infer<typeof S.ShortLinkOut>
 type Links = z.infer<typeof S.Links>
 type Me = z.infer<typeof S.Me>
 type Send = z.infer<typeof S.SendOut>
+type SendMade = z.infer<typeof S.SendMade>
+type Inbox = z.infer<typeof S.Inbox>
+type Waiting = Inbox["waiting"][number]
 type Stats = z.infer<typeof S.Stats>
 type MyCard = z.infer<typeof S.MyCard>
 type ApiError = z.infer<typeof S.ApiErrorSchema>["error"]
@@ -98,7 +102,13 @@ function readConfig(): Config | null {
 /** One question to the API: its JSON, or its error, said as e-ID words it. */
 async function api<T>(
   path: string,
-  init: { method?: string; body?: unknown; key?: string } = {},
+  init: {
+    method?: string
+    body?: unknown
+    key?: string
+    /** A send's password, said in a header, never in the address. */
+    password?: string
+  } = {},
 ): Promise<T> {
   const res = await fetch(`${BASE}/api/v1${path}`, {
     method: init.method ?? "GET",
@@ -106,6 +116,7 @@ async function api<T>(
       "content-type": "application/json",
       "user-agent": `eid/${VERSION}`,
       ...(init.key && { authorization: `Bearer ${init.key}` }),
+      ...(init.password && { "e-id-password": init.password }),
     },
     body: init.body === undefined ? undefined : JSON.stringify(init.body),
   })
@@ -225,7 +236,15 @@ function said(link: ShortLink): string {
           /^https?:/.test(link.value) ? link.value : `https://${link.value}`,
         ).hostname,
   ]
-  parts.push(link.visits === 1 ? "opened once" : `opened ${link.visits} times`)
+  if (link.to)
+    parts.push(
+      `for ${link.to.map((p) => (p.taken ? `${p.username} ${ui.ok("(took it)")}` : p.username)).join(", ")}`,
+    )
+  else
+    parts.push(
+      link.visits === 1 ? "opened once" : `opened ${link.visits} times`,
+    )
+  if (link.locked) parts.push("behind a password")
   if (link.stopped) parts.push(ui.bad("taken down"))
   if (link.expires) parts.push(`until ${link.expires}`)
   if (link.maxVisits !== null)
@@ -337,15 +356,111 @@ function sendmeRun(bin: string, args: string[], cwd: string): Promise<void> {
   })
 }
 
+/** A question for the person at the terminal, on stderr so stdout stays the answer. */
+async function ask(question: string): Promise<string> {
+  const rl = createInterface({ input: process.stdin, output: process.stderr })
+  try {
+    return (await rl.question(question)).trim()
+  } finally {
+    rl.close()
+  }
+}
+
+/** Who sends what, as asked before taking it: "Ada Lovelace @ada: notes.zip (2.4MB)". */
+const offered = (
+  from: { username: string; name: string | null },
+  file: { name: string; size: number },
+) =>
+  `${from.name ? `${ui.head(from.name)} ` : ""}${ui.accent(`@${from.username}`)}${ui.muted(":")} ${file.name} ${ui.muted(`(${BYTES.format(file.size)})`)}`
+
+type Taken = { file: string; size: number; path: string; from: string }
+
+/** A send taken: its ticket asked for (with this machine's key where it has one, so a
+ *  send for its person is given; with the password where it has one), who sends what
+ *  shown and asked about unless `yes`, the file brought into `dir` with sendme, and,
+ *  for a send addressed to this person, e-ID told it came. Null where it is declined. */
+async function take(
+  address: string,
+  o: { dir: string; yes: boolean; password: string | undefined },
+): Promise<Taken | null> {
+  const at = sendAt(address)
+  const key = readConfig()?.key
+  const path = `/sends/${encodeURIComponent(at.username)}/${encodeURIComponent(at.name)}`
+  let password = o.password
+  let send: Send
+  for (;;) {
+    try {
+      send = await api<Send>(path, { key, password })
+      break
+    } catch (error) {
+      if ((error as Said).code !== "password" || !process.stdin.isTTY)
+        throw error
+      if (password) console.error(ui.bad("not the password"))
+      password = await ask(`password for ${at.username}/${at.name}: `)
+    }
+  }
+  if (!o.yes) {
+    if (!process.stdin.isTTY)
+      throw new Said(
+        `${at.username}/${at.name} is ${send.file.name} from @${send.from}: say --yes to take it without a terminal to ask in`,
+        "unconfirmed",
+      )
+    console.error(
+      offered({ username: send.from, name: send.fromName }, send.file),
+    )
+    if (!/^y(es)?$/i.test(await ask("take it? (y/N) "))) {
+      console.error(ui.muted("left where it is"))
+      return null
+    }
+  }
+  const target = join(o.dir, send.file.name)
+  if (existsSync(target))
+    throw new Said(`${target} is already there: --dir somewhere else`, "exists")
+  mkdirSync(o.dir, { recursive: true })
+  const bin = await sendme(() =>
+    console.error(ui.muted("fetching sendme, once (about 4 MB)…")),
+  )
+  await spinner(
+    `getting ${send.file.name} (${BYTES.format(send.file.size)}) from ${send.from}`,
+    () => sendmeRun(bin, ["receive", send.ticket, "--no-progress"], o.dir),
+  )
+  // Said for every send taken with a key: e-ID answers not found for one that was
+  // not for this person, and that is all it means here.
+  if (key)
+    await api(`${path}/taken`, { method: "POST", key }).catch(
+      (error: unknown) => {
+        if ((error as Said).code !== "not_found") throw error
+      },
+    )
+  return {
+    file: send.file.name,
+    size: send.file.size,
+    path: target,
+    from: send.from,
+  }
+}
+
 type Values = {
   until?: string
   opens?: string
   card?: string
   on?: string
   dir?: string
+  to?: string
+  password?: string
+  yes?: boolean
+  watch?: boolean
+  "accept-from"?: string
   json?: boolean
   "no-browser"?: boolean
 }
+
+/** A list as typed on the command line, "ada, bob" or "ada,bob", lower case. */
+const listed = (said: string | undefined) =>
+  (said ?? "")
+    .split(",")
+    .map((n) => n.trim().replace(/^@/, "").toLowerCase())
+    .filter(Boolean)
 
 type Context = {
   rest: string[]
@@ -430,9 +545,12 @@ const RUN: Record<CommandName, (c: Context) => Promise<void>> = {
       console.log(`${address}${copied ? ui.muted(" (copied)") : ""}`),
     )
   },
-  async send({ rest, out, session, domain, json }) {
+  async send({ rest, values, out, session, domain, json }) {
     const [given, name] = rest
     if (!given) throw new Said("eid send <path> [name]", "usage")
+    const to = listed(values.to)
+    if (values.to !== undefined && to.length === 0)
+      throw new Said("--to names people: --to ada,bob", "usage")
     const path = resolve(given)
     if (!existsSync(path))
       throw new Said(`Nothing at ${path} to send`, "not_found")
@@ -469,10 +587,16 @@ const RUN: Record<CommandName, (c: Context) => Promise<void>> = {
       const ticket = await spinner(`getting ${file.name} ready`, () =>
         ticketFrom(child),
       )
-      const sent = await api<Send>("/sends", {
+      const sent = await api<SendMade>("/sends", {
         method: "POST",
         key,
-        body: { ticket, file, name },
+        body: {
+          ticket,
+          file,
+          name,
+          ...(to.length > 0 && { to }),
+          ...(values.password !== undefined && { password: values.password }),
+        },
       })
       slug = sent.slug
     } catch (error) {
@@ -489,13 +613,19 @@ const RUN: Record<CommandName, (c: Context) => Promise<void>> = {
     const address = addressOn(domain, `/${username}/${slug}`)
     const command = `npx @e-id/eid get ${bare(address)}`
     const copied = !json && copy(command)
-    out({ from: username, slug, file, address, command }, () =>
+    out({ from: username, slug, file, to, address, command }, () =>
       console.log(`${command}${copied ? ui.muted(" (copied)") : ""}`),
     )
     // Said whoever reads: a person, or a program whose stdout is the JSON.
+    const whom =
+      to.length > 0
+        ? `for ${to.join(", ")} only: it waits in their eid inbox, and nobody else can open it`
+        : values.password !== undefined
+          ? "for whoever has the address and the password"
+          : "for whoever has the address"
     console.error(
       ui.muted(
-        `sending ${file.name} (${BYTES.format(file.size)}) until you stop (Ctrl-C), straight from this machine. Where the two machines connect directly, each sees the other's IP address.`,
+        `sending ${file.name} (${BYTES.format(file.size)}) ${whom}, until you stop (Ctrl-C), straight from this machine. Where the two machines connect directly, each sees the other's IP address.`,
       ),
     )
     await new Promise(() => {})
@@ -503,34 +633,73 @@ const RUN: Record<CommandName, (c: Context) => Promise<void>> = {
   async get({ rest, values, out }) {
     const [address] = rest
     if (!address) throw new Said("eid get <address>", "usage")
-    const at = sendAt(address)
-    const send = await api<Send>(
-      `/sends/${encodeURIComponent(at.username)}/${encodeURIComponent(at.name)}`,
-    )
-    const dir = resolve(values.dir ?? ".")
-    const target = join(dir, send.file.name)
-    if (existsSync(target))
-      throw new Said(
-        `${target} is already there: --dir somewhere else`,
-        "exists",
+    const got = await take(address, {
+      dir: resolve(values.dir ?? "."),
+      yes: values.yes === true,
+      password: values.password,
+    })
+    if (!got) return out({ taken: false, address }, () => {})
+    out(got, () => console.log(`${ui.ok("got")} ${got.path}`))
+  },
+  async inbox({ values, out, session, json }) {
+    const { key } = await session()
+    const shown = (w: Waiting) =>
+      `${offered(w.from, w.file)}  ${ui.muted(`eid get ${w.address} · since ${w.since.slice(0, 16).replace("T", " ")}`)}`
+    if (!values.watch) {
+      const inbox = await api<Inbox>("/inbox", { key })
+      return out(inbox, () =>
+        console.log(
+          inbox.waiting.length === 0
+            ? ui.muted("Nothing waiting for you.")
+            : inbox.waiting.map(shown).join("\n"),
+        ),
       )
-    mkdirSync(dir, { recursive: true })
-    const bin = await sendme(() =>
-      console.error(ui.muted("fetching sendme, once (about 4 MB)…")),
-    )
-    await spinner(
-      `getting ${send.file.name} (${BYTES.format(send.file.size)}) from ${send.from}`,
-      () => sendmeRun(bin, ["receive", send.ticket, "--no-progress"], dir),
-    )
-    out(
-      {
-        file: send.file.name,
-        size: send.file.size,
-        path: target,
-        from: send.from,
-      },
-      () => console.log(`${ui.ok("got")} ${target}`),
-    )
+    }
+    const accepted = new Set(listed(values["accept-from"]))
+    if (!json && !process.stdin.isTTY && accepted.size === 0)
+      throw new Said(
+        "eid inbox --watch asks about each send, and there is no terminal to ask in: --json to list them, --accept-from to take from people you name",
+        "unconfirmed",
+      )
+    const dir = resolve(values.dir ?? ".")
+    const seen = new Set<string>()
+    let after: string | undefined
+    if (!json)
+      console.error(
+        ui.muted(
+          `waiting for sends to you${accepted.size ? `, taking ${[...accepted].join(", ")}'s without asking` : ""} (Ctrl-C to stop)`,
+        ),
+      )
+    for (;;) {
+      const inbox = await api<Inbox>(
+        `/inbox?wait=25${after ? `&after=${encodeURIComponent(after)}` : ""}`,
+        { key },
+      )
+      after = inbox.now
+      // Oldest first, as they arrived; one shown before is not shown again.
+      for (const w of [...inbox.waiting].reverse()) {
+        if (seen.has(w.address)) continue
+        seen.add(w.address)
+        if (json) {
+          console.log(JSON.stringify(w))
+          continue
+        }
+        const known = accepted.has(w.from.username.toLowerCase())
+        if (known) console.error(shown(w))
+        const got = await take(w.address, {
+          dir,
+          yes: known,
+          password: undefined,
+        }).catch((error: unknown) => {
+          // One send that cannot be taken (its sender stopped, a file of that name
+          // here already) is said, and the watch goes on.
+          if (!(error instanceof Said)) throw error
+          console.error(ui.bad(`${w.address}: ${error.message}`))
+          return null
+        })
+        if (got) console.log(`${ui.ok("got")} ${got.path}`)
+      }
+    }
   },
   async ls({ out, session }) {
     const { key, username } = await session()
@@ -708,6 +877,11 @@ function parse() {
       card: { type: "string" },
       on: { type: "string" },
       dir: { type: "string" },
+      to: { type: "string" },
+      password: { type: "string" },
+      yes: { type: "boolean", short: "y" },
+      watch: { type: "boolean" },
+      "accept-from": { type: "string" },
       json: { type: "boolean" },
       "no-browser": { type: "boolean" },
       help: { type: "boolean", short: "h" },
