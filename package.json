@@ -35,6 +35,7 @@
     "shiki": "^4.5.0",
     "simple-icons": "^16.34.0",
     "tailwind-merge": "^3.7.0",
+    "undici": "^8.11.2",
     "web-vitals": "^6.2.3",
     "zod": "^4.6.5"
   },

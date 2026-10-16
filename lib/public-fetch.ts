@@ -1,5 +1,7 @@
-import { lookup } from "node:dns/promises"
-import { BlockList, isIP } from "node:net"
+import { type LookupAddress, lookup } from "node:dns"
+import { lookup as resolve } from "node:dns/promises"
+import { BlockList, isIP, type LookupFunction } from "node:net"
+import { Agent, fetch as connect } from "undici"
 
 /** Redirects followed before the fetch gives up. */
 const REDIRECTS = 5
@@ -45,14 +47,41 @@ export function isPublicAddress(address: string): boolean {
   return !NOT_PUBLIC.check(address, family === 4 ? "ipv4" : "ipv6")
 }
 
-/** THROWS unless `url` is http(s) and every address its host resolves to is public. */
+/** A name resolved as a connection resolves it, refused where any address it has
+ *  is not public: the lookup every connection of `publicFetch` makes, so what it
+ *  checks is what it connects to. */
+const publicLookup: LookupFunction = (hostname, options, callback) => {
+  lookup(hostname, { ...options, all: true }, (error, found) => {
+    const addresses = found as unknown as LookupAddress[]
+    if (error) return callback(error, "", 0)
+    const inside = addresses.find((a) => !isPublicAddress(a.address))
+    if (inside)
+      return callback(
+        new Error(`${hostname} is ${inside.address}, not a public address`),
+        "",
+        0,
+      )
+    if (options.all) return callback(null, addresses as never)
+    const [first] = addresses
+    if (!first) return callback(new Error(`${hostname} has no address`), "", 0)
+    callback(null, first.address, first.family)
+  })
+}
+
+/** The connections `publicFetch` makes: every name through `publicLookup`. */
+const PUBLIC = new Agent({ connect: { lookup: publicLookup } })
+
+/** THROWS unless `url` is http(s) and its host is public: an IP as written (no
+ *  lookup will see it), a name by every address it resolves to now. In Node the
+ *  connection checks the name again, the resolve it connects with
+ *  (`publicLookup`); in Bun this is the check. */
 async function assertPublic(url: URL): Promise<void> {
   if (url.protocol !== "http:" && url.protocol !== "https:")
     throw new Error(`publicFetch ${url.href}: ${url.protocol} is not http(s)`)
   const host = url.hostname.replace(/^\[(.*)\]$/, "$1")
   const addresses = isIP(host)
     ? [host]
-    : (await lookup(host, { all: true })).map((a) => a.address)
+    : (await resolve(host, { all: true })).map((a) => a.address)
   const inside = addresses.find((a) => !isPublicAddress(a))
   if (inside)
     throw new Error(
@@ -60,10 +89,10 @@ async function assertPublic(url: URL): Promise<void> {
     )
 }
 
-/** `fetch`, refused anywhere but the public internet: every hop's host checked
- *  before it is asked, redirects followed here. THROWS on a refused address, a
- *  scheme other than http(s), or more than `REDIRECTS` redirects. The response's
- *  `url` is the last hop's, as a followed fetch's is. */
+/** `fetch`, refused anywhere but the public internet: every hop's address checked
+ *  as it connects, redirects followed here. THROWS on a refused address, a scheme
+ *  other than http(s), or more than `REDIRECTS` redirects. The response's `url` is
+ *  the last hop's, as a followed fetch's is. */
 export async function publicFetch(
   url: string | URL,
   init: Omit<RequestInit, "redirect"> = {},
@@ -71,7 +100,18 @@ export async function publicFetch(
   let at = new URL(url)
   for (let hop = 0; hop <= REDIRECTS; hop++) {
     await assertPublic(at)
-    const res = await fetch(at, { ...init, redirect: "manual" })
+    const res = (await connect(at, {
+      ...(init as object),
+      redirect: "manual",
+      dispatcher: PUBLIC,
+    }).catch((error: Error) => {
+      // A refused address surfaces as the connection's cause: said as the
+      // fetch's own reason.
+      const cause = (error as { cause?: Error }).cause
+      throw new Error(
+        `publicFetch ${at.href}: ${cause?.message ?? error.message}`,
+      )
+    })) as unknown as Response
     const to = res.headers.get("location")
     if (res.status < 300 || res.status > 399 || !to) return res
     // Read, never cancelled: a redirect's body is a line, and Next's fetch inside

@@ -2,6 +2,7 @@
 
 import { and, desc, eq, inArray, not } from "drizzle-orm"
 import { updateTag } from "next/cache"
+import { headers } from "next/headers"
 import { hasFlag } from "@/components/ui/flag"
 import { db } from "@/db"
 import { comments, links, type SelectComment, users } from "@/db/schema"
@@ -30,7 +31,8 @@ import {
 import { isAdmin } from "@/lib/env"
 import { getGithubProfile } from "@/lib/github"
 import { DRAFTED } from "@/lib/platforms"
-import { getPresence, getWebsite } from "@/lib/presence"
+import { getPresence, getWebsite, type Presence } from "@/lib/presence"
+import { allowed, callerOf } from "@/lib/rate-limit"
 import { getSession } from "@/lib/session"
 import { profileTag, USERS_TAG, usernameTag } from "@/lib/tags"
 import { claimUsername, holderOf } from "@/lib/username"
@@ -562,9 +564,28 @@ export async function websiteOf(username: string): Promise<Unfurl | null> {
 /** What the profile would show behind each link on the home's card, before
  *  there is an account: the same reads a profile makes (lib/presence), from the
  *  card's links instead of stored ones. Public reads of public pages, cached as
- *  a profile's are. */
-export async function previewPresence(drafted: Written["links"]) {
+ *  a profile's are. Open to anyone, and each new website typed is a fetch e-ID
+ *  makes, so one visitor gets PREVIEWS calls a window (lib/rate-limit); past it
+ *  the card still works and its preview waits, empty. */
+export async function previewPresence(
+  drafted: Written["links"],
+): Promise<Presence> {
+  if (!allowed(callerOf(await headers()), PREVIEWS.most, PREVIEWS.windowMs))
+    return NO_PRESENCE
   return getPresence(asLinks(drafted))
+}
+
+/** How many previews one visitor gets, and in what window: a card is filled in a
+ *  handful, one a change to its links. */
+const PREVIEWS = { most: 20, windowMs: 10 * 60 * 1000 }
+
+/** A preview with nothing read. */
+const NO_PRESENCE: Presence = {
+  github: null,
+  website: null,
+  youtube: null,
+  tweet: null,
+  profiles: [],
 }
 
 /** How new an account must be to take a card filled on the home: the sign-in
