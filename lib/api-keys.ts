@@ -164,6 +164,19 @@ export async function answerLogin(
   return answered.length > 0
 }
 
+/** Whether the CLI has taken the key of the sign-in `code` names, approved by
+ *  `userId`: its row goes as the key is handed out (`claimLogin`). False while it
+ *  waits for the CLI's next question. */
+export async function loginTaken(code: string, userId: string) {
+  const [row] = await db
+    .select({ user_id: cliLogins.user_id })
+    .from(cliLogins)
+    .where(eq(cliLogins.user_code, code.toUpperCase()))
+  if (row && row.user_id !== userId)
+    throw new Error(`loginTaken: ${code} was not approved by ${userId}`)
+  return !row
+}
+
 export type Claimed =
   | { state: "authorization_pending" }
   | { state: "access_denied" }

@@ -12,7 +12,7 @@ import {
   type SelectComment,
   users,
 } from "@/db/schema"
-import { answerLogin, keysOf, revokeKey } from "@/lib/api-keys"
+import { answerLogin, keysOf, loginTaken, revokeKey } from "@/lib/api-keys"
 import { asLinks, type Written } from "@/lib/card-draft"
 import type { CardEdit, SaveResult } from "@/lib/card-edit"
 import { editableCard, writeCard } from "@/lib/card-write"
@@ -496,6 +496,12 @@ export async function answerCliLogin(
         gone: true,
         why: "That sign-in is gone: run eid login again.",
       }
+}
+
+/** Whether the terminal the signed-in user approved under `code` has taken its key:
+ *  what /cli waits on before it says the terminal is signed in. */
+export async function cliLoginTaken(code: string): Promise<boolean> {
+  return loginTaken(code, (await requireUser()).id)
 }
 
 /** The signed-in user's keys, for /cli. */

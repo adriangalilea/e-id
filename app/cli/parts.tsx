@@ -1,14 +1,18 @@
 "use client"
 
 import { useRouter } from "next/navigation"
-import { useState, useTransition } from "react"
+import { useEffect, useState, useTransition } from "react"
 import { SIGN_IN_PROVIDERS } from "@/components/session/sign-in-providers"
 import { Button } from "@/components/ui/button"
 import { InputGroup } from "@/components/ui/input"
-import { answerCliLogin, revokeMyKey } from "@/db/actions"
+import { answerCliLogin, cliLoginTaken, revokeMyKey } from "@/db/actions"
 import { startSignIn } from "@/lib/sign-in"
 
 // /cli's hands: approving a sign-in, revoking a key, signing in first.
+
+/** How long an approved sign-in waits for its terminal before the page says it did not
+ *  come: a running `eid login` asks every 3 s, so a minute is a terminal that stopped. */
+const TAKE_WITHIN_MS = 60_000
 
 const DAY = new Intl.DateTimeFormat("en", {
   month: "short",
@@ -60,10 +64,31 @@ export function Approve({
   host: string
   name: string | null
 }) {
-  const [answered, setAnswered] = useState<"yes" | "no" | null>(null)
+  const router = useRouter()
+  const [answered, setAnswered] = useState<
+    "approved" | "taken" | "untaken" | "refused" | null
+  >(null)
   const [why, setWhy] = useState<string | null>(null)
   const [username, setUsername] = useState(name ?? "")
   const [pending, start] = useTransition()
+  // Approved is not signed in: the key is made when the terminal next asks for it
+  // (every LOGIN_INTERVAL_S). Asked every second until it has, then the list below
+  // is read again with the new machine in it.
+  useEffect(() => {
+    if (answered !== "approved") return
+    const until = Date.now() + TAKE_WITHIN_MS
+    const timer = window.setInterval(async () => {
+      if (await cliLoginTaken(code)) {
+        window.clearInterval(timer)
+        setAnswered("taken")
+        router.refresh()
+      } else if (Date.now() > until) {
+        window.clearInterval(timer)
+        setAnswered("untaken")
+      }
+    }, 1000)
+    return () => window.clearInterval(timer)
+  }, [answered, code, router])
   const answer = (approve: boolean) =>
     start(async () => {
       const done = await answerCliLogin(
@@ -71,23 +96,29 @@ export function Approve({
         approve,
         name === null ? undefined : username,
       )
-      if (done.ok) setAnswered(approve ? "yes" : "no")
+      if (done.ok) setAnswered(approve ? "approved" : "refused")
       else setWhy(done.why)
     })
   if (answered)
     return (
       <p className="text-sm">
-        {answered === "yes"
-          ? "Done. Go back to your terminal: it is signed in."
-          : "Refused. The terminal is told so."}
+        {
+          {
+            approved: `Approved. Waiting for the terminal on ${host} to take its key…`,
+            taken: `Done. The terminal on ${host} is signed in.`,
+            untaken: `Approved, but the terminal on ${host} has not come for its key: if it stopped, run eid login again.`,
+            refused: "Refused. The terminal is told so.",
+          }[answered]
+        }
       </p>
     )
   return (
     <>
       <p className="text-foreground/70 text-sm">
         Sign in the eid CLI on{" "}
-        <span className="font-mono text-foreground">{host}</span>? It will make,
-        list and delete your short links and read your numbers.
+        <span className="font-mono text-foreground">{host}</span>? It will act
+        for you: make and delete your short links, send files and take what is
+        sent to you, change your card and read your numbers.
       </p>
       <p className="text-foreground/60 text-xs">
         The terminal shows this code. Approve only if it is the same:

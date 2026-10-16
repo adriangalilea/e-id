@@ -24,7 +24,8 @@ export default function Page({
       <header className="flex flex-col gap-2">
         <h1 className="text-2xl">the eid CLI</h1>
         <p className="text-foreground/60 text-sm">
-          Your short links and your numbers from a terminal.{" "}
+          Your e-ID from a terminal: short links, files sent and received, your
+          card, your numbers.{" "}
           <code className="font-mono text-foreground/80">
             npm i -g @e-id/eid
           </code>
