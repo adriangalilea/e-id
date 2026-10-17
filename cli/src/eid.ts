@@ -28,13 +28,18 @@ import {
 } from "node:fs"
 import { homedir, hostname, tmpdir } from "node:os"
 import { basename, join, resolve } from "node:path"
-import { createInterface } from "node:readline/promises"
-import { parseArgs } from "node:util"
 import {
+  askHidden,
   bar,
+  CliError,
+  canAsk,
+  confirm,
+  emit,
   indent,
+  jsonOut,
   kv,
   link,
+  main,
   spinner,
   table,
   ui,
@@ -44,21 +49,13 @@ import type * as S from "@/lib/api-schemas"
 import { bare, cardLines } from "@/lib/card-lines"
 import type { Card } from "@/lib/card-schema"
 import { linkPlatforms } from "@/lib/platforms"
-import pkg from "../package.json" with { type: "json" }
-import {
-  COMMANDS,
-  type CommandName,
-  commandNamed,
-  detail,
-  GLOBAL,
-  overview,
-} from "./commands"
+import { type Call, type CommandName, EID } from "./commands"
 import { sendme } from "./sendme"
 import { installSkill, refreshSkill, skill } from "./skill"
 
-/** This eid's version: package.json's, bundled in at build, the one source
- *  (CI releases what it says). */
-const VERSION = pkg.version
+/** This eid's version: package.json's (commands.ts), bundled in at build, the one
+ *  source (CI releases what it says). */
+const VERSION = EID.spec.version
 
 type ShortLink = z.infer<typeof S.ShortLinkOut>
 type Links = z.infer<typeof S.Links>
@@ -120,18 +117,6 @@ function writeSentNames(names: Record<string, string>) {
   })
 }
 
-/** A failure the person caused or can fix: said plainly, exit 1, no stack;
- *  under --json, the API's error shape with its code. */
-class Said extends Error {
-  constructor(
-    message: string,
-    readonly code = "refused",
-    readonly fields?: Record<string, string>,
-  ) {
-    super(message)
-  }
-}
-
 function readConfig(): Config | null {
   try {
     const config = JSON.parse(readFileSync(CONFIG, "utf8")) as Config
@@ -171,7 +156,7 @@ async function api<T>(
   if (!res.ok) {
     const error = (body as { error?: ApiError }).error
     if (!error) throw new Error(`${path}: HTTP ${res.status} with no error`)
-    throw new Said(error.message, error.code, error.fields)
+    throw new CliError(error.message, error.code, error.fields)
   }
   return body as T
 }
@@ -230,14 +215,17 @@ async function login(browser: boolean): Promise<Config> {
     for (;;) {
       await sleep(every)
       if (Date.now() > until)
-        throw new Said("Took too long: run eid login again", "expired_token")
+        throw new CliError(
+          "Took too long: run eid login again",
+          "expired_token",
+        )
       try {
         return await api<z.infer<typeof S.LoggedIn>>("/login/token", {
           method: "POST",
           body: { device_code: start.device_code },
         })
       } catch (error) {
-        const code = (error as Said).code
+        const code = (error as CliError).code
         if (code === "authorization_pending") continue
         if (code === "slow_down") {
           every += 5000
@@ -313,7 +301,7 @@ function sendAt(address: string): { username: string; name: string } {
     parts.shift()
   const [username, name] = parts
   if (parts.length !== 2 || !username || !name)
-    throw new Said(
+    throw new CliError(
       `Not an address of a send: ${address} (it looks like eid.to/ada/notes)`,
       "bad_address",
     )
@@ -371,66 +359,12 @@ function sendmeRun(bin: string, args: string[], cwd: string): Promise<void> {
       // ("getting collection …") say nothing about it.
       const last = said.trim().split("\n").at(-1) ?? ""
       fail(
-        new Said(
+        new CliError(
           `the connection dropped (${/error/i.test(last) ? last : (signal ?? `sendme ${code}`)})`,
           "unreachable",
         ),
       )
     })
-  })
-}
-
-/** A question for the person at the terminal, on stderr so stdout stays the answer.
- *  Ctrl-C at it is Ctrl-C, which readline would otherwise swallow. */
-async function ask(question: string): Promise<string> {
-  const rl = createInterface({ input: process.stdin, output: process.stderr })
-  rl.on("SIGINT", () => process.kill(process.pid, "SIGINT"))
-  try {
-    return (await rl.question(question)).trim()
-  } catch (error) {
-    // Ctrl-D at the question is no answer, so the default one.
-    if ((error as Error).name === "AbortError") {
-      process.stderr.write("\n")
-      return ""
-    }
-    throw error
-  } finally {
-    rl.close()
-  }
-}
-
-/** A question whose answer is never shown as it is typed (a password): read key by
- *  key with the terminal in raw mode, so it is in no scrollback and no recording. */
-function askHidden(question: string): Promise<string> {
-  const input = process.stdin
-  process.stderr.write(question)
-  input.setRawMode(true)
-  input.resume()
-  return new Promise((done) => {
-    let typed: string[] = []
-    const finish = () => {
-      input.off("data", onKey)
-      input.setRawMode(false)
-      input.pause()
-      process.stderr.write("\n")
-    }
-    const onKey = (chunk: Buffer) => {
-      for (const c of chunk.toString("utf8")) {
-        if (c === "\u0003") {
-          finish()
-          process.kill(process.pid, "SIGINT")
-          return
-        }
-        if (c === "\r" || c === "\n") {
-          finish()
-          done(typed.join(""))
-          return
-        }
-        typed =
-          c === "\u007f" || c === "\b" ? typed.slice(0, -1) : [...typed, c]
-      }
-    }
-    input.on("data", onKey)
   })
 }
 
@@ -526,7 +460,7 @@ async function take(
   let send: Send
   // A send whose machine is not answering is waited for, said once.
   let waitSaid = false
-  const waitFor = async (error: Said) => {
+  const waitFor = async (error: CliError) => {
     if (!waitSaid)
       console.error(
         `  ${ui.warn(error.message)}\n  ${ui.muted("waiting for it · Ctrl-C to stop")}`,
@@ -539,14 +473,16 @@ async function take(
       send = await api<Send>(path, { key, password })
       break
     } catch (error) {
-      if ((error as Said).code === "away") {
-        await waitFor(error as Said)
+      if ((error as CliError).code === "away") {
+        await waitFor(error as CliError)
         continue
       }
-      if ((error as Said).code !== "password" || !process.stdin.isTTY)
-        throw error
+      if ((error as CliError).code !== "password" || !canAsk()) throw error
       if (password) console.error(`  ${ui.bad("not the password")}`)
-      password = await askHidden(`  password for ${at.username}/${at.name}: `)
+      password = await askHidden(
+        `  password for ${at.username}/${at.name}: `,
+        "--password <words>",
+      )
     }
   }
   const target = join(o.dir, send.file.name)
@@ -573,7 +509,7 @@ async function take(
       )}\n`,
     )
   if (existsSync(target))
-    throw new Said(
+    throw new CliError(
       o.watching
         ? `${fromHome(target)} is already there: left in your inbox`
         : `${fromHome(target)} is already there: --dir somewhere else`,
@@ -589,19 +525,15 @@ async function take(
       password,
       body: { answer: said },
     }).catch((error: unknown) => {
-      if (!(error instanceof Said)) throw error
+      if (!(error instanceof CliError)) throw error
       console.error(ui.muted(`  the sender was not told: ${error.message}`))
     })
   if (!o.yes) {
-    if (!process.stdin.isTTY)
-      throw new Said(
-        `${at.username}/${at.name} is ${send.file.name} from @${send.from}: say --yes to take it without a terminal to ask in`,
-        "unconfirmed",
-      )
     if (
-      !/^y(es)?$/i.test(
-        await ask(`  ${ui.head("take it?")} ${ui.muted("(y/N)")} `),
-      )
+      !(await confirm(
+        `  ${ui.head("take it?")}`,
+        `${at.username}/${at.name} is ${send.file.name} from @${send.from}: say --yes to take it`,
+      ))
     ) {
       await answer("no")
       console.error(
@@ -638,10 +570,10 @@ async function take(
       })
       break
     } catch (error) {
-      if (!(error instanceof Said)) throw error
+      if (!(error instanceof CliError)) throw error
       drops++
       if (drops > MOST_DROPS)
-        throw new Said(
+        throw new CliError(
           `The file did not come: ${error.message}, ${MOST_DROPS} times.\n  What came is kept in ${fromHome(o.dir)}: eid get picks up from there.`,
           error.code,
         )
@@ -652,12 +584,12 @@ async function take(
           ticket = (await api<Send>(path, { key, password })).ticket
           break
         } catch (asked) {
-          if (asked instanceof Said && asked.code === "away") {
+          if (asked instanceof CliError && asked.code === "away") {
             await waitFor(asked)
             continue
           }
-          if (asked instanceof Said)
-            throw new Said(
+          if (asked instanceof CliError)
+            throw new CliError(
               `${asked.message}\n  What came is kept in ${fromHome(o.dir)}: eid get picks up from there if they send it again.`,
               asked.code,
             )
@@ -672,7 +604,7 @@ async function take(
   // is had either way, so a refusal here is said, never thrown.
   await api(`${path}/taken`, { method: "POST", key, password }).catch(
     (error: unknown) => {
-      if (!(error instanceof Said)) throw error
+      if (!(error instanceof CliError)) throw error
       console.error(
         ui.muted(`  the sender was not told it came: ${error.message}`),
       )
@@ -686,9 +618,6 @@ async function take(
   }
 }
 
-/** The flags as parsed: their one spelling is `parse`'s options. */
-type Values = ReturnType<typeof parse>["values"]
-
 /** A list as typed on the command line, "ada, bob" or "ada,bob", lower case. */
 const listed = (said: string | undefined) =>
   (said ?? "")
@@ -696,9 +625,10 @@ const listed = (said: string | undefined) =>
     .map((n) => n.trim().replace(/^@/, "").toLowerCase())
     .filter(Boolean)
 
-type Context = {
+/** What a command runs with: its arguments, and its flags as its spec types them. */
+type Context<K extends CommandName> = {
   rest: string[]
-  values: Values
+  values: Extract<Call, { command: K }>["values"]
   json: boolean
   /** The answer as JSON (`--json`), or `human` for a person. */
   out: (data: unknown, human: () => void) => void
@@ -712,7 +642,7 @@ type Context = {
 }
 
 /** What each command does: one for every command in the table, by type. */
-const RUN: Record<CommandName, (c: Context) => Promise<void>> = {
+const RUN: { [K in CommandName]: (c: Context<K>) => Promise<void> } = {
   async login({ browser, out }) {
     const config = await login(browser)
     out({ username: config.username, base: BASE }, () => {})
@@ -726,7 +656,7 @@ const RUN: Record<CommandName, (c: Context) => Promise<void>> = {
     await api("/key", { method: "DELETE", key: config.key }).catch(
       (error: unknown) => {
         // A key revoked at /cli already is signed out all the same.
-        if ((error as Said).code !== "unauthorized") throw error
+        if ((error as CliError).code !== "unauthorized") throw error
       },
     )
     rmSync(CONFIG)
@@ -757,10 +687,10 @@ const RUN: Record<CommandName, (c: Context) => Promise<void>> = {
   },
   async link({ rest, values, out, session, domain }) {
     const [to, name] = rest
-    if (!to) throw new Said("eid link <url> [name]", "usage")
+    if (!to) throw new CliError("eid link <url> [name]", "usage")
     const opens = values.opens === undefined ? undefined : Number(values.opens)
     if (opens !== undefined && !Number.isInteger(opens))
-      throw new Said("--opens is a whole number", "usage")
+      throw new CliError("--opens is a whole number", "usage")
     const { key, username } = await session()
     const link = await api<ShortLink>("/links", {
       method: "POST",
@@ -781,13 +711,13 @@ const RUN: Record<CommandName, (c: Context) => Promise<void>> = {
   },
   async send({ rest, values, out, session, domain, json }) {
     const [given, name] = rest
-    if (!given) throw new Said("eid send <path> [name]", "usage")
+    if (!given) throw new CliError("eid send <path> [name]", "usage")
     const named = listed(values.to)
     if (values.to !== undefined && named.length === 0)
-      throw new Said("--to names people: --to ada,bob", "usage")
+      throw new CliError("--to names people: --to ada,bob", "usage")
     const path = resolve(given)
     if (!existsSync(path))
-      throw new Said(`Nothing at ${path} to send`, "not_found")
+      throw new CliError(`Nothing at ${path} to send`, "not_found")
     const stat = statSync(path)
     const file = {
       name: basename(path),
@@ -850,7 +780,7 @@ const RUN: Record<CommandName, (c: Context) => Promise<void>> = {
           },
         })
       const sent = await made(name ?? remembered).catch((error: unknown) => {
-        if (remembered && error instanceof Said && error.code === "taken")
+        if (remembered && error instanceof CliError && error.code === "taken")
           return made(undefined)
         throw error
       })
@@ -921,7 +851,8 @@ const RUN: Record<CommandName, (c: Context) => Promise<void>> = {
         `/links/${encodeURIComponent(slug)}/events?wait=25&after=${after}`,
         { key },
       ).catch((error: unknown) => {
-        if (error instanceof Said && error.code === "not_found") return "gone"
+        if (error instanceof CliError && error.code === "not_found")
+          return "gone"
         return null
       })
       // Its name was taken away while this machine was not heard from (a day
@@ -965,7 +896,7 @@ const RUN: Record<CommandName, (c: Context) => Promise<void>> = {
   },
   async get({ rest, values, out, json, domain }) {
     const [address] = rest
-    if (!address) throw new Said("eid get <address>", "usage")
+    if (!address) throw new CliError("eid get <address>", "usage")
     const got = await take(address, {
       dir: resolve(values.dir ?? "."),
       yes: values.yes === true,
@@ -1001,8 +932,8 @@ const RUN: Record<CommandName, (c: Context) => Promise<void>> = {
       )
     }
     const accepted = new Set(listed(values["accept-from"]))
-    if (!json && !process.stdin.isTTY && accepted.size === 0)
-      throw new Said(
+    if (!json && !canAsk() && accepted.size === 0)
+      throw new CliError(
         "eid inbox --watch asks about each send, and there is no terminal to ask in: --json to list them, --accept-from to take from people you name",
         "unconfirmed",
       )
@@ -1039,7 +970,8 @@ const RUN: Record<CommandName, (c: Context) => Promise<void>> = {
         `/inbox?wait=25${after ? `&after=${encodeURIComponent(after)}` : ""}`,
         { key },
       ).catch((error: unknown) => {
-        if (error instanceof Said && error.code === "unauthorized") throw error
+        if (error instanceof CliError && error.code === "unauthorized")
+          throw error
         return null
       })
       if (!inbox) {
@@ -1066,7 +998,7 @@ const RUN: Record<CommandName, (c: Context) => Promise<void>> = {
         }).catch((error: unknown) => {
           // One send that cannot be taken (its sender stopped, a file of that name
           // here already) is said, and the watch goes on.
-          if (!(error instanceof Said)) throw error
+          if (!(error instanceof CliError)) throw error
           console.error(`  ${ui.bad(`${w.address}: ${error.message}`)}`)
           return null
         })
@@ -1100,7 +1032,7 @@ const RUN: Record<CommandName, (c: Context) => Promise<void>> = {
   },
   async rm({ rest, out, session }) {
     const [name] = rest
-    if (!name) throw new Said("eid rm <name>", "usage")
+    if (!name) throw new CliError("eid rm <name>", "usage")
     await api(`/links/${encodeURIComponent(name)}`, {
       method: "DELETE",
       key: (await session()).key,
@@ -1113,7 +1045,7 @@ const RUN: Record<CommandName, (c: Context) => Promise<void>> = {
       headers: { "user-agent": `eid/${VERSION}` },
     })
     if (res.status === 404)
-      throw new Said(`No e-ID is called ${username}`, "not_found")
+      throw new CliError(`No e-ID is called ${username}`, "not_found")
     if (!res.ok) throw new Error(`/${username}/json: HTTP ${res.status}`)
     const card = (await res.json()) as Card
     out(card, () => console.log(cardLines(card, (role, s) => ui[role](s))))
@@ -1121,7 +1053,7 @@ const RUN: Record<CommandName, (c: Context) => Promise<void>> = {
   async set({ rest, out, session }) {
     const [what, ...words] = rest
     const value = words.join(" ")
-    if (!what || !value) throw new Said("eid set <what> <value>", "usage")
+    if (!what || !value) throw new CliError("eid set <what> <value>", "usage")
     const { key } = await session()
     const field = what.toLowerCase()
     const card =
@@ -1145,7 +1077,7 @@ const RUN: Record<CommandName, (c: Context) => Promise<void>> = {
               })
             : null
     if (!card)
-      throw new Said(
+      throw new CliError(
         `Set what? name, bio, country, vouches, or a platform: ${PLATFORMS.join(", ")}`,
         "usage",
       )
@@ -1153,7 +1085,7 @@ const RUN: Record<CommandName, (c: Context) => Promise<void>> = {
   },
   async unset({ rest, out, session }) {
     const [platform] = rest
-    if (!platform) throw new Said("eid unset <platform>", "usage")
+    if (!platform) throw new CliError("eid unset <platform>", "usage")
     const card = await api<MyCard>(
       `/card/links/${encodeURIComponent(platform.toLowerCase())}`,
       { method: "DELETE", key: (await session()).key },
@@ -1176,126 +1108,52 @@ const RUN: Record<CommandName, (c: Context) => Promise<void>> = {
       return out({ skill: skill(VERSION) }, () =>
         process.stdout.write(skill(VERSION)),
       )
-    if (rest[0] !== "install") throw new Said("eid skill [install]", "usage")
+    if (rest[0] !== "install")
+      throw new CliError("eid skill [install]", "usage")
     const file = installSkill(VERSION, values.dir)
     out({ installed: file }, () => console.log(`${ui.ok("installed")} ${file}`))
-  },
-  async help({ rest, out }) {
-    const [name] = rest
-    if (!name)
-      return out({ version: VERSION, commands: COMMANDS, global: GLOBAL }, () =>
-        console.log(overview(VERSION)),
-      )
-    const command = commandNamed(name)
-    if (!command) throw new Said(`No command "${name}". eid help`, "usage")
-    out(command, () => console.log(detail(command)))
   },
 }
 
 /** Whether the answer is to be JSON, read before the arguments are parsed, so
  *  a bad argument is answered as JSON too. */
-const JSON_OUT = process.argv.includes("--json")
+const JSON_OUT = jsonOut()
 
-async function main() {
-  let parsed: ReturnType<typeof parse>
-  try {
-    parsed = parse()
-  } catch (error) {
-    throw new Said((error as Error).message, "usage")
-  }
-  const { values, positionals } = parsed
-  refreshSkill(VERSION)
-  if (values.version)
-    return console.log(
-      JSON_OUT ? JSON.stringify({ version: VERSION }) : VERSION,
+main(
+  async () => {
+    const call = EID.parse()
+    refreshSkill(VERSION)
+    if (call.kind === "print")
+      return emit(JSON_OUT, call.data, () => process.stdout.write(call.text))
+
+    const domain = call.values.on ?? "eid.to"
+    if (!(DOMAINS as readonly string[]).includes(domain))
+      throw new CliError(`--on is one of ${DOMAINS.join(", ")}`, "usage")
+    const browser = !call.values["no-browser"] && !process.env.SSH_CONNECTION
+    const context: Context<CommandName> = {
+      rest: call.args,
+      values: call.values,
+      json: JSON_OUT,
+      out: (data, human) => emit(JSON_OUT, data, human),
+      browser,
+      domain,
+      session: async () => {
+        const config = readConfig()
+        if (config) return config
+        if (!canAsk())
+          throw new CliError(
+            `Not signed in to ${BASE}: run eid login`,
+            "unauthorized",
+          )
+        console.error(ui.muted(`Signing this machine in to ${BASE} first.`))
+        return login(browser)
+      },
+    }
+    // The call and its context name one command, which TypeScript cannot
+    // correlate through a union: the runner is the one for call.command.
+    await (RUN[call.command] as (c: Context<CommandName>) => Promise<void>)(
+      context,
     )
-  const [name = "help", ...rest] = values.help
-    ? ["help", ...positionals]
-    : positionals
-
-  const domain = values.on ?? "eid.to"
-  if (!(DOMAINS as readonly string[]).includes(domain))
-    throw new Said(`--on is one of ${DOMAINS.join(", ")}`, "usage")
-  const command = commandNamed(name)
-  if (!command) throw new Said(`No command "${name}". eid help`, "usage")
-
-  const browser = !values["no-browser"] && !process.env.SSH_CONNECTION
-  const context: Context = {
-    rest,
-    values,
-    json: JSON_OUT,
-    out: (data, human) =>
-      JSON_OUT ? console.log(JSON.stringify(data, null, 2)) : human(),
-    browser,
-    domain,
-    session: async () => {
-      const config = readConfig()
-      if (config) return config
-      if (!process.stdin.isTTY)
-        throw new Said(
-          `Not signed in to ${BASE}: run eid login`,
-          "unauthorized",
-        )
-      console.error(ui.muted(`Signing this machine in to ${BASE} first.`))
-      return login(browser)
-    },
-  }
-  await RUN[command.name as CommandName](context)
-}
-
-function parse() {
-  return parseArgs({
-    allowPositionals: true,
-    options: {
-      until: { type: "string" },
-      opens: { type: "string" },
-      card: { type: "string" },
-      on: { type: "string" },
-      dir: { type: "string", short: "d" },
-      to: { type: "string", short: "t" },
-      password: { type: "string" },
-      yes: { type: "boolean", short: "y" },
-      watch: { type: "boolean", short: "w" },
-      once: { type: "boolean", short: "o" },
-      stay: { type: "boolean" },
-      self: { type: "boolean", short: "s" },
-      "accept-from": { type: "string" },
-      json: { type: "boolean" },
-      "no-browser": { type: "boolean" },
-      help: { type: "boolean", short: "h" },
-      version: { type: "boolean", short: "v" },
-    },
-  })
-}
-
-main().catch((error: unknown) => {
-  if (error instanceof Said) {
-    if (JSON_OUT)
-      console.log(
-        JSON.stringify({
-          error: {
-            code: error.code,
-            message: error.message,
-            ...(error.fields && { fields: error.fields }),
-          },
-        }),
-      )
-    else console.error(ui.bad(error.message))
-    process.exit(1)
-  }
-  // A bug of eid's: the stack for whoever reports it, and still the one shape
-  // for a program reading stdout.
-  if (JSON_OUT)
-    console.log(
-      JSON.stringify({
-        error: { code: "crash", message: (error as Error).message },
-      }),
-    )
-  throw error
-})
-
-// Every command in the table has a runner (RUN's type says so); this says the
-// table has no runner it lacks.
-for (const name of Object.keys(RUN))
-  if (!COMMANDS.some((c) => c.name === name))
-    throw new Error(`eid: a runner for "${name}", which no command names`)
+  },
+  { json: JSON_OUT },
+)

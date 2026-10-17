@@ -1,7 +1,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs"
 import { homedir } from "node:os"
 import { dirname, join } from "node:path"
-import { COMMANDS } from "./commands"
+import type { CommandName } from "./commands"
 
 // THE AGENT SKILL FOR eid (Claude Code's SKILL.md), printed by the eid it
 // describes and never kept anywhere else, so it cannot fall behind: `eid skill`
@@ -9,8 +9,8 @@ import { COMMANDS } from "./commands"
 // version differs writes it again (`refreshSkill`). Progressive disclosure: the
 // skill holds what an agent needs to start and the rules it must keep; every
 // flag is `eid help <command>`, asked of the binary itself, so no reference
-// copy exists to go stale. The commands it names are checked against the table
-// (commands.ts) when it is printed.
+// copy exists to go stale. The commands it names are typed by the table
+// (commands.ts), so naming one eid lacks does not build.
 
 export const SKILL_DIR = join(homedir(), ".claude", "skills", "eid")
 
@@ -18,8 +18,8 @@ const MARK = (version: string) =>
   `<!-- eid ${version}: written by \`eid skill install\` and rewritten by every newer eid. An edit here is lost. -->`
 const MARKED = /<!-- eid (\S+): written by `eid skill install`/
 
-/** The commands the skill shows by name: each must be one eid has. */
-const SHOWN = [
+/** The commands the skill's words name: typed, so each is one eid has. */
+export const SHOWN: readonly (CommandName | "help")[] = [
   "whoami",
   "login",
   "help",
@@ -34,9 +34,6 @@ const SHOWN = [
 ]
 
 export function skill(version: string): string {
-  for (const name of SHOWN)
-    if (!COMMANDS.some((c) => c.name === name))
-      throw new Error(`the skill names eid ${name}, which eid ${version} lacks`)
   return `---
 name: eid
 description: Use the eid CLI for e-ID (👤.to, eid.to, e-id.to), one page for everywhere a person is online. Make a short link to anything (one that expires or opens once included), send a file straight from this machine or get one someone is sending (eid get eid.to/name/file, no account needed), edit the user's card, read anyone's card, see a page's visits. Use when the user wants a short link, to send or receive a file, mentions eid.to, e-id.to or 👤.to, or asks about their e-ID.

@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@adriangalilea/utils':
-        specifier: ^10.10.0
-        version: 10.10.0(next@16.4.0(@babel/core@7.29.7(supports-color@7.2.0))(@types/node@26.6.4)(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(zod@4.6.5)
+        specifier: ^10.11.0
+        version: 10.11.0(next@16.4.0(@babel/core@7.29.7(supports-color@7.2.0))(@types/node@26.6.4)(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(zod@4.6.5)
       '@base-ui/react':
         specifier: ^1.8.0
         version: 1.8.0(@types/react@19.3.0)(date-fns@4.4.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
@@ -114,8 +114,8 @@ importers:
 
 packages:
 
-  '@adriangalilea/utils@10.10.0':
-    resolution: {integrity: sha512-r4N6KU4h1XEo/gkOTvuAxXtlPjxd8ZFDydaKHxCjUEumNYn1vWsznu3UW1IG4SsPb+noezzNZhtikghEOkLu2Q==}
+  '@adriangalilea/utils@10.11.0':
+    resolution: {integrity: sha512-G4+iAtFfduQXhC2VE9R7pCz3isAkLb5Ec+QOOyTa/LPJuK/EtwUWhywY4vAvUZcv4xHyXXpuYPlOsnjJx4ldBw==}
     peerDependencies:
       '@ai-sdk/anthropic': ^4.0.0
       '@ai-sdk/openai-compatible': ^3.0.0
@@ -2236,7 +2236,7 @@ packages:
 
 snapshots:
 
-  '@adriangalilea/utils@10.10.0(next@16.4.0(@babel/core@7.29.7(supports-color@7.2.0))(@types/node@26.6.4)(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(zod@4.6.5)':
+  '@adriangalilea/utils@10.11.0(next@16.4.0(@babel/core@7.29.7(supports-color@7.2.0))(@types/node@26.6.4)(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(zod@4.6.5)':
     dependencies:
       linkifyjs: 4.3.3
     optionalDependencies:
