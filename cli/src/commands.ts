@@ -6,6 +6,8 @@
 // (lib/api-schemas, in e-id.to/api/v1/openapi.json), the very answer the API
 // gave, or a shape of the CLI's own, spelled out.
 
+import { indent, table, ui, width } from "@adriangalilea/utils/cli"
+
 export type Flag = { flag: string; says: string }
 
 export type Command = {
@@ -165,7 +167,7 @@ export const COMMANDS = [
   {
     name: "ls",
     usage: "ls",
-    says: "your short links and sends (whom each is for, who took it), and how many you may keep",
+    says: "your short links and sends (whom each is for, who took it or said no), and how many you may keep",
     json: "Links",
   },
   {
@@ -242,36 +244,119 @@ export const GLOBAL: Flag[] = [
 export const commandNamed = (name: string): Command | undefined =>
   (COMMANDS as readonly Command[]).find((c) => c.name === name)
 
-const pad = (s: string, n: number) => s + " ".repeat(Math.max(1, n - s.length))
+/** The overview's sections, in order: every command in exactly one (asserted). */
+const SECTIONS: [string, CommandName[]][] = [
+  ["files", ["send", "get", "inbox"]],
+  ["links", ["link", "ls", "rm"]],
+  ["your card", ["card", "set", "unset", "stats"]],
+  ["this machine", ["login", "logout", "whoami", "skill", "help"]],
+]
+{
+  const placed = SECTIONS.flatMap(([, names]) => names)
+  const missing = COMMANDS.filter((c) => !placed.includes(c.name))
+  if (missing.length || placed.length !== COMMANDS.length)
+    throw new Error(
+      `commands: every command in one overview section (missing: ${missing.map((c) => c.name).join(", ") || "none"})`,
+    )
+}
 
-/** `eid --help`: every command on a line. */
+/** A usage as typed: `eid` and its arguments quiet, the command's name standing out. */
+function usageOf(c: Command): string {
+  const [name, ...args] = c.usage.split(" ")
+  return `${ui.muted("eid")} ${ui.head(name ?? "")}${args.length ? ` ${ui.muted(args.join(" "))}` : ""}`
+}
+
+/** `text` folded to the terminal's width (80 at most, a reading measure), each line
+ *  after `indent` spaces. */
+function wrap(text: string, indent: number): string {
+  const width = Math.min(80, process.stdout.columns || 80) - indent
+  const lines: string[] = []
+  let line = ""
+  for (const word of text.split(/\s+/)) {
+    if (line && line.length + 1 + word.length > width) {
+      lines.push(line)
+      line = word
+    } else line = line ? `${line} ${word}` : word
+  }
+  if (line) lines.push(line)
+  return lines.map((l) => `${" ".repeat(indent)}${l}`).join("\n")
+}
+
+/** A heading, as the overview's sections and a command's parts are named. */
+const heading = (s: string) => `  ${ui.accent(s)}`
+
+/** `eid --help`: every command on a line, by what it is for. */
 export function overview(version: string): string {
-  const width = Math.max(...COMMANDS.map((c) => c.usage.length)) + 6
+  const named = new Map(
+    (COMMANDS as readonly Command[]).map((c) => [c.name, c]),
+  )
+  type Row = [string, string]
+  const sections: [string, Row[]][] = [
+    ...SECTIONS.map(([title, names]): [string, Row[]] => [
+      title,
+      names.map((n): Row => {
+        const c = named.get(n) as Command
+        return [usageOf(c), c.says]
+      }),
+    ]),
+    [
+      "on every command",
+      [
+        ...GLOBAL.map((f): Row => [f.flag, f.says]),
+        [
+          "EID_URL",
+          `another e-ID ${ui.muted("(the dev server: http://localhost:3456)")}`,
+        ],
+      ],
+    ],
+  ]
+  // One column for the whole page, every section's words starting at one edge.
+  const column =
+    Math.max(
+      ...sections.flatMap(([, rows]) => rows.map(([left]) => width(left))),
+    ) + 2
+  const line = ([left, right]: Row) =>
+    `    ${left}${" ".repeat(column - width(left))}${right}`
   return [
-    `eid ${version}: your e-ID from a terminal (also 👤, and npx @e-id/eid)`,
     "",
-    ...COMMANDS.map((c) => `  ${pad(`eid ${c.usage}`, width)}${c.says}`),
+    `  ${ui.head("eid")} ${ui.muted(version)}  your e-ID from a terminal`,
+    `  ${ui.muted("also 👤, and npx @e-id/eid with nothing installed")}`,
+    ...sections.flatMap(([title, rows]) => [
+      "",
+      heading(title),
+      ...rows.map(line),
+    ]),
     "",
-    ...GLOBAL.map((f) => `  ${pad(f.flag, width)}${f.says}`),
-    `  ${pad("EID_URL", width)}another e-ID (the dev server: http://localhost:3456)`,
+    `  ${ui.muted("eid help <command> for one in full · the API: e-id.to/api/v1/openapi.json")}`,
     "",
-    "eid help <command> for one in full. The API: e-id.to/api/v1/openapi.json",
   ].join("\n")
 }
 
 /** `eid help <command>`: one command in full. */
 export function detail(c: Command): string {
   const flags = c.flags ?? []
-  const width = Math.max(0, ...flags.map((f) => f.flag.length)) + 4
   return [
-    `eid ${c.usage}`,
-    `  ${c.says}`,
-    ...(c.more ? ["", `  ${c.more}`] : []),
-    ...(flags.length
-      ? ["", ...flags.map((f) => `  ${pad(f.flag, width)}${f.says}`)]
-      : []),
-    ...(c.examples?.length ? ["", ...c.examples.map((e) => `  $ ${e}`)] : []),
     "",
-    `  --json: ${c.json}`,
+    `  ${usageOf(c)}`,
+    `  ${c.says}`,
+    ...(c.more ? ["", wrap(c.more, 2)] : []),
+    ...(flags.length
+      ? [
+          "",
+          heading("flags"),
+          indent(table(flags.map((f) => [f.flag, f.says])), 4),
+        ]
+      : []),
+    ...(c.examples?.length
+      ? [
+          "",
+          heading("examples"),
+          ...c.examples.map((e) => `    ${ui.muted("$")} ${e}`),
+        ]
+      : []),
+    "",
+    heading("--json"),
+    wrap(c.json, 4),
+    "",
   ].join("\n")
 }
