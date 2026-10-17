@@ -82,6 +82,36 @@ const TOLD = join(CONFIG_DIR, "told-peer-to-peer")
 
 type Config = { base: string; key: string; username: string }
 
+/** The name each file was last sent under from this machine, by its full path, so
+ *  sending it again gives the same address (`eid send`). Per e-ID (EID_URL). */
+const SENT = join(CONFIG_DIR, "sent.json")
+
+function readSentNames(): Record<string, string> {
+  try {
+    const all = JSON.parse(readFileSync(SENT, "utf8")) as Record<
+      string,
+      Record<string, string>
+    >
+    return all[BASE] ?? {}
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === "ENOENT") return {}
+    throw error
+  }
+}
+
+function writeSentNames(names: Record<string, string>) {
+  const all = existsSync(SENT)
+    ? (JSON.parse(readFileSync(SENT, "utf8")) as Record<
+        string,
+        Record<string, string>
+      >)
+    : {}
+  mkdirSync(CONFIG_DIR, { recursive: true, mode: 0o700 })
+  writeFileSync(SENT, JSON.stringify({ ...all, [BASE]: names }, null, 2), {
+    mode: 0o600,
+  })
+}
+
 /** A failure the person caused or can fix: said plainly, exit 1, no stack;
  *  under --json, the API's error shape with its code. */
 class Said extends Error {
@@ -113,6 +143,9 @@ async function api<T>(
     key?: string
     /** A send's password, said in a header, never in the address. */
     password?: string
+    /** The same download asking for its send again, after its connection
+     *  dropped: e-ID does not count it twice. */
+    again?: boolean
   } = {},
 ): Promise<T> {
   const res = await fetch(`${BASE}/api/v1${path}`, {
@@ -122,6 +155,7 @@ async function api<T>(
       "user-agent": `eid/${VERSION}`,
       ...(init.key && { authorization: `Bearer ${init.key}` }),
       ...(init.password && { "e-id-password": init.password }),
+      ...(init.again && { "e-id-again": "1" }),
     },
     body: init.body === undefined ? undefined : JSON.stringify(init.body),
   })
@@ -319,16 +353,18 @@ function sendmeRun(bin: string, args: string[], cwd: string): Promise<void> {
     child.stderr.on("data", (c: Buffer) => {
       said += c.toString()
     })
-    child.on("exit", (code) =>
-      code === 0
-        ? done()
-        : fail(
-            new Said(
-              `The file did not come: the sender may have stopped sending. sendme said: ${said.trim().split("\n").at(-1) ?? code}`,
-              "unreachable",
-            ),
-          ),
-    )
+    child.on("exit", (code, signal) => {
+      if (code === 0) return done()
+      // sendme's last words, where they say what went wrong; its progress lines
+      // ("getting collection …") say nothing about it.
+      const last = said.trim().split("\n").at(-1) ?? ""
+      fail(
+        new Said(
+          `the connection dropped (${/error/i.test(last) ? last : (signal ?? `sendme ${code}`)})`,
+          "unreachable",
+        ),
+      )
+    })
   })
 }
 
@@ -411,6 +447,12 @@ const fetchingSendme = () =>
 
 type Taken = { file: string; size: number; path: string; from: string }
 
+/** How often a paused send is asked about while `eid get` waits for its machine. */
+const AWAY_POLL_MS = 15_000
+/** How many dropped connections one `eid get` picks up from before it stops and
+ *  says so (what came is kept: running it again picks up from there). */
+const MOST_DROPS = 8
+
 /** A send taken: its ticket asked for (with this machine's key where it has one, so a
  *  send for its person is given; with the password where it has one), who sends what
  *  and where it goes shown (on stderr; not under `json` when nothing is asked), asked
@@ -430,11 +472,25 @@ async function take(
   const path = `/sends/${encodeURIComponent(at.username)}/${encodeURIComponent(at.name)}`
   let password = o.password
   let send: Send
+  // A send whose machine is not answering is waited for, said once.
+  let waitSaid = false
+  const waitFor = async (error: Said) => {
+    if (!waitSaid)
+      console.error(
+        `  ${ui.warn(error.message)}\n  ${ui.muted("waiting for it · Ctrl-C to stop")}`,
+      )
+    waitSaid = true
+    await sleep(AWAY_POLL_MS)
+  }
   for (;;) {
     try {
       send = await api<Send>(path, { key, password })
       break
     } catch (error) {
+      if ((error as Said).code === "away") {
+        await waitFor(error as Said)
+        continue
+      }
       if ((error as Said).code !== "password" || !process.stdin.isTTY)
         throw error
       if (password) console.error(`  ${ui.bad("not the password")}`)
@@ -474,10 +530,48 @@ async function take(
   }
   mkdirSync(o.dir, { recursive: true })
   const bin = await sendme(fetchingSendme)
-  await spinner(
-    `${send.file.name} ${ui.muted(BYTES.format(send.file.size))}`,
-    () => sendmeRun(bin, ["receive", send.ticket, "--no-progress"], o.dir),
-  )
+  // A dropped connection is picked up where it stopped: sendme keeps what came in
+  // the folder (.sendme-recv-<hash>, by the file's content) and fetches only the
+  // rest, from whatever ticket the send has now (its sender may have come back).
+  let ticket = send.ticket
+  for (let drops = 0; ; ) {
+    try {
+      await spinner(
+        `${send.file.name} ${ui.muted(BYTES.format(send.file.size))}`,
+        () => sendmeRun(bin, ["receive", ticket, "--no-progress"], o.dir),
+      )
+      break
+    } catch (error) {
+      if (!(error instanceof Said)) throw error
+      drops++
+      if (drops > MOST_DROPS)
+        throw new Said(
+          `The file did not come: ${error.message}, ${MOST_DROPS} times.\n  What came is kept in ${fromHome(o.dir)}: eid get picks up from there.`,
+          error.code,
+        )
+      console.error(ui.muted(`  picking up where it stopped`))
+      await sleep(Math.min(30_000, 2000 * 2 ** (drops - 1)))
+      for (;;) {
+        try {
+          ticket = (await api<Send>(path, { key, password, again: true }))
+            .ticket
+          break
+        } catch (asked) {
+          if (asked instanceof Said && asked.code === "away") {
+            await waitFor(asked)
+            continue
+          }
+          if (asked instanceof Said)
+            throw new Said(
+              `${asked.message}\n  What came is kept in ${fromHome(o.dir)}: eid get picks up from there if they send it again.`,
+              asked.code,
+            )
+          // This machine's own network, gone a moment: asked again shortly.
+          await sleep(5000)
+        }
+      }
+    }
+  }
   // The file is here: its sender sees it live, and a send for this person leaves
   // their inbox. Said as the file was asked for (the key, the password); the file
   // is had either way, so a refusal here is said, never thrown.
@@ -650,18 +744,30 @@ const RUN: Record<CommandName, (c: Context) => Promise<void>> = {
         `${file.name} ${ui.muted(BYTES.format(file.size))}`,
         () => ticketFrom(child),
       )
-      const sent = await api<SendMade>("/sends", {
-        method: "POST",
-        key,
-        body: {
-          ticket,
-          file,
-          name,
-          ...(to.length > 0 && { to }),
-          ...(values.password !== undefined && { password: values.password }),
-        },
+      // The same file sent again keeps its address: the name it had last time on
+      // this machine, unless one is given or that one is taken now.
+      const remembered = name ? undefined : readSentNames()[path]
+      const made = (as: string | undefined) =>
+        api<SendMade>("/sends", {
+          method: "POST",
+          key,
+          body: {
+            ticket,
+            file,
+            name: as,
+            ...(to.length > 0 && { to }),
+            ...(values.password !== undefined && {
+              password: values.password,
+            }),
+          },
+        })
+      const sent = await made(name ?? remembered).catch((error: unknown) => {
+        if (remembered && error instanceof Said && error.code === "taken")
+          return made(undefined)
+        throw error
       })
       slug = sent.slug
+      writeSentNames({ ...readSentNames(), [path]: sent.slug })
     } catch (error) {
       child.kill()
       rmSync(work, { recursive: true, force: true })
@@ -719,9 +825,20 @@ const RUN: Record<CommandName, (c: Context) => Promise<void>> = {
         `/links/${encodeURIComponent(slug)}/events?wait=25&after=${after}`,
         { key },
       ).catch((error: unknown) => {
-        if (error instanceof Said && error.code === "not_found") throw error
+        if (error instanceof Said && error.code === "not_found") return "gone"
         return null
       })
+      // Its name was taken away while this machine was not heard from (a day
+      // asleep): the send is over here too.
+      if (answered === "gone") {
+        console.error(
+          ui.bad(
+            `  /${slug} is gone: e-ID did not hear from this machine for a day. eid send again to send it under the same name.`,
+          ),
+        )
+        slug = null
+        return void (await stop(1))
+      }
       if (!answered) {
         await sleep(5000)
         continue
@@ -765,7 +882,7 @@ const RUN: Record<CommandName, (c: Context) => Promise<void>> = {
                     fromWhom(w.from),
                     w.file.name,
                     ui.muted(BYTES.format(w.file.size)),
-                    ui.muted(ago(w.since)),
+                    w.live ? ui.muted(ago(w.since)) : ui.warn("paused"),
                     ui.muted(`eid get ${w.address}`),
                   ]),
                 ),

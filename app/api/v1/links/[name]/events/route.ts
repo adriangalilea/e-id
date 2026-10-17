@@ -1,6 +1,6 @@
 import { answer, fail, withKey } from "@/lib/api"
 import { SendEvents } from "@/lib/api-schemas"
-import { eventsOf } from "@/lib/sends"
+import { eventsOf, heard } from "@/lib/sends"
 
 // What is happening to one of your sends, for `eid send` to print live (lib/sends
 // `eventsOf`): each download starting ("asked") and each file come ("got"), by whom
@@ -24,6 +24,13 @@ export const GET = withKey<{ name: string }>(
       return fail(400, {
         code: "bad_query",
         message: `wait is seconds, 0 to ${MOST_WAIT_S}.`,
+      })
+    // Each question is the sender's machine heard from (lib/sends): a send whose
+    // machine stops asking is paused for whoever would take it.
+    if (!(await heard(userId, name)))
+      return fail(404, {
+        code: "not_found",
+        message: `You are sending nothing at /${name}.`,
       })
     const until = Date.now() + wait * 1000
     for (;;) {

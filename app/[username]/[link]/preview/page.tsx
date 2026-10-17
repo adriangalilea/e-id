@@ -177,6 +177,7 @@ async function Preview({
           file={own.file}
           locked={own.locked}
           forYou={false}
+          live={own.live}
           down={down}
         />
       </Split>
@@ -201,6 +202,7 @@ async function Preview({
             file={peek.file}
             locked={false}
             forYou={peek.forYou}
+            live={peek.live}
             down={down}
           />
         </Split>
@@ -371,6 +373,7 @@ function SendShown({
   file,
   locked,
   forYou,
+  live,
   down,
 }: {
   at: string
@@ -380,6 +383,8 @@ function SendShown({
   locked: boolean
   /** Sent to the person signed in: it waits in their inbox too. */
   forYou: boolean
+  /** Their machine answering now (lib/sends); paused while it is not. */
+  live: boolean
   down: string | null
 }) {
   if (!file) throw new Error(`the send at ${at} has no file`)
@@ -400,6 +405,16 @@ function SendShown({
         </p>
       ) : (
         <section className="flex flex-col gap-3">
+          {!live && (
+            <Alert
+              kind="warning"
+              title="Paused: their machine is not answering"
+              className="max-w-prose"
+            >
+              The send picks up once {from}&apos;s machine is back (a laptop
+              opened, a network found). eid get waits for it.
+            </Alert>
+          )}
           <h2 className="text-foreground/60 text-lg">
             {forYou
               ? "Get it from a terminal signed in as you (it waits in eid inbox too)"

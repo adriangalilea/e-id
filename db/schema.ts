@@ -214,6 +214,9 @@ export const links = sqliteTable(
      *  links without it). Why in `stopped_why`: a Safe Browsing threat, or "admin". */
     stopped_at: integer("stopped_at", { mode: "timestamp" }),
     stopped_why: text("stopped_why"),
+    /** A send's machine, last heard from (lib/sends `heard`): its `eid send` asking
+     *  for its events. Null on every other link. */
+    seen_at: integer("seen_at", { mode: "timestamp" }),
   },
   (table) => {
     return {

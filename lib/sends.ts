@@ -1,7 +1,7 @@
 import "server-only"
 
 import { randomBytes, scryptSync, timingSafeEqual } from "node:crypto"
-import { and, desc, eq, gt, inArray, isNull, sql } from "drizzle-orm"
+import { and, desc, eq, gt, inArray, isNull, lt, sql } from "drizzle-orm"
 import type { z } from "zod"
 import { db } from "@/db"
 import { links, sendEvents, sendTo, users } from "@/db/schema"
@@ -28,10 +28,27 @@ import { allowanceOf, reached } from "@/lib/trust"
 //              to anyone else it does not exist (the same not found as a stopped one)
 //
 // Taking asks first, in the CLI: e-ID tells who sent what before anything comes.
+//
+// WHETHER ITS MACHINE IS STILL THERE: `eid send` asks for its send's events without
+// pause, each question held 25 s at most, and each is the machine heard from
+// (`heard`). A send unheard for AWAY_AFTER_MS is paused: nobody is given its ticket
+// (a ticket to a machine that is gone is a download that hangs), and its page says
+// so. Heard again (a laptop opened), it is live again. Unheard for GONE_AFTER_MS, the
+// daily sweep deletes it, the name with it (`sweepSends`).
+
+/** Two questions missed: the machine is not answering. */
+export const AWAY_AFTER_MS = 60_000
+/** A day unheard: the machine is not coming back for this send. */
+const GONE_AFTER_MS = 24 * 3600_000
+
+/** Whether a send heard from at `seen` is live now (its machine answering). */
+export const liveAt = (seen: Date | null, now = Date.now()) =>
+  seen !== null && now - seen.getTime() < AWAY_AFTER_MS
 
 export type SendWritten =
   | { ok: true; slug: string; to: string[] }
-  | { ok: false; errors: CardErrors }
+  /** `taken`: the name is one of theirs already (a send still going, a link). */
+  | { ok: false; errors: CardErrors; taken?: true }
 
 /** A send's password, kept: scrypt with its own salt, `scrypt$<salt>$<hash>`. */
 export function hashPassword(password: string): string {
@@ -98,6 +115,7 @@ export async function writeSend(
         slug,
         value: body.ticket,
         public: false,
+        seen_at: new Date(),
         order: Math.max(-1, ...owned.map((l) => l.order ?? -1)) + 1,
         custom_data: {
           file: body.file,
@@ -113,6 +131,7 @@ export async function writeSend(
     if (/UNIQUE constraint failed: link\.user_id, link\.slug/.test(said))
       return {
         ok: false,
+        taken: true,
         errors: { name: `You already have a link at /${slug}.` },
       }
     throw error
@@ -128,18 +147,26 @@ export type SendRead =
       from: { username: string; name: string | null }
     }
   | { ok: false; why: "not_found" | "password" }
+  | { ok: false; why: "away"; seen: Date | null }
 
 /** A send by whose it is and its name, as `eid get` asks for it, given who asks
  *  (`userId`, null without a key) and the password they say: its ticket, its file
  *  and its sender, the open counted. An addressed send asked for by anyone else is
- *  not found, as a stopped one is. */
+ *  not found, as a stopped one is; one whose machine is not answering is away, said
+ *  only to whoever may have it. `again`: the same download asking a second time,
+ *  after its connection dropped (the ticket may be new, the sender back), counted
+ *  once already. */
 export async function readSend(
   username: string,
   slug: string,
   asker: Asker,
+  again = false,
 ): Promise<SendRead> {
   const may = await mayHave(username, slug, asker)
   if (!may.ok) return may
+  if (!may.live) return { ok: false, why: "away", seen: may.seen }
+  if (again)
+    return { ok: true, ticket: may.ticket, file: may.file, from: may.from }
   await db.batch([
     db
       .update(links)
@@ -174,12 +201,20 @@ export async function peekSend(
       file: { name: string; size: number }
       from: { username: string; name: string | null }
       forYou: boolean
+      /** Its machine answering now; false while it is paused. */
+      live: boolean
     }
   | { ok: false; why: "not_found" | "password" }
 > {
   const may = await mayHave(username, slug, asker)
   if (!may.ok) return may
-  return { ok: true, file: may.file, from: may.from, forYou: may.forYou }
+  return {
+    ok: true,
+    file: may.file,
+    from: may.from,
+    forYou: may.forYou,
+    live: may.live,
+  }
 }
 
 type Asker = { userId: string | null; password: string | null }
@@ -194,6 +229,7 @@ async function mayHave(username: string, slug: string, asker: Asker) {
       owner: links.user_id,
       ticket: links.value,
       data: links.custom_data,
+      seen: links.seen_at,
       username: users.username,
       name: users.name,
     })
@@ -230,7 +266,44 @@ async function mayHave(username: string, slug: string, asker: Asker) {
     file: row.data.file,
     from: { username: row.username, name: row.name },
     forYou: theirs,
+    seen: row.seen,
+    live: liveAt(row.seen),
   }
+}
+
+/** `ownerId`'s machine, heard from on its send `slug`: live again if it was paused.
+ *  False where they have no send there. */
+export async function heard(ownerId: string, slug: string): Promise<boolean> {
+  const done = await db
+    .update(links)
+    .set({ seen_at: new Date() })
+    .where(
+      and(
+        eq(links.user_id, ownerId),
+        eq(links.slug, slug.toLowerCase()),
+        eq(links.kind, "send"),
+      ),
+    )
+    .returning({ id: links.id })
+  return done.length > 0
+}
+
+/** Every send unheard for a day, deleted with its name, its people and its events:
+ *  machines that went away and never came back. How many. */
+export async function sweepSends(): Promise<number> {
+  // Both columns are kept in seconds (mode "timestamp"); a raw expression is
+  // compared with the raw number.
+  const before = Math.floor((Date.now() - GONE_AFTER_MS) / 1000)
+  const gone = await db
+    .delete(links)
+    .where(
+      and(
+        eq(links.kind, "send"),
+        lt(sql`coalesce(${links.seen_at}, ${links.created_at})`, before),
+      ),
+    )
+    .returning({ id: links.id })
+  return gone.length
 }
 
 /** Someone who may have the send says its file came: its sender sees it live
@@ -355,6 +428,8 @@ export type Waiting = {
   file: { name: string; size: number }
   /** When it was sent, ISO. */
   since: string
+  /** Its sender's machine answering now; false while the send is paused. */
+  live: boolean
 }
 
 /** What waits for `userId`: every send addressed to them, still being sent, not
@@ -368,6 +443,7 @@ export async function inboxOf(
       slug: links.slug,
       data: links.custom_data,
       created: links.created_at,
+      seen: links.seen_at,
       username: users.username,
       name: users.name,
       image: users.image,
@@ -393,6 +469,7 @@ export async function inboxOf(
       from: { username: r.username, name: r.name, image: r.image },
       file: r.data.file,
       since: r.created.toISOString(),
+      live: liveAt(r.seen),
     }
   })
 }

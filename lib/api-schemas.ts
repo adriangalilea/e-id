@@ -258,6 +258,11 @@ export const Inbox = z
           }),
           file,
           since: z.string().describe("when it was sent, ISO"),
+          live: z
+            .boolean()
+            .describe(
+              "its sender's machine answering now; false while the send is paused",
+            ),
         }),
       )
       .describe("sends for you, still being sent and not taken, newest first"),

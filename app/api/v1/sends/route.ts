@@ -17,7 +17,7 @@ export const POST = withKey(
     const written = await writeSend(userId, body)
     if (!written.ok)
       return fail(422, {
-        code: "refused",
+        code: written.taken ? "taken" : "refused",
         message: Object.values(written.errors).join(" "),
         fields: written.errors,
       })

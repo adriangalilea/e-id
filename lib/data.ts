@@ -14,6 +14,7 @@ import {
 import { linkName } from "@/lib/link-names"
 import { getLinkUrl } from "@/lib/links"
 import type { LinkPlatform } from "@/lib/platforms"
+import { liveAt } from "@/lib/sends"
 import { SHOWCASE_EXAMPLES, type ShowcaseCard } from "@/lib/showcase-examples"
 import { profileTag, USERS_TAG, usernameTag } from "@/lib/tags"
 
@@ -124,6 +125,7 @@ export async function readOwnLink(userId: string, slug: string) {
       checked_at: links.checked_at,
       stopped_why: links.stopped_why,
       kind: links.kind,
+      seen_at: links.seen_at,
       file: sql<string | null>`json_extract(${links.custom_data}, '$.file')`,
       // A send for people (lib/sends `send_to`) is nothing on the web: its page,
       // its name and its file are theirs alone.
@@ -141,11 +143,13 @@ export async function readOwnLink(userId: string, slug: string) {
     )
     .limit(1)
   if (!row) return null
-  const { file, addressed, locked, ...rest } = row
+  const { file, addressed, locked, seen_at, ...rest } = row
   return {
     ...rest,
     addressed: Boolean(addressed),
     locked: Boolean(locked),
+    // A send's machine answering now (lib/sends); a paused send's page says so.
+    live: rest.kind === "send" && liveAt(seen_at),
     file: file ? (JSON.parse(file) as { name: string; size: number }) : null,
   }
 }
