@@ -30,6 +30,7 @@ import { Terminal } from "@/components/ui/terminal"
 import { Touch, touchPressed } from "@/components/ui/touch"
 import { type BrowserStep, browserTimeline } from "@/lib/browser-session"
 import { EMOJI_DOMAIN } from "@/lib/const"
+import { parseSession, sessionTimeline } from "@/lib/terminal-session"
 import { cn } from "@/lib/utils"
 
 // WHAT A CARD DOES, told on the scroll (@ag/scroll-story), a card per chapter
@@ -72,9 +73,16 @@ type StoryProps = {
     /** The same two lines, to copy. */
     code: React.ReactNode
   }
-  /** The CLI at work, as a terminal session script (lib/terminal-session): the
-   *  real commands and what they print, for the holder. */
-  cli: { session: string }
+  /** The CLI at work (components/landing/features `cliSession`). */
+  cli: CliScene
+}
+
+/** The CLI at work: a terminal session script (lib/terminal-session) of real
+ *  commands and what they print, and its beats, one per command in its order,
+ *  each the words and mark the scene lights while that command plays. */
+export type CliScene = {
+  session: string
+  beats: { label: string; mark: React.ReactNode }[]
 }
 
 /** A terminal window's shape, width over height. */
@@ -117,6 +125,16 @@ type Visit = {
 export function Story(props: StoryProps) {
   const story = useStory(props)
   const { routes, laptop, contact, site } = story
+  // The terminal's timeline, where each command starts: the beat lit is the
+  // command playing. One beat per command, or the two have parted.
+  const shell = useMemo(() => {
+    const timeline = sessionTimeline(parseSession(props.cli.session))
+    if (timeline.clip.chapters.length !== props.cli.beats.length)
+      throw new Error(
+        `story: ${props.cli.beats.length} beats for ${timeline.clip.chapters.length} commands`,
+      )
+    return timeline
+  }, [props.cli])
   const chapters = useMemo(
     (): StoryChapter[] => [
       {
@@ -226,7 +244,15 @@ export function Story(props: StoryProps) {
         content: ({ p }) => (
           <StoryCard
             title={<StoryTitle lead="from a terminal" rest="too" />}
-            body="Send a file straight from your machine and watch it land, with nothing to install on the other side. Look anyone up, as words or as data. Your agents get a skill that never falls behind."
+            aside={
+              <Beats
+                beats={props.cli.beats}
+                current={
+                  shell.clip.chapters.filter((c) => c.start <= p * shell.total)
+                    .length - 1
+                }
+              />
+            }
             overflow
             scene={
               <Fit ratio={TERMINAL}>
@@ -244,7 +270,7 @@ export function Story(props: StoryProps) {
         ),
       },
     ],
-    [story, routes, laptop, contact, site, props.cli.session],
+    [story, routes, laptop, contact, site, props.cli, shell],
   )
   return (
     <ScrollStory
@@ -444,6 +470,46 @@ function Route({
         ))}
       </ol>
     </div>
+  )
+}
+
+/** What the terminal is showing, one beat per command: its mark and its words, the
+ *  one playing lit, those played a step brighter than those to come, as the one
+ *  link's routes are. The terminal says the rest. */
+function Beats({
+  beats,
+  current,
+}: Pick<CliScene, "beats"> & { current: number }) {
+  return (
+    <ol
+      className="-ml-2.5 flex flex-col gap-1"
+      aria-label="what the terminal shows"
+    >
+      {beats.map((beat, i) => (
+        <li
+          key={beat.label}
+          aria-current={i === current ? "step" : undefined}
+          className={cn(
+            "flex items-center gap-3 transition-colors duration-300",
+            i === current
+              ? "text-foreground"
+              : i < current
+                ? "text-foreground/70"
+                : "text-foreground/30",
+          )}
+        >
+          <span
+            className={cn(
+              "grid size-10 shrink-0 place-items-center rounded-full transition-colors duration-300 [&_svg]:size-5 [&_svg]:stroke-[1.75]",
+              i === current && "bg-foreground text-background",
+            )}
+          >
+            {beat.mark}
+          </span>
+          <span className="text-base">{beat.label}</span>
+        </li>
+      ))}
+    </ol>
   )
 }
 

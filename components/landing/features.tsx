@@ -1,11 +1,12 @@
 import { inRole } from "@adriangalilea/utils/ansi"
 import { kv } from "@adriangalilea/utils/cli"
+import { Bot, IdCardIcon, Send } from "lucide-react"
 import { cacheLife } from "next/cache"
 import { type Holder, IdCard } from "@/components/id-card"
 import { CardData } from "@/components/landing/card-data"
 import type { Landing } from "@/components/landing/link-map"
 import { LiveEmbed } from "@/components/landing/live-embed"
-import { Story } from "@/components/landing/story"
+import { type CliScene, Story } from "@/components/landing/story"
 import { SaveContact } from "@/components/save-contact"
 import { BrowserCapturePage } from "@/components/ui/browser"
 import { Code } from "@/components/ui/code"
@@ -82,42 +83,67 @@ export async function Features() {
         card: <LiveEmbed key="card" handle={holder.username} compact />,
         code: <EmbedCode username={holder.username} />,
       }}
-      cli={{ session: cliSession(card) }}
+      cli={cliSession(card)}
     />
   )
 }
 
-/** The CLI at work, as a terminal session script (lib/terminal-session): what
- *  `eid` prints (cli/src/eid.ts), in its colours (the roles of `ROLES`, the ones
- *  its `ui` paints with), for a visitor signed in as `you`: a file sent from their
- *  machine and taken by someone as they watch, the lead's real card (`cardLines`,
- *  the drawing `eid card` prints), and the skill for their agents. */
-function cliSession(card: Card): string {
+/** The CLI at work, beat by beat, each a command and what `eid` prints for it
+ *  (cli/src/eid.ts), in its colours (the roles of `ROLES`, the ones its `ui` paints
+ *  with), for a visitor signed in as `you`: a file sent from their machine and taken
+ *  as they watch, the lead's real card (`cardLines`, the drawing `eid card` prints),
+ *  and the skill for their agents. Each beat carries the words and mark the scene
+ *  lights while it plays; the session (lib/terminal-session) is the beats joined,
+ *  so a beat and its command cannot part. */
+function cliSession(card: Card): CliScene {
   const sent = "eid.to/you/notes"
-  return [
-    "$ eid send notes.zip",
-    `${inRole("ok", "✓")} notes.zip ${inRole("muted", "2.4MB")} ${inRole("muted", "1.2s")}`,
-    "",
-    kv(
-      [
-        ["address", sent],
-        ["get it", `npx @e-id/eid get ${sent}${inRole("muted", "  (copied)")}`],
-        ["for", "anyone with the address"],
+  const beats = [
+    {
+      label: "send a file",
+      mark: <Send />,
+      lines: [
+        "$ eid send notes.zip",
+        `${inRole("ok", "✓")} notes.zip ${inRole("muted", "2.4MB")} ${inRole("muted", "1.2s")}`,
+        "",
+        kv(
+          [
+            ["address", sent],
+            [
+              "get it",
+              `npx @e-id/eid get ${sent}${inRole("muted", "  (copied)")}`,
+            ],
+            ["for", "anyone with the address"],
+          ],
+          { indent: 2 },
+        ),
+        "",
+        inRole("muted", "  sending from this machine · Ctrl-C to stop"),
+        `@1400   ${inRole("muted", "18:02:11")}  ${inRole("accent", "@ada")} is getting it`,
+        `@1100   ${inRole("muted", "18:02:13")}  ${inRole("accent", "@ada")} ${inRole("ok", "got it")}`,
+        "@800 ^C",
+        inRole("muted", "  stopped: /notes is gone"),
       ],
-      { indent: 2 },
-    ),
-    "",
-    inRole("muted", "  sending from this machine · Ctrl-C to stop"),
-    `@1400   ${inRole("muted", "18:02:11")}  ${inRole("accent", "@ada")} is getting it`,
-    `@1100   ${inRole("muted", "18:02:13")}  ${inRole("accent", "@ada")} ${inRole("ok", "got it")}`,
-    "@800 ^C",
-    inRole("muted", "  stopped: /notes is gone"),
-    "",
-    `@700 $ eid card ${card.handle}`,
-    cardLines(card, inRole),
-    "@700 $ eid skill install",
-    `${inRole("ok", "installed")} ~/.claude/skills/eid/SKILL.md`,
-  ].join("\n")
+    },
+    {
+      label: "look anyone up",
+      mark: <IdCardIcon />,
+      lines: [`$ eid card ${card.handle}`, cardLines(card, inRole)],
+    },
+    {
+      label: "a skill for your agents",
+      mark: <Bot />,
+      lines: [
+        "$ eid skill install",
+        `${inRole("ok", "installed")} ~/.claude/skills/eid/SKILL.md`,
+      ],
+    },
+  ]
+  return {
+    session: beats
+      .map((b, i) => `${i ? "@700 " : ""}${b.lines.join("\n")}`)
+      .join("\n\n"),
+    beats: beats.map(({ label, mark }) => ({ label, mark })),
+  }
 }
 
 /** Where each of the holder's routes lands (link-map): the first link of each
