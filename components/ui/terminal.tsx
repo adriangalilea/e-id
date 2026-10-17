@@ -300,7 +300,9 @@ function TerminalScript({
           {timeline.lines.map((l, i) => renderLine(l, i))}
           {prompt("end", true)}
         </div>
-        <div ref={live} style={{ gridArea: "1 / 1" }}>
+        {/* Its own height, never the cell's (which the finished copy sets): the
+            screen follows the lines that have landed. */}
+        <div ref={live} style={{ gridArea: "1 / 1", alignSelf: "start" }}>
           {timeline.lines.slice(0, full).map((l, i) => renderLine(l, i))}
           {current &&
             current.kind === "command" &&
