@@ -11,6 +11,11 @@
 //   # anything        comment, dropped
 //   @800 <line>       a pause of 800 ms before this line lands (any line kind)
 //   (blank)           vertical breathing room
+//
+// An output line may carry the ANSI escapes a CLI prints its colours with (bold,
+// dim, the 16 named colours, the 256-colour palette): written in a session as the
+// program writes them, drawn by both emitters (`spansOf`), so a session shows what
+// the terminal showed, colour included.
 
 import type { Clip } from "@/lib/clip"
 
@@ -43,6 +48,104 @@ export function parseSession(source: string): SessionLine[] {
     return { kind: "output", text: line, delay }
   })
 }
+
+/** A run of an output line in one style. `color` is an xterm-256 index (0..15 the
+ *  named colours), null for the line's own. */
+export interface SessionSpan {
+  /** Where it starts in the line's text, escapes included: its identity. */
+  at: number
+  text: string
+  bold: boolean
+  dim: boolean
+  color: number | null
+}
+
+// biome-ignore lint/suspicious/noControlCharactersInRegex: ANSI escapes are what is read
+const SGR = /\x1b\[([0-9;]*)m/g
+
+/** An output line's runs, from the SGR escapes it carries: 0 reset, 1 bold, 2 dim,
+ *  22 neither, 30..37 and 90..97 the named colours, 38;5;n the palette, 39 the
+ *  line's own colour. Any other escape screams: a session draws what it can name. */
+export function spansOf(text: string): SessionSpan[] {
+  const spans: SessionSpan[] = []
+  let style = { bold: false, dim: false, color: null as number | null }
+  let from = 0
+  const push = (to: number) => {
+    if (to > from)
+      spans.push({ at: from, text: text.slice(from, to), ...style })
+  }
+  for (const m of text.matchAll(SGR)) {
+    push(m.index)
+    from = m.index + m[0].length
+    const codes = (m[1] || "0").split(";").map(Number)
+    for (let i = 0; i < codes.length; i++) {
+      const c = codes[i] as number
+      if (c === 0) style = { bold: false, dim: false, color: null }
+      else if (c === 1) style = { ...style, bold: true }
+      else if (c === 2) style = { ...style, dim: true }
+      else if (c === 22) style = { ...style, bold: false, dim: false }
+      else if (c === 39) style = { ...style, color: null }
+      else if (c >= 30 && c <= 37) style = { ...style, color: c - 30 }
+      else if (c >= 90 && c <= 97) style = { ...style, color: c - 90 + 8 }
+      else if (c === 38 && codes[i + 1] === 5) {
+        const n = codes[i + 2]
+        if (n === undefined || !(n >= 0 && n <= 255))
+          throw new Error(
+            `terminal-session: 38;5 without a palette index in ${JSON.stringify(text)}`,
+          )
+        style = { ...style, color: n }
+        i += 2
+      } else
+        throw new Error(
+          `terminal-session: SGR ${c} is not drawn (in ${JSON.stringify(text)})`,
+        )
+    }
+  }
+  push(text.length)
+  return spans
+}
+
+/** The 16 named colours as a dark terminal shows them, ordered by their ANSI index
+ *  (black, red, green, yellow, blue, magenta, cyan, white, then the bright eight). */
+const NAMED = [
+  "#4e4e4e",
+  "#ff6b6b",
+  "#5fd787",
+  "#ffd75f",
+  "#6b9bff",
+  "#d787ff",
+  "#5fd7d7",
+  "#d0d0d0",
+  "#808080",
+  "#ff8787",
+  "#87ffaf",
+  "#ffff87",
+  "#87afff",
+  "#ffafff",
+  "#87ffff",
+  "#ffffff",
+] as const
+
+/** An xterm-256 index as a colour: the named 16, the 6×6×6 cube, the 24 greys. */
+export function ansiColor(n: number): string {
+  if (n < 16) return NAMED[n] as string
+  if (n < 232) {
+    const v = n - 16
+    const level = (c: number) => (c === 0 ? 0 : 55 + c * 40)
+    const [r, g, b] = [Math.floor(v / 36), Math.floor(v / 6) % 6, v % 6].map(
+      level,
+    ) as [number, number, number]
+    return `#${[r, g, b].map((c) => c.toString(16).padStart(2, "0")).join("")}`
+  }
+  const grey = 8 + (n - 232) * 10
+  return `#${grey.toString(16).padStart(2, "0").repeat(3)}`
+}
+
+/** How faint a dim run is, against its own colour. */
+export const DIM_OPACITY = 0.55
+
+/** The visible text of a line, its escapes gone. */
+export const plainOf = (text: string) => text.replace(SGR, "")
 
 /** One accent, tiers by mixing: one hue, intensity is the only variable. */
 function mix(
@@ -205,9 +308,19 @@ export function renderSessionSvg(
       )
     } else {
       const fill = line.kind === "muted" ? muted : accent
-      rows.push(
-        `<text x="${x}" y="${y}" fill="${fill}">${esc(line.text)}</text>`,
-      )
+      const runs = spansOf(line.text)
+        .map((s) => {
+          const attrs = [
+            s.color !== null && `fill="${ansiColor(s.color)}"`,
+            s.bold && `font-weight="700"`,
+            s.dim && `fill-opacity="${DIM_OPACITY}"`,
+          ].filter(Boolean)
+          return attrs.length
+            ? `<tspan ${attrs.join(" ")}>${esc(s.text)}</tspan>`
+            : esc(s.text)
+        })
+        .join("")
+      rows.push(`<text x="${x}" y="${y}" fill="${fill}">${runs}</text>`)
     }
     y += step
   }

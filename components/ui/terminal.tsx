@@ -14,10 +14,13 @@
 import * as React from "react"
 import { usePlayhead } from "@/components/ui/playback"
 import {
+  ansiColor,
+  DIM_OPACITY,
   LINE_HEIGHT,
   parseSession,
   type SessionLine,
   sessionTimeline,
+  spansOf,
   type TerminalPalette,
   TYPE_MS,
   terminalPalette,
@@ -113,6 +116,10 @@ function TerminalWindow({
       role="img"
       aria-label={alt}
       style={{
+        // A column: the bar, then the screen taking what is left of a window given
+        // a size (a fixed frame), or as much as it holds when it sizes itself.
+        display: "flex",
+        flexDirection: "column",
         background: palette.bg,
         borderRadius: em(12),
         overflow: "hidden",
@@ -125,7 +132,15 @@ function TerminalWindow({
         lineHeight: LINE_HEIGHT,
       }}
     >
-      <div aria-hidden="true">
+      <div
+        aria-hidden="true"
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          flex: 1,
+          minHeight: 0,
+        }}
+      >
         <div
           data-slot="terminal-bar"
           style={{
@@ -149,7 +164,12 @@ function TerminalWindow({
           ))}
         </div>
         <PaletteContext.Provider value={palette}>
-          <div data-slot="terminal-screen">{children}</div>
+          <div
+            data-slot="terminal-screen"
+            style={{ flex: 1, minHeight: 0, overflow: "hidden" }}
+          >
+            {children}
+          </div>
         </PaletteContext.Provider>
       </div>
     </div>
@@ -184,6 +204,33 @@ function TerminalScript({
       : 0
   const done = full >= timeline.lines.length
 
+  // A session taller than its window scrolls as a terminal does: the newest line
+  // stays at the screen's foot and the oldest leave at its top. Measured whenever
+  // the live lines or the screen change size, never per frame; a window sized by
+  // the whole session never overflows, so it never moves.
+  const sheet = React.useRef<HTMLDivElement>(null)
+  const live = React.useRef<HTMLDivElement>(null)
+  React.useLayoutEffect(() => {
+    const page = sheet.current
+    const layer = live.current
+    const screen = page?.parentElement
+    if (!page || !layer || !screen)
+      throw new Error("terminal: the screen rendered without its sheet")
+    const follow = () => {
+      const below = Number.parseFloat(getComputedStyle(page).paddingBottom)
+      const bottom =
+        layer.getBoundingClientRect().bottom -
+        page.getBoundingClientRect().top +
+        below
+      screen.scrollTop = Math.max(0, bottom - screen.clientHeight)
+    }
+    follow()
+    const observer = new ResizeObserver(follow)
+    observer.observe(layer)
+    observer.observe(screen)
+    return () => observer.disconnect()
+  }, [])
+
   const prompt = (key: string, cursor: boolean) => (
     <div key={key}>
       <span style={{ color: palette.prompt }}>$ </span>
@@ -209,7 +256,22 @@ function TerminalScript({
           color: line.kind === "muted" ? palette.muted : palette.accent,
         }}
       >
-        {line.text}
+        {spansOf(line.text).map((s) =>
+          s.color === null && !s.bold && !s.dim ? (
+            s.text
+          ) : (
+            <span
+              key={s.at}
+              style={{
+                color: s.color === null ? undefined : ansiColor(s.color),
+                fontWeight: s.bold ? 700 : undefined,
+                opacity: s.dim ? DIM_OPACITY : undefined,
+              }}
+            >
+              {s.text}
+            </span>
+          ),
+        )}
       </div>
     )
   }
@@ -220,6 +282,7 @@ function TerminalScript({
           same cell), so playback never grows the page: text streams into a fixed
           frame. Both layers share width, so wrapping is identical. */}
       <div
+        ref={sheet}
         style={{
           display: "grid",
           padding: `${em(20)} ${em(24)} ${em(24)}`,
@@ -237,7 +300,7 @@ function TerminalScript({
           {timeline.lines.map((l, i) => renderLine(l, i))}
           {prompt("end", true)}
         </div>
-        <div style={{ gridArea: "1 / 1" }}>
+        <div ref={live} style={{ gridArea: "1 / 1" }}>
           {timeline.lines.slice(0, full).map((l, i) => renderLine(l, i))}
           {current &&
             current.kind === "command" &&
