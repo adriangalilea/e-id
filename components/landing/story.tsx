@@ -226,7 +226,7 @@ export function Story(props: StoryProps) {
         content: ({ p }) => (
           <StoryCard
             title={<StoryTitle lead="from a terminal" rest="too" />}
-            body="A short link in one line, with nothing installed: the first command signs you in, one press in the browser. Your agents get a skill that never falls behind."
+            body="Send a file straight from your machine and watch it land, with nothing to install on the other side. Look anyone up, as words or as data. Your agents get a skill that never falls behind."
             overflow
             scene={
               <Fit ratio={TERMINAL}>
@@ -235,7 +235,7 @@ export function Story(props: StoryProps) {
                   progress={p}
                   accent={PHOSPHOR}
                   rows={12}
-                  alt="a terminal: npx @e-id/eid link makes a short link, signing the machine in first, then eid ls lists it"
+                  alt="a terminal: eid send serves a file and shows it being taken, eid card prints someone's card, eid skill install gives an agent the skill"
                   className="size-full"
                 />
               </Fit>
