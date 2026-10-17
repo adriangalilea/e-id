@@ -6,21 +6,15 @@
 // Two themes are baked into one render (`--shiki-light` / `--shiki-dark` on every
 // token) and code.css picks with the theme, so switching does not re-highlight and
 // cannot flash.
+//
+// Two parts anyone can use alone: the markup is lib/code-highlight's `codeHtml`, the
+// frame is code-frame's `CodeFrame`, which markdown draws its blocks with too, so a
+// block in a page of markdown and one written here are the same block.
 
 import "server-only"
-import {
-  transformerNotationDiff,
-  transformerNotationErrorLevel,
-  transformerNotationFocus,
-  transformerNotationHighlight,
-  transformerNotationWordHighlight,
-} from "@shikijs/transformers"
-import { type BundledLanguage, codeToHtml, type ShikiTransformer } from "shiki"
-import { Copy } from "@/components/ui/copy"
-import { Glass } from "@/components/ui/material-glass"
-import { CODE_THEMES, linesOf } from "@/lib/code-tokens"
-import "./code.css"
-import "./edge-fade"
+import type { BundledLanguage } from "shiki"
+import { CodeFrame } from "@/components/ui/code-frame"
+import { codeHtml } from "@/lib/code-highlight"
 
 export interface CodeProps {
   /** The source. Common leading indentation is removed, so a snippet can be written
@@ -31,7 +25,7 @@ export interface CodeProps {
   compact?: boolean
   /** A Shiki language id. `text` when it is not code, which skips the grammar. */
   lang?: BundledLanguage | "text"
-  /** A path or a name for the tab. Without one the frame is bare. */
+  /** A path or a name for the tab. Without one the bar names the language. */
   filename?: string
   /** Hide the copy control, for a snippet nobody would want in their clipboard. */
   copy?: boolean
@@ -59,47 +53,6 @@ export interface CodeProps {
   className?: string
 }
 
-/** One of the two inks a Shiki style names (`--shiki-light`, `--shiki-dark`). */
-const inkOf = (style: string, name: string) =>
-  new RegExp(`(?:^|;)${name}:([^;]+)`).exec(style)?.[1]?.toLowerCase()
-
-/** A token in the block's own colours says nothing its line does not: the line wears
- *  them already (the `<pre>`'s `--shiki-light` and `--shiki-dark`, inherited, which
- *  code.css colours every span with), so its span is markup alone, two in five of a
- *  page's tokens. It goes, its text left in the line. Run last, once every notation
- *  has read the spans: a word highlight counts characters through them. */
-const unwrapPlainTokens: ShikiTransformer = {
-  name: "ag:unwrap-plain-tokens",
-  root(root) {
-    const pre = root.children.find(
-      (n) => n.type === "element" && n.tagName === "pre",
-    )
-    if (pre?.type !== "element") throw new Error("code: Shiki drew no <pre>")
-    const own = String(pre.properties.style ?? "")
-    const light = inkOf(own, "--shiki-light")
-    const dark = inkOf(own, "--shiki-dark")
-    if (!light || !dark)
-      throw new Error(`code: the <pre> names no inks of its own (${own})`)
-    const plain = `--shiki-light:${light};--shiki-dark:${dark}`
-    const code = pre.children.find(
-      (n) => n.type === "element" && n.tagName === "code",
-    )
-    if (code?.type !== "element") throw new Error("code: Shiki drew no <code>")
-    for (const line of code.children) {
-      if (line.type !== "element") continue
-      line.children = line.children.flatMap((token) =>
-        token.type === "element" &&
-        token.tagName === "span" &&
-        Object.keys(token.properties).length === 1 &&
-        String(token.properties.style).toLowerCase() === plain &&
-        token.children.every((c) => c.type === "text")
-          ? token.children
-          : [token],
-      )
-    }
-  },
-}
-
 /** Strip the shortest indentation any non-blank line has, and the blank first and
  *  last lines a template literal always brings. */
 function dedent(src: string): string {
@@ -116,96 +69,12 @@ function dedent(src: string): string {
 
 export async function Code({
   children,
-  compact = false,
   lang = "tsx",
-  filename,
-  copy = true,
   highlight,
-  lines,
   notations = true,
-  material = "plain",
-  bare = false,
-  className,
+  ...frame
 }: CodeProps) {
   const source = dedent(children)
-  const marked = highlight ? linesOf(highlight) : null
-  const html = await codeToHtml(source, {
-    lang,
-    themes: CODE_THEMES,
-    defaultColor: false,
-    transformers: [
-      // The notations travel INSIDE the source, so they survive an edit that moves a
-      // line and they are what a reader copies out of a doc. Shiki strips the comment
-      // from the rendered output; the clipboard gets `source`, which still has it.
-      ...(notations
-        ? [
-            transformerNotationDiff({ matchAlgorithm: "v3" }),
-            transformerNotationHighlight({ matchAlgorithm: "v3" }),
-            transformerNotationWordHighlight({ matchAlgorithm: "v3" }),
-            transformerNotationFocus({ matchAlgorithm: "v3" }),
-            transformerNotationErrorLevel({ matchAlgorithm: "v3" }),
-          ]
-        : []),
-      // ...and the `highlight` prop for source nobody may write into.
-      {
-        name: "ag:highlight-prop",
-        line(node, line) {
-          if (marked?.has(line)) this.addClassToHast(node, "highlighted")
-        },
-      },
-      unwrapPlainTokens,
-    ],
-  })
-  const body = (
-    <>
-      {!compact && (
-        <div className="ag-code-bar">
-          <span className="ag-code-name">{filename ?? lang}</span>
-          {copy && <Copy value={source} label />}
-        </div>
-      )}
-      {/* Shiki's own <pre><code>, styled by code.css. A long line scrolls sideways,
-          and a block given less height than it needs scrolls down, inside the frame,
-          with the scrims' edge fade: never a scrollbar drawn over the code, never a
-          hard cut. */}
-      <div
-        className="ag-code-scroll ag-edge-fade-xy"
-        // biome-ignore lint/security/noDangerouslySetInnerHtml: shiki's own output, built on the server from a string prop, never from anything a reader can reach
-        dangerouslySetInnerHTML={{ __html: html }}
-      />
-      {compact && copy && <Copy value={source} className="mr-2" />}
-    </>
-  )
-  const frame = `ag-code${lines ? " ag-code-numbered" : ""}${className ? ` ${className}` : ""}`
-  if (bare)
-    return (
-      <div data-slot="code" data-bare className={frame}>
-        <div
-          className="ag-code-scroll ag-edge-fade-xy"
-          // biome-ignore lint/security/noDangerouslySetInnerHtml: shiki's own output, built on the server from a string prop, never from anything a reader can reach
-          dangerouslySetInnerHTML={{ __html: html }}
-        />
-      </div>
-    )
-  if (material === "glass")
-    return (
-      <Glass
-        shape="surface"
-        data-slot="code"
-        data-compact={compact || undefined}
-        className={`${frame} [--glass-radius:0.75rem]`}
-      >
-        {body}
-      </Glass>
-    )
-  return (
-    <div
-      data-slot="code"
-      data-material="plain"
-      data-compact={compact || undefined}
-      className={frame}
-    >
-      {body}
-    </div>
-  )
+  const html = await codeHtml(source, { lang, highlight, notations })
+  return <CodeFrame source={source} html={html} lang={lang} {...frame} />
 }
