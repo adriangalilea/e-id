@@ -6,7 +6,7 @@ import type { z } from "zod"
 import { db } from "@/db"
 import { links, sendEvents, sendTo, users } from "@/db/schema"
 import type { SendCreateBody } from "@/lib/api-schemas"
-import type { CardErrors } from "@/lib/card-edit"
+import type { CardErrors, Recipient } from "@/lib/card-edit"
 import { slugProblem } from "@/lib/card-edit"
 import { linkCode } from "@/lib/link-names"
 import { allowanceOf, reached } from "@/lib/trust"
@@ -477,17 +477,21 @@ export async function inboxOf(
   })
 }
 
-/** Who each of `linkIds` is for and when they took it: the outbox (`eid ls`). */
+/** Who each of `linkIds` is for and what they did with it: the outbox (`eid ls`). */
 export async function peopleOf(
   linkIds: string[],
-): Promise<Map<string, { username: string; taken: string | null }[]>> {
-  const out = new Map<string, { username: string; taken: string | null }[]>()
+): Promise<Map<string, Recipient[]>> {
+  const out = new Map<string, Recipient[]>()
   if (linkIds.length === 0) return out
   const rows = await db
     .select({
       linkId: sendTo.link_id,
       username: users.username,
       taken: sendTo.taken_at,
+      // Their last no, where they said one (send_event, lib/sends `said`).
+      declined: sql<
+        number | null
+      >`(SELECT MAX(${sendEvents.at}) FROM ${sendEvents} WHERE ${sendEvents.link_id} = ${sendTo.link_id} AND ${sendEvents.user_id} = ${sendTo.user_id} AND ${sendEvents.kind} = 'declined')`,
     })
     .from(sendTo)
     .innerJoin(users, eq(users.id, sendTo.user_id))
@@ -496,7 +500,12 @@ export async function peopleOf(
     if (!r.username)
       throw new Error(`peopleOf: a recipient of ${r.linkId} has no name`)
     const list = out.get(r.linkId) ?? []
-    list.push({ username: r.username, taken: r.taken?.toISOString() ?? null })
+    list.push({
+      username: r.username,
+      taken: r.taken?.toISOString() ?? null,
+      // send_event.at is kept in milliseconds (mode "timestamp_ms").
+      declined: r.declined === null ? null : new Date(r.declined).toISOString(),
+    })
     out.set(r.linkId, list)
   }
   return out

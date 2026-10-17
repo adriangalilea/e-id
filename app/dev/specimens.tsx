@@ -98,8 +98,9 @@ const KEPT: KeptShortLink[] = [
     kind: "send",
     file: { name: "draft.pdf", size: 180_000 },
     to: [
-      { username: "ada", taken: "2026-10-16T18:02:00.000Z" },
-      { username: "bob", taken: null },
+      { username: "ada", taken: "2026-10-16T18:02:00.000Z", declined: null },
+      { username: "bob", taken: null, declined: "2026-10-16T18:05:00.000Z" },
+      { username: "cy", taken: null, declined: null },
     ],
     locked: false,
   },

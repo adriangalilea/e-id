@@ -112,10 +112,16 @@ export const ShortLinkOut = z
       .nullable()
       .describe("a send's file"),
     to: z
-      .array(z.object({ username: z.string(), taken: z.string().nullable() }))
+      .array(
+        z.object({
+          username: z.string(),
+          taken: z.string().nullable(),
+          declined: z.string().nullable(),
+        }),
+      )
       .nullable()
       .describe(
-        "a send's people and when each took it (ISO, null while it waits); null for anyone with the address",
+        "a send's people: when each took it, or said no (ISO, both null while it waits); null for anyone with the address",
       ),
     locked: z.boolean().describe("a send behind a password"),
   })

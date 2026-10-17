@@ -277,7 +277,15 @@ function said(link: ShortLink): string {
   ]
   if (link.to)
     parts.push(
-      `for ${link.to.map((p) => (p.taken ? `${p.username} ${ui.ok("(took it)")}` : p.username)).join(", ")}`,
+      `for ${link.to
+        .map((p) =>
+          p.taken
+            ? `${p.username} ${ui.ok("(took it)")}`
+            : p.declined
+              ? `${p.username} ${ui.warn("(said no)")}`
+              : p.username,
+        )
+        .join(", ")}`,
     )
   else
     parts.push(

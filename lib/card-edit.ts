@@ -196,6 +196,14 @@ export const shortLinkSchema = z
 
 export type ShortLink = z.input<typeof shortLinkSchema>
 
+/** One of a send's people, as the outbox shows them: when they took it, or when
+ *  they said no to it (ISO), both null while it waits. */
+export type Recipient = {
+  username: string
+  taken: string | null
+  declined: string | null
+}
+
 /** A short link as kept: its opens, and why it was taken down (a Safe Browsing
  *  threat, or "admin"; lib/threats), null while it is up. */
 export type KeptShortLink = ShortLink & {
@@ -206,8 +214,8 @@ export type KeptShortLink = ShortLink & {
    *  lib/sends), its value the sendme ticket and `file` what it is. */
   kind: "url" | "send"
   file: { name: string; size: number } | null
-  /** A send's people and when each took it; null for anyone with the address. */
-  to: { username: string; taken: string | null }[] | null
+  /** A send's people and what each did with it; null for anyone with the address. */
+  to: Recipient[] | null
   /** A send behind a password. */
   locked: boolean
 }
