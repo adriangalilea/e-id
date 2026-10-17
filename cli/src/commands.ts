@@ -115,7 +115,7 @@ export const COMMANDS = [
     usage: "get <address>",
     says: "get what someone is sending you, by its address, asking first",
     flags: [
-      { flag: "--dir <path>", says: "where to put it (here by default)" },
+      { flag: "-d, --dir <path>", says: "where to put it (here by default)" },
       {
         flag: "--yes",
         says: "take it without asking: for a program that chose this one file",
@@ -139,7 +139,7 @@ export const COMMANDS = [
     says: "what people are sending you, waiting to be taken",
     flags: [
       {
-        flag: "--watch",
+        flag: "-w, --watch",
         says: "wait for the next send, ask about it (y/N), and end once one is taken",
       },
       {
@@ -151,16 +151,17 @@ export const COMMANDS = [
         says: "while watching, take what these people send without asking (ada,bob); keeps waiting",
       },
       {
-        flag: "--dir <path>",
-        says: "where taken files go (~/Downloads by default)",
+        flag: "-d, --dir <path>",
+        says: "while watching, where taken files go (here by default), chosen as the watch begins",
       },
     ],
     more: "Each send for you with who sends it (their name, @handle and page), the file and its size, and since when; eid get <address> takes one. --watch waits for an arrival and asks before anything comes down; a no tells its sender and the watch goes on. --accept-from names whom you take from without asking, never everyone: a blanket accept is how a stranger's file lands unread. With --json, --watch prints each arrival as a line and takes nothing. A send leaves the inbox once taken or said no to, or when its sender stops.",
     examples: [
       "eid inbox",
-      "eid inbox --watch",
-      "eid inbox --watch --accept-from ada",
-      "eid inbox --watch --json",
+      "eid inbox -w",
+      "eid inbox -w -d ~/Downloads",
+      "eid inbox -w --accept-from ada",
+      "eid inbox -w --json",
     ],
     json: "Inbox; with --watch, one waiting send per line",
   },
@@ -216,7 +217,7 @@ export const COMMANDS = [
     says: "the agent skill for eid: printed, or installed for Claude Code",
     flags: [
       {
-        flag: "--dir <path>",
+        flag: "-d, --dir <path>",
         says: "where to install it (default ~/.claude/skills/eid)",
       },
     ],

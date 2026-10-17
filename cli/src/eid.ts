@@ -514,6 +514,9 @@ async function take(
     json: boolean
     /** The domain addresses are printed on (--on). */
     domain: string
+    /** Asked by `inbox --watch`, whose folder was chosen when the watch began:
+     *  --dir is no answer to give here. */
+    watching: boolean
   },
 ): Promise<Taken | null> {
   const at = sendAt(address)
@@ -559,14 +562,21 @@ async function take(
             "file",
             `${send.file.name}  ${ui.muted(BYTES.format(send.file.size))}`,
           ],
-          ["into", `${fromHome(o.dir)}  ${ui.muted("(--dir to change)")}`],
+          [
+            "into",
+            o.watching
+              ? fromHome(o.dir)
+              : `${fromHome(o.dir)}  ${ui.muted("(--dir to change)")}`,
+          ],
         ],
         { indent: 2 },
       )}\n`,
     )
   if (existsSync(target))
     throw new Said(
-      `${fromHome(target)} is already there: --dir somewhere else`,
+      o.watching
+        ? `${fromHome(target)} is already there: left in your inbox`
+        : `${fromHome(target)} is already there: --dir somewhere else`,
       "exists",
     )
   // The answer reaches its sender live (yes: it is coming; no: they are told), said
@@ -976,6 +986,7 @@ const RUN: Record<CommandName, (c: Context) => Promise<void>> = {
       password: values.password,
       json,
       domain,
+      watching: false,
     })
     if (!got) return out({ taken: false, address }, () => {})
     out(got, () => console.log(`  saved to ${fromHome(got.path)}\n`))
@@ -1009,8 +1020,9 @@ const RUN: Record<CommandName, (c: Context) => Promise<void>> = {
         "eid inbox --watch asks about each send, and there is no terminal to ask in: --json to list them, --accept-from to take from people you name",
         "unconfirmed",
       )
-    // A file waited for lands where downloads land; --dir says otherwise.
-    const dir = resolve(values.dir ?? join(homedir(), "Downloads"))
+    // Here, as `eid get` and every downloader; --dir says otherwise, once, as the
+    // watch begins.
+    const dir = resolve(values.dir ?? ".")
     // Waits for the next send and ends once one is taken; --stay keeps waiting, as
     // does taking from people named without asking (a machine left to receive).
     const stay = values.stay === true || accepted.size > 0
@@ -1062,6 +1074,7 @@ const RUN: Record<CommandName, (c: Context) => Promise<void>> = {
           password: undefined,
           json,
           domain,
+          watching: true,
         }).catch((error: unknown) => {
           // One send that cannot be taken (its sender stopped, a file of that name
           // here already) is said, and the watch goes on.
@@ -1250,11 +1263,11 @@ function parse() {
       opens: { type: "string" },
       card: { type: "string" },
       on: { type: "string" },
-      dir: { type: "string" },
+      dir: { type: "string", short: "d" },
       to: { type: "string", short: "t" },
       password: { type: "string" },
       yes: { type: "boolean", short: "y" },
-      watch: { type: "boolean" },
+      watch: { type: "boolean", short: "w" },
       stay: { type: "boolean" },
       self: { type: "boolean", short: "s" },
       "accept-from": { type: "string" },
