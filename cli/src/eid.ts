@@ -33,6 +33,7 @@ import { parseArgs } from "node:util"
 import { indent, kv, spinner, table, ui } from "@adriangalilea/utils/cli"
 import type { z } from "zod"
 import type * as S from "@/lib/api-schemas"
+import { bare, cardLines } from "@/lib/card-lines"
 import type { Card } from "@/lib/card-schema"
 import { linkPlatforms } from "@/lib/platforms"
 import pkg from "../package.json" with { type: "json" }
@@ -221,10 +222,6 @@ async function login(browser: boolean): Promise<Config> {
 /** An address on one of e-ID's domains, as copied: always with https://. */
 const addressOn = (domain: string, path: string) => `https://${domain}${path}`
 
-/** A link's address as a person writes it: no scheme, no `mailto:`. */
-const bare = (url: string) =>
-  url.replace(/^(https?:\/\/|mailto:)/, "").replace(/\/$/, "")
-
 const BYTES = new Intl.NumberFormat("en", {
   notation: "compact",
   style: "unit",
@@ -255,31 +252,6 @@ function said(link: ShortLink): string {
     parts.push(`${link.maxVisits - link.visits} opens left`)
   if (link.public) parts.push("on your card")
   return parts.join(" · ")
-}
-
-/** A card for a person reading a terminal: who, their line, every link with
- *  where it goes and its e-ID route (the person's part dimmed, the name that
- *  is the route's own lit), and the ways to get the rest. Read from card.json,
- *  the same data the page draws. */
-function cardShown(card: Card): string {
-  const home = `eid.to/${card.handle}`
-  const rows = card.links.map((l) => [
-    ui.head(l.name),
-    bare(l.url),
-    l.route
-      ? `${ui.muted(`${home}/`)}${ui.accent(l.route.slice(l.route.lastIndexOf("/") + 1))}`
-      : "",
-  ])
-  return [
-    "",
-    `  ${ui.head(card.name)}`,
-    `  ${ui.accent(`@${card.handle}`)}${card.country ? ui.muted(` · ${card.country}`) : ""}`,
-    ...(card.bio ? ["", ...card.bio.split("\n").map((l) => `  ${l}`)] : []),
-    ...(rows.length ? ["", indent(table(rows), 2)] : []),
-    "",
-    `  ${ui.muted(`${home} · as json: ${home}/json · as a contact: ${home}.vcf`)}`,
-    "",
-  ].join("\n")
 }
 
 /** A send's address as someone gives it (eid.to/ada/notes, with or without
@@ -907,7 +879,7 @@ const RUN: Record<CommandName, (c: Context) => Promise<void>> = {
       throw new Said(`No e-ID is called ${username}`, "not_found")
     if (!res.ok) throw new Error(`/${username}/json: HTTP ${res.status}`)
     const card = (await res.json()) as Card
-    out(card, () => console.log(cardShown(card)))
+    out(card, () => console.log(cardLines(card, (role, s) => ui[role](s))))
   },
   async set({ rest, out, session }) {
     const [what, ...words] = rest
