@@ -1,0 +1,14 @@
+/* @ag/sealed: the sealed files, which git ignores and Tailwind skips with it,
+   named so their classes are generated. Written by scripts/sealed.mts seal. */
+@source "./components/ui/github.tsx";
+@source "./components/ui/shimmer.tsx";
+@source "./components/ui/social-profile.tsx";
+@source "./components/ui/tweet.tsx";
+@source "./components/ui/x-profile.tsx";
+@source "./lib/github-data.ts";
+@source "./lib/social-profile-core.ts";
+@source "./lib/social-profile-github.ts";
+@source "./lib/social-profile-telegram.ts";
+@source "./lib/social-profile-youtube.ts";
+@source "./lib/tweet-data.ts";
+@source "./lib/x-profile-data.ts";

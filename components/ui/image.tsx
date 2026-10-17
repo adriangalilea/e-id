@@ -28,9 +28,10 @@ export type ImageLoader = (request: {
 }) => string | null
 
 /** The widths a loader is asked for: Next's (`imageSizes` then `deviceSizes`, its
- *  defaults), which its optimizer accepts and no other. A loader of your own takes
- *  them too, so a CDN's cache holds sixteen renditions of a picture at most. */
-const SMALL = [16, 32, 48, 64, 96, 128, 256, 384]
+ *  defaults since Next 16, which dropped 16), which its optimizer accepts and no
+ *  other: any other width is a 400. A loader of your own takes them too, so a CDN's
+ *  cache holds fifteen renditions of a picture at most. */
+const SMALL = [32, 48, 64, 96, 128, 256, 384]
 const DEVICE = [640, 750, 828, 1080, 1200, 1920, 2048, 3840]
 const WIDTHS = [...SMALL, ...DEVICE]
 

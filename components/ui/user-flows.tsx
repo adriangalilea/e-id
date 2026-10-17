@@ -26,6 +26,7 @@
 
 import { ArrowLeft, ArrowRight, LogOut, MousePointerClick } from "lucide-react"
 import * as React from "react"
+import { Image } from "@/components/ui/image"
 import { Tree } from "@/components/ui/tree"
 import {
   type BeforeAndAfter as Around,
@@ -126,8 +127,7 @@ function Place({
       {/* Leaving, said by its own mark: no place, no colour. */}
       {name === EXIT && <LogOut aria-hidden className="size-3" />}
       {favicon && (
-        // biome-ignore lint/performance/noImgElement: an item cannot assume next/image
-        <img
+        <Image
           src={favicon}
           alt=""
           width={14}

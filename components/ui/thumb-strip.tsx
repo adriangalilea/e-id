@@ -11,6 +11,7 @@
 // glass, a bar of the material's glass, the active thumb ringed in the rim's light.
 
 import * as React from "react"
+import { Image } from "@/components/ui/image"
 import {
   type Material,
   type Scheme,
@@ -166,13 +167,14 @@ export function ThumbStrip({
               onClick={() => onJump(i)}
             >
               {item.src ? (
-                // biome-ignore lint/performance/noImgElement: the reel's own rendition
-                <img
+                // Asked for at the width it is drawn: as tall as the thumb, the
+                // picture's own shape, cropped to the thumb by its cover.
+                <Image
                   src={item.src}
                   alt=""
+                  width={Math.round((height * item.width) / item.height)}
                   draggable={false}
-                  loading="lazy"
-                  className="block size-full object-cover"
+                  className="block size-full"
                 />
               ) : (
                 <span className={LABEL}>{item.label}</span>

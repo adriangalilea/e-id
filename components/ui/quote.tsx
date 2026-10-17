@@ -27,6 +27,7 @@
 // property is the seam between the arithmetic and the CSS; the class says which
 // property each number drives. There is no quote.css.
 
+import * as React from "react"
 import { Avatar } from "@/components/ui/avatar"
 import { AvatarPortrait } from "@/components/ui/avatar-portrait"
 import { Image } from "@/components/ui/image"
@@ -90,6 +91,16 @@ export interface QuoteProps extends QuoteData {
    *  nowhere to put a link, and the card matching its own preview outranks carrying one
    *  more affordance. */
   width?: number
+  /** The quote's own address, drawn on its date the way a post's timestamp is its link
+   *  in a feed. An element, so the host's own link draws it with its router
+   *  (`permalink={<Link href="/quotes/on-time" />}`); it takes the date as its words
+   *  and the date's style, its own `className` last. Needs a `date` to be drawn on, and
+   *  like `source` lives in `feature` and `prose`: the card throws when given one. */
+  permalink?: React.ReactElement<{
+    className?: string
+    children?: React.ReactNode
+    "data-slot"?: string
+  }>
   /** The page's serif's average character advance, as a share of the em — see QUOTE_CH.
    *  The browser wraps in real `ch`, so this only decides the SIZE; leave it and a
    *  condensed face is set a third too small for its measure. Pass the same number the
@@ -160,6 +171,7 @@ export function Quote({
   author,
   source,
   date,
+  permalink,
   variant = "prose",
   tone,
   focus = FOCUS,
@@ -170,6 +182,10 @@ export function Quote({
   className,
   children,
 }: QuoteProps) {
+  assert(
+    !permalink || date,
+    "a permalink is drawn on the date, and this quote has none",
+  )
   const words = quoteClean(text)
   const body = children ?? <p>{words}</p>
   const ink = tone?.accent ?? "currentColor"
@@ -217,6 +233,7 @@ export function Quote({
           className={cn(BY, "mt-[0.667em] gap-[0.444em] text-[0.667em]")}
           author={author}
           date={date}
+          permalink={permalink}
           source={source}
           tone={tone}
           focus={focus}
@@ -278,6 +295,7 @@ export function Quote({
           className={cn(BY, "mt-(--ag-quote-gap) gap-3 text-sm")}
           author={author}
           date={date}
+          permalink={permalink}
           source={source}
           tone={tone}
           focus={focus}
@@ -290,6 +308,10 @@ export function Quote({
   assert(
     material !== "glass",
     "the quote card is its own link preview and has no glass face; a glass quote is prose or feature",
+  )
+  assert(
+    !permalink,
+    "the quote card is its own link preview and carries no link; a linked quote is prose or feature",
   )
 
   // THE CARD. Every number below is the still's, recomputed as a share of the frame
@@ -462,20 +484,22 @@ function By({
   dateClassName,
   author,
   date,
+  permalink,
   source,
   tone,
   focus,
   face,
-}: Pick<QuoteData, "author" | "date" | "source"> & {
-  className: string
-  /** The card sets the name and the date off the FRAME; the other weights off the page. */
-  nameClassName?: string
-  dateClassName?: string
-  tone?: QuoteTone
-  focus?: number
-  /** Which rung the face is drawn at; none, and there is no face. */
-  face?: "sm" | "md"
-}) {
+}: Pick<QuoteData, "author" | "date" | "source"> &
+  Pick<QuoteProps, "permalink"> & {
+    className: string
+    /** The card sets the name and the date off the FRAME; the other weights off the page. */
+    nameClassName?: string
+    dateClassName?: string
+    tone?: QuoteTone
+    focus?: number
+    /** Which rung the face is drawn at; none, and there is no face. */
+    face?: "sm" | "md"
+  }) {
   if (!author && !date && !source) return null
   return (
     <figcaption data-slot="quote-by" className={className}>
@@ -513,14 +537,27 @@ function By({
           )}
         </cite>
       )}
-      {date && (
-        <span
-          data-slot="quote-date"
-          className={cn(META, "text-xs", dateClassName)}
-        >
-          {date}
-        </span>
-      )}
+      {date &&
+        (permalink ? (
+          React.cloneElement(permalink, {
+            "data-slot": "quote-date",
+            className: cn(
+              LINK,
+              META,
+              "text-xs",
+              dateClassName,
+              permalink.props.className,
+            ),
+            children: date,
+          })
+        ) : (
+          <span
+            data-slot="quote-date"
+            className={cn(META, "text-xs", dateClassName)}
+          >
+            {date}
+          </span>
+        ))}
       {source && (
         <a
           data-slot="quote-source"

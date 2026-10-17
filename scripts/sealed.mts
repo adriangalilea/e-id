@@ -15,6 +15,12 @@
 // `check` never (it compares hashes). A clone without it builds nothing that imports a
 // sealed file: those files are not part of the repository's source. Plain Node, no
 // dependencies.
+//
+// TAILWIND SKIPS WHAT GIT IGNORES, so a sealed file's utility classes would never be
+// generated, and its parts drawn unstyled in every build. `seal` writes sealed.css at
+// the root, naming each sealed file to Tailwind (`@source`); the site's stylesheet
+// imports it once (`@import "../sealed.css";` from app/globals.css), and `check`
+// fails while nothing does.
 
 import { execFileSync } from "node:child_process"
 import {
@@ -51,6 +57,8 @@ const SKIP = new Set([
 const BEGIN =
   "# @ag/sealed: committed encrypted beside themselves (scripts/sealed.mts)"
 const END = "# end @ag/sealed"
+/** The stylesheet naming the sealed files to Tailwind, at the root. */
+const SOURCES = "sealed.css"
 
 /** Every file under the repository, as a path relative to it, build output skipped. */
 function* walk(dir: string): Generator<string> {
@@ -143,6 +151,24 @@ const ignoreWith = (paths: string[]): string => {
   if (start === -1) return `${text.replace(/\n*$/, "\n\n")}${block}\n`
   return text.slice(0, start) + block + text.slice(end + END.length)
 }
+/** sealed.css naming exactly these paths to Tailwind. */
+const sourcesOf = (paths: string[]): string =>
+  [
+    "/* @ag/sealed: the sealed files, which git ignores and Tailwind skips with it,",
+    "   named so their classes are generated. Written by scripts/sealed.mts seal. */",
+    ...paths.toSorted().map((p) => `@source "./${p}";`),
+    "",
+  ].join("\n")
+/** Whether a stylesheet of the repository imports sealed.css. */
+const sourcesImported = (): boolean =>
+  all.some(
+    (p) =>
+      p.endsWith(".css") &&
+      p !== SOURCES &&
+      /@import\s+["'][./]*sealed\.css["']/.test(
+        readFileSync(join(root, p), "utf8"),
+      ),
+  )
 const tracked = (path: string): boolean => {
   try {
     execFileSync("git", ["ls-files", "--error-unmatch", path], {
@@ -185,10 +211,15 @@ if (verb === "seal") {
   }
   const wrote = changed.length
   writeFileSync(join(root, ".gitignore"), ignoreWith(plain))
+  writeFileSync(join(root, SOURCES), sourcesOf(plain))
   const stillTracked = plain.filter(tracked)
   console.log(
-    `sealed: ${plain.length} files, ${wrote} sealed anew, .gitignore's block current`,
+    `sealed: ${plain.length} files, ${wrote} sealed anew, .gitignore's block and ${SOURCES} current`,
   )
+  if (!sourcesImported())
+    console.log(
+      `import ${SOURCES} from the site's stylesheet, or Tailwind never sees the sealed files: @import "../${SOURCES}"; in app/globals.css`,
+    )
   if (stillTracked.length)
     console.log(
       `untrack them, their sealed copies replace them: git rm --cached ${stillTracked.join(" ")}`,
@@ -209,6 +240,20 @@ if (plain.length && ignoreWith(plain) !== gitignore)
   failures.push(
     ".gitignore's @ag/sealed block does not name exactly the files to seal: run seal",
   )
+if (plain.length) {
+  const sources = join(root, SOURCES)
+  if (
+    !existsSync(sources) ||
+    readFileSync(sources, "utf8") !== sourcesOf(plain)
+  )
+    failures.push(
+      `${SOURCES} does not name exactly the files to seal: run seal`,
+    )
+  if (!sourcesImported())
+    failures.push(
+      `no stylesheet imports ${SOURCES}, so Tailwind skips the sealed files' classes: @import "../${SOURCES}"; in app/globals.css`,
+    )
+}
 for (const p of plain) {
   if (tracked(p))
     failures.push(`${p}: tracked by git, so published (git rm --cached ${p})`)
