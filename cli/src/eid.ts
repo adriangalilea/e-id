@@ -686,22 +686,8 @@ async function take(
   }
 }
 
-type Values = {
-  until?: string
-  opens?: string
-  card?: string
-  on?: string
-  dir?: string
-  to?: string
-  password?: string
-  yes?: boolean
-  watch?: boolean
-  stay?: boolean
-  self?: boolean
-  "accept-from"?: string
-  json?: boolean
-  "no-browser"?: boolean
-}
+/** The flags as parsed: their one spelling is `parse`'s options. */
+type Values = ReturnType<typeof parse>["values"]
 
 /** A list as typed on the command line, "ada, bob" or "ada,bob", lower case. */
 const listed = (said: string | undefined) =>
@@ -1023,15 +1009,16 @@ const RUN: Record<CommandName, (c: Context) => Promise<void>> = {
     // Here, as `eid get` and every downloader; --dir says otherwise, once, as the
     // watch begins.
     const dir = resolve(values.dir ?? ".")
-    // Waits for the next send and ends once one is taken; --stay keeps waiting, as
-    // does taking from people named without asking (a machine left to receive).
-    const stay = values.stay === true || accepted.size > 0
+    // A watch has no end of its own: it waits until Ctrl-C, a no included. --once
+    // ends it at the first send taken (with --json, the first one shown), the house
+    // watch contract (cmail, tg).
+    const once = values.once === true
     const seen = new Set<string>()
     let after: string | undefined
     if (!json) {
       console.error(
         ui.muted(
-          `\n  waiting for ${stay ? "sends" : "a send"} to you · into ${fromHome(dir)} (--dir to change) · Ctrl-C to stop`,
+          `\n  waiting for ${once ? "a send" : "sends"} to you · into ${fromHome(dir)} (--dir to change) · Ctrl-C to stop`,
         ),
       )
       if (accepted.size)
@@ -1066,6 +1053,7 @@ const RUN: Record<CommandName, (c: Context) => Promise<void>> = {
         seen.add(w.address)
         if (json) {
           console.log(JSON.stringify(w))
+          if (once) return
           continue
         }
         const got = await take(w.address, {
@@ -1084,7 +1072,7 @@ const RUN: Record<CommandName, (c: Context) => Promise<void>> = {
         })
         if (!got) continue
         console.log(`  saved to ${fromHome(got.path)}\n`)
-        if (!stay) return
+        if (once) return
       }
     }
   },
@@ -1268,6 +1256,7 @@ function parse() {
       password: { type: "string" },
       yes: { type: "boolean", short: "y" },
       watch: { type: "boolean", short: "w" },
+      once: { type: "boolean", short: "o" },
       stay: { type: "boolean" },
       self: { type: "boolean", short: "s" },
       "accept-from": { type: "string" },

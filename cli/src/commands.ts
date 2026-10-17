@@ -140,15 +140,15 @@ export const COMMANDS = [
     flags: [
       {
         flag: "-w, --watch",
-        says: "wait for the next send, ask about it (y/N), and end once one is taken",
+        says: "wait for sends, asking about each (y/N), until Ctrl-C",
       },
       {
-        flag: "--stay",
-        says: "while watching, keep waiting after a file is taken",
+        flag: "-o, --once",
+        says: "while watching, end once a file is taken (with --json, once one is shown)",
       },
       {
         flag: "--accept-from <people>",
-        says: "while watching, take what these people send without asking (ada,bob); keeps waiting",
+        says: "while watching, take what these people send without asking (ada,bob)",
       },
       {
         flag: "-d, --dir <path>",
@@ -159,9 +159,10 @@ export const COMMANDS = [
     examples: [
       "eid inbox",
       "eid inbox -w",
+      "eid inbox -wo",
       "eid inbox -w -d ~/Downloads",
       "eid inbox -w --accept-from ada",
-      "eid inbox -w --json",
+      "eid inbox -wo --json",
     ],
     json: "Inbox; with --watch, one waiting send per line",
   },
