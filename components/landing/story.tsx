@@ -388,7 +388,16 @@ function Fit({
       className={cn("grid size-full place-items-center", className)}
       style={{ containerType: "size" }}
     >
-      <div style={{ width: `min(100cqw, ${ratio} * 100cqh)` }}>{children}</div>
+      <div
+        style={{
+          width: `min(100cqw, ${ratio} * 100cqh)`,
+          // The shape itself, so what has none of its own (a terminal, whose
+          // session would otherwise set its height) takes it.
+          aspectRatio: ratio,
+        }}
+      >
+        {children}
+      </div>
     </div>
   )
 }
