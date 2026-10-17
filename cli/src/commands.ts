@@ -89,7 +89,8 @@ export const EID = program({
         to: {
           type: "string",
           short: "t",
-          value: "<people>",
+          value: "<user>",
+          list: true,
           says: "only for these e-ID accounts (ada,bob): it waits in their inbox, and nobody else can open it",
         },
         self: {
@@ -156,7 +157,8 @@ export const EID = program({
         },
         "accept-from": {
           type: "string",
-          value: "<people>",
+          value: "<user>",
+          list: true,
           says: "while watching, take what these people send without asking (ada,bob)",
         },
         dir: {

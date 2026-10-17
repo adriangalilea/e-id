@@ -35,6 +35,7 @@ import {
   canAsk,
   confirm,
   emit,
+  type Handlers,
   indent,
   jsonOut,
   kv,
@@ -49,7 +50,7 @@ import type * as S from "@/lib/api-schemas"
 import { bare, cardLines } from "@/lib/card-lines"
 import type { Card } from "@/lib/card-schema"
 import { linkPlatforms } from "@/lib/platforms"
-import { type Call, type CommandName, EID } from "./commands"
+import { type Call, EID } from "./commands"
 import { sendme } from "./sendme"
 import { installSkill, refreshSkill, skill } from "./skill"
 
@@ -618,17 +619,12 @@ async function take(
   }
 }
 
-/** A list as typed on the command line, "ada, bob" or "ada,bob", lower case. */
-const listed = (said: string | undefined) =>
-  (said ?? "")
-    .split(",")
-    .map((n) => n.trim().replace(/^@/, "").toLowerCase())
-    .filter(Boolean)
+/** Usernames as typed (`--to @Ada,bob`): without the @, lower case. */
+const listed = (said: string[] | undefined) =>
+  (said ?? []).map((n) => n.replace(/^@/, "").toLowerCase()).filter(Boolean)
 
-/** What a command runs with: its arguments, and its flags as its spec types them. */
-type Context<K extends CommandName> = {
-  rest: string[]
-  values: Extract<Call, { command: K }>["values"]
+/** What every command runs with, built once from the call (`shared`). */
+type Shared = {
   json: boolean
   /** The answer as JSON (`--json`), or `human` for a person. */
   out: (data: unknown, human: () => void) => void
@@ -641,13 +637,14 @@ type Context<K extends CommandName> = {
   domain: string
 }
 
-/** What each command does: one for every command in the table, by type. */
-const RUN: { [K in CommandName]: (c: Context<K>) => Promise<void> } = {
-  async login({ browser, out }) {
+/** What each command does: one for every command in the table, by type, each
+ *  given its own call (its arguments and flags) and what they all share. */
+const RUN: Handlers<typeof EID.spec, Shared> = {
+  async login(_, { browser, out }) {
     const config = await login(browser)
     out({ username: config.username, base: BASE }, () => {})
   },
-  async logout({ out }) {
+  async logout(_, { out }) {
     const config = readConfig()
     if (!config)
       return out({ signedOut: false, base: BASE }, () =>
@@ -666,7 +663,7 @@ const RUN: { [K in CommandName]: (c: Context<K>) => Promise<void> } = {
       ),
     )
   },
-  async whoami({ out }) {
+  async whoami(_, { out }) {
     const config = readConfig()
     if (!config)
       return out({ signedIn: false, base: BASE }, () =>
@@ -685,7 +682,7 @@ const RUN: { [K in CommandName]: (c: Context<K>) => Promise<void> } = {
       ),
     )
   },
-  async link({ rest, values, out, session, domain }) {
+  async link({ args: rest, values }, { out, session, domain }) {
     const [to, name] = rest
     if (!to) throw new CliError("eid link <url> [name]", "usage")
     const opens = values.opens === undefined ? undefined : Number(values.opens)
@@ -709,7 +706,7 @@ const RUN: { [K in CommandName]: (c: Context<K>) => Promise<void> } = {
       console.log(`${address}${copied ? ui.muted(" (copied)") : ""}`),
     )
   },
-  async send({ rest, values, out, session, domain, json }) {
+  async send({ args: rest, values }, { out, session, domain, json }) {
     const [given, name] = rest
     if (!given) throw new CliError("eid send <path> [name]", "usage")
     const named = listed(values.to)
@@ -894,7 +891,7 @@ const RUN: { [K in CommandName]: (c: Context<K>) => Promise<void> } = {
       }
     }
   },
-  async get({ rest, values, out, json, domain }) {
+  async get({ args: rest, values }, { out, json, domain }) {
     const [address] = rest
     if (!address) throw new CliError("eid get <address>", "usage")
     const got = await take(address, {
@@ -908,7 +905,7 @@ const RUN: { [K in CommandName]: (c: Context<K>) => Promise<void> } = {
     if (!got) return out({ taken: false, address }, () => {})
     out(got, () => console.log(`  saved to ${fromHome(got.path)}\n`))
   },
-  async inbox({ values, out, session, json, domain }) {
+  async inbox({ values }, { out, session, json, domain }) {
     const { key } = await session()
     if (!values.watch) {
       const inbox = await api<Inbox>("/inbox", { key })
@@ -1008,7 +1005,7 @@ const RUN: { [K in CommandName]: (c: Context<K>) => Promise<void> } = {
       }
     }
   },
-  async ls({ out, session }) {
+  async ls(_, { out, session }) {
     const { key, username } = await session()
     const mine = await api<Links>("/links", { key })
     out(mine, () => {
@@ -1030,7 +1027,7 @@ const RUN: { [K in CommandName]: (c: Context<K>) => Promise<void> } = {
       )
     })
   },
-  async rm({ rest, out, session }) {
+  async rm({ args: rest }, { out, session }) {
     const [name] = rest
     if (!name) throw new CliError("eid rm <name>", "usage")
     await api(`/links/${encodeURIComponent(name)}`, {
@@ -1039,7 +1036,7 @@ const RUN: { [K in CommandName]: (c: Context<K>) => Promise<void> } = {
     })
     out({ deleted: name }, () => console.log(`${ui.ok("deleted")} /${name}`))
   },
-  async card({ rest, out, session }) {
+  async card({ args: rest }, { out, session }) {
     const username = rest[0] ?? (await session()).username
     const res = await fetch(`${BASE}/${encodeURIComponent(username)}/json`, {
       headers: { "user-agent": `eid/${VERSION}` },
@@ -1050,7 +1047,7 @@ const RUN: { [K in CommandName]: (c: Context<K>) => Promise<void> } = {
     const card = (await res.json()) as Card
     out(card, () => console.log(cardLines(card, (role, s) => ui[role](s))))
   },
-  async set({ rest, out, session }) {
+  async set({ args: rest }, { out, session }) {
     const [what, ...words] = rest
     const value = words.join(" ")
     if (!what || !value) throw new CliError("eid set <what> <value>", "usage")
@@ -1083,7 +1080,7 @@ const RUN: { [K in CommandName]: (c: Context<K>) => Promise<void> } = {
       )
     out(card, () => console.log(`${ui.ok("set")} ${field}`))
   },
-  async unset({ rest, out, session }) {
+  async unset({ args: rest }, { out, session }) {
     const [platform] = rest
     if (!platform) throw new CliError("eid unset <platform>", "usage")
     const card = await api<MyCard>(
@@ -1092,7 +1089,7 @@ const RUN: { [K in CommandName]: (c: Context<K>) => Promise<void> } = {
     )
     out(card, () => console.log(`${ui.ok("took off")} ${platform}`))
   },
-  async stats({ out, session }) {
+  async stats(_, { out, session }) {
     const stats = await api<Stats>("/stats", { key: (await session()).key })
     out(stats, () =>
       console.log(
@@ -1103,7 +1100,7 @@ const RUN: { [K in CommandName]: (c: Context<K>) => Promise<void> } = {
       ),
     )
   },
-  async skill({ rest, values, out }) {
+  async skill({ args: rest, values }, { out }) {
     if (rest[0] === undefined)
       return out({ skill: skill(VERSION) }, () =>
         process.stdout.write(skill(VERSION)),
@@ -1119,41 +1116,30 @@ const RUN: { [K in CommandName]: (c: Context<K>) => Promise<void> } = {
  *  a bad argument is answered as JSON too. */
 const JSON_OUT = jsonOut()
 
-main(
-  async () => {
-    const call = EID.parse()
-    refreshSkill(VERSION)
-    if (call.kind === "print")
-      return emit(JSON_OUT, call.data, () => process.stdout.write(call.text))
+/** What every command shares, from the flags every command takes. */
+function shared(call: Call): Shared {
+  const domain = call.values.on ?? "eid.to"
+  if (!(DOMAINS as readonly string[]).includes(domain))
+    throw new CliError(`--on is one of ${DOMAINS.join(", ")}`, "usage")
+  const browser = !call.values["no-browser"] && !process.env.SSH_CONNECTION
+  return {
+    json: JSON_OUT,
+    out: (data, human) => emit(JSON_OUT, data, human),
+    browser,
+    domain,
+    session: async () => {
+      const config = readConfig()
+      if (config) return config
+      if (!canAsk())
+        throw new CliError(
+          `Not signed in to ${BASE}: run eid login`,
+          "unauthorized",
+        )
+      console.error(ui.muted(`Signing this machine in to ${BASE} first.`))
+      return login(browser)
+    },
+  }
+}
 
-    const domain = call.values.on ?? "eid.to"
-    if (!(DOMAINS as readonly string[]).includes(domain))
-      throw new CliError(`--on is one of ${DOMAINS.join(", ")}`, "usage")
-    const browser = !call.values["no-browser"] && !process.env.SSH_CONNECTION
-    const context: Context<CommandName> = {
-      rest: call.args,
-      values: call.values,
-      json: JSON_OUT,
-      out: (data, human) => emit(JSON_OUT, data, human),
-      browser,
-      domain,
-      session: async () => {
-        const config = readConfig()
-        if (config) return config
-        if (!canAsk())
-          throw new CliError(
-            `Not signed in to ${BASE}: run eid login`,
-            "unauthorized",
-          )
-        console.error(ui.muted(`Signing this machine in to ${BASE} first.`))
-        return login(browser)
-      },
-    }
-    // The call and its context name one command, which TypeScript cannot
-    // correlate through a union: the runner is the one for call.command.
-    await (RUN[call.command] as (c: Context<CommandName>) => Promise<void>)(
-      context,
-    )
-  },
-  { json: JSON_OUT },
-)
+refreshSkill(VERSION)
+main(() => EID.context(shared).run(RUN), { json: JSON_OUT })
