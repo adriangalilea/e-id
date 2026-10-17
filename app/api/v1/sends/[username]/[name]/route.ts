@@ -8,8 +8,9 @@ import { readSend } from "@/lib/sends"
 // behind a password needs it said (the `e-id-password` header, never the address,
 // which logs keep); a send for people needs one of their keys, and to anyone else is
 // not found, the same answer as a send that stopped. One whose machine is not
-// answering is `away` (409), until it is heard from again. `e-id-again: 1` is the
-// same download asking again after its connection dropped: not counted twice.
+// answering is `away` (409), until it is heard from again. Looking counts nothing:
+// the answer does (`POST …/answer`), so a download asking again after its connection
+// dropped is the same look.
 
 /** "3 minutes", "2 hours": how long ago, as a sentence says it. */
 function since(seen: Date): string {
@@ -28,15 +29,10 @@ export async function GET(
 ) {
   const { username, name } = await params
   const who = await keyHolder(request)
-  const send = await readSend(
-    username,
-    name,
-    {
-      userId: who?.userId ?? null,
-      password: request.headers.get("e-id-password"),
-    },
-    request.headers.get("e-id-again") === "1",
-  )
+  const send = await readSend(username, name, {
+    userId: who?.userId ?? null,
+    password: request.headers.get("e-id-password"),
+  })
   if (!send.ok && send.why === "password")
     return fail(401, {
       code: "password",

@@ -30,7 +30,15 @@ import { homedir, hostname, tmpdir } from "node:os"
 import { basename, join, resolve } from "node:path"
 import { createInterface } from "node:readline/promises"
 import { parseArgs } from "node:util"
-import { indent, kv, spinner, table, ui } from "@adriangalilea/utils/cli"
+import {
+  bar,
+  indent,
+  kv,
+  link,
+  spinner,
+  table,
+  ui,
+} from "@adriangalilea/utils/cli"
 import type { z } from "zod"
 import type * as S from "@/lib/api-schemas"
 import { bare, cardLines } from "@/lib/card-lines"
@@ -143,9 +151,6 @@ async function api<T>(
     key?: string
     /** A send's password, said in a header, never in the address. */
     password?: string
-    /** The same download asking for its send again, after its connection
-     *  dropped: e-ID does not count it twice. */
-    again?: boolean
   } = {},
 ): Promise<T> {
   const res = await fetch(`${BASE}/api/v1${path}`, {
@@ -155,7 +160,6 @@ async function api<T>(
       "user-agent": `eid/${VERSION}`,
       ...(init.key && { authorization: `Bearer ${init.key}` }),
       ...(init.password && { "e-id-password": init.password }),
-      ...(init.again && { "e-id-again": "1" }),
     },
     body: init.body === undefined ? undefined : JSON.stringify(init.body),
   })
@@ -375,6 +379,13 @@ async function ask(question: string): Promise<string> {
   rl.on("SIGINT", () => process.kill(process.pid, "SIGINT"))
   try {
     return (await rl.question(question)).trim()
+  } catch (error) {
+    // Ctrl-D at the question is no answer, so the default one.
+    if ((error as Error).name === "AbortError") {
+      process.stderr.write("\n")
+      return ""
+    }
+    throw error
   } finally {
     rl.close()
   }
@@ -438,14 +449,42 @@ function ago(iso: string): string {
 }
 
 /** Who a send is from: "Ada Lovelace @ada", or "@ada" with no name on their card. */
-const fromWhom = (from: { username: string; name: string | null }) =>
-  `${from.name ? `${ui.head(from.name)} ` : ""}${ui.accent(`@${from.username}`)}`
+const fromWhom = (
+  from: { username: string; name: string | null },
+  domain: string,
+) => {
+  // Their page, clickable where the terminal links: who this is, one press away.
+  const page = `${domain}/${from.username.toLowerCase()}`
+  const handle = ui.accent(`@${from.username}`)
+  const who =
+    from.name && from.name.toLowerCase() !== from.username.toLowerCase()
+      ? `${ui.head(from.name)} ${handle}`
+      : handle
+  // The emoji domain spelled as DNS knows it, for whatever opens the link.
+  const host = domain === "👤.to" ? "xn--mq8h.to" : domain
+  return `${who}  ${link(ui.muted(page), `https://${host}/${from.username.toLowerCase()}`)}`
+}
 
 /** Said before sendme is fetched, the first time a machine needs it. */
 const fetchingSendme = () =>
   console.error(ui.muted("  fetching sendme, once (about 4 MB)"))
 
 type Taken = { file: string; size: number; path: string; from: string }
+
+/** What has come of a download in `dir`: the bytes sendme keeps there as it fetches
+ *  (`.sendme-recv-<hash>`, by the file's content). */
+function arrivedIn(dir: string): number {
+  return readdirSync(dir, { withFileTypes: true })
+    .filter((e) => e.isDirectory() && e.name.startsWith(".sendme-recv-"))
+    .reduce((total, e) => total + sizeOf(join(dir, e.name)), 0)
+}
+
+/** What `eid send` prints for each thing that happens to its send. */
+const SAYS: Record<SendEvents["events"][number]["kind"], string> = {
+  asked: "said yes, downloading",
+  got: ui.ok("got it"),
+  declined: ui.warn("said no"),
+}
 
 /** How often a paused send is asked about while `eid get` waits for its machine. */
 const AWAY_POLL_MS = 15_000
@@ -465,6 +504,8 @@ async function take(
     yes: boolean
     password: string | undefined
     json: boolean
+    /** The domain addresses are printed on (--on). */
+    domain: string
   },
 ): Promise<Taken | null> {
   const at = sendAt(address)
@@ -502,12 +543,15 @@ async function take(
     console.error(
       `\n${kv(
         [
-          ["from", fromWhom({ username: send.from, name: send.fromName })],
+          [
+            "from",
+            fromWhom({ username: send.from, name: send.fromName }, o.domain),
+          ],
           [
             "file",
             `${send.file.name}  ${ui.muted(BYTES.format(send.file.size))}`,
           ],
-          ["into", fromHome(o.dir)],
+          ["into", `${fromHome(o.dir)}  ${ui.muted("(--dir to change)")}`],
         ],
         { indent: 2 },
       )}\n`,
@@ -517,29 +561,63 @@ async function take(
       `${fromHome(target)} is already there: --dir somewhere else`,
       "exists",
     )
+  // The answer reaches its sender live (yes: it is coming; no: they are told), said
+  // as the send was asked for; the file is had or left either way, so a refusal of
+  // the answer is said, never thrown.
+  const answer = (said: "yes" | "no") =>
+    api(`${path}/answer`, {
+      method: "POST",
+      key,
+      password,
+      body: { answer: said },
+    }).catch((error: unknown) => {
+      if (!(error instanceof Said)) throw error
+      console.error(ui.muted(`  the sender was not told: ${error.message}`))
+    })
   if (!o.yes) {
     if (!process.stdin.isTTY)
       throw new Said(
         `${at.username}/${at.name} is ${send.file.name} from @${send.from}: say --yes to take it without a terminal to ask in`,
         "unconfirmed",
       )
-    if (!/^y(es)?$/i.test(await ask("  take it? (y/N) "))) {
-      console.error(ui.muted("  left where it is"))
+    if (
+      !/^y(es)?$/i.test(
+        await ask(`  ${ui.head("take it?")} ${ui.muted("(y/N)")} `),
+      )
+    ) {
+      await answer("no")
+      console.error(
+        ui.muted(`  left where it is: @${send.from} sees you said no`),
+      )
       return null
     }
   }
+  await answer("yes")
   mkdirSync(o.dir, { recursive: true })
   const bin = await sendme(fetchingSendme)
   // A dropped connection is picked up where it stopped: sendme keeps what came in
   // the folder (.sendme-recv-<hash>, by the file's content) and fetches only the
   // rest, from whatever ticket the send has now (its sender may have come back).
   let ticket = send.ticket
+  const size = BYTES.format(send.file.size)
   for (let drops = 0; ; ) {
     try {
-      await spinner(
-        `${send.file.name} ${ui.muted(BYTES.format(send.file.size))}`,
-        () => sendmeRun(bin, ["receive", ticket, "--no-progress"], o.dir),
-      )
+      await spinner(`${send.file.name} ${ui.muted(size)}`, async (set) => {
+        // How much has come, read off what sendme keeps as it fetches: a bar,
+        // never a guess.
+        const every = setInterval(() => {
+          const had = Math.min(send.file.size, arrivedIn(o.dir))
+          set(
+            `${send.file.name} ${bar(had, send.file.size, 24)} ${ui.muted(`${BYTES.format(had)} of ${size}`)}`,
+          )
+        }, 250)
+        try {
+          await sendmeRun(bin, ["receive", ticket, "--no-progress"], o.dir)
+        } finally {
+          clearInterval(every)
+          set(`${send.file.name} ${ui.muted(size)}`)
+        }
+      })
       break
     } catch (error) {
       if (!(error instanceof Said)) throw error
@@ -553,8 +631,7 @@ async function take(
       await sleep(Math.min(30_000, 2000 * 2 ** (drops - 1)))
       for (;;) {
         try {
-          ticket = (await api<Send>(path, { key, password, again: true }))
-            .ticket
+          ticket = (await api<Send>(path, { key, password })).ticket
           break
         } catch (asked) {
           if (asked instanceof Said && asked.code === "away") {
@@ -601,6 +678,8 @@ type Values = {
   password?: string
   yes?: boolean
   watch?: boolean
+  stay?: boolean
+  self?: boolean
   "accept-from"?: string
   json?: boolean
   "no-browser"?: boolean
@@ -699,8 +778,8 @@ const RUN: Record<CommandName, (c: Context) => Promise<void>> = {
   async send({ rest, values, out, session, domain, json }) {
     const [given, name] = rest
     if (!given) throw new Said("eid send <path> [name]", "usage")
-    const to = listed(values.to)
-    if (values.to !== undefined && to.length === 0)
+    const named = listed(values.to)
+    if (values.to !== undefined && named.length === 0)
       throw new Said("--to names people: --to ada,bob", "usage")
     const path = resolve(given)
     if (!existsSync(path))
@@ -711,6 +790,11 @@ const RUN: Record<CommandName, (c: Context) => Promise<void>> = {
       size: stat.isDirectory() ? sizeOf(path) : stat.size,
     }
     const { key, username } = await session()
+    // --self: this account is one it is for, so the file waits in its own inbox,
+    // for its other machines.
+    const to = values.self
+      ? [...new Set([...named, username.toLowerCase()])]
+      : named
     const bin = await sendme(fetchingSendme)
     const work = mkdtempSync(join(tmpdir(), "eid-send-"))
     const child = spawn(bin, ["send", path, "--no-progress"], {
@@ -789,7 +873,7 @@ const RUN: Record<CommandName, (c: Context) => Promise<void>> = {
     out({ from: username, slug, file, to, address, command }, () => {
       const forWhom =
         to.length > 0
-          ? `${to.map((p) => ui.accent(`@${p}`)).join(", ")} only ${ui.muted("(in their eid inbox)")}`
+          ? `${to.map((p) => (p === username.toLowerCase() ? ui.accent("you") : ui.accent(`@${p}`))).join(", ")} only ${ui.muted(to.length === 1 && values.self ? "(in your eid inbox, on your other machines)" : "(in their eid inbox)")}`
           : values.password !== undefined
             ? "anyone with the address and the password"
             : "anyone with the address"
@@ -812,7 +896,13 @@ const RUN: Record<CommandName, (c: Context) => Promise<void>> = {
         mkdirSync(CONFIG_DIR, { recursive: true, mode: 0o700 })
         writeFileSync(TOLD, "")
       }
-      console.log(ui.muted("  sending from this machine · Ctrl-C to stop"))
+      console.log(
+        ui.muted(
+          to.length > 0 && !values.stay
+            ? "  sending from this machine until each has answered · Ctrl-C to stop"
+            : "  sending from this machine · Ctrl-C to stop",
+        ),
+      )
     })
     // Live: each download as it starts and as it lands, asked of e-ID one held
     // question at a time (GET /links/:name/events). A person reads them on stderr;
@@ -820,6 +910,8 @@ const RUN: Record<CommandName, (c: Context) => Promise<void>> = {
     // The file is served whatever happens here: a question that fails (the network
     // gone a moment) is asked again a little later, never the end of the send.
     let after = 0
+    // Who of those it is for has taken it or said no.
+    const answeredBy = new Set<string>()
     for (;;) {
       const answered = await api<SendEvents>(
         `/links/${encodeURIComponent(slug)}/events?wait=25&after=${after}`,
@@ -848,15 +940,26 @@ const RUN: Record<CommandName, (c: Context) => Promise<void>> = {
       for (const e of answered.events) {
         if (e.id <= after) continue
         after = e.id
+        if (e.who && e.kind !== "asked") answeredBy.add(e.who.toLowerCase())
         if (json) console.log(JSON.stringify(e))
         else
           console.log(
-            `  ${ui.muted(new Date(e.at).toTimeString().slice(0, 8))}  ${e.who ? ui.accent(`@${e.who}`) : "someone"} ${e.kind === "got" ? ui.ok("got it") : "is getting it"}`,
+            `  ${ui.muted(new Date(e.at).toTimeString().slice(0, 8))}  ${e.who ? ui.accent(`@${e.who}`) : "someone"} ${SAYS[e.kind]}`,
           )
+      }
+      // A send for people is over once each has taken it or said no: nothing is
+      // left to wait for, and the name goes. --stay keeps it served.
+      if (
+        to.length > 0 &&
+        !values.stay &&
+        to.every((p) => answeredBy.has(p.toLowerCase()))
+      ) {
+        if (!json) console.log(ui.muted("\n  everyone it was for has answered"))
+        return void (await stop(0))
       }
     }
   },
-  async get({ rest, values, out, json }) {
+  async get({ rest, values, out, json, domain }) {
     const [address] = rest
     if (!address) throw new Said("eid get <address>", "usage")
     const got = await take(address, {
@@ -864,11 +967,12 @@ const RUN: Record<CommandName, (c: Context) => Promise<void>> = {
       yes: values.yes === true,
       password: values.password,
       json,
+      domain,
     })
     if (!got) return out({ taken: false, address }, () => {})
     out(got, () => console.log(`  saved to ${fromHome(got.path)}\n`))
   },
-  async inbox({ values, out, session, json }) {
+  async inbox({ values, out, session, json, domain }) {
     const { key } = await session()
     if (!values.watch) {
       const inbox = await api<Inbox>("/inbox", { key })
@@ -879,7 +983,7 @@ const RUN: Record<CommandName, (c: Context) => Promise<void>> = {
             : `\n${indent(
                 table(
                   inbox.waiting.map((w: Waiting) => [
-                    fromWhom(w.from),
+                    fromWhom(w.from, domain),
                     w.file.name,
                     ui.muted(BYTES.format(w.file.size)),
                     w.live ? ui.muted(ago(w.since)) : ui.warn("paused"),
@@ -897,13 +1001,17 @@ const RUN: Record<CommandName, (c: Context) => Promise<void>> = {
         "eid inbox --watch asks about each send, and there is no terminal to ask in: --json to list them, --accept-from to take from people you name",
         "unconfirmed",
       )
-    const dir = resolve(values.dir ?? ".")
+    // A file waited for lands where downloads land; --dir says otherwise.
+    const dir = resolve(values.dir ?? join(homedir(), "Downloads"))
+    // Waits for the next send and ends once one is taken; --stay keeps waiting, as
+    // does taking from people named without asking (a machine left to receive).
+    const stay = values.stay === true || accepted.size > 0
     const seen = new Set<string>()
     let after: string | undefined
     if (!json) {
       console.error(
         ui.muted(
-          `\n  waiting for sends to you · into ${fromHome(dir)} · Ctrl-C to stop`,
+          `\n  waiting for ${stay ? "sends" : "a send"} to you · into ${fromHome(dir)} (--dir to change) · Ctrl-C to stop`,
         ),
       )
       if (accepted.size)
@@ -945,6 +1053,7 @@ const RUN: Record<CommandName, (c: Context) => Promise<void>> = {
           yes: accepted.has(w.from.username.toLowerCase()),
           password: undefined,
           json,
+          domain,
         }).catch((error: unknown) => {
           // One send that cannot be taken (its sender stopped, a file of that name
           // here already) is said, and the watch goes on.
@@ -952,7 +1061,9 @@ const RUN: Record<CommandName, (c: Context) => Promise<void>> = {
           console.error(`  ${ui.bad(`${w.address}: ${error.message}`)}`)
           return null
         })
-        if (got) console.log(`  saved to ${fromHome(got.path)}`)
+        if (!got) continue
+        console.log(`  saved to ${fromHome(got.path)}\n`)
+        if (!stay) return
       }
     }
   },
@@ -1132,10 +1243,12 @@ function parse() {
       card: { type: "string" },
       on: { type: "string" },
       dir: { type: "string" },
-      to: { type: "string" },
+      to: { type: "string", short: "t" },
       password: { type: "string" },
       yes: { type: "boolean", short: "y" },
       watch: { type: "boolean" },
+      stay: { type: "boolean" },
+      self: { type: "boolean", short: "s" },
       "accept-from": { type: "string" },
       json: { type: "boolean" },
       "no-browser": { type: "boolean" },

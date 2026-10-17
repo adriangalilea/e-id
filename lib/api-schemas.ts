@@ -161,6 +161,16 @@ export const LinkCreateBody = z
   })
   .meta({ id: "LinkCreate" })
 
+export const SendAnswerBody = z
+  .object({
+    answer: z
+      .enum(["yes", "no"])
+      .describe(
+        "yes: the download starts now; no: not taking it (a send for you leaves your inbox)",
+      ),
+  })
+  .meta({ id: "SendAnswer" })
+
 export const SendCreateBody = z
   .object({
     ticket: z
@@ -230,8 +240,10 @@ export const SendEvents = z
             .number()
             .describe("increasing: ask again with after=<the last id seen>"),
           kind: z
-            .enum(["asked", "got"])
-            .describe("asked: a download starting; got: the file came"),
+            .enum(["asked", "got", "declined"])
+            .describe(
+              "asked: they said yes, a download starting; got: the file came; declined: they said no",
+            ),
           who: z
             .string()
             .nullable()

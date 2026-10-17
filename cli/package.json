@@ -1,6 +1,6 @@
 {
   "name": "@e-id/eid",
-  "version": "0.2.5",
+  "version": "0.2.6",
   "description": "eid: your e-ID from a terminal. Short links, your numbers, your card.",
   "homepage": "https://e-id.to/cli",
   "repository": {

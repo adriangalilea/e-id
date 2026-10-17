@@ -92,11 +92,6 @@ export async function writeSend(
       ok: false,
       errors: { to: `Nobody on e-ID is called ${unknown.join(", ")}.` },
     }
-  if (people.some((p) => p.id === userId))
-    return {
-      ok: false,
-      errors: { to: "A send to yourself is a file you have." },
-    }
   const owned = await db
     .select({ id: links.id, order: links.order })
     .from(links)
@@ -151,41 +146,47 @@ export type SendRead =
 
 /** A send by whose it is and its name, as `eid get` asks for it, given who asks
  *  (`userId`, null without a key) and the password they say: its ticket, its file
- *  and its sender, the open counted. An addressed send asked for by anyone else is
- *  not found, as a stopped one is; one whose machine is not answering is away, said
- *  only to whoever may have it. `again`: the same download asking a second time,
- *  after its connection dropped (the ticket may be new, the sender back), counted
- *  once already. */
+ *  and its sender. Looking counts nothing (`said` counts the answer). An addressed
+ *  send asked for by anyone else is not found, as a stopped one is; one whose machine
+ *  is not answering is away, said only to whoever may have it. */
 export async function readSend(
   username: string,
   slug: string,
   asker: Asker,
-  again = false,
 ): Promise<SendRead> {
   const may = await mayHave(username, slug, asker)
   if (!may.ok) return may
   if (!may.live) return { ok: false, why: "away", seen: may.seen }
-  if (again)
-    return { ok: true, ticket: may.ticket, file: may.file, from: may.from }
-  await db.batch([
-    db
-      .update(links)
-      .set({ visits: sql`${links.visits} + 1` })
-      .where(eq(links.id, may.id)),
-    // A download starting, for its sender to see live.
-    db.insert(sendEvents).values({
-      link_id: may.id,
-      kind: "asked",
-      user_id: asker.userId,
-      at: new Date(),
-    }),
-  ])
-  return {
-    ok: true,
-    ticket: may.ticket,
-    file: may.file,
-    from: may.from,
-  }
+  return { ok: true, ticket: may.ticket, file: may.file, from: may.from }
+}
+
+/** What someone who may have the send answered, for its sender to see live: `asked`,
+ *  they said yes and the download starts (the open counted); `declined`, they said
+ *  no (a send for them leaves their inbox). False where they may not have it. */
+export async function said(
+  username: string,
+  slug: string,
+  asker: Asker,
+  answer: "asked" | "declined",
+): Promise<boolean> {
+  const may = await mayHave(username, slug, asker)
+  if (!may.ok) return false
+  const event = db.insert(sendEvents).values({
+    link_id: may.id,
+    kind: answer,
+    user_id: asker.userId,
+    at: new Date(),
+  })
+  if (answer === "declined") await event
+  else
+    await db.batch([
+      db
+        .update(links)
+        .set({ visits: sql`${links.visits} + 1` })
+        .where(eq(links.id, may.id)),
+      event,
+    ])
+  return true
 }
 
 /** Who sends what at `/username/slug`, for whoever may have it (its people, or
@@ -341,7 +342,7 @@ export async function markGot(
 export type SendEvent = {
   /** Increasing: ask again for those after the last one seen. */
   id: number
-  kind: "asked" | "got"
+  kind: "asked" | "got" | "declined"
   /** Their username, signed in; null for someone without a key. */
   who: string | null
   at: string
@@ -432,8 +433,8 @@ export type Waiting = {
   live: boolean
 }
 
-/** What waits for `userId`: every send addressed to them, still being sent, not
- *  taken yet, newest first; with `after`, only what was sent after it. */
+/** What waits for `userId`: every send addressed to them, still being sent, neither
+ *  taken nor said no to, newest first; with `after`, only what was sent after it. */
 export async function inboxOf(
   userId: string,
   after: Date | null,
@@ -455,6 +456,8 @@ export async function inboxOf(
       and(
         eq(sendTo.user_id, userId),
         isNull(sendTo.taken_at),
+        // One they said no to is gone from their inbox.
+        sql`NOT EXISTS (SELECT 1 FROM ${sendEvents} WHERE ${sendEvents.link_id} = ${links.id} AND ${sendEvents.kind} = 'declined' AND ${sendEvents.user_id} = ${userId})`,
         eq(links.kind, "send"),
         isNull(links.stopped_at),
         ...(after ? [gt(links.created_at, after)] : []),

@@ -252,8 +252,8 @@ export const sendTo = sqliteTable(
 )
 
 // WHAT HAPPENED TO A SEND, for its sender to watch live (`eid send` prints each, lib/sends):
-// someone asked for its ticket ("asked", a download starting), or said the file came
-// ("got"). Who, where they were signed in; nothing of anyone else, no address. The
+// someone said yes to it ("asked", a download starting), said no ("declined"), or said
+// the file came ("got"). Who, where they were signed in; nothing of anyone else, no address. The
 // events go with the send, when its sender stops. Migrations: db/migrations.
 export const sendEvents = sqliteTable(
   "send_event",
@@ -262,7 +262,7 @@ export const sendEvents = sqliteTable(
     link_id: text("link_id")
       .notNull()
       .references(() => links.id, { onDelete: "cascade" }),
-    kind: text("kind", { enum: ["asked", "got"] }).notNull(),
+    kind: text("kind", { enum: ["asked", "got", "declined"] }).notNull(),
     /** Who, signed in; null for someone without a key. */
     user_id: text("user_id").references(() => users.id, {
       onDelete: "set null",

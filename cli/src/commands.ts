@@ -78,23 +78,32 @@ export const COMMANDS = [
     says: "send a file or a folder from this machine, until you stop",
     flags: [
       {
-        flag: "--to <people>",
+        flag: "-t, --to <people>",
         says: "only for these e-ID accounts (ada,bob): it waits in their inbox, and nobody else can open it",
+      },
+      {
+        flag: "-s, --self",
+        says: "for you, on your other machines: it waits in your own inbox (with --to, for them and you)",
       },
       {
         flag: "--password <words>",
         says: "anyone with the address and the password (for someone without an account)",
       },
       {
+        flag: "--stay",
+        says: "with --to, keep sending once everyone it is for has answered",
+      },
+      {
         flag: "--on <domain>",
         says: "the domain in the command printed (eid.to by default)",
       },
     ],
-    more: "Prints `npx @e-id/eid get eid.to/you/<name>`, copied, for whoever you send it to: they need nothing installed and no account. With --to it is for those people only: e-ID gives its ticket to their keys alone, it waits in their `eid inbox`, and `eid ls` says when each took it. With --password, whoever opens the address is asked for it (kept hashed at e-ID, checked there). The file goes straight from this machine to theirs (n0's sendme, end to end encrypted, through n0's relays where the two cannot reach each other), never through e-ID, which holds only the name and who may have it. It is there for as long as this command runs, which prints each download as it starts and as it lands, and who it is where they are signed in: Ctrl-C stops it and takes the name away. While this machine is asleep or offline the send is paused; a day without it and the name goes. Sending the same file again from this machine gives it the same address, unless a name is given or that one is taken. Where the machines connect directly, each sees the other's IP address. The first send fetches sendme (about 4 MB, checked against its known SHA-256) into ~/.cache/eid.",
+    more: "Prints `npx @e-id/eid get eid.to/you/<name>`, copied, for whoever you send it to: they need nothing installed and no account. With --to it is for those people only: e-ID gives its ticket to their keys alone, it waits in their `eid inbox`, and `eid ls` says when each took it. With --password, whoever opens the address is asked for it (kept hashed at e-ID, checked there). The file goes straight from this machine to theirs (n0's sendme, end to end encrypted, through n0's relays where the two cannot reach each other), never through e-ID, which holds only the name and who may have it. It prints each answer as it comes (who said yes, who said no) and each file as it lands, by name where they are signed in. A send for anyone runs until Ctrl-C, which takes the name away; a send --to people stops by itself once each of them has taken it or said no, unless --stay. While this machine is asleep or offline the send is paused; a day without it and the name goes. Sending the same file again from this machine gives it the same address, unless a name is given or that one is taken. Where the machines connect directly, each sees the other's IP address. The first send fetches sendme (about 4 MB, checked against its known SHA-256) into ~/.cache/eid.",
     examples: [
       "eid send notes.zip",
       "eid send ./slides talk",
       "eid send draft.pdf --to ada,bob",
+      "eid send report.pdf -s",
       "eid send photos.zip --password 'blue harbour'",
     ],
     json: "SendMade, with address and command, printed once serving; then each SendEvents event as a line while the command keeps running",
@@ -129,15 +138,22 @@ export const COMMANDS = [
     flags: [
       {
         flag: "--watch",
-        says: "wait, and ask about each send as it arrives (y/N)",
+        says: "wait for the next send, ask about it (y/N), and end once one is taken",
+      },
+      {
+        flag: "--stay",
+        says: "while watching, keep waiting after a file is taken",
       },
       {
         flag: "--accept-from <people>",
-        says: "while watching, take what these people send without asking (ada,bob)",
+        says: "while watching, take what these people send without asking (ada,bob); keeps waiting",
       },
-      { flag: "--dir <path>", says: "where taken files go (here by default)" },
+      {
+        flag: "--dir <path>",
+        says: "where taken files go (~/Downloads by default)",
+      },
     ],
-    more: "Each send for you with who sends it (their name and @handle), the file and its size, and since when; eid get <address> takes one. --watch waits for arrivals and asks before anything comes down; --accept-from names whom you take from without asking, never everyone: a blanket accept is how a stranger's file lands unread. With --json, --watch prints each arrival as a line and takes nothing. A send leaves the inbox once taken, or when its sender stops.",
+    more: "Each send for you with who sends it (their name, @handle and page), the file and its size, and since when; eid get <address> takes one. --watch waits for an arrival and asks before anything comes down; a no tells its sender and the watch goes on. --accept-from names whom you take from without asking, never everyone: a blanket accept is how a stranger's file lands unread. With --json, --watch prints each arrival as a line and takes nothing. A send leaves the inbox once taken or said no to, or when its sender stops.",
     examples: [
       "eid inbox",
       "eid inbox --watch",
