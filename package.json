@@ -18,7 +18,8 @@
     "db:push": "drizzle-kit push"
   },
   "dependencies": {
-    "@adriangalilea/utils": "^11.1.1",
+    "@adriangalilea/metrics": "^1.0.0",
+    "@adriangalilea/utils": "^13.0.0",
     "@base-ui/react": "^1.8.0",
     "@libsql/client": "^0.18.0",
     "@resvg/resvg-js": "2.6.2",

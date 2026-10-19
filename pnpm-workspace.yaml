@@ -1,5 +1,6 @@
 allowBuilds:
   esbuild: false
-# Own package, trusted publisher: releases are adopted the day they ship.
+# Own packages, trusted publisher: releases are adopted the day they ship.
 minimumReleaseAgeExclude:
+  - '@adriangalilea/metrics'
   - '@adriangalilea/utils'

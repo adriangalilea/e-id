@@ -52,13 +52,13 @@
 // page's trace, a field named like a person (ip, user_agent, email, user, name, phone).
 // A crawler's batch is dropped whole and answered 204.
 
-import { type LogEvent, parseEvent } from "@adriangalilea/utils/log"
 import type {
   MetricsDriver,
   MetricsReader,
   SqlStatement,
   SqlValue,
-} from "@adriangalilea/utils/metrics/sqlite"
+} from "@adriangalilea/metrics/sqlite"
+import { type LogEvent, parseEvent } from "@adriangalilea/utils/log"
 
 /** Pages further apart than this are two visits, as every analytics tool counts them. */
 export const VISIT_GAP_MS = 30 * 60_000

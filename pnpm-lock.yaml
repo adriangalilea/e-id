@@ -8,9 +8,12 @@ importers:
 
   .:
     dependencies:
+      '@adriangalilea/metrics':
+        specifier: ^1.0.0
+        version: 1.0.0(next@16.4.0(@babel/core@7.29.7(supports-color@7.2.0))(@types/node@26.6.4)(react-dom@19.3.0(react@19.3.0))(react@19.3.0))
       '@adriangalilea/utils':
-        specifier: ^11.1.1
-        version: 11.1.1(next@16.4.0(@babel/core@7.29.7(supports-color@7.2.0))(@types/node@26.6.4)(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(zod@4.6.5)
+        specifier: ^13.0.0
+        version: 13.0.0(next@16.4.0(@babel/core@7.29.7(supports-color@7.2.0))(@types/node@26.6.4)(react-dom@19.3.0(react@19.3.0))(react@19.3.0))
       '@base-ui/react':
         specifier: ^1.8.0
         version: 1.8.0(@types/react@19.3.0)(date-fns@4.4.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
@@ -114,42 +117,15 @@ importers:
 
 packages:
 
-  '@adriangalilea/utils@11.1.1':
-    resolution: {integrity: sha512-7+ya/vtl3IeR+dv+wNiYNZEl82bN7WIo/2z2sGMQ50xvEUiONYGRXQiwlbX8t0aaPDtwR6hzBE2vbMB7LzHwCA==}
+  '@adriangalilea/metrics@1.0.0':
+    resolution: {integrity: sha512-IvWxELzfAoKAz/d84Y5MzpPsunLCDonVgiMVI8T9aau8//b8uGhKNztlRSCxFBCFn9z6IIcumu91xotF1NsLcA==}
+
+  '@adriangalilea/utils@13.0.0':
+    resolution: {integrity: sha512-yBjPJtQnMzhDG1EwMh713WDjWdoolNiawJftbWv4FtXUHZysI03pSHSoCGVQB1AaodlN+sKRTWw0xHMQNC1Tnw==}
     peerDependencies:
-      '@ai-sdk/anthropic': ^4.0.0
-      '@ai-sdk/openai-compatible': ^3.0.0
-      '@gramio/format': '>=0.8.0'
-      '@gramio/session': '>=0.2.0'
-      '@gramio/split': ^0.0.1
-      '@gramio/storage': '>=2.0.0'
-      '@openrouter/ai-sdk-provider': ^3.0.0
-      ai: ^7.0.0
-      gramio: ^0.15.0
       next: '>=15'
-      zod: '>=3.22'
     peerDependenciesMeta:
-      '@ai-sdk/anthropic':
-        optional: true
-      '@ai-sdk/openai-compatible':
-        optional: true
-      '@gramio/format':
-        optional: true
-      '@gramio/session':
-        optional: true
-      '@gramio/split':
-        optional: true
-      '@gramio/storage':
-        optional: true
-      '@openrouter/ai-sdk-provider':
-        optional: true
-      ai:
-        optional: true
-      gramio:
-        optional: true
       next:
-        optional: true
-      zod:
         optional: true
 
   '@alloc/quick-lru@5.3.0':
@@ -2236,12 +2212,17 @@ packages:
 
 snapshots:
 
-  '@adriangalilea/utils@11.1.1(next@16.4.0(@babel/core@7.29.7(supports-color@7.2.0))(@types/node@26.6.4)(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(zod@4.6.5)':
+  '@adriangalilea/metrics@1.0.0(next@16.4.0(@babel/core@7.29.7(supports-color@7.2.0))(@types/node@26.6.4)(react-dom@19.3.0(react@19.3.0))(react@19.3.0))':
+    dependencies:
+      '@adriangalilea/utils': 13.0.0(next@16.4.0(@babel/core@7.29.7(supports-color@7.2.0))(@types/node@26.6.4)(react-dom@19.3.0(react@19.3.0))(react@19.3.0))
+    transitivePeerDependencies:
+      - next
+
+  '@adriangalilea/utils@13.0.0(next@16.4.0(@babel/core@7.29.7(supports-color@7.2.0))(@types/node@26.6.4)(react-dom@19.3.0(react@19.3.0))(react@19.3.0))':
     dependencies:
       linkifyjs: 4.3.3
     optionalDependencies:
       next: 16.4.0(@babel/core@7.29.7(supports-color@7.2.0))(@types/node@26.6.4)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
-      zod: 4.6.5
 
   '@alloc/quick-lru@5.3.0': {}
 
