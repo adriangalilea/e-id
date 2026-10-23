@@ -23,7 +23,7 @@ permissions: {}
 
 jobs:
   build:
-    uses: adriangalilea/ci/.github/workflows/node.yml@e46001ace22a41eec718217045df254cc9fb54cd # v1.4.0
+    uses: adriangalilea/ci/.github/workflows/node.yml@b2324769d05804a2ce77a197ec2d0d0cb4f6ed87 # v1.9.0
     with:
       directory: cli
       tag-prefix: cli-
