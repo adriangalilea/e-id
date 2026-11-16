@@ -154,7 +154,7 @@ Each adds rows and screens, never a new shape for old rows.
 
 ### Ideas
 
-- **Your keys for other apps' sharing (open research, raised 2026-11-16, nothing decided).** Sharing a live Cells table or a secret column with someone needs to know who they are and their public key; tether (the private device mesh behind Authz and vigil; its research note "Owned state", section "Beyond one person") reaches only one person's devices. Whether e-ID's handle (`@carla`) is where another person's keys are found, a person tier above tether's account, and what that would ask of "Your private identity" above (keys per person, revocation, a DID or not, item 6 of To do). Cells' side: its app's TODO, "Live imports, sharing and sync".
+- **Your keys for other apps' sharing (open research, raised 2026-11-16; decided the same day that e-ID does not move on it now).** Sharing a live Cells table or a secret column with someone needs to know who they are and their public key; tether (the private device mesh behind Authz and vigil; its research note "Objects", section "Grants": until person keys exist a grant names device keys, and later e-ID would sign a person's device list) reaches only one person's devices. Whether e-ID's handle (`@carla`) is where another person's keys are found, a person tier above tether's account, and what that would ask of "Your private identity" above (keys per person, revocation, a DID or not, item 6 of To do). Cells' side: its app's TODO, "Live imports, sharing and sync".
 
 - following people, only if it brings something with it (their card kept current in your contacts)
 - languages and skills, if a card can hold them and stay simple (it starts to be a CV)
