@@ -63,7 +63,7 @@ jobs:
 
   release:
     needs: [build, publish]
-    uses: adriangalilea/ci/.github/workflows/release.yml@e46001ace22a41eec718217045df254cc9fb54cd # v1.4.0
+    uses: adriangalilea/ci/.github/workflows/release.yml@355bd2330515807555f687b9bcf69e656dee1161 # v1.10.3
     with:
       tag: ${{ needs.build.outputs.tag }}
       tag-prefix: cli-
